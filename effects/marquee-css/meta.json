@@ -1,0 +1,56 @@
+{
+  "name": "marquee-css",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["marquee", "ticker", "logos", "css-only", "magicui", "band"],
+  "summary": "Infinite logo/testimonial ticker band running Magic UI's marquee keyframes: two rows scrolling opposite ways, edge-masked, pausable on hover, and entirely CSS.",
+  "needs": [],
+  "options": {
+    "duration": {
+      "type": "string",
+      "default": "40s",
+      "description": "One full traverse of a row. Upstream's [--duration:40s] on the outer div."
+    },
+    "gap": {
+      "type": "string",
+      "default": "1rem",
+      "description": "Space between items and between the repeated rows. Upstream's [--gap:1rem]. Must be a length: the keyframes translate by calc(-100% - gap), which a unitless value makes invalid."
+    },
+    "pauseOnHover": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pause every row while the pointer is over the band. Upstream's group-hover:[animation-play-state:paused]."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "magicuidesign/magicui",
+    "commit": "1246d6d404c556f03867fc6d447f2867eee8a42b",
+    "path": [
+      "apps/www/registry/magicui/marquee.tsx",
+      "apps/www/styles/globals.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The React component is gone. Its Tailwind utility classes are written out as CSS, and Array(repeat).fill(0).map(...) is four copies of the row in snippet.html.",
+      "why": "paw-fx is vanilla and a generated site has no build step, so there is no React and no Tailwind compiler to produce the classes at runtime.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's var(--gap) and var(--duration) are var(--fx-gap) and var(--fx-duration). The keyframe bodies are otherwise verbatim, including calc(-100% - var(--fx-gap)).",
+      "why": "The effect contract requires custom properties to be prefixed --fx-.",
+      "kind": "seam"
+    },
+    {
+      "what": "The band carries a linear-gradient mask so the rows fade out at both edges, which upstream does not do.",
+      "why": "Upstream demos the component inside a bordered card, where the hard cut reads as the card edge. A full-bleed section has no such edge and the cut reads as clipped content.",
+      "kind": "ours"
+    },
+    {
+      "what": "The reverse switch is a markup class (.fx-marquee__band--reverse) rather than a mount option.",
+      "why": "Upstream's reverse is per-Marquee and the section holds two of them going opposite ways, so it belongs to the row, not to the section mount() is handed.",
+      "kind": "seam"
+    }
+  ]
+}

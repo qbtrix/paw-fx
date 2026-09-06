@@ -1,0 +1,16 @@
+<!-- starfield section. Finished at rest with CSS alone: .fx-stars__rest is a
+     real star field, and index.js only fades it out once a tsParticles
+     container has actually loaded into .fx-stars__canvas. A blocked bundle, a
+     refused canvas or prefers-reduced-motion all leave the CSS sky in place.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/starfield/style.css">
+<section class="fx-stars" data-fx="starfield">
+  <div class="fx-stars__rest" aria-hidden="true"></div>
+  <div class="fx-stars__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-stars__inner">
+    <p class="fx-stars__eyebrow">Launching this quarter</p>
+    <h1 class="fx-stars__title">Built for the hours nobody is watching.</h1>
+    <p class="fx-stars__lede">Replace this copy with your own. The headline slot takes one line or three, and the sky keeps drifting behind it either way.</p>
+  </div>
+</section>

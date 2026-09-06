@@ -1,0 +1,76 @@
+<!-- marquee-css section. Finished at rest with CSS alone: the rows are real
+     markup and the keyframes are Magic UI's, so the band scrolls with no
+     JavaScript at all and holds still under prefers-reduced-motion. mount()
+     only republishes duration, gap and pause-on-hover.
+     Upstream repeats its children four times (repeat = 4); those four copies
+     are what make the translateX(calc(-100% - gap)) loop seamless, so they are
+     in the markup here rather than built at runtime.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/marquee-css/style.css">
+<section class="fx-marquee" data-fx="marquee-css">
+  <div class="fx-marquee__head">
+    <p class="fx-marquee__eyebrow">Trusted by</p>
+    <h2 class="fx-marquee__title">Teams that ship on Friday afternoons.</h2>
+  </div>
+  <div class="fx-marquee__band">
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Northwind</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Acme Cloud</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Vector</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Lumen Labs</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Fieldwork</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Northwind</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Acme Cloud</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Vector</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Lumen Labs</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Fieldwork</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Northwind</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Acme Cloud</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Vector</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Lumen Labs</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Fieldwork</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Northwind</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Acme Cloud</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Vector</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Lumen Labs</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Fieldwork</div>
+    </div>
+  </div>
+  <div class="fx-marquee__band fx-marquee__band--reverse">
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Basecamp 9</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Orbital</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Kestrel</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Tidepool</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Granite</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Basecamp 9</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Orbital</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Kestrel</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Tidepool</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Granite</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Basecamp 9</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Orbital</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Kestrel</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Tidepool</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Granite</div>
+    </div>
+    <div class="fx-marquee__row">
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Basecamp 9</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Orbital</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Kestrel</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Tidepool</div>
+      <div class="fx-marquee__item"><span class="fx-marquee__dot" aria-hidden="true"></span>Granite</div>
+    </div>
+  </div>
+</section>

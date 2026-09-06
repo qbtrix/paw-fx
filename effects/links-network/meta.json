@@ -1,0 +1,48 @@
+{
+  "name": "links-network",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["network", "constellation", "links", "particles", "tsparticles", "dark"],
+  "summary": "Constellation hero running the tsParticles links preset: 100 drifting nodes joined wherever they come within 150px, over an inline SVG graph that stands in whenever the canvas cannot.",
+  "needs": ["tsparticles"],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 100,
+      "description": "Node count. Upstream's particles.number.value."
+    },
+    "color": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Node and link colour. Upstream's particles.paint.fill.color.value. Set --fx-node to match so the SVG resting graph agrees."
+    },
+    "linkDistance": {
+      "type": "number",
+      "default": 150,
+      "description": "Pixels within which two nodes are joined. Upstream's particles.links.distance."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tsparticles/presets",
+    "commit": "ae866a538fa40b4b06f8a2b8d4b168d134bf6ba7",
+    "path": "presets/links/src/options.ts"
+  },
+  "deviations": [
+    {
+      "what": "background: { color: \"#000000\" } is dropped, so the canvas is transparent.",
+      "why": "The section's CSS owns the background and draws the resting SVG graph underneath. Painting #000000 on the canvas would hide the gradient the section is designed around, and the resting state has to show through until the container loads.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream is a preset registered on the engine and applied by name; here the options object is passed straight to engine.load().",
+      "why": "A preset only exists to be looked up by name, which a single-effect module has no use for. The options object it registers is what actually configures the container, and that is what travels.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the container is never created.",
+      "why": "Effect contract: mount() stays at rest. The SVG constellation is the finished section, so not loading is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

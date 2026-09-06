@@ -1,0 +1,61 @@
+{
+  "name": "scramble",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "scramble", "typewriter", "glitch", "codrops", "anime", "monospace"],
+  "summary": "A monospace headline that resolves out of noise: every character is blanked, then rolls 45 times at 15ms while each line starts 200ms behind the one above it.",
+  "needs": ["anime"],
+  "options": {
+    "iterations": {
+      "type": "number",
+      "default": 45,
+      "description": "How many times each character changes before it settles. Upstream's MAX_CELL_ITERATIONS in fx1."
+    },
+    "tick": {
+      "type": "number",
+      "default": 15,
+      "description": "Milliseconds between a character's changes. Upstream's fx1 setTimeout interval."
+    },
+    "lineDelay": {
+      "type": "number",
+      "default": 200,
+      "description": "Milliseconds each line waits behind the one above it. Upstream's (line.position + 1) * 200."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/TypeShuffleAnimation",
+    "commit": "8f171f1f58d4ac8e1ede46109674f5c71005f166",
+    "path": [
+      "src/js/typeShuffle.js",
+      "src/js/utils.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Only fx1 is ported. fx2 through fx6, the effects map and trigger(effect) are dropped, and with them Cell's color / originalColor fields and the randomNumber helper from utils.js that fx3 and fx6 use.",
+      "why": "fx1 is the effect trigger() runs by default and the only one the demo's first button shows. Shipping six variants behind an option would be five untested code paths in a library where each effect is meant to be one thing; the other five are better ports in their own right if they are ever wanted.",
+      "kind": "ours"
+    },
+    {
+      "what": "Splitting.js is replaced by anime.js' splitText, and the Line/Cell tree is built from split.lines plus each line's [data-char] elements instead of from Splitting's results[0].lines.",
+      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists. The structure the port needs -- characters grouped per line, positions counted from the start of each line -- is the same either way.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The run is triggered by an IntersectionObserver the first time the section is on screen, once per mount, rather than by a button. A resize re-split rebuilds the cells but does not replay.",
+      "why": "Upstream is a demo page with six buttons. A section has no button, and a headline that re-scrambles every time the window is dragged is noise rather than an effect.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every setTimeout id is kept and cleared on destroy, and the split is reverted.",
+      "why": "Upstream keeps none, because its page never tears the effect down. Here a destroy mid-run would otherwise leave the headline as the blanked cells the run starts from, and a page transition would keep firing timers into detached nodes.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the text is not split and the run never starts.",
+      "why": "Effect contract: mount() stays at rest, and the headline is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

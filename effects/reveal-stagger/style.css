@@ -1,0 +1,132 @@
+/* reveal-stagger: a deck of cards that flies in as the section scrolls past.
+
+   The resting state here is the animation's END state, not its start. The
+   per-card transforms below are exactly what upstream's animation resolves to
+   -- landscape x: stagger(['-20%','20%']) and rotate: stagger([-30,30]) about
+   50% 150%, portrait y: stagger(['20%','-20%']) with rotate back to 0 -- so
+   the deck is finished with the stylesheet alone and index.js is what takes it
+   away and gives it back. They are kept in step by branching on the same
+   media query upstream's scope branches on.
+
+   overflow-x is clip, not hidden: hidden would compute overflow-y to auto,
+   make the section a scroll container, and break the sticky stage. clip
+   contains the x: '-60vw' start position without doing that. */
+.fx-reveal {
+  --fx-bg: #0b0b12;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  --fx-card: #16161f;
+  --fx-edge: #2b2b3d;
+  --fx-accent: #f59e0b;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(60% 45% at 50% 0%, color-mix(in oklab, var(--fx-accent) 18%, transparent), transparent 68%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-reveal *,
+.fx-reveal *::before,
+.fx-reveal *::after { box-sizing: border-box; }
+
+/* The scroll range: onScroll's target. Its height is how much scrolling the
+   reveal is spread over. */
+.fx-reveal__track { position: relative; height: 220vh; }
+.fx-reveal__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  /* The cards start at x: -60vw and y: +-40vh, so the stage clips its own
+     overflow rather than letting them fly over the sections either side. */
+  overflow: clip;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 4rem);
+}
+.fx-reveal__head { max-width: 46rem; margin: 0 auto; text-align: center; }
+.fx-reveal__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-reveal__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.6vw, 3.4rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-reveal__deck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 1.1vw, 0.9rem);
+}
+.fx-reveal__card {
+  flex: 0 0 auto;
+  /* Deliberately narrow and short. The fan pivots about 50% 150%, a point half
+     a card-height BELOW the card, so a 30deg tilt swings the outer cards
+     sideways by more than the card is wide -- and the swing grows with card
+     height, not width. These proportions are what keep the end state inside a
+     1280 viewport instead of cutting the first and last card in half. */
+  width: min(10.5rem, 15vw);
+  padding: clamp(0.85rem, 1.6vw, 1.15rem);
+  border: 1px solid var(--fx-edge);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--fx-card) 96%, white 4%), var(--fx-card));
+  box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.9);
+  /* upstream animates transformOrigin to this in the landscape branch; the
+     resting fan has to pivot the same way or the two states disagree. */
+  transform-origin: 50% 150%;
+  will-change: transform;
+}
+.fx-reveal__k {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-reveal__h {
+  margin: 0 0 0.4rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.fx-reveal__p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* Landscape resting state = upstream's landscape end state. */
+@media (orientation: landscape) {
+  .fx-reveal__card:nth-child(1) { transform: translateX(-20%) rotate(-30deg); }
+  .fx-reveal__card:nth-child(2) { transform: translateX(-10%) rotate(-15deg); }
+  .fx-reveal__card:nth-child(3) { transform: translateX(0%) rotate(0deg); }
+  .fx-reveal__card:nth-child(4) { transform: translateX(10%) rotate(15deg); }
+  .fx-reveal__card:nth-child(5) { transform: translateX(20%) rotate(30deg); }
+}
+
+/* Portrait resting state = upstream's portrait end state: the rotation lands
+   back at 0 and only the y stagger survives. The deck is a column here so
+   five cards fit a phone. */
+@media (orientation: portrait) {
+  .fx-reveal__deck { flex-direction: column; gap: clamp(0.4rem, 1.5vw, 0.9rem); }
+  .fx-reveal__card { width: min(22rem, 86vw); }
+  .fx-reveal__card:nth-child(1) { transform: translateY(20%); }
+  .fx-reveal__card:nth-child(2) { transform: translateY(10%); }
+  .fx-reveal__card:nth-child(3) { transform: translateY(0%); }
+  .fx-reveal__card:nth-child(4) { transform: translateY(-10%); }
+  .fx-reveal__card:nth-child(5) { transform: translateY(-20%); }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "reveal-stagger",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["scroll", "stagger", "reveal", "cards", "anime", "responsive"],
+  "summary": "A deck of cards that flies in on scroll, staggered from the last card back, with anime.js' responsive scope switching between a landscape fan and a portrait column.",
+  "needs": ["anime"],
+  "options": {
+    "sync": {
+      "type": "number",
+      "default": 0.1,
+      "description": "How closely the animation tracks the scrollbar. Upstream's onScroll sync; lower lags further behind the scroll."
+    },
+    "enter": {
+      "type": "string",
+      "default": "top",
+      "description": "Where the scroll range starts, relative to the track. Upstream's onScroll enter."
+    },
+    "leave": {
+      "type": "string",
+      "default": "bottom",
+      "description": "Where the scroll range ends, relative to the track. Upstream's onScroll leave."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": "examples/onscroll-responsive-scope/index.js"
+  },
+  "deviations": [
+    {
+      "what": "Selectors are ours (.fx-reveal__card, .fx-reveal__track for upstream's .card and .sticky-container) and the targets are passed as elements rather than as strings.",
+      "why": "The example owns its whole page; an effect is one section among several, and a page may carry this one twice. Passing the elements the section actually holds is what keeps two mounts from animating each other's cards.",
+      "kind": "seam"
+    },
+    {
+      "what": "createScope is given root: el.",
+      "why": "Same reason. anime resolves a selector string against scope.root, so scoping the root to the section is what makes a second instance on the page independent.",
+      "kind": "seam"
+    },
+    {
+      "what": "The CSS resting state is the animation's end state, per orientation, rather than the section being blank until the observer fires.",
+      "why": "Effect contract: the section has to look finished on CSS alone. A scroll reveal whose observer never runs -- script blocked, bundle pruned -- must not leave the content invisible, so the stylesheet draws the finished deck and the animation is what plays on top.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion nothing is animated and no scroll observer is created.",
+      "why": "Effect contract: mount() stays at rest, and the resting deck is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

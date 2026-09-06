@@ -1,0 +1,168 @@
+/* pin-progress: a card stack that flips and lands while the section is pinned.
+
+   The resting state is the timeline's END state: fronts facing the reader
+   (stack rotateY 0), spinners unwound (rotate 0, rotateZ a multiple of -360,
+   which is the identity), cards raised to translateY(-60%), and the front
+   faces carrying upstream's staggered brightness. So the deck is finished with
+   the stylesheet alone and index.js is what scatters it and lets the scrollbar
+   put it back.
+
+   The one thing the stylesheet adds that upstream's runtime does not is the
+   per-spinner `top` offset. It is a layout offset, not a transform, so anime's
+   inline transforms compose with it instead of overwriting it, and it is what
+   makes a stack whose end state is a perfect overlap still read as a deck.
+
+   overflow-x is clip, not hidden: hidden would compute overflow-y to auto,
+   make the section a scroll container and break the sticky stage. */
+.fx-pin {
+  --fx-bg: #090910;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  --fx-card: #171724;
+  --fx-edge: #30304a;
+  --fx-accent: #22d3ee;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(65% 45% at 50% 8%, color-mix(in oklab, var(--fx-accent) 16%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-pin *,
+.fx-pin *::before,
+.fx-pin *::after { box-sizing: border-box; }
+
+/* The pinned range: onScroll's target. */
+.fx-pin__track { position: relative; height: 260vh; }
+.fx-pin__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(2rem, 4.5vw, 3.5rem) clamp(1.25rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
+  perspective: 1400px;
+  /* The spinners sweep a full turn about a pivot at their own bottom edge, so
+     the pinned viewport clips its own overflow rather than letting a card
+     cross into the sections either side. */
+  overflow: clip;
+}
+.fx-pin__head { max-width: 46rem; margin: 0 auto; text-align: center; }
+.fx-pin__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-pin__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 4.2vw, 3.1rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* .stack: the element the rotateY flip is applied to. */
+.fx-pin__stack {
+  position: relative;
+  justify-self: center;
+  align-self: end;
+  width: min(20rem, 78vw);
+  /* The cards land at y: -60%, i.e. 60% of this height above the stack, so the
+     stack sits low enough that the landed card clears the headline and short
+     enough that it does not run off the top. */
+  height: min(17rem, 34svh);
+  margin-bottom: clamp(2rem, 8svh, 5rem);
+  transform-style: preserve-3d;
+}
+/* .spinner: upstream builds these at runtime; here they are in the markup so
+   the resting state can be styled and destroy() does not have to unwrap DOM. */
+.fx-pin__spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.fx-pin__spinner:nth-child(2) { top: 10px; }
+.fx-pin__spinner:nth-child(3) { top: 20px; }
+.fx-pin__spinner:nth-child(4) { top: 30px; }
+.fx-pin__spinner:nth-child(5) { top: 40px; }
+
+/* .card: absolutely placed at the bottom of its spinner, because the timeline
+   raises it to y -60% and that has to land inside the stage. Centring uses the
+   standalone `translate` property so anime's `transform` composes with it
+   rather than fighting it. */
+.fx-pin__card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  width: 100%;
+  height: 100%;
+  transform: translateY(-60%);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.fx-pin__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.1rem, 2.4vw, 1.75rem);
+  border: 1px solid var(--fx-edge);
+  border-radius: 1.1rem;
+  background: linear-gradient(160deg, color-mix(in oklab, var(--fx-card) 92%, white 8%), var(--fx-card));
+  box-shadow: 0 30px 70px -35px rgb(0 0 0 / 0.95);
+  backface-visibility: hidden;
+}
+.fx-pin__face--back { transform: rotateY(180deg); }
+
+/* upstream's utils.set on the faces: brightness staggered .75 -> 1 across the
+   fronts and 1 -> .75 across the backs. A set, not an animation, so the
+   resting state carries it too. */
+.fx-pin__spinner:nth-child(1) .fx-pin__face--front { filter: brightness(0.75); }
+.fx-pin__spinner:nth-child(2) .fx-pin__face--front { filter: brightness(0.8125); }
+.fx-pin__spinner:nth-child(3) .fx-pin__face--front { filter: brightness(0.875); }
+.fx-pin__spinner:nth-child(4) .fx-pin__face--front { filter: brightness(0.9375); }
+.fx-pin__spinner:nth-child(5) .fx-pin__face--front { filter: brightness(1); }
+.fx-pin__spinner:nth-child(1) .fx-pin__face--back { filter: brightness(1); }
+.fx-pin__spinner:nth-child(2) .fx-pin__face--back { filter: brightness(0.9375); }
+.fx-pin__spinner:nth-child(3) .fx-pin__face--back { filter: brightness(0.875); }
+.fx-pin__spinner:nth-child(4) .fx-pin__face--back { filter: brightness(0.8125); }
+.fx-pin__spinner:nth-child(5) .fx-pin__face--back { filter: brightness(0.75); }
+
+.fx-pin__k {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-pin__h {
+  margin: 0.75rem 0 0.5rem;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.fx-pin__p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+.fx-pin__foot {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--fx-muted);
+}

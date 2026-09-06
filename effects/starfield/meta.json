@@ -1,0 +1,53 @@
+{
+  "name": "starfield",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["stars", "night", "particles", "hero", "tsparticles", "dark"],
+  "summary": "Night-sky hero running the tsParticles stars preset: 100 white points drifting at speed 0.1 with unsynced opacity animation, over a CSS star field that stands in whenever the canvas cannot.",
+  "needs": ["tsparticles"],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 100,
+      "description": "Particle count. Upstream's particles.number.value."
+    },
+    "color": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Star fill colour. Upstream's particles.paint.fill.color.value. Set --fx-star to match so the CSS resting sky agrees."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Drift speed. Upstream's particles.move.speed."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tsparticles/presets",
+    "commit": "ae866a538fa40b4b06f8a2b8d4b168d134bf6ba7",
+    "path": "presets/stars/src/options.ts"
+  },
+  "deviations": [
+    {
+      "what": "MoveDirection.none and OutMode.out are written as the strings \"none\" and \"out\".",
+      "why": "The preset imports both enums from @tsparticles/engine. The vendored slim bundle publishes its engine on globalThis and exports nothing, so there is no enum to import; the members are these strings and the loaded options are identical.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "background: { color: \"#000\" } is dropped, so the canvas is transparent.",
+      "why": "The section's CSS owns the background and draws the resting star field underneath. Painting #000 on the canvas would hide the gradient the section is designed around, and the resting state has to show through until the container loads.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream is a preset registered on the engine and applied by name; here the options object is passed straight to engine.load().",
+      "why": "A preset only exists to be looked up by name, which a single-effect module has no use for. The options object it registers is what actually configures the container, and that is what travels.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the container is never created.",
+      "why": "Effect contract: mount() stays at rest. The CSS star field is the finished section, so not loading is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}
