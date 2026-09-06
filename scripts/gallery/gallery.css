@@ -3,6 +3,12 @@
    data -- every name, summary, tag and licence on the page is generated from
    dist/registry/ into index.html.
 
+   The one loud element is .fxg-live, the link to an effect's full-page live
+   demo. That is deliberate: a still preview answers "what colour is it" and
+   nothing else, so the demo is what a visitor is actually here for and the
+   card gives it the only filled button on the tile. The demo pages themselves
+   are styled by demo.css, not this file.
+
    Two rules keep it out of the effects' way:
      - custom properties here are --g-, because effects read --fx-* off their
        own section and a name collision would restyle the effect;
@@ -225,6 +231,46 @@ body.fxg {
 .fxg-free { color: #86efac; border-color: color-mix(in oklab, #86efac 35%, var(--g-line)); }
 .fxg-needs { color: var(--g-accent-2); border-color: color-mix(in oklab, var(--g-accent-2) 35%, var(--g-line)); }
 .fxg-kind { margin-left: 0.4rem; color: var(--g-muted); font-size: 0.65rem; text-transform: uppercase; }
+
+/* The live demo is the main thing a visitor wants now, so it is a filled
+   button on every card and a wide one in every panel, not a text link buried
+   under the metadata. Everything else on a card is a chip or muted grey, which
+   is what leaves this the one loud element in the tile. */
+.fxg-live {
+  display: block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--g-accent) 55%, var(--g-line));
+  background: color-mix(in oklab, var(--g-accent) 22%, transparent);
+  color: var(--g-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.fxg-live:hover {
+  background: color-mix(in oklab, var(--g-accent) 40%, transparent);
+  border-color: var(--g-accent);
+}
+
+.fxg-live--wide {
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+}
+
+.fxg-dlive {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0 0 1.2rem;
+}
+
+.fxg-dlive-note {
+  color: var(--g-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
 
 .fxg-empty {
   max-width: 82rem;

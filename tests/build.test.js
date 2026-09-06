@@ -9,6 +9,13 @@
 // read it and never the effects/ tree, so anything missing from an item is
 // missing from the product.
 //
+// `demo` is asserted for the same reason and kept OUT of `files` on purpose:
+// files[] is what a site-building agent writes into a client site, and a sample
+// page about a fictional company does not belong there. The gallery's demo
+// builder is the one consumer that wants it. tests/gallery.test.js covers the
+// populated case (page-fade); the empty-list case is here, because every other
+// effect has to carry the key rather than omit it.
+//
 // The vendor cases build against tests/fixtures/vendor/ rather than the real
 // vendor/, which is now populated: the stub dir is missing the tsparticles
 // bundle on purpose, so the missing-file case below stays a real assertion
@@ -40,12 +47,15 @@ test("build emits registry and aurora-css item", () => {
   const p = `${out}/items/aurora-css.json`;
   expect(existsSync(p)).toBe(true);
   const item = JSON.parse(readFileSync(p, "utf8"));
-  for (const k of ["name", "version", "category", "summary", "needs", "license", "origin", "options", "deviations", "files", "snippet", "usage"]) {
+  for (const k of ["name", "version", "category", "summary", "needs", "license", "origin", "options", "deviations", "files", "demo", "snippet", "usage"]) {
     expect(item).toHaveProperty(k);
   }
   // An effect with no deviations still carries the key, so a consumer (the
   // gallery, the MCP server) reads a list either way rather than branching.
   expect(Array.isArray(item.deviations)).toBe(true);
+  // Same for `demo`: aurora-css has no hand-written demo pages, so the key is
+  // an empty list, never absent.
+  expect(item.demo).toEqual([]);
   expect(existsSync(`${out}/previews/aurora-css.png`)).toBe(true);
   expect(item.files.map((f) => f.path)).toEqual([
     "_fx/effects/aurora-css/index.js",

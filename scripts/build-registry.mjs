@@ -43,8 +43,16 @@
 // exercise the shipped one rather than a copy that can drift. Because it is an
 // optional second parameter, build() must call buildItem through an arrow and
 // never pass it straight to .map(), which supplies the index as arg two.
+//
+// An item also carries `demo`: the hand-written pages under effects/<name>/demo/,
+// for an effect that one page cannot show. It is a SEPARATE key from `files`,
+// not another entry in it, and the split is the whole point -- `files` is what a
+// site-building agent writes into a client site, and a sample page about a
+// fictional company does not belong there, while the gallery's demo builder does
+// want it. The emitted path mirrors the repo (_fx/effects/<name>/demo/<file>),
+// so the "../style.css" those pages already use resolves with no rewriting.
 
-import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync, copyFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync, rmSync, copyFileSync } from "node:fs";
 import { join, basename } from "node:path";
 import { execSync } from "node:child_process";
 import { effectDirs, jsSpecifiers } from "./lint.mjs";
@@ -116,11 +124,21 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
     `<!-- place snippet.html markup where the section goes -->`,
     `<script type="module">import {mount} from '/_fx/effects/${name}/index.js'; document.querySelectorAll('[data-fx="${name}"]').forEach((el) => mount(el))</script>`,
   ].join("\n");
+  // page-fade's fade is a NAVIGATION between two documents, so no single page
+  // can show it and the effect ships the pair by hand. Any effect may.
+  const demoDir = join(dir, "demo");
+  const demo = existsSync(demoDir)
+    ? readdirSync(demoDir)
+        .filter((f) => f.endsWith(".html"))
+        .sort()
+        .map((f) => ({ path: `_fx/effects/${name}/demo/${f}`, content: readFileSync(join(demoDir, f), "utf8") }))
+    : [];
   const { version, category, summary, license, origin, options, tags, deviations } = meta;
   return {
     name, version, category, tags, summary, needs, license, origin, options,
     deviations: deviations ?? [],
     files: [...files].map(([path, content]) => ({ path, content })),
+    demo,
     snippet: read("snippet.html"),
     usage,
   };

@@ -7,13 +7,16 @@ Vanilla animated-section library for Paw Sites. Every effect is a port of a name
 ```
 effects/<name>/   index.js  style.css  snippet.html  meta.json  preview.png
                   shader.frag, when the port's GLSL is a standalone upstream file
+                  demo/*.html, when one page cannot show the effect (page-fade)
 effects/_shared/  paw-fx code shared between effects (glsl-mount.js)
 vendor/           manifest.json plus the files it lists (anime, three, paper, tsparticles, lenis)
 schema/           meta.schema.json
 scripts/          lint.mjs  build-registry.mjs  validate.mjs  smoke.mjs
-                  build-gallery.mjs plus gallery/ (its css and js, copied verbatim)
+                  build-gallery.mjs  build-demos.mjs  plus gallery/
+                  (gallery.css, gallery.js, demo.css, all copied verbatim)
 tests/            bun test (fixtures under tests/fixtures/)
 dist/registry/    build output (gitignored), including previews/ and gallery/
+                  (gallery/demo/<name>.html is the live demo per effect)
 ```
 
 A directory under `effects/` whose name starts with `_` is shared code, not an
@@ -48,7 +51,7 @@ Lint enforces: schema, licence allow-list and origin, every `needs` key present 
 
 ## Registry
 
-`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license), `dist/registry/items/<name>.json` (meta plus `deviations`, `files[{path, content}]`, `snippet`, `usage`) and `dist/registry/previews/<name>.png`, copied from the effect. Those last two exist because `dist/registry/` is the whole of what a consumer sees -- the MCP server serves it and the gallery reads it and nothing else -- so the two questions a human asks before trusting an effect, what does it look like and where does it depart from upstream, have to be answerable from the registry. An effect with no `preview.png` is skipped rather than failing the build; a preview is a presentation asset, not part of the contract lint gates. Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it.
+`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license), `dist/registry/items/<name>.json` (meta plus `deviations`, `files[{path, content}]`, `snippet`, `usage`) and `dist/registry/previews/<name>.png`, copied from the effect. Those last two exist because `dist/registry/` is the whole of what a consumer sees -- the MCP server serves it and the gallery reads it and nothing else -- so the two questions a human asks before trusting an effect, what does it look like and where does it depart from upstream, have to be answerable from the registry. An effect with no `preview.png` is skipped rather than failing the build; a preview is a presentation asset, not part of the contract lint gates. Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it. An item also carries `demo`: the hand-written pages under `effects/<name>/demo/`, emitted at `_fx/effects/<name>/demo/<file>` and kept out of `files[]` on purpose (see Live demos). It is an empty list on an effect that ships none, never absent.
 
 Paths in `usage` and in `snippet.html` are root-absolute (`/_fx/...`), not page-relative. An html Paw Site is served by an assets-only Worker with `assets.directory: "."` and the sites code has no base-path concept, so a site always sits at the origin root: `./_fx/...` would resolve wrong on any nested page such as `/blog/post.html`. `usage` mounts with `querySelectorAll` and a loop, because the scroll, text and cursor categories routinely appear several times on one page.
 
@@ -64,7 +67,23 @@ Previews ride inside `index.html` as `data:` URIs. An html Paw Site is created f
 
 Cards and panels are rendered into the HTML rather than by the browser, so the page reads with scripting off and every effect is there for a test to count. `gallery.js` only filters, ranks (the same order `search_effects` returns), opens and copies. A `#<name>` hash opens that effect's panel, which is the `preview_url` contract the MCP server hands agents.
 
-No live previews. A document holds roughly 8 to 16 WebGL contexts before it starts evicting the oldest, and 29 of them would leave a grid of dead canvases, which is worse than a grid of images. The hero is the one live shader on the page.
+No live previews **on the grid page**. A document holds roughly 8 to 16 WebGL contexts before it starts evicting the oldest, and 29 of them would leave a grid of dead canvases, which is worse than a grid of images. The hero is the one live shader there. Every card and every panel instead links to that effect's own demo page, which is where the live version lives.
+
+## Live demos
+
+`scripts/build-demos.mjs`, called by `build-gallery.mjs`, writes `dist/registry/gallery/demo/<name>.html`: one full page per effect, showing the effect and nothing else. A still `preview.png` answers what colour an effect is and stops there; someone picking one for a client site needs to watch it move, scroll it and put a cursor on it. One demo is one page is one WebGL context, which is the only arrangement that scales to 29.
+
+Each page is the item's own `snippet` markup, its `usage` stylesheet link and mount script verbatim, and a bar. Input is the built items and nothing else, so a new effect gets a demo through `bun run gallery` with no edit to the generator.
+
+Every item's `files[]` are written once at the gallery root, so the 29 standalone items collapse to one shared `_fx/` tree and `three.module.js` ships once rather than three times. Two items disagreeing about a shared path throws rather than letting the last write win. Because `usage` is root-absolute, serve the gallery directory at a root; a demo at any depth under it resolves.
+
+The bar is fixed to the bottom edge, carries the effect name, a link back to the grid and a reduced-motion toggle, and takes no space in the flow: 21 of the 29 sections fill the viewport, so a bar in flow would add its own height of scroll to a page that should have none.
+
+`?reduced=1` is a real toggle, not a claim. A page cannot change the browser's `prefers-reduced-motion`, so the demo reproduces it on both paths the effects use. A head script redefines `matches` on the `MediaQueryList` that `matchMedia` returns, which is what every effect gates its motion on (the eight shader.gallery ports through `_shared/glsl-mount.js`, the other 21 in their own `index.js`); and `animation: none` under `html[data-fx-reduced]` covers the CSS side, where motion is declared inside `@media (prefers-reduced-motion: no-preference)` blocks and not applying them is the resting state.
+
+An effect in the `scroll` category also gets generated filler above and below, because `scroll-parallax` drives a view-timeline that only advances as the section crosses the viewport and `smooth-scroll` smooths the whole document, so a one-screen page shows neither. Keyed on the category, not on a list of names. The leading block is half a screen rather than a full one, so the effect is on screen at load instead of below a page of filler.
+
+An effect may ship hand-written demo pages under `effects/<name>/demo/`, for a case one page cannot show. `page-fade` does: its fade is a navigation between two documents. Those pages ride on the item under a `demo` key, separate from `files[]` because `files[]` is what a site-building agent writes into a client site and a sample page about a fictional company does not belong there. They are emitted at `_fx/effects/<name>/demo/<file>`, which is the path their own `../style.css` already resolves against, so nothing is rewritten. The demo page links to them.
 
 ## Resting-state smoke
 

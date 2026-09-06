@@ -35,14 +35,24 @@
 // gallery.js are copied verbatim from scripts/gallery/ because neither carries
 // effect data.
 //
-// No live previews. 29 WebGL contexts on one page is past what a browser keeps
-// (roughly 8 to 16 before it evicts the oldest), and a grid of dead canvases is
-// worse than a grid of images. The hero is the one live shader.
+// No live previews ON THIS PAGE. 29 WebGL contexts at once is past what a
+// browser keeps (roughly 8 to 16 before it evicts the oldest), and a grid of
+// dead canvases is worse than a grid of images. The hero is the one live
+// shader here. Every card and every panel instead links to demo/<name>.html,
+// one full-page live demo per effect, built by scripts/build-demos.mjs: one
+// page, one effect, one context, which is the only arrangement that scales.
+// Those demos are the point of the page now, so the link is a button and not
+// a footnote.
+//
+// build-demos.mjs also writes the shared _fx/ tree, every item's files at the
+// path the item declares. That covers the three chrome effects this page runs
+// on, so the CHROME loop below only reads their `usage` lines.
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, existsSync, copyFileSync } from "node:fs";
-import { join, dirname, basename } from "node:path";
+import { join, basename } from "node:path";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
+import { buildDemos } from "./build-demos.mjs";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const ASSETS = join(ROOT, "scripts/gallery");
@@ -78,6 +88,13 @@ const isPort = (origin) => Boolean(origin?.repo) && origin.repo !== "paw-fx";
 const blobUrl = (origin, path) => `https://github.com/${origin.repo}/blob/${origin.commit}/${path}`;
 
 const chip = (text, cls = "") => `<span class="fxg-chip ${cls}">${esc(text)}</span>`;
+
+// Relative, not root-absolute: the gallery and its demos ship as one directory,
+// and this is the one link on the page that still resolves if that directory is
+// served from somewhere other than the origin root.
+const demoHref = (item) => `demo/${esc(item.name)}.html`;
+const liveLink = (item, cls) =>
+  `<a class="${cls}" href="${demoHref(item)}">See it live<span aria-hidden="true"> &rarr;</span></a>`;
 
 function engineBadges(needs) {
   // Mirrors fx.py's rule exactly: svelte and react take dependency-free effects
@@ -172,6 +189,7 @@ function dialog(item) {
       </header>
       <div class="fxg-shot fxg-dshot" data-shot="${esc(item.name)}"></div>
       <p class="fxg-lede">${esc(item.summary)}</p>
+      <p class="fxg-dlive">${liveLink(item, "fxg-live fxg-live--wide")}<span class="fxg-dlive-note">Full page, running, with a reduced-motion switch.</span></p>
       <div class="fxg-tags">${(item.tags || []).map((t) => chip(t)).join("")}</div>
       <section class="fxg-block">
         <h3 class="fxg-h">Engines</h3>
@@ -208,6 +226,7 @@ function card(item, uri) {
             ${chip(item.category, "fxg-cat")}
             ${needs.length ? chip(`needs ${needs.join(" + ")}`, "fxg-needs") : chip("no dependencies", "fxg-free")}
           </p>
+          ${liveLink(item, "fxg-live")}
         </div>
       </article>`;
 }
@@ -221,9 +240,9 @@ function heroCopy(reg, free) {
   <div class="fx-nebula__inner">
     <p class="fx-nebula__eyebrow">paw-fx registry ${esc(reg.version)}</p>
     <h1 class="fx-nebula__title">${reg.items.length} sections you can drop on a client site today.</h1>
-    <p class="fx-nebula__lede">Backgrounds, particles, 3D heroes, scroll and text work. Each one is a port of a named upstream, pinned to a commit and checked against it, and each one still looks finished with its script blocked. The background behind this line is one of them.</p>
+    <p class="fx-nebula__lede">Backgrounds, particles, 3D heroes, scroll and text work. Each one is a port of a named upstream, pinned to a commit and checked against it, and each one still looks finished with its script blocked. The background behind this line is one of them, and every card below opens the effect running on a page of its own.</p>
     <div class="fx-nebula__actions">
-      <a class="fx-nebula__cta fx-nebula__cta--primary" href="#grid">See all ${reg.items.length}</a>
+      <a class="fx-nebula__cta fx-nebula__cta--primary" href="#grid">See all ${reg.items.length} live</a>
       <a class="fx-nebula__cta fx-nebula__cta--ghost" href="#grid" data-filter-free>${free} that need nothing</a>
     </div>
   </div>
@@ -288,20 +307,19 @@ export function buildGallery(registryDir, out = join(registryDir, "gallery")) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
 
+  // The demos first: they write the shared _fx/ tree this page also loads from.
+  const demos = buildDemos(items, out);
+
   // Dogfood: take the chrome effects out of the registry exactly as a
-  // site-building agent takes them. Files land at their own `path`; `usage`
-  // line 0 is the stylesheet link and line 2 is the mount script, verbatim.
+  // site-building agent takes them. Their files are already on disk at their
+  // own `path`; `usage` line 0 is the stylesheet link and line 2 is the mount
+  // script, verbatim.
   const links = [];
   const mounts = [];
   for (const name of Object.values(CHROME)) {
     const item = items.find((i) => i.name === name);
     if (!item) throw new Error(`gallery chrome wants "${name}", which the registry does not have`);
     if ((item.needs || []).length) throw new Error(`gallery chrome "${name}" needs ${item.needs.join(", ")}; chrome must be dependency-free`);
-    for (const f of item.files) {
-      const dest = join(out, f.path);
-      mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, f.content);
-    }
     const [link, , mount] = item.usage.split("\n");
     links.push(link);
     mounts.push(mount);
@@ -340,7 +358,7 @@ ${cards}
 ${items.map(dialog).join("\n")}
 <footer class="fxg-foot-bar">
   <p>Registry ${esc(reg.version)}, built ${esc(reg.generatedAt.slice(0, 10))}. ${reg.items.length} effects, ${free} of them dependency-free.</p>
-  <p>This page is generated by <code>bun run gallery</code> from the same registry the MCP server reads, and its own hero, ticker and cards are three effects out of it.</p>
+  <p>This page is generated by <code>bun run gallery</code> from the same registry the MCP server reads, and its own hero, ticker and cards are three effects out of it. Every effect also gets a full-page live demo under <code>demo/</code>, generated the same way.</p>
 </footer>
 ${mounts.join("\n")}
 <script src="gallery.js"></script>
@@ -349,7 +367,7 @@ ${mounts.join("\n")}
 
   writeFileSync(join(out, "index.html"), html);
   for (const f of ["gallery.css", "gallery.js"]) copyFileSync(join(ASSETS, f), join(out, f));
-  return { out, count: items.length, free, encoded, bytes: Buffer.byteLength(html) };
+  return { out, count: items.length, free, encoded, bytes: Buffer.byteLength(html), demos };
 }
 
 if (import.meta.main) {
@@ -358,5 +376,6 @@ if (import.meta.main) {
   const r = buildGallery(registryDir);
   const files = readdirSync(r.out);
   console.log(`gallery: ${r.count} effects (${r.free} dependency-free), ${(r.bytes / 1e6).toFixed(2)} MB index.html, previews ${r.encoded}${r.encoded === "png" ? " (no sips: too big to publish)" : ""}`);
+  console.log(`demos: ${r.demos.count} live pages, ${r.demos.files} files under _fx/ and demo/, ${(r.demos.bytes / 1e6).toFixed(2)} MB`);
   console.log(`-> ${r.out} (${files.join(", ")})`);
 }
