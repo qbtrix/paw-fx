@@ -192,7 +192,11 @@ const normaliseGlsl = (s) =>
   s.replace(/\r\n?/g, "\n").split("\n").map((l) => l.replace(/[ \t]+$/, "")).join("\n").replace(/^\n+|\n+$/g, "");
 
 // A number, guarded on both sides so "1.0.0" and "#241d9a" tokenise to nothing.
-const NUMERIC = /(?<![\w.$])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?(?![\w.])/g;
+// The leading-dot form matters: upstream writes `scale: [.98, 1.04]` where a port
+// writes `0.98`, which is the same value and used to read as an untraced constant
+// because `.98` matched nothing on the upstream side. Both sides run through this
+// same tokeniser, so allowing it here fixes the comparison symmetrically.
+const NUMERIC = /(?<![\w.$])-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?(?![\w.])/g;
 const numbersIn = (s) => (s.match(NUMERIC) ?? []).map(Number).filter(Number.isFinite);
 
 // Noise the brief names explicitly. Array indices are handled positionally.

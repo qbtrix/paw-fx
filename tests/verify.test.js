@@ -193,3 +193,20 @@ test("a traversal in origin.path is refused before anything is fetched", () => {
   expect(safeOrigin({ repo: "../../..", commit: "c", path: "x.ts" })).toBe(false);
   expect(safeOrigin({ repo: "a/b", commit: "c", path: "/etc/passwd" })).toBe(false);
 });
+
+// Upstream writes `scale: [.98, 1.04]`; a port writes `0.98`. Same value, and the
+// leading-dot form used to tokenise to nothing on the upstream side, so a
+// faithful line was reported as an untraced constant. A gate that cries wolf on
+// good code gets switched off, which is why this is worth a test of its own.
+test("a leading-dot upstream literal traces to its zero-prefixed port", () => {
+  expect(untracedNumbers("  scale: [0.98, 1.04],", ["      scale: [.98, 1.04],"])).toEqual([]);
+});
+
+test("the leading-dot allowance does not swallow real invention", () => {
+  const found = untracedNumbers("  scale: [0.77, 1.04],", ["      scale: [.98, 1.04],"]);
+  expect(found.map((u) => u.value)).toEqual([0.77]);
+});
+
+test("a dotted version string still tokenises to nothing", () => {
+  expect(untracedNumbers('const v = "1.0.0";', [""])).toEqual([]);
+});
