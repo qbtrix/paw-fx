@@ -3,6 +3,14 @@
 // Layout inside a site mirrors the repo (_fx/effects/<name>/, _fx/vendor/), so
 // the "../../vendor/<file>" imports in index.js resolve unchanged.
 //
+// Two things travel beside index.js and style.css when they exist:
+//   - effects/<name>/shader.frag, the upstream GLSL kept as its own file so a
+//     port-fidelity gate can diff it against upstream byte for byte.
+//   - effects/_shared/<file>, paw-fx's own code shared between effects
+//     (the WebGL runtime the shader.gallery ports share). It has no manifest
+//     key, must be self-contained, and is copied into every item that imports
+//     it, because items are standalone.
+//
 // A `needs` key maps to a LIST of files, not one file, via vendor/manifest.json.
 // three ships two files and hard-codes the sibling path "./three.core.js", so
 // neither may be renamed; paper is Apache-2.0 and its NOTICE has to travel with
@@ -49,6 +57,14 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
     [`_fx/effects/${name}/index.js`, js],
     [`_fx/effects/${name}/style.css`, read("style.css")],
   ]);
+  // The eight shader.gallery ports keep their GLSL as the upstream file itself,
+  // byte for byte, and fetch it beside index.js rather than pasting it into a
+  // template literal. One of them (lull) has a backtick in a comment, and more
+  // to the point a standalone .frag is what a port-fidelity gate can diff
+  // against upstream directly instead of extracting a literal out of JS.
+  if (existsSync(join(dir, "shader.frag"))) {
+    files.set(`_fx/effects/${name}/shader.frag`, read("shader.frag"));
+  }
   const needs = meta.needs ?? [];
   for (const key of needs) {
     const entry = manifest[key];
@@ -60,6 +76,22 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
     }
   }
   for (const spec of jsSpecifiers(js)) {
+    // effects/_shared/<file> is paw-fx's own code shared between effects, not a
+    // vendored library, so it has no manifest key. Items stay standalone: each
+    // one carries its own copy of the shared file.
+    const shared = spec.match(/^\.\.\/_shared\/([\w.-]+)$/);
+    if (shared) {
+      const src = join(dir, "..", "_shared", shared[1]);
+      if (!existsSync(src)) throw new Error(`${name}: imports "${spec}", which does not exist`);
+      const sharedJs = readFileSync(src, "utf8");
+      // One level deep only. A shared file that imports something else would
+      // need a graph walk here, and nothing needs that yet.
+      for (const s of jsSpecifiers(sharedJs)) {
+        throw new Error(`${name}: _shared/${shared[1]} imports "${s}"; shared files must be self-contained`);
+      }
+      files.set(`_fx/effects/_shared/${shared[1]}`, sharedJs);
+      continue;
+    }
     const m = spec.match(/^\.\.\/\.\.\/vendor\/(.+)$/);
     if (!m) throw new Error(`${name}: import "${spec}" must be ../../vendor/<file> from vendor/manifest.json`);
     const key = OWNER.get(m[1]);

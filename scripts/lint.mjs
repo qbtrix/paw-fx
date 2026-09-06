@@ -185,10 +185,10 @@ export function lintEffect(dir) {
   return errs;
 }
 
-// An underscore-prefixed directory is shared machinery, not an effect:
-// effects/_shared/ holds the WebGL runtime the shader-gallery ports have in
-// common. It has no meta.json, so anything walking effects/ as if every child
-// were an effect crashes on it.
+// An underscore-prefixed directory is shared code, not an effect: effects/_shared/
+// holds the one WebGL runtime the eight shader.gallery ports share, and it has no
+// meta.json, snippet or preview to lint. Skipping it here also keeps it out of
+// build() and smoke(), which both walk this list.
 export function effectDirs(root = join(ROOT, "effects")) {
   return readdirSync(root)
     .filter((d) => !d.startsWith("_"))

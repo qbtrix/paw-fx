@@ -1,0 +1,66 @@
+{
+  "name": "sg-bough",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "shadow",
+    "leaves",
+    "lamp",
+    "calm",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's bough: the shadow of a potted branch thrown on a wall by an unseen lamp, every leaf nodding on its own phase with its own edge softness, over a matched CSS lamp wash.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#f6dcae",
+        "#d59a58",
+        "#4a3a2c",
+        "#8a6a4a"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "swaySpeed": {
+      "type": "number",
+      "default": 0.25,
+      "description": "Rate the cluster pivots in the draft; every leaf nods on its own phase. Upstream default, range 0.05 to 0.8."
+    },
+    "leafSize": {
+      "type": "number",
+      "default": 80,
+      "description": "Leaf size in CSS pixels. Upstream default, range 40 to 140."
+    },
+    "penumbra": {
+      "type": "number",
+      "default": 1,
+      "description": "Edge softness; near leaves bite crisp, far ones swell into grey breaths. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "bough/shader.frag",
+      "bough/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `midnight` preset.",
+      "why": "bough/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a lamplight set rather than the upstream midnight one: the shader draws pure occlusion of a warm wall glow, and a cold palette reads as a mistake rather than a choice, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

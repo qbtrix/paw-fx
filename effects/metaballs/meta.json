@@ -1,0 +1,71 @@
+{
+  "name": "metaballs",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "metaballs",
+    "blobs",
+    "organic",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "paper-shaders"
+  ],
+  "summary": "Full-bleed hero running Paper Shaders' metaballs on WebGL2: ten coloured blobs travelling and merging into one organic mass on black, off-centre so the copy sits beside it, over a matched CSS blob field.",
+  "needs": [
+    "paper"
+  ],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#6e33cc",
+        "#ff5500",
+        "#ffc105",
+        "#ffc800",
+        "#f585ff"
+      ],
+      "description": "Up to seven blob colours. Omit to read --fx-c1 through --fx-c5 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the blobs travel. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "count": {
+      "type": "number",
+      "default": 10,
+      "description": "How many blobs are in the field."
+    },
+    "size": {
+      "type": "number",
+      "default": 0.83,
+      "description": "Blob radius; high enough and neighbours merge into one another rather than passing."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/metaballs.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/metaballs.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "u_offsetX is 0.34; every upstream metaballs preset uses 0 or -0.3.",
+      "why": "The merged mass sits dead centre at offset 0, right under the headline. 0.34 moves it right (measured: negative moves left) so the copy column has the left half of the section to itself. Upstream's own backgroundPreset offsets for the same reason, in the other direction.",
+      "kind": "ours"
+    },
+    {
+      "what": "The noise texture is decoded before ShaderMount is constructed, so the shader starts one microtask later than a React mount would.",
+      "why": "Seam. Upstream's React component hands getShaderNoiseTexture() straight to ShaderMount and re-renders when it loads; a vanilla mount has no re-render, and ShaderMount throws on an image that is not complete. The image is a data: URI, so nothing is fetched.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -7,6 +7,11 @@
 // error mentions X". A fixture that fails for a second, accidental reason
 // proves nothing about the rule it is named for, which is how the header rule
 // stayed a no-op: bad-no-origin happens to carry a real header comment.
+//
+// good-shared-frag is the positive control for the shader.gallery port shape:
+// GLSL as its own file plus a "../_shared/<file>" import. Neither rule changed
+// to admit it -- the import is relative, and SPDX lines are a licence header --
+// so the test is here to pin that it stays true.
 import { test, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { lintEffect } from "../scripts/lint.mjs";
@@ -184,4 +189,11 @@ test("deviations must carry what, why and a known kind", () => {
   const noWhy = ported();
   noWhy.deviations = [{ what: "x", kind: "ours" }];
   expect(validate(schema, noWhy).length).toBeGreaterThan(0);
+});
+
+// The shader.gallery port shape has to pass every rule as written: a shared
+// import is relative so the self-contained check accepts it, and the SPDX
+// header counts as an upstream licence header.
+test("an effect with shader.frag and a shared import passes lint", () => {
+  expect(lintEffect(fx("tests/fixtures/good-shared-frag"))).toEqual([]);
 });

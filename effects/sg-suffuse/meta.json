@@ -1,0 +1,71 @@
+{
+  "name": "sg-suffuse",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "gradient",
+    "pastel",
+    "opal",
+    "light",
+    "soft",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed light hero running shader.gallery's suffuse: wide opal, lilac, rose and mint poles bleeding into one suffused pastel field with a soap-bubble shimmer sweeping through, over a matched CSS wash.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#a8c8ff",
+        "#d3b9ff",
+        "#ffc3d8",
+        "#b5f0dc"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "driftSpeed": {
+      "type": "number",
+      "default": 0.12,
+      "description": "Drift rate of the poles; the field is slow enough to read as still. Upstream default, range 0 to 0.6."
+    },
+    "shimmer": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Soap-bubble iridescence sweeping through the wash. Upstream default, range 0 to 1.5."
+    },
+    "softness": {
+      "type": "number",
+      "default": 1.35,
+      "description": "Bleed radius of the poles; high is one suffused field, low separates them into pools. Upstream default, range 0.6 to 2.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "suffuse/shader.frag",
+      "suffuse/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `opal` preset.",
+      "why": "suffuse/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is an opal set: the shader is high-key by construction (it lifts its output to a 0.07 floor), so these stay pale and the section carries dark ink instead of light, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs riso, grain 0.05, vignette 0.16, exposure 1.05 and saturation 1.04 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+<!-- sg-brume section. Finished at rest with CSS alone: .fx-brume__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-brume/style.css">
+<section class="fx-brume" data-fx="sg-brume">
+  <div class="fx-brume__rest" aria-hidden="true"></div>
+  <div class="fx-brume__scrim" aria-hidden="true"></div>
+  <div class="fx-brume__grain" aria-hidden="true"></div>
+  <div class="fx-brume__inner">
+    <p class="fx-brume__eyebrow">Between the columns</p>
+    <h1 class="fx-brume__title">Structure you only notice when it is missing.</h1>
+    <p class="fx-brume__lede">Replace this copy with your own. The headline holds one line or three, and the mist keeps streaming behind it either way.</p>
+    <div class="fx-brume__actions">
+      <a class="fx-brume__cta fx-brume__cta--primary" href="#">Read the docs</a>
+      <a class="fx-brume__cta fx-brume__cta--ghost" href="#">See an example</a>
+    </div>
+  </div>
+</section>

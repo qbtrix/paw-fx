@@ -1,0 +1,22 @@
+<!-- sg-gloam section. Finished at rest with CSS alone: the four poles in
+     .fx-gloam__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The three decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-gloam/style.css">
+<section class="fx-gloam" data-fx="sg-gloam">
+  <div class="fx-gloam__rest" aria-hidden="true"></div>
+  <div class="fx-gloam__scrim" aria-hidden="true"></div>
+  <div class="fx-gloam__grain" aria-hidden="true"></div>
+  <div class="fx-gloam__inner">
+    <p class="fx-gloam__eyebrow"><span class="fx-gloam__dot" aria-hidden="true"></span>Late light</p>
+    <h1 class="fx-gloam__title">Built for the hours after everyone logs off.</h1>
+    <p class="fx-gloam__lede">Replace this copy with your own. The headline slot takes one line or three, and the dusk keeps drifting behind it either way.</p>
+    <div class="fx-gloam__actions">
+      <a class="fx-gloam__cta fx-gloam__cta--primary" href="#">Start free</a>
+      <a class="fx-gloam__cta fx-gloam__cta--ghost" href="#">See how it works</a>
+    </div>
+  </div>
+</section>

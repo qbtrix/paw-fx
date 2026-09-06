@@ -1,0 +1,69 @@
+{
+  "name": "dithering",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "dither",
+    "halftone",
+    "retro",
+    "bitmap",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "paper-shaders"
+  ],
+  "summary": "Full-bleed hero running Paper Shaders' dithering on WebGL2: a turning sphere resolved into a 4x4 ordered-dither field of cyan dots on black, off-centre so the copy sits beside it, over a matched CSS halftone.",
+  "needs": [
+    "paper"
+  ],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#000000",
+        "#00b2ff"
+      ],
+      "description": "Back colour then front colour. Omit to read --fx-c1 and --fx-c2 off the section, which is what keeps the shader and the CSS resting state on one pair. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the sphere turns. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "shape": {
+      "type": "string",
+      "default": "sphere",
+      "description": "What gets dithered: simplex, warp, dots, wave, ripple, swirl or sphere."
+    },
+    "type": {
+      "type": "string",
+      "default": "4x4",
+      "description": "Dither matrix: random, 2x2, 4x4 or 8x8. Larger matrices give smoother gradients and a finer pattern."
+    },
+    "size": {
+      "type": "number",
+      "default": 2,
+      "description": "Dot size in pixels. This is a device-pixel size, so it does not scale with the section."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/dithering.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/dithering.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "u_offsetX is -0.34; every upstream dithering preset uses 0.",
+      "why": "The sphere sits dead centre at offset 0, right under the headline. -0.34 moves it left (measured: negative moves left) so the copy column has the right half of the section to itself. Nothing else about the shape changes.",
+      "kind": "ours"
+    }
+  ]
+}
