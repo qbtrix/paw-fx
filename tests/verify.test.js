@@ -222,3 +222,22 @@ test("an altered constant in a sibling .frag is still caught", () => {
   const r = verify("tests/fixtures/bad-frag-sibling-altered");
   expect(r.fails.join("\n")).toContain("copied GLSL differs from upstream");
 });
+
+// The deviations-real haystack was index.js, the GLSL diff and the untraced
+// constants. A CSS-only port has almost nothing in index.js, so a deviation
+// describing a stylesheet change could never be evidenced and warned forever.
+// It surfaced on a wave of hover ports: one declared a focus-visible deviation
+// and warned, while its sibling declared the same thing and passed only because
+// the word "hover" happened to appear in its effect name. That is a coin toss,
+// not a check. style.css is in the haystack now.
+test("a deviation evidenced only in style.css is accepted", () => {
+  const r = verify("tests/fixtures/good-css-deviation");
+  expect(r.warns.join("\n")).not.toContain("declared deviation matches nothing");
+});
+
+// And the rule still bites: the phantom fixture has no style.css at all, so
+// widening the haystack must not have quietly disarmed it.
+test("a deviation evidenced nowhere is still caught", () => {
+  const r = verify("tests/fixtures/bad-deviation-phantom");
+  expect(r.warns.join("\n")).toContain("declared deviation matches nothing");
+});
