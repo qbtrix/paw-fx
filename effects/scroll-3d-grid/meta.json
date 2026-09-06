@@ -1,0 +1,76 @@
+{
+  "name": "scroll-3d-grid",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "grid",
+    "scroll",
+    "3d",
+    "perspective",
+    "codrops",
+    "anime"
+  ],
+  "summary": "A wall of thumbnails on a plane turned 25 degrees away from the reader, each panel parked at its own depth between -1600 and 200: scrolling sweeps the whole wall sideways from around -750% to around +750% while every image un-zooms from 2 to 0.5 inside its crop.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "depth": {
+      "type": "number",
+      "default": -1600,
+      "description": "Furthest z a panel can be parked at, in px. Upstream's random(-1600, 200) lower bound."
+    },
+    "sweep": {
+      "type": "number",
+      "default": 1000,
+      "description": "How far a panel travels, as a percentage of its own width. Upstream sweeps from random(-1000,-500) to random(500,1000)."
+    },
+    "innerScale": {
+      "type": "number",
+      "default": 2,
+      "description": "Zoom each panel's image starts at before it un-zooms to the resting 0.5. Upstream's gridItemsInner scale."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/Scroll3DGrid",
+    "commit": "69718a2eff87b32ab19764b3a6d7b3773dab6af3",
+    "path": [
+      "js/index.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "One of upstream's six animation types is ported: type1. Types 2 through 6 are not here, and neither is the modulo dispatch that assigns a type to each .grid on the page by its index.",
+      "why": "type1 is the one the demo is named for, and it is the only one whose resting frame is a composition rather than a state halfway through a dive. The other five each rewrite the grid's column count, gap, aspect ratio and width from script before they start, so shipping them behind an option would mean six different layouts in one snippet. A library of near-duplicates is worse than a short one.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP and ScrollTrigger are replaced by anime.js: the timeline becomes createTimeline, fromTo becomes from/to tween objects, gsap.utils.random becomes anime's utils.random, ease 'none' becomes 'linear', and scrub: true becomes onScroll sync: true.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is. Every number is upstream's type1 branch unchanged: the 25 degree turn, the -1600 to 200 depth range, both halves of the sweep, and the 2 to 0.5 inner scale.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The scroll range is anime's default -- enter 'end start', leave 'start end' -- rather than upstream's start 'top bottom+=5%' and end 'bottom top-=5%'.",
+      "why": "anime writes a threshold container-first and target-second, which is the opposite order to GSAP, so its defaults already ARE upstream's range: the run opens when the wall's top reaches the bottom of the viewport and closes when its bottom reaches the top. Writing that range out in GSAP's order reverses it, and a reversed range does not error -- it pins progress and freezes every panel at its start transform for the whole section, which was measured in a browser before this was corrected. The dropped 5% is a five-hundredths-of-a-viewport lead-in and lead-out on a range about fifteen hundred pixels long: under three per cent of the timing, and nothing else.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Lenis is not initialised. The three CSS custom properties type1 sets from script (--perspective 1000px, --grid-inner-scale 0.5) and the wrap's rotationY of 25 degrees live in the stylesheet instead.",
+      "why": "paw-fx already ships smooth-scroll as its own effect, so a gallery that starts a second smooth-scroll runtime would fight it; the sweep is tied to the scroll position either way and does not need one. The three properties and the turn are static properties of the composition rather than part of the animation, and in the stylesheet they are part of the resting frame a reader with no script sees -- which is the whole reason this effect's resting state is a composition and not a flat grid.",
+      "kind": "seam"
+    },
+    {
+      "what": "No image ships with the effect. Every panel paints a gradient built from a --fx-hue until a site sets --fx-img on it, and the gradient stays as the fallback under a slow or failed load. imagesloaded and the preloadImages gate are dropped with them.",
+      "why": "Upstream's 49 demo photographs are Codrops', licensed separately from the code, and redistributing them is not ours to do. With no images to wait for there is nothing for a load gate to hold.",
+      "kind": "ours"
+    },
+    {
+      "what": "Below 53em the wall is two columns with a wider gap and a 14 degree turn.",
+      "why": "Four columns of a 375px viewport at a 1.5 aspect ratio is an 80px panel, and a 25 degree turn on that width buries the far column behind the near one. The same panels and the same sweep, at a width that can be read.",
+      "kind": "ours"
+    }
+  ]
+}

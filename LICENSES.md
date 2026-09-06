@@ -42,6 +42,31 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 | cursor-spotlight | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/magic-card.tsx` |
 | page-fade | MIT | paw-fx (original; native View Transitions) |
 | scroll-parallax | MIT | paw-fx (original; native scroll-driven animations) |
+| infinite-menu-loop | MIT | [codrops/ScrollLoopMenu](https://github.com/codrops/ScrollLoopMenu) `3825782`, `src/js/infinitemenu.js` + `src/css/base.css` |
+| cursor-gooey | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `013-custom-cursor-filter/js/index.js` + `013-custom-cursor-filter/index.html` + `013-custom-cursor-filter/css/base.css` |
+| text-block-swap | MIT | [codrops/TextBlockTransitions](https://github.com/codrops/TextBlockTransitions) `f26255f`, `js/demo1/index.js` + `js/demo2/index.js` + `js/demo6/index.js` + `css/base.css` |
+| grid-motion | MIT | [codrops/ImageGridMotionEffect](https://github.com/codrops/ImageGridMotionEffect) `210f970`, `src/js/demo1/grid.js` + `src/js/utils.js` + `src/css/base.css` |
+| kinetic-type-transition | MIT | [codrops/KineticTypePageTransition](https://github.com/codrops/KineticTypePageTransition) `ebe926e`, `src/js/typeTransition.js` + `src/css/base.css` |
+| layout-formations | MIT | [codrops/OnScrollLayoutFormations](https://github.com/codrops/OnScrollLayoutFormations) `68910ec`, `js/index.js` + `css/base.css` |
+| scroll-3d-grid | MIT | [codrops/Scroll3DGrid](https://github.com/codrops/Scroll3DGrid) `69718a2`, `js/index.js` + `css/base.css` |
+
+Six of the seven Codrops ports above replace GSAP with the vendored anime.js
+(`infinite-menu-loop` uses no animation library at all upstream). That
+is a licence requirement rather than a preference: GreenSock's standard "No
+Charge" licence forbids use in a product that lets people build animations
+without writing code, which is exactly what paw-fx is. Every timing, easing
+curve, stagger, rotation and percentage is upstream's; only the spelling moved,
+and each effect's `deviations` records the mapping. Their obligation is the
+upstream MIT header in `index.js` plus the vendored `anime.LICENSE` the build
+already emits.
+
+None of the seven redistributes an image or a font. Codrops' demos ship
+photographs under terms separate from the code and several of these effects are
+image-led, so `grid-motion`, `layout-formations` and `scroll-3d-grid` paint CSS
+gradients into every cell and document an `--fx-img` slot for a site's own
+pictures; `infinite-menu-loop`, `text-block-swap` and `kinetic-type-transition`
+drop the demos' Adobe Typekit `<link>` and `preloadFonts` call for a system
+stack.
 
 `mesh-gradient` imports its GLSL from `vendor/paper.js` rather than carrying a
 copy, so the Apache-2.0 obligation it creates is the vendored one: `paper.LICENSE`

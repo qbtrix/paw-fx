@@ -1,0 +1,149 @@
+/* layout-formations: thirty-six panels scattered through depth, converging
+   into a flat grid as the section is scrolled.
+
+   The resting state is the animation's END state: a flat, finished grid at
+   full opacity and scale. With the script blocked, the bundle pruned or
+   reduced motion on, that grid is what the reader gets -- index.js scatters it
+   and lets the scrollbar put it back. A grid whose cells are invisible until a
+   scroll animation runs is a broken grid, and this file is what stops that
+   being possible.
+
+   THE PIN IS CSS. ScrollTrigger's `pin` is replaced by a tall __track with a
+   sticky __stage inside it, which is also the range anime's onScroll reads.
+   Two rules make or break it:
+     - overflow-x is clip on the section, never hidden. `hidden` computes
+       overflow-y to auto, makes the section a scroll container, and a sticky
+       stage inside a container that never scrolls never sticks -- the
+       animation then resolves at a constant progress and silently does
+       nothing while every check still passes.
+     - the track carries no transform, filter or contain, all of which turn an
+       ancestor into a containing block and break the same sticky.
+
+   IMAGES: none ship with this effect. Each panel paints a gradient built from
+   --fx-hue until a site sets --fx-img on it:
+
+       <div class="fx-formations__panel" style="--fx-img:url(/img/01.jpg)"></div> */
+.fx-formations {
+  --fx-bg: #0e0d0e;
+  --fx-ink: #f3f1ea;
+  --fx-muted: #8f8a80;
+  --fx-accent: #d8c48a;
+  --fx-gap: 0.5rem;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: clip;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-formations *,
+.fx-formations *::before,
+.fx-formations *::after { box-sizing: border-box; }
+
+/* The pinned range: onScroll's target. 100svh of stage plus upstream's
+   end: '+=200%' of scroll distance. */
+.fx-formations__track {
+  position: relative;
+  height: 300svh;
+}
+.fx-formations__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: var(--fx-gap);
+}
+
+/* Upstream's .grid + .grid--spaced, with the perspective its script sets
+   inline moved here: it is a static property of the composition, not part of
+   the animation, and putting it in the stylesheet keeps the resting frame the
+   one a reader with no script sees.
+
+   Upstream declares 8 columns and 3 rows and then puts 36 panels in it, while
+   the formation's own stagger declares a 4 by 9 grid. 9 by 4 is the layout
+   that agrees with the stagger and leaves no collapsed row. */
+.fx-formations__grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: var(--fx-gap);
+  perspective: 1000px;
+}
+
+.fx-formations__panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  background-image: var(--fx-img, linear-gradient(150deg,
+    oklch(0.66 0.13 var(--fx-hue, 60)),
+    oklch(0.38 0.08 calc(var(--fx-hue, 60) + 35)) 60%,
+    oklch(0.2 0.04 calc(var(--fx-hue, 60) + 70))));
+  background-size: cover;
+  background-position: 50% 50%;
+  will-change: transform, opacity;
+}
+/* Nine hue bands across the columns and a shift per row, so thirty-six
+   placeholders read as a deliberate composition rather than one tile repeated.
+   A site that sets --fx-img on a panel overrides all of it. */
+.fx-formations__panel:nth-child(9n + 1) { --fx-hue: 22; }
+.fx-formations__panel:nth-child(9n + 2) { --fx-hue: 46; }
+.fx-formations__panel:nth-child(9n + 3) { --fx-hue: 84; }
+.fx-formations__panel:nth-child(9n + 4) { --fx-hue: 132; }
+.fx-formations__panel:nth-child(9n + 5) { --fx-hue: 176; }
+.fx-formations__panel:nth-child(9n + 6) { --fx-hue: 214; }
+.fx-formations__panel:nth-child(9n + 7) { --fx-hue: 258; }
+.fx-formations__panel:nth-child(9n + 8) { --fx-hue: 300; }
+.fx-formations__panel:nth-child(9n + 9) { --fx-hue: 338; }
+.fx-formations__panel:nth-child(n + 10) { filter: brightness(0.92); }
+.fx-formations__panel:nth-child(n + 19) { filter: brightness(0.84); }
+.fx-formations__panel:nth-child(n + 28) { filter: brightness(0.76); }
+
+/* The caption sits over the middle of the formation, where the panels move
+   least, and carries its own plate for the frames where they move most. */
+.fx-formations__content {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  max-width: 34rem;
+  text-align: center;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 1.25rem;
+  background: color-mix(in oklab, var(--fx-bg) 86%, transparent);
+  pointer-events: none;
+}
+.fx-formations__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-formations__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 5vw, 3.25rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.fx-formations__note {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* Nine columns of a 375px viewport is a 38px panel. The formation is the same
+   thirty-six panels in a shape that can still be read. */
+@media (max-width: 52.99em) {
+  .fx-formations__grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+  }
+}
