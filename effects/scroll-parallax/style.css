@@ -1,0 +1,258 @@
+/* scroll-parallax: four depth layers moving at four rates as the section
+   passes through the viewport, driven by the browser's own scroll-driven
+   animations. No JavaScript, no scroll listener, no vendored library.
+
+   WHY THIS IS NOT A PORT. Every parallax in the Codrops corpus, all 345
+   repositories of it, is built on GSAP ScrollSmoother, Lenis or Locomotive
+   Scroll. GSAP is the licence this library rejected and ScrollSmoother is a
+   paid plugin on top of it, so there is no vanilla upstream here to port, and
+   inventing one would put a false origin in front of the fidelity gate.
+   meta.json says paw-fx and meta.json.deviations records the reasoning.
+
+   THREE RULES THAT LOOK COSMETIC AND ARE NOT:
+
+   1. The timeline is NAMED on the section and referenced by the layers, not
+      written as a bare `view()` on each layer. `overflow: hidden` makes
+      .fx-para a scroll container, so a `view()` on a layer resolves against
+      .fx-para -- which never scrolls -- and the progress sits frozen at 0.5
+      for the life of the page. Measured, not assumed: every layer reported
+      `matrix(1, 0, 0, 1, 0, 0)` at three scroll offsets while
+      getComputedTiming() cheerfully returned progress 0.5 and playState
+      "running". Declaring `view-timeline` on the section puts the subject
+      outside the clip and back on the document scroller, and it is the better
+      semantics anyway: all five layers now share the section's one pass
+      through the viewport instead of each measuring its own.
+
+   2. `animation-timeline` is written AFTER `animation`. The `animation`
+      shorthand resets animation-timeline to `auto`, so the other order
+      silently hands every layer back to the document timeline and the
+      parallax never runs. Nothing errors; the layers simply sit still.
+
+   3. Everything animated is inside `@supports (animation-timeline: view())`.
+      Without the guard, a browser that does not know animation-timeline drops
+      that one declaration, keeps the `animation` shorthand, and runs the
+      keyframes as an ordinary time-based animation at the shorthand's
+      duration -- which parks every layer at its END position rather than at
+      the neutral midpoint the static composition is designed around. The
+      guard is what makes the unsupported case a still picture instead of a
+      broken one.
+
+   The un-animated state is the MIDPOINT of every layer's travel, not one end
+   of it, which is why a browser with no support and a visitor who asked for
+   less motion both get a composition that looks deliberate. */
+.fx-para {
+  --fx-sky-top: #170f2b;
+  --fx-sky-bottom: #4a2a63;
+  --fx-sun: #ffb37a;
+  --fx-far: #2d1c45;
+  --fx-near: #150d22;
+  --fx-ink: #fdf7ff;
+  --fx-muted: #d6c6ea;
+  --fx-travel: 1;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Without this, min-height sizes the content box and the padding is added
+     outside it, so a full-bleed section overflows the viewport by exactly its
+     own padding. An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: linear-gradient(180deg, var(--fx-sky-top), var(--fx-sky-bottom));
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-para *,
+.fx-para *::before,
+.fx-para *::after {
+  box-sizing: border-box;
+}
+
+/* Every layer is oversized top and bottom so its travel never exposes an edge
+   inside the section. */
+.fx-para__layer {
+  position: absolute;
+  inset: -18% 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.fx-para__sky {
+  z-index: -4;
+  background:
+    radial-gradient(26% 17% at 78% 63%, color-mix(in oklab, var(--fx-sun) 62%, transparent), transparent 70%),
+    radial-gradient(64% 40% at 60% 70%, color-mix(in oklab, var(--fx-sun) 20%, transparent), transparent 76%);
+  filter: blur(3px);
+}
+
+/* A star field, drawn as three dot grids at three sizes so it does not read as
+   a regular lattice. */
+.fx-para__stars {
+  z-index: -3;
+  background-image:
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, #ffffff 82%, transparent) 0 1.1px, transparent 1.6px),
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, #ffffff 52%, transparent) 0 0.8px, transparent 1.3px),
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, #cbb6ff 62%, transparent) 0 0.7px, transparent 1.2px);
+  background-size: 173px 149px, 97px 113px, 61px 71px;
+  background-position: 12px 30px, 44px 8px, 5px 52px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.5) 46%, transparent 62%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.5) 46%, transparent 62%);
+  opacity: 0.9;
+}
+
+.fx-para__far {
+  z-index: -2;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--fx-far) 88%, var(--fx-sky-bottom)), var(--fx-far));
+  clip-path: polygon(
+    0 60%, 11% 47%, 23% 57%, 37% 37%, 51% 54%, 65% 40%, 79% 56%, 91% 45%, 100% 54%, 100% 100%, 0 100%
+  );
+}
+
+.fx-para__near {
+  z-index: -1;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--fx-near) 82%, var(--fx-far)), var(--fx-near));
+  clip-path: polygon(
+    0 78%, 10% 70%, 22% 81%, 34% 66%, 48% 80%, 61% 68%, 74% 82%, 88% 71%, 100% 79%, 100% 100%, 0 100%
+  );
+}
+
+.fx-para__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 46rem;
+  text-align: center;
+  will-change: transform;
+}
+
+/* The copy's own wash, on the copy layer rather than as a separate element, so
+   it travels with the text instead of sliding out from under it. It exists
+   because the sun bloom rides up past the headline mid-pass: measured against
+   the brightest frame, the headline sat at 2.34:1 over bare sky before this. */
+.fx-para__inner::before {
+  content: "";
+  position: absolute;
+  inset: -24% -28%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    86% 80% at 50% 50%,
+    color-mix(in oklab, #150d22 88%, transparent) 0%,
+    color-mix(in oklab, #150d22 88%, transparent) 40%,
+    color-mix(in oklab, #150d22 64%, transparent) 60%,
+    color-mix(in oklab, #150d22 26%, transparent) 80%,
+    transparent 96%
+  );
+}
+
+.fx-para__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.35rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, #150d22 46%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-para__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6.6vw, 4.75rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 2px 34px color-mix(in oklab, #150d22 72%, transparent);
+}
+
+.fx-para__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.22rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+  text-shadow: 0 1px 20px color-mix(in oklab, #150d22 70%, transparent);
+}
+
+/* Keyframes are symmetric around 0, so the mid-scroll frame -- and the frame
+   an unsupporting browser or a reduced-motion visitor sees -- is the
+   composition the layout was designed around. --fx-travel scales all four
+   together, which is the one knob index.js writes. */
+@keyframes fx-para-sky {
+  from { transform: translate3d(0, calc(3% * var(--fx-travel)), 0); }
+  to   { transform: translate3d(0, calc(-3% * var(--fx-travel)), 0); }
+}
+
+@keyframes fx-para-stars {
+  from { transform: translate3d(0, calc(7% * var(--fx-travel)), 0); }
+  to   { transform: translate3d(0, calc(-7% * var(--fx-travel)), 0); }
+}
+
+@keyframes fx-para-far {
+  from { transform: translate3d(0, calc(-6% * var(--fx-travel)), 0); }
+  to   { transform: translate3d(0, calc(6% * var(--fx-travel)), 0); }
+}
+
+@keyframes fx-para-near {
+  from { transform: translate3d(0, calc(-13% * var(--fx-travel)), 0); }
+  to   { transform: translate3d(0, calc(13% * var(--fx-travel)), 0); }
+}
+
+@keyframes fx-para-copy {
+  from { transform: translate3d(0, calc(5% * var(--fx-travel)), 0); }
+  to   { transform: translate3d(0, calc(-5% * var(--fx-travel)), 0); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The section is the subject. Its own nearest scroll container is the
+       document, so this timeline tracks the section's pass through the
+       viewport -- which a `view()` written on a layer cannot do, because the
+       layer's nearest scroll container is .fx-para itself. */
+    .fx-para {
+      view-timeline: --fx-para block;
+    }
+    /* animation-timeline AFTER animation in every one of these blocks: the
+       shorthand resets it to `auto` and the parallax silently stops. */
+    .fx-para__sky {
+      animation: fx-para-sky linear both;
+      animation-timeline: --fx-para;
+    }
+    .fx-para__stars {
+      animation: fx-para-stars linear both;
+      animation-timeline: --fx-para;
+    }
+    .fx-para__far {
+      animation: fx-para-far linear both;
+      animation-timeline: --fx-para;
+    }
+    .fx-para__near {
+      animation: fx-para-near linear both;
+      animation-timeline: --fx-para;
+    }
+    .fx-para__inner {
+      animation: fx-para-copy linear both;
+      animation-timeline: --fx-para;
+    }
+  }
+}
+
+/* Contrast is measured against the brightest frame of the MOVING composition,
+   not against this file's static one: the sun bloom rides past the copy as the
+   section scrolls, and the copy travels too. Sampled at three points across
+   the pass -- entering, middle, leaving -- with the glyphs blanked but the
+   wash left in place, worst case of the three:
+
+     eyebrow 5.20:1     headline 15.85:1     lede 11.30:1
+
+   The headline measured 2.34:1 over bare sky before .fx-para__inner::before
+   existed, which is the whole reason it does. Blank the glyphs rather than
+   hiding .fx-para__inner when re-measuring: hiding the element hides its
+   ::before with it, and the sample then reads sky no visitor ever sees. */

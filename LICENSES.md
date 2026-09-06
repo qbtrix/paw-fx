@@ -36,6 +36,12 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 | scramble | MIT | [codrops/TypeShuffleAnimation](https://github.com/codrops/TypeShuffleAnimation) `8f171f1`, `src/js/typeShuffle.js` + `src/js/utils.js` |
 | smooth-scroll | MIT | [darkroomengineering/lenis](https://github.com/darkroomengineering/lenis) `eea7159` (v1.3.26), `packages/core/src/lenis.ts` + `packages/core/lenis.css` |
 | marquee-css | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/marquee.tsx` + `apps/www/styles/globals.css` |
+| vanta-net | MIT | [tengbao/vanta](https://github.com/tengbao/vanta) `f8b3519`, `src/vanta.net.js` + `src/_base.js` + `src/helpers.js` |
+| vanta-waves | MIT | [tengbao/vanta](https://github.com/tengbao/vanta) `f8b3519`, `src/vanta.waves.js` + `src/_base.js` + `src/helpers.js` |
+| vanta-globe | MIT | [tengbao/vanta](https://github.com/tengbao/vanta) `f8b3519`, `src/vanta.globe.js` + `src/_base.js` + `src/helpers.js` |
+| cursor-spotlight | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/magic-card.tsx` |
+| page-fade | MIT | paw-fx (original; native View Transitions) |
+| scroll-parallax | MIT | paw-fx (original; native scroll-driven animations) |
 
 `mesh-gradient` imports its GLSL from `vendor/paper.js` rather than carrying a
 copy, so the Apache-2.0 obligation it creates is the vendored one: `paper.LICENSE`
@@ -92,3 +98,19 @@ eight it is load-bearing rather than bookkeeping: their palettes and their poste
 post chain (bloom, grain, vignette, dither) live in `@shader-gallery/runtime`, a
 package paw-fx does not vendor, so the palettes here are ours and the output does
 not match the upstream posters. Both are declared per effect, with `kind: "ours"`.
+The three Vanta ports DO carry upstream code, inlined -- a Vanta effect extends
+`src/_base.js` and this repo's build emits only `index.js` and `style.css` per
+effect, so a shared base module has nowhere to live in a generated site. Each
+`index.js` therefore opens with Vanta's full MIT notice, which is what the
+licence's "included in all copies" clause asks for, and each `meta.json.origin.path`
+lists all three upstream files the port spans. `cursor-spotlight` keeps Magic UI's
+notice on the same terms even though most of that port is deletion.
+
+`page-fade` and `scroll-parallax` are ours and say so. Neither is a port and
+neither claims an origin: page transitions are the browser's own cross-document
+View Transitions API (swup was staged for that slot and dropped -- every ES
+module build it publishes carries unresolvable bare specifiers), and every
+parallax in the Codrops corpus is built on GSAP ScrollSmoother, Lenis or
+Locomotive Scroll, so there is no vanilla upstream to port. Both are built on
+native CSS instead, and both record the reasoning in `meta.json.deviations`
+under `kind: "ours"`.

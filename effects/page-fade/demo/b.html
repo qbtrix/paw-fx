@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- Two-page demo for page-fade. Serve this directory over http (file:// URLs
+     do not qualify for a cross-document view transition) and click between the
+     pages: the fade is the whole effect, and there is no script on either page.
+     The stylesheet path is relative here because this demo is not a generated
+     site; the shipped snippet uses the root-absolute /_fx/ form. -->
+<html lang="en">
+<meta charset="utf-8">
+<title>page-fade demo: pricing</title>
+<!-- html carries the page background here, not just the section: while a view
+     transition runs the root element is not painted, so a page whose colour
+     lives only on a section shows the browser's blank canvas in any gap. -->
+<style>html,body{margin:0;padding:0;min-height:100%;background:#0c0b12}</style>
+<link rel="stylesheet" href="../style.css">
+<section class="fx-fade" data-fx="page-fade">
+  <header class="fx-fade__bar">
+    <a class="fx-fade__mark" href="./a.html">Northwind</a>
+    <nav class="fx-fade__nav" aria-label="Primary">
+      <a class="fx-fade__link" href="./a.html">Overview</a>
+      <a class="fx-fade__link" href="./b.html" aria-current="page">Pricing</a>
+    </nav>
+    <a class="fx-fade__cta" href="./b.html">Get started</a>
+  </header>
+  <div class="fx-fade__head">
+    <p class="fx-fade__eyebrow">Pricing</p>
+    <h1 class="fx-fade__title">Second page, same shell.</h1>
+    <p class="fx-fade__lede">Click Overview to go back. Nothing on either page is scripted, and a browser without cross-document view transitions just navigates.</p>
+  </div>
+</section>

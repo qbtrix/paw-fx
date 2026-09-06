@@ -1,0 +1,233 @@
+/* page-fade: a cross-document page transition with no JavaScript and no
+   vendored library. The transition IS this stylesheet.
+
+   swup was staged for this slot and dropped -- every ES module build it
+   publishes carries unresolvable bare specifiers, and a generated site has no
+   build step to rewrite them. The platform does the job instead:
+   `@view-transition { navigation: auto }` opts both documents into a
+   cross-document view transition, and the ::view-transition-old/new rules
+   below replace the user agent's default 250ms cross-fade with a designed one.
+   A browser with no support ignores the at-rule and navigates normally, which
+   is the right fallback and needs no feature test.
+
+   TWO THINGS HERE ARE DOCUMENT-SCOPED, ON PURPOSE, and they are the only
+   rules in this library that are. `@view-transition` is a document at-rule --
+   it has no selector and cannot be scoped to a section -- and the
+   ::view-transition pseudo-elements hang off the root element's pseudo tree,
+   so their custom properties have to be declared on :root to be inherited.
+   Everything that paints inside the section is scoped to .fx-fade as usual.
+
+   Both documents need this stylesheet and both need the at-rule. A transition
+   from a page that opts in TO a page that does not is simply not run.
+
+   Requires a same-origin navigation over http(s); file:// URLs do not qualify
+   and neither does a cross-origin hop. */
+@view-transition {
+  navigation: auto;
+}
+
+:root {
+  --fx-duration: 420ms;
+  --fx-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --fx-shift: 10px;
+}
+
+/* ONLY THE INCOMING PAGE IS ANIMATED, and that is the whole trick.
+
+   The obvious version cross-fades: old 1 -> 0 while new 0 -> 1. It looks
+   wrong, and the reason is not obvious. While a view transition is running,
+   the root element is NOT painted -- its rendering has been captured into
+   these two pseudo-elements -- so anything the old snapshot stops covering
+   falls through to the browser's blank canvas, which is white on any page
+   that puts its background on a section rather than on html. Measured: a
+   mid-transition capture of the cross-fade version came back a flat grey over
+   the whole section, identical under plus-lighter and under normal blending,
+   because the two half-opacity snapshots were both letting white through.
+   That white flash is the exact thing this effect exists to remove.
+
+   So the old snapshot is HELD, at full opacity, for the life of the
+   transition, and the new one fades and settles upward on top of it. `none`
+   rather than a hold keyframe: the user agent's own 250ms cross-fade is what
+   is being cancelled, and with no animation left on it the snapshot simply
+   stays put until the transition ends, which is when the incoming page's
+   animation ends. Nothing is ever less than fully opaque. */
+@keyframes fx-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--fx-shift));
+  }
+}
+
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* `both` matters: without it the snapshot snaps back to its unanimated state
+   on the last frame. `normal` overrides the user agent's plus-lighter, which
+   is tuned for a symmetric cross-fade and over-brightens when only one side
+   moves. */
+::view-transition-new(root) {
+  animation: fx-fade-in var(--fx-duration) var(--fx-ease) both;
+  mix-blend-mode: normal;
+}
+
+/* Reduced motion cancels the animation rather than the transition. The
+   snapshots are still taken, the incoming page is simply shown on the first
+   frame, so the navigation is instant -- which is what a visitor who asked for
+   less motion wants, and is exactly what an unsupporting browser does. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ---- the section ------------------------------------------------------- */
+
+.fx-fade {
+  --fx-page: #0c0b12;
+  --fx-surface: #16141f;
+  --fx-line: #2b2740;
+  --fx-accent: #8b7bff;
+  --fx-ink: #f6f5fb;
+  --fx-muted: #a8a3c0;
+  /* An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--fx-page);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-fade *,
+.fx-fade *::before,
+.fx-fade *::after {
+  box-sizing: border-box;
+}
+
+.fx-fade::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10% auto;
+  height: 150%;
+  z-index: -1;
+  background:
+    radial-gradient(46% 60% at 22% 0%, color-mix(in oklab, var(--fx-accent) 34%, transparent), transparent 72%),
+    radial-gradient(38% 50% at 88% 12%, color-mix(in oklab, #ff7ab6 22%, transparent), transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.fx-fade__bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  flex-wrap: wrap;
+  padding: 1.1rem clamp(1.25rem, 6vw, 5rem);
+  border-bottom: 1px solid color-mix(in oklab, var(--fx-line) 80%, transparent);
+  background: color-mix(in oklab, var(--fx-surface) 62%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.fx-fade__mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--fx-ink);
+  text-decoration: none;
+}
+
+.fx-fade__mark::before {
+  content: "";
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0.28rem;
+  background: linear-gradient(140deg, var(--fx-accent), #ff7ab6);
+}
+
+.fx-fade__nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 2.4vw, 1.75rem);
+  margin-right: auto;
+  font-size: 0.92rem;
+}
+
+.fx-fade__link {
+  color: var(--fx-muted);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.fx-fade__link:hover {
+  color: var(--fx-ink);
+  border-bottom-color: color-mix(in oklab, var(--fx-accent) 70%, transparent);
+}
+
+.fx-fade__link[aria-current="page"] {
+  color: var(--fx-ink);
+  border-bottom-color: var(--fx-accent);
+}
+
+.fx-fade__link:focus-visible,
+.fx-fade__mark:focus-visible,
+.fx-fade__cta:focus-visible {
+  outline: 2px solid var(--fx-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.fx-fade__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.05rem;
+  border-radius: 999px;
+  background: var(--fx-ink);
+  color: #16121f;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.fx-fade__head {
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem) clamp(3rem, 7vw, 5rem);
+  max-width: 56rem;
+}
+
+.fx-fade__eyebrow {
+  margin: 0 0 1.1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-fade__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6vw, 4.25rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-fade__lede {
+  margin: 1.4rem 0 0;
+  max-width: 36rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* Contrast on the fixed palette: --fx-muted #a8a3c0 on --fx-page #0c0b12 is
+   9.3:1, and on the lightest point of the bloom behind it (measured, not
+   assumed) it stays above 7:1. No prefers-color-scheme branch anywhere in this
+   file -- the section commits to one palette so the transition looks the same
+   in both directions. */

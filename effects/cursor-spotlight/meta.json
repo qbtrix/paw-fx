@@ -1,0 +1,63 @@
+{
+  "name": "cursor-spotlight",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": ["cursor", "spotlight", "hover", "card", "border-gradient", "magicui"],
+  "summary": "Card grid where the cursor lights a short arc of each card's border and drags a soft wash across its surface, ported from Magic UI's MagicCard with no JavaScript dependency at all.",
+  "needs": [],
+  "options": {
+    "gradientSize": {
+      "type": "number",
+      "default": 200,
+      "description": "Radius in px of both the border ring and the surface wash. Also the distance the gradient is parked outside the card at rest. Upstream default 200."
+    },
+    "gradientColor": {
+      "type": "string",
+      "default": "#262626",
+      "description": "The wash that follows the cursor across the card surface. Upstream default #262626, which reads as a lift on a dark card."
+    },
+    "gradientOpacity": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Opacity of that wash. Constant, not a hover fade: upstream hides the effect by parking the gradient off the card, never by fading it."
+    },
+    "gradientFrom": {
+      "type": "string",
+      "default": "#9E7AFF",
+      "description": "Inner stop of the border ring, right under the cursor. Upstream default #9E7AFF."
+    },
+    "gradientTo": {
+      "type": "string",
+      "default": "#FE8BBB",
+      "description": "Outer stop of the border ring, before it falls to the card's own border colour. Upstream default #FE8BBB."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "magicuidesign/magicui",
+    "commit": "1246d6d404c556f03867fc6d447f2867eee8a42b",
+    "path": "apps/www/registry/magicui/magic-card.tsx"
+  },
+  "deviations": [
+    {
+      "kind": "seam",
+      "what": "The React component, the motion/react motion values and useMotionTemplate, the five refs kept in sync by five useEffects, and the cn/Tailwind class strings are all gone. Pointer position is written to --fx-x / --fx-y on the element and the gradients are declared in style.css.",
+      "why": "This is the bulk of the port and it is deletion, not rewriting. Upstream is 222 lines of which the effect is four numbers and two radial gradients; custom properties hand those four numbers to CSS with no framework. Both gradient stop lists, the 200px radius and the park-at--gradientSize reset are kept verbatim, so the picture is unchanged."
+    },
+    {
+      "kind": "seam",
+      "what": "Upstream's inner `bg-background absolute inset-px z-20` plate is dropped.",
+      "why": "The card's own `linear-gradient(surface) padding-box` layer already fills everything inside the border with the surface colour, so the plate paints the same pixels a second time."
+    },
+    {
+      "kind": "ours",
+      "what": "Orb mode is dropped; only upstream's default gradient mode ships. The MagicCardProps discriminated union and the glowFrom / glowTo / glowAngle / glowSize / glowBlur / glowOpacity options go with it.",
+      "why": "Orb mode is the half of upstream that genuinely needs its dependencies: three motion/react springs drive the orb's position and visibility, and next-themes' resolved theme picks mix-blend-mode between screen and multiply. Reproducing it without React would mean writing our own spring integrator and our own theme resolution, which is inventing rather than porting. Gradient mode is upstream's default and needs neither."
+    },
+    {
+      "kind": "ours",
+      "what": "Under prefers-reduced-motion the pointer listeners are never attached, so the spotlight does not track at all.",
+      "why": "Upstream has no reduced-motion path. This library's contract is that a reduced-motion visitor gets the resting state, and here the resting state is a finished card grid rather than a degraded one, so honouring it costs nothing."
+    }
+  ]
+}

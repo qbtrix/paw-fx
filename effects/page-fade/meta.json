@@ -1,0 +1,46 @@
+{
+  "name": "page-fade",
+  "version": "1.0.0",
+  "category": "transition",
+  "tags": ["transition", "view-transitions", "page", "nav", "css-only", "no-js"],
+  "summary": "Page shell whose same-origin navigations cross-fade instead of blinking white, using the native cross-document View Transitions API: one at-rule, two keyframes, no JavaScript and no vendored library.",
+  "needs": [],
+  "options": {
+    "duration": {
+      "type": "string",
+      "default": "420ms",
+      "description": "Length of the cross-document fade. Written to --fx-duration on the document element, because the ::view-transition pseudo tree inherits from :root and not from the section."
+    },
+    "easing": {
+      "type": "string",
+      "default": "cubic-bezier(0.32, 0.72, 0, 1)",
+      "description": "Timing function for both halves of the fade."
+    },
+    "shift": {
+      "type": "string",
+      "default": "10px",
+      "description": "How far the incoming page settles upward as it fades in. The outgoing page does not move, which is what stops the two snapshots ghosting against each other while they overlap."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "paw-fx"
+  },
+  "deviations": [
+    {
+      "kind": "ours",
+      "what": "This effect is not a port. swup held this slot and was dropped; the transition is the browser's own cross-document View Transitions API, driven by `@view-transition { navigation: auto }` and two keyframes in style.css, with no JavaScript in the transition path at all.",
+      "why": "Every ES module build swup publishes carries unresolvable bare specifiers, and a generated site has no build step to rewrite them, so it could not ship. The platform covers the same ground natively and better: no vendored bytes, no library to keep current, and a browser without support falls back to an ordinary navigation, which is the correct behaviour rather than a degraded one. Recording it as ours rather than dressing it up with an origin is the point of this field."
+    },
+    {
+      "kind": "ours",
+      "what": "Two rules in style.css are document-scoped rather than scoped to the section: the `@view-transition` at-rule, and the --fx-duration / --fx-ease / --fx-shift declarations on :root. index.js writes those three to document.documentElement.",
+      "why": "Unavoidable rather than chosen. `@view-transition` has no selector -- it is a document at-rule -- and the ::view-transition pseudo-elements hang off the root element's pseudo tree, so a custom property declared on the section is never inherited by them. Everything that paints inside the section is scoped to .fx-fade as usual."
+    },
+    {
+      "kind": "ours",
+      "what": "Under prefers-reduced-motion the two keyframe animations are cancelled rather than the transition being turned off.",
+      "why": "`animation: none` on the old and new snapshots makes the navigation instant, which is what a visitor who asked for less motion wants and is identical to what an unsupporting browser already does. Nesting the `@view-transition` at-rule inside a media query would be the other route; cancelling the animation is defined behaviour in every engine that ships the API."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+<!-- cursor-spotlight section. Finished at rest with CSS alone: the card grid,
+     the surfaces and the border rings are all stylesheet work, and index.js
+     only writes the pointer position into --fx-x / --fx-y so the two gradients
+     have somewhere to centre.
+     data-fx sits on each CARD, not on the section: one card is one mount
+     target, the same unit as one <MagicCard> upstream, which is why the
+     registry's usage line mounts with querySelectorAll and a loop.
+     The _fx paths are root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/cursor-spotlight/style.css">
+<section class="fx-spot">
+  <div class="fx-spot__head">
+    <p class="fx-spot__eyebrow">What you get</p>
+    <h2 class="fx-spot__title">Three things, done properly.</h2>
+    <p class="fx-spot__lede">Replace this copy with your own. Add or remove cards and the grid re-flows; each card lights its own border under the cursor.</p>
+  </div>
+  <div class="fx-spot__grid">
+    <article class="fx-spot__card" data-fx="cursor-spotlight">
+      <div class="fx-spot__glow" aria-hidden="true"></div>
+      <div class="fx-spot__body">
+        <span class="fx-spot__mark" aria-hidden="true">01</span>
+        <h3 class="fx-spot__cardtitle">Everything in one place</h3>
+        <p class="fx-spot__cardtext">One card of copy, two or three lines. The card grows to fit the longest one in the row.</p>
+        <p class="fx-spot__meta">Included on every plan</p>
+      </div>
+    </article>
+    <article class="fx-spot__card" data-fx="cursor-spotlight">
+      <div class="fx-spot__glow" aria-hidden="true"></div>
+      <div class="fx-spot__body">
+        <span class="fx-spot__mark" aria-hidden="true">02</span>
+        <h3 class="fx-spot__cardtitle">Set up in an afternoon</h3>
+        <p class="fx-spot__cardtext">No migration, no rewrite. Point it at what you already run and it picks the rest up.</p>
+        <p class="fx-spot__meta">No card required</p>
+      </div>
+    </article>
+    <article class="fx-spot__card" data-fx="cursor-spotlight">
+      <div class="fx-spot__glow" aria-hidden="true"></div>
+      <div class="fx-spot__body">
+        <span class="fx-spot__mark" aria-hidden="true">03</span>
+        <h3 class="fx-spot__cardtitle">Answers, not dashboards</h3>
+        <p class="fx-spot__cardtext">Ask in plain language and get the number back, with the query that produced it.</p>
+        <p class="fx-spot__meta">Ships with the beta</p>
+      </div>
+    </article>
+  </div>
+</section>

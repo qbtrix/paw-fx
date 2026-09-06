@@ -1,0 +1,250 @@
+/* vanta-waves: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has run, or after a refused
+   WebGL context sends mount() back to rest, this is what a visitor sees. A 3D
+   hero needs that more than a CSS one does, not less: index.js asks for its
+   context with failIfMajorPerformanceCaveat, so on a machine with hardware
+   acceleration off the canvas genuinely never appears.
+
+   The palette is declared once here, as --fx-color and --fx-bg, and index.js
+   reads it back off the section, so overriding the custom properties moves the
+   water and the CSS resting state together instead of leaving the two states
+   clashing at the moment the canvas paints.
+
+   Stacking order, and the one thing to preserve when editing:
+     -3  .fx-waves::before   the specular bloom, upper left, where the point
+                             light sits in the WebGL scene
+     -2  .fx-waves__rest     the CSS swell, covered once WebGL paints
+     -1  .fx-waves__canvas   inserted by index.js
+      0  .fx-waves__scrim    legibility wash, over whichever layer is showing
+      0  .fx-waves__grain    film grain
+      1  .fx-waves__inner    the copy */
+.fx-waves {
+  --fx-color: #005588;
+  --fx-bg: #0b1a2a;
+  --fx-crest: #38b6e8;
+  --fx-ink: #ffffff;
+  --fx-muted: #cfe6f2;
+  --fx-scrim: 0.66;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Without this, min-height sizes the content box and the padding is added
+     outside it, so a full-bleed hero overflows the viewport by exactly its own
+     padding. An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The scene's one point light sits at (-100, 250, -100), up and behind the
+   camera's left shoulder, so the water is brightest toward the top left and
+   falls away to the right. The resting state carries the same lighting, which
+   is what stops the swap from CSS to canvas reading as a cut. */
+.fx-waves::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -3;
+  background:
+    radial-gradient(58% 48% at 16% 8%, color-mix(in oklab, var(--fx-crest) 46%, transparent), transparent 74%),
+    radial-gradient(70% 60% at 42% 34%, color-mix(in oklab, var(--fx-color) 78%, transparent), transparent 80%),
+    linear-gradient(168deg, color-mix(in oklab, var(--fx-color) 62%, var(--fx-bg)), var(--fx-bg) 82%);
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+/* The swell. Three rulings of different period and angle, laid over each
+   other in perspective so they compress toward the top of the frame the way
+   the sheet does under a camera looking down at it. The blur is what turns
+   three hard rulings into water: crest, trough, and the chop running across
+   both, which is exactly the crossChop term the shader-side wave adds. */
+.fx-waves__rest {
+  position: absolute;
+  inset: -45% -25% -15%;
+  z-index: -2;
+  background-image:
+    repeating-linear-gradient(96deg, color-mix(in oklab, var(--fx-crest) 26%, transparent) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(-84deg, color-mix(in oklab, #04121f 44%, transparent) 0 6px, transparent 6px 52px),
+    repeating-linear-gradient(4deg, color-mix(in oklab, var(--fx-crest) 14%, transparent) 0 3px, transparent 3px 84px);
+  transform: perspective(620px) rotateX(72deg) scale(1.5);
+  transform-origin: 50% 30%;
+  filter: blur(2.5px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 100%);
+  opacity: 0.9;
+  transition: opacity 420ms ease;
+  will-change: transform;
+}
+
+/* index.js sets data-fx-live only once it holds a context, has rendered a
+   frame and has confirmed the context is not already lost. Every failure path
+   leaves it unset and destroy() removes it, so this rule is also the proof
+   that teardown worked. */
+.fx-waves[data-fx-live] .fx-waves__rest,
+.fx-waves[data-fx-live]::before {
+  opacity: 0;
+}
+
+/* The renderer's own canvas, styled here rather than by the inline styles
+   upstream's applyCanvasStyles writes. */
+.fx-waves__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fine grain over everything. Wide blurred gradients band on 8-bit displays;
+   a little noise is what hides it. Inline SVG, so the section fetches nothing
+   off-site. */
+.fx-waves__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than trusting where the water happens
+   to be dark, because in the live state the crests move through the column.
+   Held flat across the inner third of the ray -- the whole content column --
+   and only then eased out, so the eyebrow and the button row at the ends of
+   the column get the same cover as the headline. Measured worst case is
+   recorded at the bottom of this file; re-measure the same way before
+   lowering --fx-scrim. */
+.fx-waves__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    100% 88% at 50% 52%,
+    color-mix(in oklab, #04121f 84%, transparent) 0%,
+    color-mix(in oklab, #04121f 84%, transparent) 34%,
+    color-mix(in oklab, #04121f 58%, transparent) 52%,
+    color-mix(in oklab, #04121f 30%, transparent) 68%,
+    color-mix(in oklab, #04121f 10%, transparent) 84%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-waves__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  text-align: center;
+}
+
+.fx-waves__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid color-mix(in oklab, var(--fx-crest) 46%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-crest) 12%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-waves__title {
+  margin: 0;
+  font-size: clamp(2.6rem, 7.5vw, 5.75rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, #04121f 62%, transparent);
+}
+
+.fx-waves__lede {
+  margin: 1.75rem auto 0;
+  max-width: 36rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.28rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-waves__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-waves__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-waves__cta--primary {
+  background: var(--fx-ink);
+  color: #07253c;
+}
+
+.fx-waves__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-waves__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-waves__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 44%, transparent);
+}
+
+.fx-waves__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting swell moves, and only where motion is allowed. The water
+   has its own reduced-motion path in index.js: one frame, then no loop and no
+   pointer parallax. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-waves__rest {
+    animation: fx-waves-swell 26s linear infinite;
+  }
+  @keyframes fx-waves-swell {
+    to {
+      background-position: 0 -104px, 0 156px, 0 -168px;
+    }
+  }
+}
+
+/* Contrast, measured against the LIVE water rather than against this resting
+   state, with .fx-waves__inner hidden so the sample reads the background the
+   text actually sits on, worst case over four frames at 1440x900:
+
+     eyebrow    7.87:1     headline   9.54:1     lede       7.87:1
+     ghost CTA 10.50:1     primary CTA 15.68:1 (its own opaque white pill)
+
+   The specular highlight travels through the copy column as the swell rolls,
+   so re-measure the same way before lowering --fx-scrim: sample with the copy
+   hidden across several frames, not one. */

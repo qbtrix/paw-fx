@@ -1,0 +1,187 @@
+/* cursor-spotlight: the CSS half of the effect, and the whole of it at rest.
+   Every card here is finished with no JavaScript at all -- the border ring,
+   the surface, the type scale and the grid are stylesheet work. index.js adds
+   one thing: it writes the pointer position into --fx-x / --fx-y so the two
+   gradients below have somewhere to centre.
+
+   The two-layer background is the part worth preserving when editing. The
+   card's border is transparent and its `background` carries two layers:
+     padding-box  a flat fill, which covers everything inside the border;
+     border-box   the radial gradient, which therefore shows ONLY through the
+                  1px transparent border ring.
+   That is what lights a short arc of the border under the cursor and leaves
+   the rest of the ring flat, and it is upstream's trick, not ours. Swap the
+   layer order or drop the box keywords and the whole card fills with gradient.
+
+   --fx-x / --fx-y default to -200px, one full radius outside the card, which
+   is how the resting state parks the spotlight rather than fading it. */
+.fx-spot {
+  --fx-page: #0b0b0f;
+  --fx-surface: #131318;
+  --fx-border: #2a2a33;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  /* upstream defaults: gradientSize 200, from #9E7AFF, to #FE8BBB,
+     gradientColor #262626, gradientOpacity 0.8 */
+  --fx-size: 200px;
+  --fx-from: #9e7aff;
+  --fx-to: #fe8bbb;
+  --fx-glow: #262626;
+  --fx-glow-opacity: 0.8;
+  /* An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  padding: clamp(3.5rem, 9vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-page);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-spot *,
+.fx-spot *::before,
+.fx-spot *::after {
+  box-sizing: border-box;
+}
+
+.fx-spot__head {
+  max-width: 46rem;
+  margin: 0 auto clamp(2.5rem, 5vw, 3.5rem);
+  text-align: center;
+}
+
+.fx-spot__eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-spot__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-spot__lede {
+  margin: 1rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-spot__grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+/* One card = one mount target, the same unit as one <MagicCard> upstream. */
+.fx-spot__card {
+  --fx-x: -200px;
+  --fx-y: -200px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 13rem;
+  padding: 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  background:
+    linear-gradient(var(--fx-surface) 0 0) padding-box,
+    radial-gradient(
+        var(--fx-size) circle at var(--fx-x) var(--fx-y),
+        var(--fx-from),
+        var(--fx-to),
+        var(--fx-border) 100%
+      )
+      border-box;
+}
+
+/* Upstream's z-30 wash: the same radial gradient, at the same radius and the
+   same centre as the ring, held at a constant opacity. Inset by the border so
+   it never paints over the lit ring. */
+.fx-spot__glow {
+  position: absolute;
+  inset: 1px;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--fx-glow-opacity);
+  background: radial-gradient(var(--fx-size) circle at var(--fx-x) var(--fx-y), var(--fx-glow), transparent 100%);
+}
+
+.fx-spot__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.7rem;
+}
+
+.fx-spot__mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 0.35rem;
+  border: 1px solid color-mix(in oklab, var(--fx-from) 40%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in oklab, var(--fx-from) 14%, transparent);
+  color: var(--fx-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.fx-spot__cardtitle {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fx-spot__cardtext {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-spot__meta {
+  margin: auto 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid color-mix(in oklab, var(--fx-border) 90%, transparent);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* Mixed toward the surface rather than toward transparent: the rendered
+     colour is the same, but an opaque one has a contrast ratio that can be
+     measured and does not change when the wash slides under it. */
+  color: color-mix(in oklab, var(--fx-muted) 88%, var(--fx-surface));
+}
+
+.fx-spot__card:focus-within {
+  outline: 2px solid var(--fx-from);
+  outline-offset: 2px;
+}
+
+/* Contrast, measured against the live effect with the cursor parked ON the
+   card, which is the brightest the surface ever gets: the wash is #262626 at
+   0.8 over #131318, lifting the card to about #222226 under the pointer.
+   Sampled with the card body hidden so the numbers read the surface and not
+   the glyphs:
+
+     mark 15.14:1    card title 14.46:1    card text 6.35:1    meta 5.39:1
+
+   The muted text gains contrast under the wash rather than losing it, because
+   #a1a1aa is lighter than the surface it sits on. The meta line is the
+   tightest and is uppercase at 0.78rem, so it is held to the 4.5:1 floor
+   rather than the large-text one. */

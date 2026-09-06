@@ -1,0 +1,122 @@
+{
+  "name": "vanta-globe",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": ["globe", "wireframe", "network", "webgl", "three", "hero", "vanta"],
+  "summary": "Split 3D hero running Vanta's GLOBE on three.js: a turning wireframe sphere inside a shell of orbital spokes, floating over a rolling field of wired nodes, with a masked CSS wireframe globe as the resting state.",
+  "needs": ["three"],
+  "options": {
+    "color": {
+      "type": "string",
+      "default": "#ff3f81",
+      "description": "Globe wireframe, node web and dot colour. Omit to read --fx-color off the section, which is what keeps the scene and the CSS resting state on one palette. Upstream default 0xff3f81."
+    },
+    "color2": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Orbital spokes and axis spindle. Omit to read --fx-color2 off the section. Upstream default 0xffffff."
+    },
+    "backgroundColor": {
+      "type": "string",
+      "default": "#23153c",
+      "description": "Cleared behind the scene. Omit to read --fx-bg off the section. Upstream default 0x23153c."
+    },
+    "size": {
+      "type": "number",
+      "default": 1,
+      "description": "Globe radius multiplier; the sphere is 18 * size. The spoke shell does not scale with it, so far above 1 the globe grows through the spokes."
+    },
+    "points": {
+      "type": "number",
+      "default": 10,
+      "description": "Node-field resolution; the field is (points+1)^2 nodes."
+    },
+    "maxDistance": {
+      "type": "number",
+      "default": 20,
+      "description": "Node separation beyond which no line is drawn. Raising it thickens the web and costs draw calls."
+    },
+    "spacing": {
+      "type": "number",
+      "default": 15,
+      "description": "World-space gap between node-field columns."
+    },
+    "showDots": {
+      "type": "boolean",
+      "default": true,
+      "description": "Draw a lit sphere at every node. false leaves the wireframe alone."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tengbao/vanta",
+    "commit": "f8b351906688b56f0fc744e53bde81fc3c56f150",
+    "path": [
+      "src/vanta.globe.js",
+      "src/_base.js",
+      "src/helpers.js"
+    ]
+  },
+  "deviations": [
+    {
+      "kind": "api-migration",
+      "what": "vertexColors: THREE.VertexColors became vertexColors: true on the node web's LineBasicMaterial.",
+      "why": "Upstream pins three r134; this repo vendors 0.185.1, where THREE.VertexColors no longer exists. The old spelling evaluates to undefined, which is falsy, so per-vertex colour is switched OFF with no error thrown and the whole node web renders in the material's default white. This is the sharpest of the version breaks because it ships looking wrong rather than broken."
+    },
+    {
+      "kind": "api-migration",
+      "what": "Every light intensity is multiplied by PI: AmbientLight(0xffffff, 0.75) and SpotLight(0xffffff, 1) become 0.75*PI and 1*PI.",
+      "why": "r134 ran three's legacy lighting path, which scaled every light's contribution by PI. useLegacyLights was removed in 0.185.1, so the same numbers arrive PI times dimmer. Multiplying restores upstream's exposure rather than inventing a new one."
+    },
+    {
+      "kind": "api-migration",
+      "what": "spot.decay = 0 is set on the SpotLight, which upstream does not set.",
+      "why": "SpotLight.decay defaults to 2 in 0.185.1, so the light falls off with the inverse square of distance. The spot sits 200 units above the node field, which under inverse-square attenuation arrives roughly 1/40000 as strong and leaves every lit dot reading as unlit black. r134's legacy path applied no inverse-square term; decay 0 is the modern spelling of that."
+    },
+    {
+      "kind": "api-migration",
+      "what": "Colours now round-trip through three's colour management: the node-web line colours are lerped in linear-sRGB rather than in sRGB, and the renderer's output is converted back to sRGB.",
+      "why": "ColorManagement is enabled by default from r152 and the renderer's default output is SRGBColorSpace, where r134's was LinearEncoding. Disabling it would restore the old pipeline exactly, but ColorManagement is process-wide three state and switching it off here would silently change every other three-based effect on the same page. The port keeps the modern, correct pipeline and retunes instead."
+    },
+    {
+      "kind": "upstream-bug",
+      "what": "blending: null on the non-additive branch became THREE.NormalBlending.",
+      "why": "three has never accepted null for Material.blending; it raises 'THREE.WebGLState: Invalid blending' at r134 as well as at 0.185.1, so this is broken at upstream's own pinned commit rather than a version break. NormalBlending is the constant null was reaching for. The branch fires whenever the node colour is darker than the background."
+    },
+    {
+      "kind": "seam",
+      "what": "The SphereGeometry that EdgesGeometry is derived from is disposed straight after the derivation.",
+      "why": "Upstream leaves it allocated on the GPU for the life of the effect even though nothing ever renders it. EdgesGeometry has already copied the edge list it needs by that point."
+    },
+    {
+      "kind": "seam",
+      "what": "The class hierarchy, the VANTA global registry and the window.THREE lookup are gone; _base.js and the helpers this effect uses are inlined into one mount(el, opts) that returns { update, destroy }.",
+      "why": "The repo contract is a module with no import-time globals, and the build emits only index.js and style.css per effect, so a shared base module has nowhere to live in a generated site. Nothing upstream computes changed with the shape."
+    },
+    {
+      "kind": "seam",
+      "what": "Number.prototype.clamp is replaced by a local clamp(v, lo, hi) with the same body.",
+      "why": "helpers.js extends a builtin at import time. An effect that drops into someone else's page does not get to do that."
+    },
+    {
+      "kind": "seam",
+      "what": "The raycaster branch in onUpdate is dropped, along with the per-node scale it drove.",
+      "why": "this.rayCaster is assigned only on a commented-out line at the pinned commit, so distToMouse is always 1000, distClamp always 15, and every node's scale computes to exactly 1. Dead code, not a behaviour change. The dead this.helper and this.controls update calls go with it for the same reason."
+    },
+    {
+      "kind": "seam",
+      "what": "One SphereGeometry and one MeshLambertMaterial are shared by all 121 node meshes instead of a fresh pair per node.",
+      "why": "Upstream allocates two GPU resources per identical sphere in genPoint. The rendered picture is the same; update({color}) still recolours every dot by writing the single material."
+    },
+    {
+      "kind": "seam",
+      "what": "prepareEl's inline style writes, applyCanvasStyles and the window resize listener are replaced by style.css and a ResizeObserver on the section.",
+      "why": "Layering belongs in the stylesheet the resting state already ships, and _base.js only forces a rAF resize after the first frame because a window listener cannot see a section that lays out late. A ResizeObserver is that same intent without the hack."
+    },
+    {
+      "kind": "seam",
+      "what": "Gyroscope controls are dropped, the WebGL context is requested with failIfMajorPerformanceCaveat, and every failure path returns the section to the CSS resting state.",
+      "why": "Upstream defaults gyroControls off and it asks for a device-orientation permission a background hero has no business requesting. The context guard is the repo contract: a hero rendering at 4fps on a software rasteriser is worse than the CSS one underneath it."
+    }
+  ]
+}
