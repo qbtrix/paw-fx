@@ -1,0 +1,28 @@
+<!-- page-fade section: the page shell that carries the transition. Finished at
+     rest with CSS alone; the transition itself is CSS too, so there is nothing
+     here that stops working with JavaScript off.
+     style.css carries `@view-transition { navigation: auto }`, which is a
+     DOCUMENT at-rule -- it has no selector and cannot be scoped to a section --
+     so every page that should take part has to link this stylesheet. A
+     navigation from a page that opts in to one that does not simply runs no
+     transition, which is also the fallback in a browser without support.
+     Set aria-current="page" on the link for the page being shown.
+     The _fx path is root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/page-fade/style.css">
+<section class="fx-fade" data-fx="page-fade">
+  <header class="fx-fade__bar">
+    <a class="fx-fade__mark" href="/">Northwind</a>
+    <nav class="fx-fade__nav" aria-label="Primary">
+      <a class="fx-fade__link" href="/" aria-current="page">Overview</a>
+      <a class="fx-fade__link" href="/pricing.html">Pricing</a>
+      <a class="fx-fade__link" href="/docs.html">Docs</a>
+    </nav>
+    <a class="fx-fade__cta" href="/signup.html">Get started</a>
+  </header>
+  <div class="fx-fade__head">
+    <p class="fx-fade__eyebrow">Overview</p>
+    <h1 class="fx-fade__title">Move between pages without the flash.</h1>
+    <p class="fx-fade__lede">Replace this copy with your own. Link this stylesheet from every page and each same-origin navigation cross-fades instead of blinking white.</p>
+  </div>
+</section>

@@ -1,0 +1,97 @@
+{
+  "name": "vanta-waves",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": ["waves", "water", "ocean", "webgl", "three", "hero", "vanta"],
+  "summary": "Full-bleed 3D hero running Vanta's WAVES on three.js: a flat-shaded 101x81 sheet rolling under a trochoidal swell with a moving specular highlight, and a designed CSS swell as the resting state.",
+  "needs": ["three"],
+  "options": {
+    "color": {
+      "type": "string",
+      "default": "#005588",
+      "description": "Water colour. Omit to read --fx-color off the section, which is what keeps the sea and the CSS resting state on one palette. Upstream default 0x005588."
+    },
+    "shininess": {
+      "type": "number",
+      "default": 30,
+      "description": "Phong specular exponent; higher is a tighter, harder highlight. Upstream default 30."
+    },
+    "waveHeight": {
+      "type": "number",
+      "default": 15,
+      "description": "Peak-to-trough displacement in world units. Upstream default 15."
+    },
+    "waveSpeed": {
+      "type": "number",
+      "default": 1,
+      "description": "Swell rate. Also scales the cross-chop, so raising it makes the water choppier as well as faster."
+    },
+    "zoom": {
+      "type": "number",
+      "default": 1,
+      "description": "Camera distance divisor; above 1 pulls in toward the water. Upstream default 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tengbao/vanta",
+    "commit": "f8b351906688b56f0fc744e53bde81fc3c56f150",
+    "path": [
+      "src/vanta.waves.js",
+      "src/_base.js",
+      "src/helpers.js"
+    ]
+  },
+  "deviations": [
+    {
+      "kind": "api-migration",
+      "what": "Every light intensity is multiplied by PI: AmbientLight(0xffffff, 0.9) and PointLight(0xffffff, 0.9) become 0.9*PI.",
+      "why": "r134 ran three's legacy lighting path, which scaled every light's contribution by PI. useLegacyLights was removed in 0.185.1, so the same numbers arrive PI times dimmer. Multiplying restores upstream's exposure rather than inventing a new one."
+    },
+    {
+      "kind": "api-migration",
+      "what": "pointLight.decay = 0 is set, which upstream does not set.",
+      "why": "PointLight.decay defaults to 2 in 0.185.1, so the light falls off with the inverse square of distance. The light sits at (-100, 250, -100) and the sheet is 300-odd units away, which under inverse-square attenuation arrives roughly 1/90000 as strong: the water renders ambient-only, flat, with no specular highlight at all. r134's legacy path applied no attenuation to a light with distance 0; decay 0 is the modern spelling of that."
+    },
+    {
+      "kind": "api-migration",
+      "what": "Colours now round-trip through three's colour management: the Phong shading runs in linear-sRGB and the renderer's output is converted back to sRGB.",
+      "why": "ColorManagement is enabled by default from r152 and the renderer's default output is SRGBColorSpace, where r134's was LinearEncoding. Disabling it would restore the old pipeline exactly, but ColorManagement is process-wide three state and switching it off here would silently change every other three-based effect on the same page. The port keeps the modern, correct pipeline; combined with the two lighting fixes above the water reads as upstream's."
+    },
+    {
+      "kind": "seam",
+      "what": "backgroundColor defaults to 0x0b1a2a (and to the section's --fx-bg when the section declares one), where upstream leaves it undefined.",
+      "why": "vanta.waves.js has no backgroundColor in its defaultOptions, so _base.js hands undefined to setClearColor and three resolves it to opaque black. Every published Vanta waves demo passes one. Defaulting it to the same custom property the CSS resting state uses is what stops the two states disagreeing at the edges of the sheet."
+    },
+    {
+      "kind": "seam",
+      "what": "The class hierarchy, the VANTA global registry and the window.THREE lookup are gone; _base.js and the helpers this effect uses are inlined into one mount(el, opts) that returns { update, destroy }.",
+      "why": "The repo contract is a module with no import-time globals, and the build emits only index.js and style.css per effect, so a shared base module has nowhere to live in a generated site. Nothing upstream computes changed with the shape."
+    },
+    {
+      "kind": "seam",
+      "what": "Number.prototype.clamp is replaced by a local clamp(v, lo, hi) with the same body.",
+      "why": "helpers.js extends a builtin at import time. An effect that drops into someone else's page does not get to do that."
+    },
+    {
+      "kind": "seam",
+      "what": "Each vertex's rest height is snapshotted into a Float32Array at init, replacing upstream's this.oy map filled lazily on the first frame under an `if (!v.oy)` guard.",
+      "why": "Same numbers, one frame earlier, and without upstream's latent hole: a rest height of exactly 0 is falsy, so that vertex would never be recorded and would stay flat for the life of the effect. Upstream's own rest heights fall in [-10, -6], so the hole never fires there, but the guard does not survive a change to waveNoise."
+    },
+    {
+      "kind": "seam",
+      "what": "The dead wireframe branch and the controls/helper update calls in onUpdate are dropped.",
+      "why": "this.wireframe and this.controls are never assigned at the pinned commit -- the code that would build them is commented out -- and the wireframe branch calls geometry.fromGeometry and computeFaceNormals, neither of which exists on modern three."
+    },
+    {
+      "kind": "seam",
+      "what": "prepareEl's inline style writes, applyCanvasStyles and the window resize listener are replaced by style.css and a ResizeObserver on the section.",
+      "why": "Layering belongs in the stylesheet the resting state already ships, and _base.js only forces a rAF resize after the first frame because a window listener cannot see a section that lays out late. A ResizeObserver is that same intent without the hack."
+    },
+    {
+      "kind": "seam",
+      "what": "Gyroscope controls are dropped, the WebGL context is requested with failIfMajorPerformanceCaveat, and every failure path returns the section to the CSS resting state.",
+      "why": "Upstream defaults gyroControls off and it asks for a device-orientation permission a background hero has no business requesting. The context guard is the repo contract: a hero rendering at 4fps on a software rasteriser is worse than the CSS one underneath it."
+    }
+  ]
+}

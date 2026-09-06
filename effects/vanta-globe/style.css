@@ -1,0 +1,319 @@
+/* vanta-globe: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has run, or after a refused
+   WebGL context sends mount() back to rest, this is what a visitor sees. A 3D
+   hero needs that more than a CSS one does, not less: index.js asks for its
+   context with failIfMajorPerformanceCaveat, so on a machine with hardware
+   acceleration off the canvas genuinely never appears.
+
+   The palette is declared once here, as --fx-color / --fx-color2 / --fx-bg,
+   and index.js reads it back off the section, so overriding the custom
+   properties moves the WebGL scene and the CSS resting state together.
+
+   The globe is drawn as a MASK rather than as a coloured SVG, which is what
+   lets a data URI take its colour from a custom property: the SVG supplies the
+   alpha, `background: var(--fx-color)` supplies the ink.
+
+   Layout mirrors the scene. The camera looks at x = -40, so the globe sits
+   right of centre and the copy column takes the left; index.js walks that look
+   target back toward the middle as the viewport narrows, and the media queries
+   at the bottom of this file walk the CSS globe the same way.
+
+   Stacking order, and the one thing to preserve when editing:
+     -3  .fx-globe::before   the two colour blooms
+     -2  .fx-globe__rest     the wireframe globe and node field
+     -1  .fx-globe__canvas   inserted by index.js
+      0  .fx-globe__scrim    legibility wash, over whichever layer is showing
+      0  .fx-globe__grain    film grain
+      1  .fx-globe__inner    the copy */
+.fx-globe {
+  --fx-color: #ff3f81;
+  --fx-color2: #ffffff;
+  --fx-bg: #23153c;
+  --fx-glow: #7b3fe4;
+  --fx-ink: #ffffff;
+  --fx-muted: #e7ddf5;
+  --fx-scrim: 0.6;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Without this, min-height sizes the content box and the padding is added
+     outside it, so a full-bleed hero overflows the viewport by exactly its own
+     padding. An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The spot light sits directly above the scene, so the globe carries most of
+   the light and the corners fall to background. */
+.fx-globe::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: -3;
+  background:
+    radial-gradient(34% 40% at 68% 48%, color-mix(in oklab, var(--fx-color) 30%, transparent), transparent 70%),
+    radial-gradient(50% 46% at 84% 22%, color-mix(in oklab, var(--fx-glow) 40%, transparent), transparent 74%),
+    radial-gradient(56% 50% at 12% 78%, color-mix(in oklab, var(--fx-glow) 26%, transparent), transparent 74%);
+  filter: blur(44px);
+  pointer-events: none;
+}
+
+.fx-globe__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  transition: opacity 420ms ease;
+}
+
+/* The node field the globe floats over: a perspective dot grid, low and to the
+   left, exactly where the WebGL scene puts its wired node plane. */
+.fx-globe__rest::before {
+  content: "";
+  position: absolute;
+  inset: 34% -20% -24% -30%;
+  background-image:
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--fx-color) 88%, transparent) 0 1.5px, transparent 2px),
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--fx-color) 30%, transparent) 0 1px, transparent 1px 76px),
+    repeating-linear-gradient(0deg, color-mix(in oklab, var(--fx-color) 20%, transparent) 0 1px, transparent 1px 76px);
+  background-size: 76px 76px, auto, auto;
+  background-position: 38px 38px, 0 0, 0 0;
+  transform: perspective(700px) rotateX(70deg) scale(1.3);
+  transform-origin: 50% 20%;
+  -webkit-mask-image: radial-gradient(70% 74% at 40% 30%, #000 0%, rgba(0, 0, 0, 0.5) 56%, transparent 84%);
+  mask-image: radial-gradient(70% 74% at 40% 30%, #000 0%, rgba(0, 0, 0, 0.5) 56%, transparent 84%);
+}
+
+/* The wireframe sphere. Latitude rings are ellipses of falling ry, longitude
+   rings ellipses of falling rx, which is what a sphere's wireframe projects to
+   -- the same picture EdgesGeometry gives the live scene, held still. */
+.fx-globe__orb,
+.fx-globe__spokes {
+  position: absolute;
+  top: 50%;
+  left: 68%;
+  width: min(46vw, 30rem);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.fx-globe__orb {
+  background: var(--fx-color);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='black' stroke-width='1.4' transform='rotate(-14 100 100)'><circle cx='100' cy='100' r='72'/><ellipse cx='100' cy='100' rx='72' ry='20'/><ellipse cx='100' cy='100' rx='72' ry='45'/><ellipse cx='100' cy='100' rx='20' ry='72'/><ellipse cx='100' cy='100' rx='45' ry='72'/></g></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='black' stroke-width='1.4' transform='rotate(-14 100 100)'><circle cx='100' cy='100' r='72'/><ellipse cx='100' cy='100' rx='72' ry='20'/><ellipse cx='100' cy='100' rx='72' ry='45'/><ellipse cx='100' cy='100' rx='20' ry='72'/><ellipse cx='100' cy='100' rx='45' ry='72'/></g></svg>");
+}
+
+/* The orbital shell and the axis spindle, both in --fx-color2. The dashed
+   ring is the 80 radial spokes; the dashed axis is the rung stack. */
+.fx-globe__spokes {
+  background: var(--fx-color2);
+  opacity: 0.85;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g stroke='black' fill='none' transform='rotate(-14 100 100)'><circle cx='100' cy='100' r='81' stroke-width='9' stroke-dasharray='1.5 7.4'/><line x1='100' y1='16' x2='100' y2='184' stroke-width='1.2' stroke-dasharray='3 5'/></g></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g stroke='black' fill='none' transform='rotate(-14 100 100)'><circle cx='100' cy='100' r='81' stroke-width='9' stroke-dasharray='1.5 7.4'/><line x1='100' y1='16' x2='100' y2='184' stroke-width='1.2' stroke-dasharray='3 5'/></g></svg>");
+}
+
+/* index.js sets data-fx-live only once it holds a context, has rendered a
+   frame and has confirmed the context is not already lost. Every failure path
+   leaves it unset and destroy() removes it, so this rule is also the proof
+   that teardown worked. */
+.fx-globe[data-fx-live] .fx-globe__rest,
+.fx-globe[data-fx-live]::before {
+  opacity: 0;
+}
+
+/* The renderer's own canvas, styled here rather than by the inline styles
+   upstream's applyCanvasStyles writes. */
+.fx-globe__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fine grain over everything. Wide blurred gradients band on 8-bit displays;
+   a little noise is what hides it. Inline SVG, so the section fetches nothing
+   off-site. */
+.fx-globe__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy column has the left of the frame to itself, so the wash is a
+   left-weighted ellipse rather than a centred one: it covers the text without
+   putting a grey veil over the globe the section exists to show. Measured
+   worst case across several live frames is recorded in the port's browser
+   proof; re-measure the same way before lowering --fx-scrim. */
+.fx-globe__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    82% 96% at 20% 50%,
+    color-mix(in oklab, #150b22 88%, transparent) 0%,
+    color-mix(in oklab, #150b22 88%, transparent) 30%,
+    color-mix(in oklab, #150b22 58%, transparent) 52%,
+    color-mix(in oklab, #150b22 26%, transparent) 72%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-globe__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  text-align: left;
+}
+
+.fx-globe__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid color-mix(in oklab, var(--fx-color) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-color) 12%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-globe__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 5.6vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, #150b22 60%, transparent);
+}
+
+.fx-globe__lede {
+  margin: 1.5rem 0 0;
+  max-width: 30rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-globe__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2.25rem;
+}
+
+.fx-globe__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-globe__cta--primary {
+  background: var(--fx-ink);
+  color: #1b0f2e;
+}
+
+.fx-globe__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-globe__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-globe__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 44%, transparent);
+}
+
+.fx-globe__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* index.js walks the camera's look target from x=-40 to -20 to -10 as the
+   viewport narrows, which slides the globe back toward the middle of the
+   frame. The resting state tracks the same two breakpoints, and below 720 the
+   copy centres over the globe and the wash goes centred with it. */
+@media (max-width: 720px) {
+  .fx-globe {
+    justify-items: center;
+  }
+  .fx-globe__orb,
+  .fx-globe__spokes {
+    left: 50%;
+    top: 62%;
+    width: min(88vw, 26rem);
+  }
+  .fx-globe__inner {
+    text-align: center;
+    max-width: 32rem;
+  }
+  .fx-globe__actions {
+    justify-content: center;
+  }
+  .fx-globe__scrim {
+    background: radial-gradient(
+      110% 70% at 50% 34%,
+      color-mix(in oklab, #150b22 88%, transparent) 0%,
+      color-mix(in oklab, #150b22 88%, transparent) 34%,
+      color-mix(in oklab, #150b22 52%, transparent) 60%,
+      transparent 100%
+    );
+  }
+}
+
+@media (max-width: 480px) {
+  .fx-globe__orb,
+  .fx-globe__spokes {
+    top: 66%;
+    width: min(96vw, 22rem);
+  }
+}
+
+/* Only the resting state moves, and only where motion is allowed. The scene
+   has its own reduced-motion path in index.js: one frame, then no loop and no
+   pointer parallax. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-globe__spokes {
+    animation: fx-globe-spin 90s linear infinite;
+  }
+  @keyframes fx-globe-spin {
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<!-- vanta-net section. Finished at rest with CSS alone: the perspective lattice
+     in .fx-net__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL canvas once it holds a context and has rendered a frame.
+     That fallback is load-bearing here rather than decorative -- the context is
+     requested with failIfMajorPerformanceCaveat, so a machine with hardware
+     acceleration off never gets the canvas at all.
+     The _fx paths are root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html.
+     The three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/vanta-net/style.css">
+<section class="fx-net" data-fx="vanta-net">
+  <div class="fx-net__rest" aria-hidden="true"></div>
+  <div class="fx-net__scrim" aria-hidden="true"></div>
+  <div class="fx-net__grain" aria-hidden="true"></div>
+  <div class="fx-net__inner">
+    <p class="fx-net__eyebrow">Built on open protocols</p>
+    <h1 class="fx-net__title">Every system you run, on one graph.</h1>
+    <p class="fx-net__lede">Replace this copy with your own. The headline slot takes one line or three, and the lattice keeps drifting behind it either way.</p>
+    <div class="fx-net__actions">
+      <a class="fx-net__cta fx-net__cta--primary" href="#">Start free</a>
+      <a class="fx-net__cta fx-net__cta--ghost" href="#">Read the docs</a>
+    </div>
+  </div>
+</section>
