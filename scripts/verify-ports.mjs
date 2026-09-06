@@ -451,9 +451,12 @@ export function verifyEffect(dir, opts = {}) {
   return out;
 }
 
-export function effectDirs(root = join(ROOT, "effects")) {
-  return readdirSync(root).map((d) => join(root, d)).filter((d) => statSync(d).isDirectory());
-}
+// Re-exported from lint.mjs rather than redefined. The two had drifted the
+// moment a curation branch added effects/_shared/ for a runtime several effects
+// share: lint learned to skip underscore-prefixed directories, this file did
+// not, and the gate crashed looking for _shared/meta.json. One definition of
+// what counts as an effect directory is the fix, not two that agree today.
+export { effectDirs } from "./lint.mjs";
 
 // ---------------------------------------------------------------- reporting
 
