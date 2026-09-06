@@ -53,4 +53,4 @@ bun test
 bun run check   # lint + build + test
 ```
 
-Preview images are 16:9 PNGs. `aurora-css/preview.png` is a generated gradient placeholder until a real capture lands.
+Preview images are 640x360 PNGs. `mesh-gradient/preview.png` is a real capture of the mounted shader; `aurora-css/preview.png` is still a generated gradient placeholder. Capture one by materialising the built item into a directory, serving it, and screenshotting at 1280x720. Hide `.fx-*__grain` first and box-average down to 640: the grain and the shader's own dithering are close to random noise, and a full-resolution capture with both lands at ~500 KB against ~100 KB without them.

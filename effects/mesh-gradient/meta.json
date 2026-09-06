@@ -1,0 +1,46 @@
+{
+  "name": "mesh-gradient",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["mesh", "gradient", "webgl", "shader", "hero", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' mesh gradient on WebGL2: four colour points drifting through a swirled, grain-mixed blend, with a designed CSS mesh as the resting state.",
+  "needs": ["paper"],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#e0eaff", "#241d9a", "#f75092", "#9f50d3"],
+      "description": "Two to ten colour points. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Drift rate. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "distortion": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Warp applied to the UV before the colour points are sampled. 0 is a clean blend."
+    },
+    "swirl": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Rotation applied with distance from the centre, so the blend twists outward."
+    },
+    "grainMixer": {
+      "type": "number",
+      "default": 0,
+      "description": "Noise added to the colour point positions, which frays the boundaries between them."
+    },
+    "grainOverlay": {
+      "type": "number",
+      "default": 0,
+      "description": "Film grain composited over the finished blend."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "60467401863c1917dd02016d0c1ff2f791d0b3c8",
+    "path": "packages/shaders/src/shaders/mesh-gradient.ts"
+  }
+}

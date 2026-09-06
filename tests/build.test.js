@@ -3,9 +3,14 @@
 // specifier form lint catches cannot slip past the build into a shipped item,
 // and a `needs` key expanding to every file the manifest lists for it.
 //
-// The vendor cases build against tests/fixtures/vendor/ because the real
-// vendor/ is still empty; the manifest they resolve through is the shipped one,
-// so a filename that drifts breaks these tests rather than a generated site.
+// The vendor cases build against tests/fixtures/vendor/ rather than the real
+// vendor/, which is now populated: the stub dir is missing the tsparticles
+// bundle on purpose, so the missing-file case below stays a real assertion
+// instead of one that passes only while a directory happens to be empty. The
+// manifest they resolve through is always the shipped one, so a filename that
+// drifts breaks these tests rather than a generated site.
+//
+// vendor/ having contents is covered separately, in tests/vendor.test.js.
 import { test, expect } from "bun:test";
 import { readFileSync, existsSync } from "node:fs";
 import { build, buildItem } from "../scripts/build-registry.mjs";

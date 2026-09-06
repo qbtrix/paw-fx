@@ -20,9 +20,11 @@
 // (relative) and pass build (a side-effect import the from-only scan never
 // saw), emitting an item whose vendor file was never written.
 //
-// vendorDir is a parameter so tests can build against stub vendor files while
-// the real vendor/ is still empty. The manifest always comes from the repo, so
-// tests exercise the shipped one rather than a copy that can drift.
+// vendorDir is a parameter so tests can build against stub vendor files rather
+// than the populated vendor/. The manifest always comes from the repo, so tests
+// exercise the shipped one rather than a copy that can drift. Because it is an
+// optional second parameter, build() must call buildItem through an arrow and
+// never pass it straight to .map(), which supplies the index as arg two.
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join, basename } from "node:path";
@@ -84,7 +86,12 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
 export function build(out = join(ROOT, "dist/registry")) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(join(out, "items"), { recursive: true });
-  const items = effectDirs().map(buildItem);
+  // Not `.map(buildItem)`: map passes (element, index, array), so the index
+  // lands in vendorDir and every vendor path resolves against a number. That
+  // was invisible while every effect had `needs: []` -- vendorDir is only read
+  // when a key has files to emit -- and fired on the first effect with a
+  // dependency. The arrow is what keeps the default parameter reachable.
+  const items = effectDirs().map((dir) => buildItem(dir));
   for (const it of items) writeFileSync(join(out, "items", `${it.name}.json`), JSON.stringify(it, null, 2));
   const registry = {
     version: version(),
