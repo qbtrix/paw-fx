@@ -11,8 +11,9 @@ effects/_shared/  paw-fx code shared between effects (glsl-mount.js)
 vendor/           manifest.json plus the files it lists (anime, three, paper, tsparticles, lenis)
 schema/           meta.schema.json
 scripts/          lint.mjs  build-registry.mjs  validate.mjs  smoke.mjs
+                  build-gallery.mjs plus gallery/ (its css and js, copied verbatim)
 tests/            bun test (fixtures under tests/fixtures/)
-dist/registry/    build output (gitignored)
+dist/registry/    build output (gitignored), including previews/ and gallery/
 ```
 
 A directory under `effects/` whose name starts with `_` is shared code, not an
@@ -47,9 +48,23 @@ Lint enforces: schema, licence allow-list and origin, every `needs` key present 
 
 ## Registry
 
-`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license) and `dist/registry/items/<name>.json` (meta plus `files[{path, content}]`, `snippet`, `usage`). Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it.
+`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license), `dist/registry/items/<name>.json` (meta plus `deviations`, `files[{path, content}]`, `snippet`, `usage`) and `dist/registry/previews/<name>.png`, copied from the effect. Those last two exist because `dist/registry/` is the whole of what a consumer sees -- the MCP server serves it and the gallery reads it and nothing else -- so the two questions a human asks before trusting an effect, what does it look like and where does it depart from upstream, have to be answerable from the registry. An effect with no `preview.png` is skipped rather than failing the build; a preview is a presentation asset, not part of the contract lint gates. Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it.
 
 Paths in `usage` and in `snippet.html` are root-absolute (`/_fx/...`), not page-relative. An html Paw Site is served by an assets-only Worker with `assets.directory: "."` and the sites code has no base-path concept, so a site always sits at the origin root: `./_fx/...` would resolve wrong on any nested page such as `/blog/post.html`. `usage` mounts with `querySelectorAll` and a loop, because the scroll, text and cursor categories routinely appear several times on one page.
+
+## Gallery
+
+`bun run gallery` builds the registry and then writes `dist/registry/gallery/`: one page carrying every effect, its preview, what it needs, which engines take it, the licence and the upstream file at the pinned commit, the deviations it declares, its options, and the `get_effect` call that fetches it. The audience is someone picking an effect for a client site.
+
+Its only input is `dist/registry/` -- the index, the items, the previews. Never the `effects/` tree. The registry is what the MCP server serves, so a gallery built from it shows what a consumer gets, and an effect added to `effects/` reaches the page through the same command with no edit to the generator. `tests/gallery.test.js` counts the registry against the page so a dropped effect fails `bun run check` rather than going unnoticed.
+
+The gallery is itself a Paw Site made of paw-fx, and its chrome is taken from the registry the way a site-building agent takes it: each item's `files[]` written at its own `path`, each item's `usage` lines as the stylesheet link and the mount script. `sg-nebula-drift` is the hero, `marquee-css` the ticker of upstreams (generated from `origin.repo`, so it stays true), `cursor-spotlight` the cards. All three are dependency-free, so the page ships no vendor code. Those usage lines are root-absolute, so serve the directory at a root (`python3 -m http.server --directory dist/registry/gallery`) rather than opening `index.html` over `file://`.
+
+Previews ride inside `index.html` as `data:` URIs. An html Paw Site is created from a `{path: contents}` map whose values must be strings, so binary has no way in, and the page has to be one publishable map. `sips` re-encodes each 640x360 PNG to JPEG first: the PNGs total about 4 MB, which is past the 4 MB deploy-input cap a publish captures, and the JPEGs land around 1 MB. Without `sips` (a Linux CI, say) the PNG ships as-is: the same page, five times the bytes, and too big to publish.
+
+Cards and panels are rendered into the HTML rather than by the browser, so the page reads with scripting off and every effect is there for a test to count. `gallery.js` only filters, ranks (the same order `search_effects` returns), opens and copies. A `#<name>` hash opens that effect's panel, which is the `preview_url` contract the MCP server hands agents.
+
+No live previews. A document holds roughly 8 to 16 WebGL contexts before it starts evicting the oldest, and 29 of them would leave a grid of dead canvases, which is worse than a grid of images. The hero is the one live shader on the page.
 
 ## Resting-state smoke
 
@@ -151,6 +166,7 @@ every `bun test`.
 ```
 bun run lint    # contract checks, exits 1 with effect + reason
 bun run build   # dist/registry
+bun run gallery # build, then dist/registry/gallery (the public page)
 bun run smoke   # resting state renders with no effect script (needs agent-browser)
 bun run verify  # port fidelity against the pinned upstream (network, needs gh)
 bun test

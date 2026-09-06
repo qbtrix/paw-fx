@@ -1,7 +1,13 @@
 // Build contract: registry.json + items/aurora-css.json with the documented
-// shape, the vendor check reading index.js through lint's scanner so a
-// specifier form lint catches cannot slip past the build into a shipped item,
-// and a `needs` key expanding to every file the manifest lists for it.
+// shape, previews/<name>.png copied beside them, the vendor check reading
+// index.js through lint's scanner so a specifier form lint catches cannot slip
+// past the build into a shipped item, and a `needs` key expanding to every file
+// the manifest lists for it.
+//
+// `deviations` and the copied preview are asserted here because dist/registry/
+// is the whole of what a consumer sees: the MCP server and the gallery both
+// read it and never the effects/ tree, so anything missing from an item is
+// missing from the product.
 //
 // The vendor cases build against tests/fixtures/vendor/ rather than the real
 // vendor/, which is now populated: the stub dir is missing the tsparticles
@@ -34,9 +40,13 @@ test("build emits registry and aurora-css item", () => {
   const p = `${out}/items/aurora-css.json`;
   expect(existsSync(p)).toBe(true);
   const item = JSON.parse(readFileSync(p, "utf8"));
-  for (const k of ["name", "version", "category", "summary", "needs", "license", "origin", "options", "files", "snippet", "usage"]) {
+  for (const k of ["name", "version", "category", "summary", "needs", "license", "origin", "options", "deviations", "files", "snippet", "usage"]) {
     expect(item).toHaveProperty(k);
   }
+  // An effect with no deviations still carries the key, so a consumer (the
+  // gallery, the MCP server) reads a list either way rather than branching.
+  expect(Array.isArray(item.deviations)).toBe(true);
+  expect(existsSync(`${out}/previews/aurora-css.png`)).toBe(true);
   expect(item.files.map((f) => f.path)).toEqual([
     "_fx/effects/aurora-css/index.js",
     "_fx/effects/aurora-css/style.css",

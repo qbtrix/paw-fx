@@ -1,0 +1,398 @@
+/* gallery.css: the paw-fx gallery's own chrome, copied verbatim into
+   dist/registry/gallery/ by scripts/build-gallery.mjs. It carries no effect
+   data -- every name, summary, tag and licence on the page is generated from
+   dist/registry/ into index.html.
+
+   Two rules keep it out of the effects' way:
+     - custom properties here are --g-, because effects read --fx-* off their
+       own section and a name collision would restyle the effect;
+     - it only ever overrides layout on the .fx-spot classes it borrows from
+       cursor-spotlight (grid width, card padding). The border ring, the wash
+       and the type scale stay upstream's, because that card IS the effect. */
+
+:root {
+  --g-bg: #08080d;
+  --g-panel: #101017;
+  --g-line: #23232e;
+  --g-ink: #f5f5f7;
+  --g-muted: #a2a2b0;
+  --g-accent: #8b4cff;
+  --g-accent-2: #fe8bbb;
+  --g-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --g-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  color-scheme: dark;
+}
+
+body.fxg {
+  margin: 0;
+  background: var(--g-bg);
+  color: var(--g-ink);
+  font-family: var(--g-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.fxg-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* ---------- toolbar ---------- */
+
+.fxg-main {
+  /* .fx-spot is the cursor-spotlight section; the gallery only widens it. */
+  padding-inline: clamp(1rem, 4vw, 3.5rem);
+  padding-block: 0 clamp(4rem, 8vw, 7rem);
+  background: var(--g-bg);
+  scroll-margin-top: 0;
+}
+
+.fxg-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 auto;
+  padding: 1rem 0 0.9rem;
+  background: color-mix(in oklab, var(--g-bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--g-line);
+}
+
+.fxg-bar-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  max-width: 82rem;
+  margin: 0 auto;
+}
+
+.fxg-search {
+  flex: 1 1 15rem;
+}
+
+.fxg-search input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.6rem;
+  background: var(--g-panel);
+  color: var(--g-ink);
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.fxg-search input::placeholder { color: color-mix(in oklab, var(--g-muted) 80%, transparent); }
+.fxg-search input:focus-visible { outline: 2px solid var(--g-accent); outline-offset: 1px; }
+
+.fxg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.fxg-tab {
+  padding: 0.42rem 0.7rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.fxg-tab:hover { color: var(--g-ink); border-color: color-mix(in oklab, var(--g-accent) 50%, var(--g-line)); }
+
+.fxg-tab.is-on {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--g-accent) 22%, var(--g-panel));
+  color: var(--g-ink);
+}
+
+.fxg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.fxg-toggle input { accent-color: var(--g-accent); width: 1rem; height: 1rem; }
+.fxg-toggle:hover { color: var(--g-ink); }
+
+.fxg-count {
+  margin: 0 0 0 auto;
+  font-family: var(--g-mono);
+  font-size: 0.78rem;
+  color: var(--g-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- grid ---------- */
+
+.fxg-grid {
+  /* cursor-spotlight sizes its grid for three marketing cards; a gallery of 29
+     wants the full page and a wider card, because each one carries a 16:9 shot. */
+  max-width: 82rem;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+  padding-top: 1.6rem;
+}
+
+.fxg-card {
+  min-height: 0;
+  padding: 0.5rem;
+  transition: transform 140ms ease;
+  /* Clears the sticky toolbar. Without it a card scrolled into view by the
+     keyboard or by a deep link parks under the bar, where the top of it is
+     covered and a click lands on the toolbar instead. */
+  scroll-margin-top: 5.5rem;
+}
+
+.fxg-card:has(.fxg-link:hover) { transform: translateY(-2px); }
+.fxg-card[hidden] { display: none; }
+
+.fxg-card .fx-spot__body { gap: 0.55rem; }
+
+.fxg-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0.65rem;
+  background: #0d0d14;
+  border: 1px solid var(--g-line);
+}
+
+.fxg-name {
+  margin: 0.35rem 0 0;
+  font-family: var(--g-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fxg-link {
+  color: var(--g-ink);
+  text-decoration: none;
+}
+
+/* The whole card is the hit area, which is why the ring lights under the
+   pointer anywhere on it and the anchor is still a real link for the keyboard. */
+.fxg-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.fxg-sum {
+  margin: 0;
+  color: var(--g-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fxg-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: auto 0 0;
+  padding-top: 0.6rem;
+}
+
+.fxg-chip {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  color: var(--g-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.fxg-cat { color: var(--g-ink); border-color: color-mix(in oklab, var(--g-accent) 45%, var(--g-line)); }
+.fxg-free { color: #86efac; border-color: color-mix(in oklab, #86efac 35%, var(--g-line)); }
+.fxg-needs { color: var(--g-accent-2); border-color: color-mix(in oklab, var(--g-accent-2) 35%, var(--g-line)); }
+.fxg-kind { margin-left: 0.4rem; color: var(--g-muted); font-size: 0.65rem; text-transform: uppercase; }
+
+.fxg-empty {
+  max-width: 82rem;
+  margin: 4rem auto;
+  text-align: center;
+  color: var(--g-muted);
+}
+
+/* ---------- dialog ---------- */
+
+.fxg-dialog {
+  width: min(52rem, 94vw);
+  max-height: 88vh;
+  padding: 0;
+  border: 1px solid var(--g-line);
+  border-radius: 1rem;
+  background: var(--g-panel);
+  color: var(--g-ink);
+  font-family: var(--g-sans);
+}
+
+.fxg-dialog::backdrop { background: rgba(4, 4, 8, 0.72); backdrop-filter: blur(3px); }
+
+.fxg-sheet { padding: clamp(1.1rem, 3vw, 1.9rem); }
+
+.fxg-dhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.fxg-dtitle {
+  margin: 0;
+  font-family: var(--g-mono);
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.fxg-dmeta { margin: 0.3rem 0 0; color: var(--g-muted); font-size: 0.8rem; }
+
+.fxg-x {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--g-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.fxg-x:hover { color: var(--g-ink); border-color: var(--g-accent); }
+
+.fxg-dshot {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: grid;
+}
+
+.fxg-dshot img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: inherit; }
+
+.fxg-lede {
+  margin: 1.1rem 0 0.8rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #dcdce4;
+}
+
+.fxg-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.fxg-block {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--g-line);
+}
+
+.fxg-h {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--g-muted);
+  font-weight: 600;
+}
+
+.fxg-p { margin: 0.4rem 0 0; font-size: 0.9rem; line-height: 1.6; color: #c9c9d4; }
+.fxg-p code, .fxg-srcs code { font-family: var(--g-mono); font-size: 0.82em; }
+
+.fxg-engines { display: flex; gap: 0.4rem; }
+
+.fxg-engine {
+  padding: 0.28rem 0.65rem;
+  border-radius: 0.45rem;
+  font-family: var(--g-mono);
+  font-size: 0.78rem;
+}
+
+.fxg-engine.is-on { background: color-mix(in oklab, #86efac 18%, var(--g-panel)); color: #b7f5ce; border: 1px solid color-mix(in oklab, #86efac 35%, transparent); }
+.fxg-engine.is-off { background: transparent; color: #6b6b78; border: 1px dashed var(--g-line); text-decoration: line-through; }
+
+.fxg-srcs { margin: 0.6rem 0 0; padding-left: 1.1rem; }
+.fxg-srcs li { margin: 0.25rem 0; }
+.fxg-src { color: var(--g-accent-2); text-underline-offset: 3px; }
+.fxg-src:hover { color: var(--g-ink); }
+
+.fxg-devs { margin: 0; padding: 0; list-style: none; }
+
+.fxg-dev {
+  margin: 0.7rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 2px solid color-mix(in oklab, var(--g-accent) 45%, var(--g-line));
+}
+
+.fxg-dev-what { margin: 0; font-size: 0.9rem; font-weight: 600; }
+.fxg-dev-why { margin: 0.3rem 0 0; font-size: 0.85rem; line-height: 1.6; color: var(--g-muted); }
+
+.fxg-opts { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.fxg-opts th, .fxg-opts td { padding: 0.5rem 0.6rem; text-align: left; vertical-align: top; border-top: 1px solid var(--g-line); }
+.fxg-opts thead th { border-top: 0; color: var(--g-muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.fxg-opts tbody th { font-weight: 600; white-space: nowrap; }
+.fxg-opts td { color: var(--g-muted); line-height: 1.55; }
+.fxg-type { font-family: var(--g-mono); color: var(--g-accent-2); }
+.fxg-default code { color: #dcdce4; }
+
+.fxg-call {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.6rem;
+  background: #0a0a10;
+  overflow-x: auto;
+}
+
+.fxg-call code { font-family: var(--g-mono); font-size: 0.8rem; color: #d8d4ff; white-space: pre; }
+
+.fxg-copy {
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--g-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex: none;
+}
+
+.fxg-copy:hover { color: var(--g-ink); border-color: var(--g-accent); }
+
+/* ---------- footer ---------- */
+
+.fxg-foot-bar {
+  padding: 2.5rem clamp(1rem, 4vw, 3.5rem) 3.5rem;
+  border-top: 1px solid var(--g-line);
+  color: var(--g-muted);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.fxg-foot-bar p { margin: 0 0 0.4rem; max-width: 52rem; }
+.fxg-foot-bar code { font-family: var(--g-mono); color: #d8d4ff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fxg-card { transition: none; }
+}
