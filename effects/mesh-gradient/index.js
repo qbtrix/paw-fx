@@ -14,6 +14,12 @@
 // uniform values below are upstream's `defaultPreset` from
 // packages/shaders-react/src/shaders/mesh-gradient.tsx at that commit.
 //
+// meta.json's origin.path lists BOTH of those files, because the port really
+// does span both: the shader comes from one and every default below comes from
+// the other. Pinning only the shader made `distortion: 0.8` and `swirl: 0.1`
+// look like numbers with no upstream counterpart, which is what `bun run
+// verify` reported before the second path was declared.
+//
 // Only the seams are ours: the vendor import path, the mount/update/destroy
 // wrapper, the WebGL guards, and reading the palette off --fx-* so the shader
 // and the CSS resting state cannot disagree about their colours.

@@ -34,7 +34,7 @@ Validated against `schema/meta.schema.json`: `name` (kebab), `version`, `categor
 
 ## Adding an effect
 
-Port, never invent. Find the upstream, record `repo`, `commit` and `path` in `meta.json.origin`, keep the upstream licence header as a comment in the first 20 lines of `index.js` (a comment, not the `license` field in `meta` -- that field is required on every effect, so counting it would make the rule a no-op), and change only the seams: the `mount/update/destroy` wrapper, vendor import paths, `--fx-` variables. The visual logic stays upstream's. Add the effect to LICENSES.md. Run `bun run check`.
+Port, never invent. Find the upstream, record `repo`, `commit` and `path` in `meta.json.origin`, keep the upstream licence header as a comment in the first 20 lines of `index.js` (a comment, not the `license` field in `meta` -- that field is required on every effect, so counting it would make the rule a no-op), and change only the seams: the `mount/update/destroy` wrapper, vendor import paths, `--fx-` variables. The visual logic stays upstream's. Add the effect to LICENSES.md. Run `bun run check`, then `bun run verify` to prove the port against the pinned upstream (see Port fidelity). If the port spans several upstream files, list them all in `origin.path`, or the shared code reads as invention.
 
 Lint enforces: schema, licence allow-list and origin, every `needs` key present in `vendor/manifest.json`, snippet rules, self-contained references (every module specifier in index.js, every `@import` and `url()` in style.css), no vendor global read at module scope, own code (index.js + style.css + snippet.html) at most 60 KB gzipped, licence header comment on ported code. A generated site has no build step, so a specifier that is not a path is a hard failure in the browser and this lint is the only thing standing in front of it.
 
@@ -84,12 +84,68 @@ Needs the `agent-browser` CLI on PATH (`brew install agent-browser &&
 agent-browser install`). Smoke uses its own browser session and closes it
 afterwards, so a session you have open elsewhere is left alone.
 
+## Port fidelity
+
+`bun run verify` is the gate on `port, never invent`. Lint proves an effect
+**declares** an origin; verify proves the code **came** from it, by fetching the
+pinned upstream bytes and comparing. That gap is where a convincing shader gets
+written from scratch and labelled Vanta, so nothing in the gate asks a model
+whether code looks ported. Seven mechanical rules, five hard and two advisory:
+
+| rule | verdict | what it proves |
+|---|---|---|
+| `pin-commit` | FAIL | `origin.commit` resolves in `origin.repo`. An invented sha dies here, and this is the likeliest fabrication. |
+| `pin-path` | FAIL | every `origin.path` exists at that exact commit, not on the branch tip |
+| `paper-import` | FAIL | a `paper-design/shaders` port imports the shader string from `../../vendor/paper.js` and carries no GLSL of its own, so there is no second copy to drift |
+| `copied-glsl` | FAIL | a `shader-gallery/shaders` port copies the `.frag` (no module exists upstream to import), so the embedded GLSL must be byte-identical: line endings and trailing whitespace are normalised, nothing else |
+| `licence` | FAIL | `meta.license` equals the SPDX id detected in the upstream repo's own LICENSE file at that commit. GitHub's `/license` guess is not consulted. |
+| `numeric-trace` | WARN | every numeric literal in `index.js` appears in some pinned upstream file |
+| `deviations-real` | WARN | each declared deviation matches something in the code, the GLSL diff or the untraced constants |
+
+A FAIL exits 1. WARNs alone exit 0 and print anyway, because a wave of them is
+the signal to read the port by hand.
+
+`numeric-trace` is advisory on purpose. A port legitimately carries numbers that
+are ours (a clamp range, a guard threshold) and nothing mechanical separates
+those from an invented easing curve, so the check lists every literal with no
+upstream counterpart and leaves the call to a reviewer. It already earned its
+keep: mesh-gradient's `distortion: 0.8` and `swirl: 0.1` traced to nothing,
+because `origin.path` named the shader file and not the
+`shaders-react/.../mesh-gradient.tsx` its own header comment cites as the source
+of every default. The fix was declaring the second path, which is why
+`origin.path` takes a list.
+
+A deviation excuses a `copied-glsl` line whose text shares a token with the
+deviation's `what`, which is how a necessary change ships without turning the
+rule off.
+
+`verify` is **not** part of `bun run check`: it makes network calls, and check
+has to run in a worktree with no `gh` and no connection. Upstream reads go
+through `gh api` (authenticated, so 5000/hour) and cache under `.cache/upstream/
+<repo>/<commit>/<path>`, which is gitignored and never stale because those three
+coordinates are immutable. Only successes cache, or an effect pinned to an
+invented sha would cache its own 404 and stop being caught.
+
+`tests/verify.test.js` runs the same code offline against
+`tests/fixtures/upstream/`, a committed copy of that cache holding the real
+upstream bytes. Six fixtures prove the gate can fail, covering all seven rules
+(`bad-glsl-altered` is the fixture for `copied-glsl` and `numeric-trace` both).
+Each is a correct port with exactly one thing wrong: an invented sha, a path that
+does not exist at a real sha, a copied shader with one constant moved from `2.03`
+to `2.07`, a paper-design port that pastes GLSL, an effect declaring MIT over an
+Apache-2.0 upstream, and a deviation that describes nothing. The suite then
+mutation-tests itself: it weakens each rule in turn, asserts that rule's fixture
+goes quiet, and asserts every other rule still catches its own. That last column
+is what stops one over-broad rule covering for a dead one. The table prints on
+every `bun test`.
+
 ## Commands
 
 ```
 bun run lint    # contract checks, exits 1 with effect + reason
 bun run build   # dist/registry
 bun run smoke   # resting state renders with no effect script (needs agent-browser)
+bun run verify  # port fidelity against the pinned upstream (network, needs gh)
 bun test
 bun run check   # lint + build + smoke + test
 ```

@@ -41,6 +41,9 @@
   "origin": {
     "repo": "paper-design/shaders",
     "commit": "60467401863c1917dd02016d0c1ff2f791d0b3c8",
-    "path": "packages/shaders/src/shaders/mesh-gradient.ts"
+    "path": [
+      "packages/shaders/src/shaders/mesh-gradient.ts",
+      "packages/shaders-react/src/shaders/mesh-gradient.tsx"
+    ]
   }
 }
