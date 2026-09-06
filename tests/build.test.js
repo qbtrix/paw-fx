@@ -70,8 +70,12 @@ test("a ported effect with a header comment builds and emits every vendor file",
   expect(item.files.find((f) => f.path === "_fx/vendor/three.core.js").content).toContain("Scene");
 });
 
+// Deliberately built against the stub dir, which has no tsparticles file, so
+// this stays true once the real vendor/ is populated. Pointing it at the real
+// vendor/ instead would pass only while that directory is empty and would go
+// red on the vendoring task's first commit.
 test("a manifest file missing from vendor/ is a clear error", () => {
-  expect(() => buildItem(fx("tests/fixtures/good-ported-header"))).toThrow(
-    'needs "three" but vendor/three.module.js is missing',
+  expect(() => buildItem(fx("tests/fixtures/good-vendor-global"), stubVendor)).toThrow(
+    'needs "tsparticles" but vendor/tsparticles.slim.bundle.min.js is missing',
   );
 });
