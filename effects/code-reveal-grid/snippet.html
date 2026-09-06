@@ -1,0 +1,64 @@
+<!-- code-reveal-grid section. Finished at rest with CSS alone: six tiles, each
+     painting its gradient plate under a monogram, with a label and a tag. The
+     character layer inside each tile is empty and opacity 0 until index.js
+     fills it, so a blocked script, a pruned bundle or prefers-reduced-motion
+     leaves the grid exactly as it reads here.
+     Mount it with the three lines in `usage`; several of these can sit on one
+     page and each keeps its own pointer position.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/code-reveal-grid/style.css">
+<section class="fx-code-grid" data-fx="code-reveal-grid">
+  <p class="fx-code-grid__eyebrow">Selected work</p>
+  <h2 class="fx-code-grid__title">Six engagements, one shared way of shipping.</h2>
+  <div class="fx-code-grid__grid">
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#one">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">CM</span>
+      </a>
+      <p class="fx-code-grid__label">A modern, scalable site for CloudMasters: faster pages, cloud hosting, one deploy path.</p>
+      <span class="fx-code-grid__tag">Web Development</span>
+    </div>
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#two">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">NV</span>
+      </a>
+      <p class="fx-code-grid__label">Northvale moved twelve internal tools onto one design system in a single quarter.</p>
+      <span class="fx-code-grid__tag">Design Systems</span>
+    </div>
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#three">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">AX</span>
+      </a>
+      <p class="fx-code-grid__label">Axiom's checkout went from four steps to two, and the drop-off went with it.</p>
+      <span class="fx-code-grid__tag">Commerce</span>
+    </div>
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#four">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">HL</span>
+      </a>
+      <p class="fx-code-grid__label">Helio replaced a nightly batch with a stream, and reporting stopped being a day behind.</p>
+      <span class="fx-code-grid__tag">Data Platform</span>
+    </div>
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#five">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">QR</span>
+      </a>
+      <p class="fx-code-grid__label">Quarry's docs became a product surface rather than a folder nobody opened.</p>
+      <span class="fx-code-grid__tag">Documentation</span>
+    </div>
+    <div class="fx-code-grid__cell">
+      <a class="fx-code-grid__tile" href="#six">
+        <div class="fx-code-grid__deco" aria-hidden="true"></div>
+        <span class="fx-code-grid__mark">SB</span>
+      </a>
+      <p class="fx-code-grid__label">Sandbar shipped its first mobile release eleven weeks after the kickoff call.</p>
+      <span class="fx-code-grid__tag">Mobile</span>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+{
+  "name": "marquee-menu-css",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": [
+    "menu",
+    "navigation",
+    "marquee",
+    "hover",
+    "css-only",
+    "codrops",
+    "outline"
+  ],
+  "summary": "Giant outlined navigation: hovering an item fades its outline out over 0.1s and runs a 5s linear marquee band of the same word behind it, with a thumbnail riding along at 4deg.",
+  "needs": [],
+  "options": {
+    "duration": {
+      "type": "string",
+      "default": "5s",
+      "description": "One full traverse of the marquee band. Upstream's `animation: marquee 5s linear infinite`."
+    },
+    "offset": {
+      "type": "string",
+      "default": "20vw",
+      "description": "How far the band is shifted before it starts. Upstream's --offset, which both --move-initial and --move-final add."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/CSSMarqueeMenu",
+    "commit": "e7cea3a6762261e1e196d893bc2f5a1e50720dc1",
+    "path": [
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The hover choreography -- the link's opacity fade, the thumbnail's rotate3d and the marquee's animation-play-state flip -- is wrapped in @media (prefers-reduced-motion: no-preference), and a reduce branch fills the outlined text in on hover instead.",
+      "why": "A CSS-only effect has no mount() to bail out of, so the stylesheet is the only place that can honour the preference. Leaving the rules ungated would run an infinite translate for a reader who asked for stillness, and gating them without a fallback would leave hover with no answer at all.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every third-party asset is dropped: the five .menu__item-img photographs become a .fx-marquee-menu__thumb span painting a CSS gradient, the noise.png grain layer on main::before goes, and the typekit stylesheet (sofia-pro) becomes a system stack -- a Helvetica/Arial grotesque for the outlined words specifically, rather than the ui-sans-serif default the rest of the section uses. --item-font-size also steps from 10vw to 14vw below 53em, with the thumbnail hidden there.",
+      "why": "Codrops' demo photographs are licensed separately from the code and are not ours to redistribute, the grain PNG is the same, and the font is a hosted stylesheet an offline site cannot fetch (no repo in this survey ships a font file to vendor instead). The outlined words need a grotesque specifically: San Francisco, which ui-sans-serif resolves to on a Mac, draws an \"e\" crossbar as a contour that overshoots the bowl, and -webkit-text-stroke strokes it, so every \"e\" ends up with a rectangle through it. Measured at 150px across weights 700, 800 and 900 and with font-synthesis: none -- it is the face, not the weight. The thumbnail is an image slot, so the gradient keeps the hover beat legible and a site author overrides background-image with their own asset. Upstream sizes 10vw against a full-page nav; in a section on a phone that reads too small and the 50vh thumbnail has nowhere to sit.",
+      "kind": "ours"
+    },
+    {
+      "what": "The page chrome -- .frame, its title and links, the demo switcher and the body-level palette variables -- is dropped, and a section eyebrow plus a 1px rule between items is added.",
+      "why": "That markup is Codrops' demo furniture, not the effect. The rules give the section a floor of structure so it reads as navigation rather than five floating words.",
+      "kind": "ours"
+    },
+    {
+      "what": "The muted tone taken from upstream's --color-link (#b19e7f) is darkened to #6b5c42 for the eyebrow and the item counter.",
+      "why": "Upstream's value is 2.2:1 against its own cream background, which fails the 4.5:1 floor this library holds small text to; #6b5c42 is the same hue at 5.6:1. The outlined menu words are unaffected -- they are stroked in --fx-ink and are display-sized.",
+      "kind": "ours"
+    }
+  ]
+}

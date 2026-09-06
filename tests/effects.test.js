@@ -153,6 +153,20 @@ test.each([
   ["smooth-scroll", { lerp: 0.1, wheelMultiplier: 1, touchMultiplier: 1 }],
   // apps/www/registry/magicui/marquee.tsx @ 1246d6d
   ["marquee-css", { duration: "40s", gap: "1rem", pauseOnHover: false }],
+  // css/base.css .menu + @keyframes marquee @ e7cea3a
+  ["marquee-menu-css", { duration: "5s", offset: "20vw" }],
+  // js/item.js renderedStyles / getRandomString / gsap.to @ 4aa37f6
+  ["code-reveal-grid", { amt: 0.1, chars: 2000, fade: 0.5 }],
+  // 011-custom-cursor-filled-circle: index.html data attrs + index.js amt @ bbf47ca
+  ["cursor-follow", { scaleOnEnter: 2, opacityOnEnter: 0.8, amt: 0.2 }],
+  // src/js/demo1/menuItem.js createTimeline @ 6db15b7
+  ["gooey-text", { blurDuration: 0.8, swapDuration: 1.6, blur: 1 }],
+  // src/js/menuConfig.js + src/js/menu.js open() @ 32cf371
+  ["letter-shuffle-menu", { verticalTitle: "HAPUKU", totalLetters: 8, duration: 1.7, columnStagger: 0.03, letterStagger: 0.04 }],
+  // js/demo1/index.js scroll() @ 69c7888
+  ["sticky-sections", { brightness: 60, contrast: 135, lift: -15, imageLift: -40, imageRotate: -20 }],
+  // js/index.js config @ 354c584
+  ["image-repeat-reveal", { steps: 6, stepDuration: 0.35, stepInterval: 0.05, moverPauseBeforeExit: 0.14, clipPathDirection: "top-bottom", pathMotion: "linear", rotationRange: 0 }],
 ])("%s carries upstream's values", async (name, upstream) => {
   const { meta } = await import(join(EFFECTS, name, "index.js"));
   expect(Object.fromEntries(Object.entries(meta.options).map(([k, v]) => [k, v.default]))).toEqual(upstream);

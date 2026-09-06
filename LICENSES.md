@@ -77,6 +77,40 @@ necessary departure from reading as invention.
 | sg-isobar | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `isobar/shader.frag` |
 | sg-lull | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `lull/shader.frag` |
 | sg-brume | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `brume/shader.frag` |
+| marquee-menu-css | MIT | [codrops/CSSMarqueeMenu](https://github.com/codrops/CSSMarqueeMenu) `e7cea3a`, `css/base.css`, `index.html` |
+| code-reveal-grid | MIT | [codrops/AnimatedCodeBackground](https://github.com/codrops/AnimatedCodeBackground) `4aa37f6`, `js/item.js`, `js/utils.js`, `css/base.css` |
+| cursor-follow | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `011-custom-cursor-filled-circle/{js/index.js,css/base.css,index.html}` |
+| gooey-text | MIT | [codrops/GooeyTextHoverEffect](https://github.com/codrops/GooeyTextHoverEffect) `6db15b7`, `src/js/demo1/menuItem.js`, `src/css/base.css`, `src/index.html` |
+| letter-shuffle-menu | MIT | [codrops/LetterShuffleMenu](https://github.com/codrops/LetterShuffleMenu) `32cf371`, `src/js/{menuItem,menu,menuConfig}.js`, `src/css/base.css`, `src/index.html` |
+| sticky-sections | MIT | [codrops/StickySections](https://github.com/codrops/StickySections) `69c7888`, `js/demo1/index.js`, `css/base.css`, `index.html` |
+| image-repeat-reveal | MIT | [codrops/RepeatingImageTransition](https://github.com/codrops/RepeatingImageTransition) `354c584`, `js/index.js`, `css/base.css`, `index.html` |
+
+## The seven Codrops ports
+
+Every one is MIT with a real LICENSE file in its own repo, verified at the
+pinned commit by `bun run verify`'s licence rule rather than by GitHub's
+`/license` guess. None of them ships a font file; the ones that reach for a
+face pull a hosted Adobe Typekit stylesheet, which a generated site cannot
+fetch offline, so each port declares a system stack and records the drop under
+`deviations`.
+
+None of their demo photographs travel with the code. `marquee-menu-css`,
+`sticky-sections` and `image-repeat-reveal` are all image-led upstream and all
+three ship CSS-gradient placeholders instead, with the slot documented in
+`snippet.html` -- `image-repeat-reveal`'s is the interesting one, because the
+transition copies whatever `background-image` string the thumbnail holds, so a
+gradient written inline travels through the whole run exactly as a photograph
+would and an author swaps in `url(...)` with nothing else to change.
+
+GSAP appears in five of the seven upstreams and is not vendored here: its
+licence forbids use in tools that let people build animations without code,
+which is what paw-fx is. Every tween is rewritten onto the vendored anime.js,
+with upstream's durations, staggers and easing curves carried over verbatim.
+The easing map is by NAME, not by exponent -- GSAP's power scale runs
+power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
+`sine` means the `.out` variant -- so `power3` is `outQuart` and `sine.in` is
+`inSine`. Each port declares the migration under `deviations` with
+`kind: "api-migration"`.
 
 ## The two shader families carry their licences differently
 

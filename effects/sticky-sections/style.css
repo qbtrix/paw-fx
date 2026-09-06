@@ -1,0 +1,151 @@
+/* sticky-sections: a stack of full-height panels that pin in turn. Each one
+   holds the viewport while the next scrolls up over it, dimming and drifting
+   as it goes, with the image inside it sliding further and tipping over.
+
+   Ported from codrops/StickySections css/base.css @ 69c7888 (demo 1). The
+   .content--sticky pin, the .content--grid two-column layout and the six
+   --color-bg-N panel colours are upstream's; the prefixes, the palette values
+   and the image placeholder are ours.
+
+   RESTING STATE. The stack still stacks, because the pinning is CSS and owes
+   nothing to the script. Every panel sits at full brightness with its image
+   square and all of its copy readable -- with the script blocked, a pruned
+   bundle or reduced motion the reader gets the same six screens in the same
+   order, minus the dim-and-drift on the way past. Nothing is hidden behind
+   the scrub. */
+.fx-sticky {
+  /* base.css :root, verbatim apart from the prefixes. */
+  --fx-page-padding: 1.5rem;
+  --fx-ink: #fff;
+  --fx-bg: #12100e;
+  --fx-bg-1: #2f251e;
+  --fx-bg-2: #43392f;
+  --fx-bg-3: var(--fx-bg-1);
+  --fx-bg-4: var(--fx-bg-2);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  color: var(--fx-ink);
+  background: var(--fx-bg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.fx-sticky *,
+.fx-sticky *::before,
+.fx-sticky *::after { box-sizing: border-box; }
+
+/* base.css .content */
+.fx-sticky__panel,
+.fx-sticky__rail {
+  padding: var(--fx-page-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* base.css .content--intro / .content--outro */
+.fx-sticky__rail--intro { padding-block: 25vh; }
+.fx-sticky__rail--outro { padding-block: 50vh 30vh; }
+
+/* base.css .text-large */
+.fx-sticky__rail p {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  max-width: 900px;
+  margin: 0 0 0.85em 0;
+  line-height: 1.2;
+  text-wrap: pretty;
+}
+
+/* base.css .content--sticky. Upstream sets width: 100vw against a page; in a
+   section that is wider than the section whenever a scrollbar is showing and
+   pushes the whole page sideways. */
+.fx-sticky__panel {
+  width: 100%;
+  position: sticky;
+  --fx-offset: 0px;
+  top: var(--fx-offset);
+  height: calc(100svh - var(--fx-offset));
+}
+
+/* base.css .content--grid */
+.fx-sticky__panel {
+  display: grid;
+  overflow: hidden;
+  grid-column-gap: 5vw;
+  grid-row-gap: 2vh;
+  align-content: center;
+  grid-template-areas: 'content-img' 'content-title' 'content-text';
+  justify-items: center;
+}
+
+.fx-sticky__panel:nth-child(1) { background: var(--fx-bg-1); }
+.fx-sticky__panel:nth-child(2) { background: var(--fx-bg-2); }
+.fx-sticky__panel:nth-child(3) { background: var(--fx-bg-3); }
+.fx-sticky__panel:nth-child(4) { background: var(--fx-bg-4); }
+
+/* base.css .content__img / .content__img--large. Upstream ships a PNG here.
+   This is the IMAGE SLOT: it paints a gradient so the section is finished
+   without redistributing anyone else's artwork, and a site author replaces the
+   background with `background-image: url("./your.jpg"); background-size: cover;`
+   or swaps the div for an <img class="fx-sticky__img">. */
+.fx-sticky__img {
+  grid-area: content-img;
+  width: 60%;
+  max-width: 300px;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.5rem;
+  background:
+    radial-gradient(120% 90% at 20% 12%, rgba(255, 255, 255, 0.32), transparent 58%),
+    radial-gradient(100% 80% at 82% 90%, rgba(0, 0, 0, 0.42), transparent 60%),
+    linear-gradient(158deg, #e3c8a4, #a8845c 42%, #4b3a2b);
+  background-size: cover;
+  background-position: 50% 50%;
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.35);
+}
+
+/* base.css .content__title */
+.fx-sticky__title {
+  grid-area: content-title;
+  letter-spacing: -0.095em;
+  text-transform: uppercase;
+  line-height: 1;
+  font-weight: 900;
+  font-size: clamp(2rem, 6vw, 5rem);
+  margin: 0;
+  text-align: center;
+}
+.fx-sticky__title i {
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* base.css .content__text */
+.fx-sticky__text {
+  margin: 0;
+  max-width: 500px;
+  grid-area: content-text;
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 1rem;
+  backface-visibility: hidden;
+  color: var(--fx-ink);
+}
+
+/* base.css @media (min-width: 63em) */
+@media screen and (min-width: 63em) {
+  .fx-sticky { --fx-page-padding: 2rem 3rem; }
+  .fx-sticky__panel {
+    grid-template-areas: 'content-img content-title' 'content-img content-text';
+    grid-template-columns: 30% 1fr;
+    justify-items: start;
+  }
+  .fx-sticky__img {
+    width: 100%;
+    max-width: none;
+    justify-self: end;
+  }
+  .fx-sticky__title { align-self: end; text-align: left; }
+  .fx-sticky__text { text-align: left; align-self: start; }
+}

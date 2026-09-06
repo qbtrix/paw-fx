@@ -1,0 +1,61 @@
+<!-- marquee-menu-css section. Finished at rest with CSS alone: five outlined
+     nav items with a rule between each. There is no script tag here at all,
+     because the effect has no upstream JavaScript -- the marquee band is a
+     paused CSS animation that a sibling :hover selector sets running. Mount
+     the module only if you want to change the duration or the offset.
+     The .fx-marquee-menu__thumb is the image slot: it paints a gradient so
+     nothing has to ship a photograph, and a site author overrides
+     `background-image` on it.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/marquee-menu-css/style.css">
+<section class="fx-marquee-menu" data-fx="marquee-menu-css">
+  <p class="fx-marquee-menu__eyebrow">Studio</p>
+  <nav class="fx-marquee-menu__list">
+    <div class="fx-marquee-menu__item">
+      <a class="fx-marquee-menu__link" href="#showreel">Showreel</a>
+      <span class="fx-marquee-menu__thumb" aria-hidden="true"></span>
+      <div class="fx-marquee-menu__marquee" aria-hidden="true">
+        <div class="fx-marquee-menu__marquee-inner">
+          <span>Showreel</span><span>Showreel</span><span>Showreel</span><span>Showreel</span>
+        </div>
+      </div>
+    </div>
+    <div class="fx-marquee-menu__item">
+      <a class="fx-marquee-menu__link" href="#work">Case Studies</a>
+      <span class="fx-marquee-menu__thumb" aria-hidden="true"></span>
+      <div class="fx-marquee-menu__marquee" aria-hidden="true">
+        <div class="fx-marquee-menu__marquee-inner">
+          <span>Case Studies</span><span>Case Studies</span><span>Case Studies</span><span>Case Studies</span>
+        </div>
+      </div>
+    </div>
+    <div class="fx-marquee-menu__item">
+      <a class="fx-marquee-menu__link" href="#labs">Experiments</a>
+      <span class="fx-marquee-menu__thumb" aria-hidden="true"></span>
+      <div class="fx-marquee-menu__marquee" aria-hidden="true">
+        <div class="fx-marquee-menu__marquee-inner">
+          <span>Experiments</span><span>Experiments</span><span>Experiments</span><span>Experiments</span>
+        </div>
+      </div>
+    </div>
+    <div class="fx-marquee-menu__item">
+      <a class="fx-marquee-menu__link" href="#team">Our Crew</a>
+      <span class="fx-marquee-menu__thumb" aria-hidden="true"></span>
+      <div class="fx-marquee-menu__marquee" aria-hidden="true">
+        <div class="fx-marquee-menu__marquee-inner">
+          <span>The Crew</span><span>The Crew</span><span>The Crew</span><span>The Crew</span>
+        </div>
+      </div>
+    </div>
+    <div class="fx-marquee-menu__item">
+      <a class="fx-marquee-menu__link" href="#contact">Contact</a>
+      <span class="fx-marquee-menu__thumb" aria-hidden="true"></span>
+      <div class="fx-marquee-menu__marquee" aria-hidden="true">
+        <div class="fx-marquee-menu__marquee-inner">
+          <span>Contact</span><span>Contact</span><span>Contact</span><span>Contact</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</section>

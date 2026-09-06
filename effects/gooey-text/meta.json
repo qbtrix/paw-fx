@@ -1,0 +1,72 @@
+{
+  "name": "gooey-text",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "text",
+    "menu",
+    "hover",
+    "gooey",
+    "svg-filter",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Menu words that go liquid on hover: an SVG goo filter swells to stdDeviation 1 over 0.8s and settles over another 0.8s while two words cross-fade linearly across the full 1.6s.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "blurDuration": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Seconds each half of the blur takes: 0 to peak, then peak back to 0. Upstream's stdDeviation tween duration."
+    },
+    "swapDuration": {
+      "type": "number",
+      "default": 1.6,
+      "description": "Seconds the two words take to cross-fade. Upstream's opacity tween duration."
+    },
+    "blur": {
+      "type": "number",
+      "default": 1,
+      "description": "Peak feGaussianBlur stdDeviation. Upstream's stdDeviation target."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/GooeyTextHoverEffect",
+    "commit": "6db15b76e7425c2bca6f746da367bd927641fa48",
+    "path": [
+      "src/js/demo1/menuItem.js",
+      "src/css/base.css",
+      "src/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The gsap.timeline becomes an anime createTimeline with autoplay false; ease 'none' becomes 'linear', the startAt {stdDeviation: 0} becomes a from-to array, and durations are multiplied by a single MS constant of 1000.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without code. Every duration, value and position is upstream's; the conversion is only that GSAP counts in seconds and anime.js counts in milliseconds, and that anime writes a from-value as [from, to] rather than a separate startAt object.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Upstream's separate onComplete and onReverseComplete become one anime onComplete.",
+      "why": "anime's reverse() calls alternate(), which flips the direction flag and seeks the playhead, so the timeline reaches its end whichever way it is running and one callback covers both. Both callbacks upstream do the same thing anyway: drop the filter back to none.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Each item's filter id is rewritten at mount to fx-gooey-<mount>-<index>, and the feGaussianBlur is looked up inside the item's own svg rather than by document.querySelector on the id.",
+      "why": "An SVG url(#id) reference resolves document-wide against the first match, so two of these sections on one page would both drive the first section's filter. Upstream hand-numbers goo-1 to goo-4 because it only ever has one page.",
+      "kind": "seam"
+    },
+    {
+      "what": "focus and blur are bound alongside mouseenter and mouseleave.",
+      "why": "The second word is content, and without a keyboard path it is unreachable without a pointer.",
+      "kind": "ours"
+    },
+    {
+      "what": "Only demo 1 is ported: demos 2 and 3, their filter matrices and their palettes are dropped, along with the typekit stylesheet and the WebFont.load call in src/js/utils.js, and the page chrome -- title, links, demo switcher, credits, page loader -- which becomes a section eyebrow and lede.",
+      "why": "Three near-identical variants of one hover would be three effects in a registry that a site agent queries by name, and two of them would be untested code paths. Demo 1 is the one the repo's index.html opens on; the others are better ports in their own right if they are ever wanted. The font is a hosted stylesheet a generated site cannot fetch offline and no repo in this survey ships a font file to vendor instead, and the rest is Codrops' demo furniture rather than the effect.",
+      "kind": "ours"
+    }
+  ]
+}
