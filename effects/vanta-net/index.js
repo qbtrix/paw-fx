@@ -149,6 +149,7 @@ export function mount(el, opts = {}) {
   let scale = 1;
   let req = 0;
   let torn = false;
+  let still = false; // true once mount() decides not to run the loop
 
   // _base.js setSize
   const setSize = () => {
@@ -261,6 +262,16 @@ export function mount(el, opts = {}) {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio / scale);
+    // renderer.setSize() reassigns canvas.width/height, and assigning either
+    // resets the WebGL drawing buffer to transparent. With the loop running
+    // the next frame repaints it. Under reduced motion there IS no next frame,
+    // so the one held frame has to be re-rendered here or the section becomes
+    // the blank rectangle every other guard in this file exists to prevent --
+    // and data-fx-live has already faded the CSS resting state out behind it.
+    // Measured, not assumed: exactly 1 distinct colour across the canvas after
+    // a viewport change, on all three ports. The scene is not stepped, so this
+    // redraws the held frame rather than advancing it.
+    if (still && !torn) renderer.render(scene, camera);
   };
 
   // ---- vanta.net.js onMouseMove -----------------------------------------
@@ -447,7 +458,9 @@ export function mount(el, opts = {}) {
   el.setAttribute("data-fx-live", "");
   // Reduced motion keeps the frame just rendered and stops there: no loop, no
   // pointer parallax, the real mesh as a still image rather than a downgrade.
-  if (!reducedMotion()) {
+  if (reducedMotion()) {
+    still = true;
+  } else {
     if (options.mouseControls) {
       window.addEventListener("mousemove", windowMouseMove);
       window.addEventListener("scroll", windowMouseMove);

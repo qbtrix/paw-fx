@@ -118,9 +118,9 @@
    to be dark, because in the live state the crests move through the column.
    Held flat across the inner third of the ray -- the whole content column --
    and only then eased out, so the eyebrow and the button row at the ends of
-   the column get the same cover as the headline. Measured worst case across
-   several live frames is recorded at the bottom of this file; re-measure the
-   same way before lowering --fx-scrim. */
+   the column get the same cover as the headline. Measured worst case is
+   recorded at the bottom of this file; re-measure the same way before
+   lowering --fx-scrim. */
 .fx-waves__scrim {
   position: absolute;
   inset: 0;
@@ -237,3 +237,14 @@
     }
   }
 }
+
+/* Contrast, measured against the LIVE water rather than against this resting
+   state, with .fx-waves__inner hidden so the sample reads the background the
+   text actually sits on, worst case over four frames at 1440x900:
+
+     eyebrow    7.87:1     headline   9.54:1     lede       7.87:1
+     ghost CTA 10.50:1     primary CTA 15.68:1 (its own opaque white pill)
+
+   The specular highlight travels through the copy column as the swell rolls,
+   so re-measure the same way before lowering --fx-scrim: sample with the copy
+   hidden across several frames, not one. */

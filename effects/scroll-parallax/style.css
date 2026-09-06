@@ -244,8 +244,15 @@
   }
 }
 
-/* Contrast is measured against the brightest frame of the moving composition,
-   not against this file's static one: the sun bloom rides upward past the
-   headline as the section scrolls. Worst-case ratios across the pass are
-   recorded in the port's browser proof. The two text-shadows are what hold the
-   headline and lede over the bloom's brightest point. */
+/* Contrast is measured against the brightest frame of the MOVING composition,
+   not against this file's static one: the sun bloom rides past the copy as the
+   section scrolls, and the copy travels too. Sampled at three points across
+   the pass -- entering, middle, leaving -- with the glyphs blanked but the
+   wash left in place, worst case of the three:
+
+     eyebrow 5.20:1     headline 15.85:1     lede 11.30:1
+
+   The headline measured 2.34:1 over bare sky before .fx-para__inner::before
+   existed, which is the whole reason it does. Blank the glyphs rather than
+   hiding .fx-para__inner when re-measuring: hiding the element hides its
+   ::before with it, and the sample then reads sky no visitor ever sees. */

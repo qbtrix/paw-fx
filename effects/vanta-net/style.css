@@ -240,7 +240,13 @@
   }
 }
 
-/* Contrast, measured against the LIVE mesh rather than this resting state,
-   with .fx-net__inner hidden so the sample reads the background the text sits
-   on. Recorded in the port's browser proof; see meta.json.deviations for the
-   colour-management note that made the retune necessary. */
+/* Contrast, measured against the LIVE mesh rather than against this resting
+   state, with .fx-net__inner hidden so the sample reads the background the
+   text actually sits on, worst case over four frames at 1440x900:
+
+     eyebrow    6.13:1     headline   6.88:1     lede       6.10:1
+     ghost CTA  7.75:1     primary CTA 18.19:1 (its own opaque white pill)
+
+   The mesh is brighter in motion than any still of it suggests, so re-measure
+   the same way before lowering --fx-scrim: sample with the copy hidden across
+   several frames, not one. */

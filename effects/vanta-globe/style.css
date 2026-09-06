@@ -161,8 +161,15 @@
 /* The copy column has the left of the frame to itself, so the wash is a
    left-weighted ellipse rather than a centred one: it covers the text without
    putting a grey veil over the globe the section exists to show. Measured
-   worst case across several live frames is recorded in the port's browser
-   proof; re-measure the same way before lowering --fx-scrim. */
+   against the LIVE scene with .fx-globe__inner hidden, worst case over four
+   frames at 1440x900:
+
+     eyebrow    5.96:1     headline   6.38:1     lede       5.32:1
+     ghost CTA  6.56:1     primary CTA 18.19:1 (its own opaque white pill)
+
+   The lede is the tightest of the three ports, because the node field runs
+   under the bottom of the copy column where the wash is already easing out.
+   Re-measure the same way before lowering --fx-scrim. */
 .fx-globe__scrim {
   position: absolute;
   inset: 0;

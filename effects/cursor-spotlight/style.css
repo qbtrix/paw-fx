@@ -173,9 +173,15 @@
   outline-offset: 2px;
 }
 
-/* Measured against the live effect with the cursor parked over each card,
-   which is the brightest the surface ever gets: the wash is #262626 at 0.8
-   over #131318, so the card lightens to about #222226 under the cursor.
-   Worst-case ratios recorded in the port's browser proof; the muted body text
-   stays above the 4.5:1 floor there because #a1a1aa is light enough to gain
-   contrast from a darkening wash rather than lose it. */
+/* Contrast, measured against the live effect with the cursor parked ON the
+   card, which is the brightest the surface ever gets: the wash is #262626 at
+   0.8 over #131318, lifting the card to about #222226 under the pointer.
+   Sampled with the card body hidden so the numbers read the surface and not
+   the glyphs:
+
+     mark 15.14:1    card title 14.46:1    card text 6.35:1    meta 5.39:1
+
+   The muted text gains contrast under the wash rather than losing it, because
+   #a1a1aa is lighter than the surface it sits on. The meta line is the
+   tightest and is uppercase at 0.78rem, so it is held to the 4.5:1 floor
+   rather than the large-text one. */
