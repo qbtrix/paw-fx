@@ -1,0 +1,53 @@
+{
+  "name": "sg-sheen",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["moire", "interference", "gauze", "iridescent", "dark", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's sheen: two layers of sheer woven gauze lying over a dark field, one turned a hair against the other so their thread grids beat into broad curving rivers of tinted light.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#24d3c4", "#8b6cf0", "#ffcf6b", "#1a3a6b"],
+      "description": "Four tints, one per fringe order, so successive interference bands read as different hues. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "weave": {
+      "type": "number",
+      "default": 6,
+      "description": "Thread spacing in CSS pixels. It scales inversely with the fringes: a finer weave gives broader, smoother rivers and a coarser one gives tight busy ones. Upstream default, range 2 to 20."
+    },
+    "shimmerSpeed": {
+      "type": "number",
+      "default": 0.35,
+      "description": "Rate the upper gauze rotates and drifts against the lower; 0 freezes the interference into a still pattern. Upstream default, range 0 to 2."
+    },
+    "fringeGlow": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Brightness of the luminous fringes over the dark field. Upstream default, range 0 to 1.6."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["sheen/shader.frag", "sheen/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette tints are ours, not upstream's `peacock` preset.",
+      "why": "sheen/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a peacock set chosen to match the CSS resting state, which reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 at radius 4, saturation 1.2, contrast 1.08, dither and a 0.42 backdrop over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so the fringes carry no bloom and the section will not match the upstream poster. The CSS grain layer covers the banding the poster's dither was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

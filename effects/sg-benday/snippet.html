@@ -1,0 +1,21 @@
+<!-- sg-benday section. Finished at rest with CSS alone: the dot screen in
+     .fx-benday__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The two decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-benday/style.css">
+<section class="fx-benday" data-fx="sg-benday">
+  <div class="fx-benday__rest" aria-hidden="true"></div>
+  <div class="fx-benday__scrim" aria-hidden="true"></div>
+  <div class="fx-benday__inner">
+    <p class="fx-benday__eyebrow"><span class="fx-benday__dot" aria-hidden="true"></span>Issue 04</p>
+    <h1 class="fx-benday__title">Loud on the outside. Careful underneath.</h1>
+    <p class="fx-benday__lede">Write your own line here. The headline holds one row or three, and the screen keeps rolling colour behind it either way.</p>
+    <div class="fx-benday__actions">
+      <a class="fx-benday__cta fx-benday__cta--primary" href="#">Get the issue</a>
+      <a class="fx-benday__cta fx-benday__cta--ghost" href="#">Back catalogue</a>
+    </div>
+  </div>
+</section>

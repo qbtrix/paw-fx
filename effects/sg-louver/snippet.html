@@ -1,0 +1,22 @@
+<!-- sg-louver section. Finished at rest with CSS alone: the lit wall and its
+     shadow bars in .fx-louver__rest are the hero with JavaScript off, and
+     index.js only covers them with a WebGL canvas once it has the shader, a
+     context and a linked program. The _fx paths are root-absolute because a
+     site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The three decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-louver/style.css">
+<section class="fx-louver" data-fx="sg-louver">
+  <div class="fx-louver__rest" aria-hidden="true"></div>
+  <div class="fx-louver__scrim" aria-hidden="true"></div>
+  <div class="fx-louver__grain" aria-hidden="true"></div>
+  <div class="fx-louver__inner">
+    <p class="fx-louver__eyebrow"><span class="fx-louver__dot" aria-hidden="true"></span>Studio hours</p>
+    <h1 class="fx-louver__title">A quiet room and one very good tool.</h1>
+    <p class="fx-louver__lede">Replace this line with yours. The headline runs to one row or three, and the light keeps sliding across the wall behind it.</p>
+    <div class="fx-louver__actions">
+      <a class="fx-louver__cta fx-louver__cta--primary" href="#">Book a session</a>
+      <a class="fx-louver__cta fx-louver__cta--ghost" href="#">See the space</a>
+    </div>
+  </div>
+</section>

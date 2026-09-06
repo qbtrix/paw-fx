@@ -142,27 +142,44 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 `sine` means the `.out` variant -- so `power3` is `outQuart` and `sine.in` is
 `inSine`. Each port declares the migration under `deviations` with
 `kind: "api-migration"`.
+| sg-bask | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `bask/shader.frag` |
+| sg-benday | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `benday/shader.frag` |
+| sg-haze | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `haze/shader.frag` |
+| sg-contour | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `contour/shader.frag` |
+| sg-cubit | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `cubit/shader.frag` |
+| sg-louver | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `louver/shader.frag` |
+| sg-pleat | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `pleat/shader.frag` |
+| sg-sheen | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `sheen/shader.frag` |
+| sg-weft | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `weft/shader.frag` |
+| grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
+| neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
+| static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
+| smoke-ring | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/smoke-ring.ts` |
+| warp | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/warp.ts` |
 
 ## The two shader families carry their licences differently
 
-The six paper-design ports import their GLSL from `vendor/paper.js` rather than
+The eleven paper-design ports import their GLSL from `vendor/paper.js` rather than
 carrying a copy, so the Apache-2.0 obligation they create is the vendored one:
 `paper.LICENSE` and `paper.NOTICE` are emitted into every site that uses one,
 which the build does automatically from the `paper` key's `licenseFiles`. Each
 `index.js` still carries the Apache-2.0 header comment and the "Powered by Paper
 Shaders" attribution the upstream project asks for.
 
-The eight shader.gallery ports vendor nothing. Their GLSL ships as
+The seventeen shader.gallery ports vendor nothing. Their GLSL ships as
 `effects/sg-<name>/shader.frag`, byte-identical to the upstream file at commit
 `cd06eee`, SPDX header and all, and that header travels into every site because
 the whole file does. `index.js` repeats the same SPDX lines, so the MIT notice is
 present whether a reader opens the module or the shader.
 
 Both families' `meta.json` carries a `deviations` list. For the shader.gallery
-eight it is load-bearing rather than bookkeeping: their palettes and their poster
+seventeen it is load-bearing rather than bookkeeping: their palettes and their poster
 post chain (bloom, grain, vignette, dither) live in `@shader-gallery/runtime`, a
 package paw-fx does not vendor, so the palettes here are ours and the output does
 not match the upstream posters. Both are declared per effect, with `kind: "ours"`.
+`sg-louver` is the one exception to the second half: its upstream meta.json
+declares no post chain at all, so it declares only the palette.
+
 The three Vanta ports DO carry upstream code, inlined -- a Vanta effect extends
 `src/_base.js` and this repo's build emits only `index.js` and `style.css` per
 effect, so a shared base module has nowhere to live in a generated site. Each

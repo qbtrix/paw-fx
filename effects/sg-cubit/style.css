@@ -1,0 +1,223 @@
+/* sg-cubit: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The cube tones are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting grid together. --fx-c2 is the one exception: the shader never
+   samples u_palette[1], so that stop styles the resting cubes only.
+
+   The resting grid is a real isometric cube lattice, built the way CSS does it:
+   two repeating conic gradients on a 1:sqrt(3) tile, which lays down three
+   rhombus faces per cell at 120 degrees. Same three-faces-per-cube read as the
+   shader, same top-face-brightest shading order.
+
+   Stacking:
+     -2  .fx-cubit__rest    the CSS cubes, covered by the canvas once it paints
+     -1  <canvas>           inserted by glsl-mount.js (inline style)
+      0  .fx-cubit__scrim   legibility wash, over whichever layer is showing
+      1  .fx-cubit__inner   the copy */
+.fx-cubit {
+  --fx-c1: #4d7ce8;
+  --fx-c2: #3f5aa6;
+  --fx-c3: #7de3ff;
+  --fx-c4: #1d2440;
+  --fx-bg: #06070f;
+  --fx-ink: #ffffff;
+  --fx-muted: #c3d2ee;
+  --fx-cell: 74px;
+  --fx-speed: 1;
+  --fx-scrim: 0.74;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Three faces per cube: the top catches the light (c3 lifted), the right face
+   sits mid (c1), the left drops into shadow (c4 toward c2). That is the shader's
+   own ordering -- top brightest, right next, left darkest -- so the swap from
+   CSS to canvas keeps the light coming from the same place. */
+.fx-cubit__rest {
+  position: absolute;
+  inset: -8%;
+  z-index: -2;
+  background:
+    repeating-conic-gradient(
+      from 30deg,
+      color-mix(in oklab, var(--fx-c4) 78%, var(--fx-c2)) 0 60deg,
+      color-mix(in oklab, var(--fx-c1) 82%, var(--fx-c4)) 0 120deg,
+      color-mix(in oklab, var(--fx-c3) 46%, var(--fx-c1)) 0 180deg
+    );
+  background-size: calc(var(--fx-cell) * 1.732) var(--fx-cell);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* Two overlays the shader gets for free and CSS does not: the per-cube
+   brightness variation (the rise pulse) and the vignette that keeps the corners
+   down. Without the first the lattice reads as wallpaper rather than as a city. */
+.fx-cubit__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(38% 40% at 22% 26%, color-mix(in oklab, var(--fx-c3) 30%, transparent), transparent 70%),
+    radial-gradient(44% 46% at 78% 66%, color-mix(in oklab, var(--fx-c1) 26%, transparent), transparent 72%),
+    radial-gradient(80% 72% at 50% 50%, transparent 34%, var(--fx-bg) 100%);
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-cubit[data-fx-live] .fx-cubit__rest {
+  opacity: 0;
+}
+
+/* A dark wash over the copy column. The worst case here is a lit top face
+   sliding under the lede, not the grooves. Held flat across the inner 36% then
+   eased out over four stops, because a flat core running straight into one
+   linear ramp draws a visible hard-edged ellipse. Measured worst case across
+   four animation frames with the copy hidden is recorded in the PR; re-measure
+   the same way before lowering --fx-scrim. */
+.fx-cubit__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 50%,
+    color-mix(in oklab, #03040c 93%, transparent) 0%,
+    color-mix(in oklab, #03040c 93%, transparent) 36%,
+    color-mix(in oklab, #03040c 66%, transparent) 55%,
+    color-mix(in oklab, #03040c 30%, transparent) 72%,
+    color-mix(in oklab, #03040c 10%, transparent) 88%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-cubit__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-cubit__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-cubit__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--fx-c3);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c3) 20%, transparent);
+}
+
+.fx-cubit__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #03040c 70%, transparent);
+}
+
+.fx-cubit__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-cubit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-cubit__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-cubit__cta--primary {
+  background: var(--fx-ink);
+  color: #0a0c1a;
+}
+
+.fx-cubit__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-cubit__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-cubit__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-cubit__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed. The light
+   pools travel rather than the lattice, because the shader's grid is fixed and
+   what changes is which cubes are up. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-cubit__rest::after {
+    animation: fx-cubit-pulse calc(24s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-cubit-pulse {
+    0% {
+      background-position: 0 0, 0 0, 0 0;
+      opacity: 0.9;
+    }
+    100% {
+      background-position: 14% -8%, -12% 10%, 0 0;
+      opacity: 1;
+    }
+  }
+}

@@ -1,0 +1,227 @@
+/* sg-pleat: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The tints are declared here as --fx-c1..--fx-c4 and index.js reads them back
+   off the section, so overriding the custom properties moves the shader and the
+   resting cloth together.
+
+   One panel is: hard dark crease, shadow facet, luminous ridge, lit facet, hard
+   dark crease. That five-stop unit is exactly what the shader draws -- a
+   triangle wave split at its ridge into two flat planes -- so the resting state
+   repeats it rather than fading between colours, and the fallback keeps the
+   accordion read instead of turning into vertical stripes.
+
+   Stacking:
+     -2  .fx-pleat__rest    the CSS cloth, covered by the canvas once it paints
+     -1  <canvas>           inserted by glsl-mount.js (inline style)
+      0  .fx-pleat__scrim   legibility wash, over whichever layer is showing
+      1  .fx-pleat__inner   the copy */
+.fx-pleat {
+  --fx-c1: #7fd8e8;
+  --fx-c2: #3f8fbf;
+  --fx-c3: #cfeef5;
+  --fx-c4: #2a5f7a;
+  --fx-bg: #060d14;
+  --fx-ink: #ffffff;
+  --fx-muted: #c9e4ee;
+  --fx-panel: 110px;
+  --fx-speed: 1;
+  --fx-scrim: 0.88;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Two panel units at different tints on the same pitch, offset by one panel, so
+   the hue steps panel to panel the way the shader's colour wheel does instead of
+   every fold being the same colour. */
+.fx-pleat__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.94) 0 3px,
+      color-mix(in oklab, var(--fx-c4) 88%, #000) 3px 26%,
+      color-mix(in oklab, var(--fx-c1) 55%, #000) 47%,
+      color-mix(in oklab, var(--fx-c3) 78%, #000) 50% 52%,
+      color-mix(in oklab, var(--fx-c2) 62%, #000) 56%,
+      color-mix(in oklab, var(--fx-c2) 30%, #000) 97%,
+      rgba(0, 0, 0, 0.94) 97% 100%
+    ),
+    var(--fx-bg);
+  background-size: calc(var(--fx-panel) * 2) 100%;
+  transition: opacity 420ms ease;
+}
+
+/* The rolling band of light, plus the vignette the shader closes on. The band
+   is what hands brightness from pleat to pleat; without it the cloth is lit but
+   dead. */
+.fx-pleat__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(46% 120% at 30% 50%, color-mix(in oklab, var(--fx-c3) 34%, transparent), transparent 70%),
+    radial-gradient(38% 110% at 82% 50%, color-mix(in oklab, var(--fx-c1) 20%, transparent), transparent 72%),
+    radial-gradient(76% 82% at 50% 50%, transparent 26%, rgba(3, 8, 13, 0.86) 100%);
+  mix-blend-mode: screen;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-pleat[data-fx-live] .fx-pleat__rest {
+  opacity: 0;
+}
+
+/* The copy sits over the middle of the cloth, which is exactly where the light
+   band parks for part of its cycle, so the wash carries the ridge catch-lights
+   rather than the shadow facets. Held flat across the inner 36% then eased out
+   over four stops, because a flat core running straight into one linear ramp
+   draws a visible hard-edged ellipse. Measured worst case across four animation
+   frames with the copy hidden is recorded in the PR; re-measure the same way
+   before lowering --fx-scrim. */
+.fx-pleat__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 50%,
+    color-mix(in oklab, #030a11 96%, transparent) 0%,
+    color-mix(in oklab, #030a11 96%, transparent) 36%,
+    color-mix(in oklab, #030a11 70%, transparent) 55%,
+    color-mix(in oklab, #030a11 32%, transparent) 72%,
+    color-mix(in oklab, #030a11 12%, transparent) 88%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-pleat__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-pleat__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-pleat__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c3);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c3) 20%, transparent);
+}
+
+.fx-pleat__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #030a11 70%, transparent);
+}
+
+.fx-pleat__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-pleat__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-pleat__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-pleat__cta--primary {
+  background: var(--fx-ink);
+  color: #08131b;
+}
+
+.fx-pleat__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-pleat__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-pleat__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-pleat__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the light travels, and only when motion is allowed: the folds are fixed
+   in the shader too, and it is the band that moves across them. The shader has
+   its own reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-pleat__rest::after {
+    animation: fx-pleat-roll calc(26s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-pleat-roll {
+    0% {
+      background-position: -18% 0, 24% 0, 0 0;
+    }
+    100% {
+      background-position: 30% 0, -20% 0, 0 0;
+    }
+  }
+}

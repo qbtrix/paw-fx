@@ -1,0 +1,52 @@
+{
+  "name": "neuro-noise",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["noise", "filaments", "dark", "minimal", "webgl", "shader", "hero", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' neuro noise on WebGL2: fine branching filaments drifting through near-black, bright only where they fold over themselves. The quietest background in the set.",
+  "needs": ["paper"],
+  "options": {
+    "colorFront": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "The filament highlight, where the strands overlap. Omit to read --fx-c1 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "colorMid": {
+      "type": "string",
+      "default": "#47a6ff",
+      "description": "The body of the filaments. Omit to read --fx-c2 off the section."
+    },
+    "colorBack": {
+      "type": "string",
+      "default": "#000000",
+      "description": "The field behind them. Omit to read --fx-c3 off the section."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the filaments travel. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "brightness": {
+      "type": "number",
+      "default": 0.05,
+      "description": "Floor the whole field is lifted to, so it never reads as dead black."
+    },
+    "contrast": {
+      "type": "number",
+      "default": 0.3,
+      "description": "How hard the filaments separate from the field. Higher is a starker, wirier picture."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/neuro-noise.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/neuro-noise.tsx"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "name": "grain-gradient",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["gradient", "grain", "noise", "webgl", "shader", "hero", "dark", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' grain gradient on WebGL2: four colour stops pushed into the corners of a near-black field and broken up by a moving speckle, so the blend reads as printed grain rather than as a smooth ramp.",
+  "needs": ["paper"],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#7300ff", "#eba8ff", "#00bfff", "#2a00ff"],
+      "description": "Up to seven colour stops. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the colour field moves. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "softness": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How far each colour bleeds into its neighbour. 0 gives hard edges between the stops."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Size of the grain speckle that breaks the blend up."
+    },
+    "noise": {
+      "type": "number",
+      "default": 0.25,
+      "description": "How much grain is mixed over the finished blend. 0 is a clean gradient."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/grain-gradient.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/grain-gradient.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The noise texture is decoded before ShaderMount is constructed, so the shader starts one microtask later than a React mount would.",
+      "why": "Seam. Upstream's React component hands getShaderNoiseTexture() straight to ShaderMount and re-renders when it loads; a vanilla mount has no re-render, and ShaderMount throws on an image that is not complete. The image is a data: URI, so nothing is fetched.",
+      "kind": "seam"
+    }
+  ]
+}

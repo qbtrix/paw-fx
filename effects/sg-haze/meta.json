@@ -1,0 +1,58 @@
+{
+  "name": "sg-haze",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["gradient", "posterise", "bands", "dither", "muted", "dusk", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's haze: a drifting colour field quantised into flat bands and stippled at the edges, so the section reads as a low-bit gradient catching light rather than a smooth blend.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#2b3350", "#4d6a8e", "#93a8ac", "#d8b8a4"],
+      "description": "A four-stop ramp, darkest first: the shader quantises one field into bands and reads the ramp with it, so the order matters more here than in the pole-based backgrounds. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "driftSpeed": {
+      "type": "number",
+      "default": 0.13,
+      "description": "How fast the haze drifts; 0 holds the bands still. Upstream default, range 0 to 0.6."
+    },
+    "steps": {
+      "type": "number",
+      "default": 7,
+      "description": "How many colour bands the field is quantised into. Low is a bold poster, high approaches a smooth ramp. Upstream default, range 2 to 24."
+    },
+    "softness": {
+      "type": "number",
+      "default": 1.1,
+      "description": "Scale of the underlying field; low gives big banks, high gives more of them. Upstream default, range 0.3 to 2."
+    },
+    "dither": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Ordered stipple that breaks the band edges up instead of leaving hard contours. 0 gives clean posterised steps. Upstream default, range 0 to 1.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["haze/shader.frag", "haze/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette ramp stops are ours, not upstream's `dusk` preset.",
+      "why": "haze/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a muted dusk ordered dark to light, because the shader reads the four as a ramp rather than as independent poles.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.06, vignette 0.22 and saturation 1.04 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

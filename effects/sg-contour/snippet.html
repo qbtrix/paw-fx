@@ -1,0 +1,21 @@
+<!-- sg-contour section. Finished at rest with CSS alone: the level sets in
+     .fx-contour__rest are the hero with JavaScript off, and index.js only
+     covers them with a WebGL canvas once it has the shader, a context and a
+     linked program. The _fx paths are root-absolute because a site always sits
+     at the origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The two decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-contour/style.css">
+<section class="fx-contour" data-fx="sg-contour">
+  <div class="fx-contour__rest" aria-hidden="true"></div>
+  <div class="fx-contour__scrim" aria-hidden="true"></div>
+  <div class="fx-contour__inner">
+    <p class="fx-contour__eyebrow"><span class="fx-contour__dot" aria-hidden="true"></span>Survey grade</p>
+    <h1 class="fx-contour__title">Know the terrain before you cross it.</h1>
+    <p class="fx-contour__lede">This copy is a placeholder. The headline holds one line or three, and the ground keeps shifting under the lines either way.</p>
+    <div class="fx-contour__actions">
+      <a class="fx-contour__cta fx-contour__cta--primary" href="#">Open the map</a>
+      <a class="fx-contour__cta fx-contour__cta--ghost" href="#">What we measure</a>
+    </div>
+  </div>
+</section>

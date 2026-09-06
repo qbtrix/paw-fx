@@ -1,0 +1,254 @@
+/* sg-louver: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four colours are declared here as --fx-c1..--fx-c4 and index.js reads
+   them back off the section, so overriding the custom properties moves the
+   shader and the resting wall together. They are four jobs, not four poles:
+   c1 lamp core, c2 wide wash, c3 cool limb, c4 slat hairline.
+
+   The one detail that makes this read as blinds rather than as stripes is that
+   the bars are NOT uniform: bottom bars are knife-sharp and top bars melt,
+   because a slat hanging farther from the wall throws a softer edge. CSS cannot
+   vary a blur down one gradient, so the resting state draws the bars twice --
+   sharp, masked to the lower half, and blurred, masked to the upper -- which is
+   the same picture by different means.
+
+   Stacking:
+     -2  .fx-louver__rest    the CSS wall, covered by the canvas once it paints
+     -1  <canvas>            inserted by glsl-mount.js (inline style)
+      0  .fx-louver__scrim   legibility wash, over whichever layer is showing
+      0  .fx-louver__grain   plaster tooth
+      1  .fx-louver__inner   the copy */
+.fx-louver {
+  --fx-c1: #ffb45c;
+  --fx-c2: #e07a5f;
+  --fx-c3: #6bb6c9;
+  --fx-c4: #ffe9c9;
+  --fx-bg: #0b0806;
+  --fx-ink: #ffffff;
+  --fx-muted: #e4d3c2;
+  --fx-slat: 56px;
+  --fx-tilt: 82deg;
+  --fx-speed: 1;
+  --fx-scrim: 0.5;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The lit wall itself: a hot pool low and left, where the shader puts its lamp
+   (below the frame at roughly 0.2 to 0.36 across), falling off into near-black
+   at the top right. The bars go over this, not into it. */
+.fx-louver__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(58% 62% at 24% 104%, color-mix(in oklab, var(--fx-c1) 92%, transparent), transparent 72%),
+    radial-gradient(96% 92% at 30% 100%, color-mix(in oklab, var(--fx-c2) 52%, transparent), transparent 78%),
+    radial-gradient(70% 70% at 78% 8%, color-mix(in oklab, var(--fx-c3) 12%, transparent), transparent 72%),
+    var(--fx-bg);
+  transition: opacity 420ms ease;
+}
+
+/* Sharp bars, lower wall. The hairline is the thin bright line on the shadow
+   side of each bar, which is what the shader's c3 term draws. */
+.fx-louver__rest::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    var(--fx-tilt),
+    transparent 0 calc(var(--fx-slat) * 0.42),
+    color-mix(in oklab, var(--fx-c4) 22%, transparent) calc(var(--fx-slat) * 0.42) calc(var(--fx-slat) * 0.46),
+    rgba(0, 0, 0, 0.88) calc(var(--fx-slat) * 0.46) var(--fx-slat)
+  );
+  -webkit-mask-image: linear-gradient(to top, #000 0 26%, transparent 62%);
+  mask-image: linear-gradient(to top, #000 0 26%, transparent 62%);
+}
+
+/* The same bars, melting. inset is negative so the blur has material to pull
+   from and does not feather the section's own edges. */
+.fx-louver__rest::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background: repeating-linear-gradient(
+    var(--fx-tilt),
+    transparent 0 calc(var(--fx-slat) * 0.4),
+    rgba(0, 0, 0, 0.82) calc(var(--fx-slat) * 0.4) var(--fx-slat)
+  );
+  filter: blur(11px);
+  -webkit-mask-image: linear-gradient(to top, transparent 22%, #000 66%);
+  mask-image: linear-gradient(to top, transparent 22%, #000 66%);
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-louver[data-fx-live] .fx-louver__rest {
+  opacity: 0;
+}
+
+/* Plaster tooth. The shader multiplies its lit wall by an fbm at 0.045, which
+   is what stops the gaps reading as flat paint; this is the same idea in a
+   layer. Inline SVG, so the section fetches nothing off-site. */
+.fx-louver__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.075;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+}
+
+/* The copy sits mid-wall, which is where the sharp bars and the hot pool meet,
+   so the wash here is doing real work. Held flat across the inner 36% then
+   eased out over four stops, because a flat core running straight into one
+   linear ramp draws a visible hard-edged ellipse. Measured worst case across
+   four animation frames with the copy hidden is recorded in the PR; re-measure
+   the same way before lowering --fx-scrim. */
+.fx-louver__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 48%,
+    color-mix(in oklab, #100804 88%, transparent) 0%,
+    color-mix(in oklab, #100804 88%, transparent) 36%,
+    color-mix(in oklab, #100804 60%, transparent) 55%,
+    color-mix(in oklab, #100804 32%, transparent) 72%,
+    color-mix(in oklab, #100804 12%, transparent) 88%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-louver__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-louver__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-louver__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c1);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 22%, transparent);
+}
+
+.fx-louver__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #100804 68%, transparent);
+}
+
+.fx-louver__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-louver__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-louver__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-louver__cta--primary {
+  background: var(--fx-ink);
+  color: #170d06;
+}
+
+.fx-louver__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-louver__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-louver__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-louver__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed. The lamp
+   drifts sideways and the bars shear with it -- that is the shader's own
+   motion, and it is the one that reads as a room rather than as a wipe. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-louver__rest::before,
+  .fx-louver__rest::after {
+    animation: fx-louver-drift calc(28s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-louver-drift {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 90px 26px;
+    }
+  }
+}
