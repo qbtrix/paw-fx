@@ -1,0 +1,39 @@
+<!-- circular-text section. Finished at rest with CSS alone: four rings of type
+     around a centre control, all at full size and full opacity. index.js hides
+     them only at the moment it starts the scale-in, and only once the section
+     is on screen, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves the badge exactly as it reads here.
+     The four circle paths and their textLength values are upstream's, which is
+     why any wording fits the ring it is on.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/circular-text/style.css">
+<section class="fx-circles" data-fx="circular-text">
+  <div class="fx-circles__badge">
+    <svg class="fx-circles__svg" viewBox="0 0 1400 1400" aria-hidden="true">
+      <defs>
+        <path id="fx-circle-1" d="M250,700.5A450.5,450.5 0 1 11151,700.5A450.5,450.5 0 1 1250,700.5" />
+        <path id="fx-circle-2" d="M382,700.5A318.5,318.5 0 1 11019,700.5A318.5,318.5 0 1 1382,700.5" />
+        <path id="fx-circle-3" d="M487,700.5A213.5,213.5 0 1 1914,700.5A213.5,213.5 0 1 1487,700.5" />
+        <path id="fx-circle-4" d="M567.5,700.5A133,133 0 1 1833.5,700.5A133,133 0 1 1567.5,700.5" />
+      </defs>
+      <text class="fx-circles__text fx-circles__text--1">
+        <textPath href="#fx-circle-1" textLength="2830">Built in the open&nbsp;Shipped every week&nbsp;</textPath>
+      </text>
+      <text class="fx-circles__text fx-circles__text--2">
+        <textPath href="#fx-circle-2" textLength="2001">Studio practice&nbsp;Since twenty nineteen&nbsp;</textPath>
+      </text>
+      <text class="fx-circles__text fx-circles__text--3">
+        <textPath href="#fx-circle-3" textLength="1341">Interfaces&nbsp;Systems&nbsp;Motion&nbsp;</textPath>
+      </text>
+      <text class="fx-circles__text fx-circles__text--4">
+        <textPath href="#fx-circle-4" textLength="836">Available for work&nbsp;</textPath>
+      </text>
+    </svg>
+    <a class="fx-circles__enter" href="#">
+      <span class="fx-circles__enter-bg"></span>
+      <span class="fx-circles__enter-text">Enter</span>
+    </a>
+  </div>
+  <p class="fx-circles__caption">Hover the disc and every ring takes another half turn, the outer one leading.</p>
+</section>

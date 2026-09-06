@@ -1,0 +1,72 @@
+{
+  "name": "clip-hover",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["gallery", "hover", "clip-path", "cards", "grid", "codrops", "anime"],
+  "summary": "A row of cards whose panel arrives in five clipped vertical bands on hover, each band from its own random offset, while the date, title and link reshuffle their characters.",
+  "needs": ["anime"],
+  "options": {
+    "slices": {
+      "type": "number",
+      "default": 5,
+      "description": "How many vertical bands the panel is cut into. Upstream's slicesTotal."
+    },
+    "duration": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Seconds the reveal takes. Upstream's animation.duration."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ClipHoverEffect",
+    "commit": "57b5cc1b6cc375e69dd915bdd307f2645e1dabb7",
+    "path": [
+      "js/card.js",
+      "js/utils.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The panel and its slices paint the --fx-image custom property instead of a background-image URL parsed out of the card's inline style with a regex.",
+      "why": "Codrops ships the demo's photographs under separate terms and this library redistributes none of them. The default is a layered gradient that makes the five bands legible on their own, and a site author points --fx-image at a real picture per card with one declaration. Upstream's imageURL match goes with it.",
+      "kind": "ours"
+    },
+    {
+      "what": "Durations are milliseconds: every upstream second value is multiplied by the SEC constant, 1000.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds. Keeping upstream's own numbers and scaling them in one named place is what makes the timing readable against the source rather than pre-multiplied.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's power3.inOut ease is written as anime's inOutQuart, which is the same quartic curve, and gsap.utils.random becomes anime's utils.random.",
+      "why": "GSAP names its power curves by exponent minus one; anime names them after the polynomial. Same function, different spelling, and the random helper is the same uniform draw.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Splitting.js is replaced by anime.js' splitText and the characters are read from [data-char] rather than from .char.",
+      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to the vendor keys the manifest lists. The shuffle only needs each character to be its own inline element.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The glyph is re-randomised from onBegin and onLoop rather than by GSAP's repeatRefresh re-evaluating a function-valued innerHTML on each pass.",
+      "why": "repeatRefresh is a GSAP scheduling feature with no anime.js equivalent; anime's loop callbacks fire at the same four moments, so the character changes on the same schedule.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only the vertical orientation is carried: settings.orientation, the --rows branch and every xPercent alternative are dropped.",
+      "why": "Vertical is upstream's default and the one the demo's first row uses. Shipping both behind an option would be a second untested code path in a library where each effect is meant to be one thing; the horizontal cut is a better port in its own right if it is ever wanted.",
+      "kind": "ours"
+    },
+    {
+      "what": "The `.js` class that hides the panel becomes the [data-fx-live] attribute mount() sets, and the slice wrap, the --fx-columns property and every listener are removed on destroy.",
+      "why": "Upstream sets .js on the document element at page load and never tears the effect down. Keying the hidden state on the mounted section instead is what keeps the resting card correct when the script is blocked, and what lets a destroy hand the finished card back.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion nothing is split, no slices are built and no hover listener is bound.",
+      "why": "Effect contract: mount() stays at rest, and the card with its panel showing is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

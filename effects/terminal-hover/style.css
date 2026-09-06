@@ -1,0 +1,116 @@
+/* terminal-hover: a manifest whose rows decode themselves under the pointer.
+
+   The resting state is the list as written. index.js splits each cell into
+   characters and rolls them only while a row is hovered, so a blocked script,
+   a pruned bundle or reduced motion leaves the table fully readable.
+
+   The cursor block is upstream's: .char::after is a filled rectangle exactly
+   1ch wide sitting over the letter, shown for the first pass of the roll and
+   hidden after it. --fx-opa is the switch; it is 0 here so the block never
+   appears before the script takes over.
+
+   Monospace on purpose. The roll swaps every character for another, and in a
+   proportional face each swap changes the row's width, so the columns would
+   twitch under the pointer. */
+.fx-terminal {
+  --fx-bg: #07090b;
+  --fx-ink: #e8f1ea;
+  --fx-muted: #6f8177;
+  --fx-accent: #7dfab0;
+  --fx-rule: rgba(125, 250, 176, 0.16);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  min-height: 90svh;
+  display: grid;
+  align-content: center;
+  gap: clamp(1.75rem, 4vw, 3rem);
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(90% 60% at 50% 0%, color-mix(in oklab, var(--fx-accent) 9%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.fx-terminal *,
+.fx-terminal *::before,
+.fx-terminal *::after { box-sizing: border-box; }
+
+.fx-terminal__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 72rem;
+  width: 100%;
+  margin-inline: auto;
+}
+.fx-terminal__title {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.fx-terminal__note {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+.fx-terminal__list {
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  max-width: 72rem;
+  list-style: none;
+  counter-reset: fx-row 0;
+  border-top: 1px solid var(--fx-rule);
+}
+.fx-terminal__row {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: start;
+  gap: 0.35rem 1.5rem;
+  padding: clamp(0.85rem, 2vw, 1.25rem) 0;
+  border-bottom: 1px solid var(--fx-rule);
+  cursor: pointer;
+  font-size: clamp(0.95rem, 2.4vw, 1.5rem);
+  transition: background-color 0.25s ease;
+}
+.fx-terminal__row:hover { background-color: rgba(125, 250, 176, 0.05); }
+.fx-terminal__row::before {
+  content: counter(fx-row, decimal-leading-zero);
+  counter-increment: fx-row;
+  color: var(--fx-accent);
+  font-size: 0.72em;
+  padding-top: 0.35em;
+}
+.fx-terminal__cell {
+  font-kerning: none;
+  position: relative;
+  white-space: nowrap;
+}
+.fx-terminal__cell--dim { color: var(--fx-muted); font-size: 0.78em; }
+
+/* anime's splitter wraps each character in a bare span carrying data-char. */
+.fx-terminal__cell [data-char] {
+  --fx-opa: 0;
+  position: relative;
+}
+.fx-terminal__cell [data-char]::after {
+  content: "";
+  width: 1ch;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
+  background: currentColor;
+  opacity: var(--fx-opa);
+}
+
+@media (min-width: 48em) {
+  .fx-terminal__row { grid-template-columns: 3.5rem minmax(0, 1.4fr) minmax(0, 1fr) auto; align-items: baseline; }
+}

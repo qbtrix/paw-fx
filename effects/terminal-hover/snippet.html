@@ -1,0 +1,41 @@
+<!-- terminal-hover section. Finished at rest with CSS alone: the manifest is
+     an ordinary list and every row reads correctly. index.js splits each cell
+     into characters and rolls them only while a row is hovered, so a blocked
+     script, a pruned bundle or prefers-reduced-motion leaves the table exactly
+     as it is written here.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/terminal-hover/style.css">
+<section class="fx-terminal" data-fx="terminal-hover">
+  <div class="fx-terminal__head">
+    <h2 class="fx-terminal__title">Dispatch log</h2>
+    <p class="fx-terminal__note">Hover a line to decode</p>
+  </div>
+  <ul class="fx-terminal__list">
+    <li class="fx-terminal__row">
+      <span class="fx-terminal__cell">Mount Vespera</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">Relay handover</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">2157-03-14</span>
+    </li>
+    <li class="fx-terminal__row">
+      <span class="fx-terminal__cell">Planet Thalassa</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">Deep survey</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">2157-04-02</span>
+    </li>
+    <li class="fx-terminal__row">
+      <span class="fx-terminal__cell">Harbour Nine</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">Cold storage</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">2157-05-21</span>
+    </li>
+    <li class="fx-terminal__row">
+      <span class="fx-terminal__cell">Station Ferrous</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">Hull rewrite</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">2157-06-08</span>
+    </li>
+    <li class="fx-terminal__row">
+      <span class="fx-terminal__cell">Cape Lantern</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">Signal audit</span>
+      <span class="fx-terminal__cell fx-terminal__cell--dim">2157-07-30</span>
+    </li>
+  </ul>
+</section>

@@ -1,0 +1,114 @@
+/* circular-text: four concentric rings of type around a centre control.
+
+   The rings are SVG <textPath> runs on the four circles upstream defines in
+   its own markup, and `transform-origin: 700px 700px` is upstream's too: it is
+   the centre of the 1400-unit viewBox, which is what every ring turns around.
+
+   Font sizes are in user units rather than upstream's vmin clamps, because the
+   badge here is a section-sized SVG rather than a 186vmin fixed overlay -- user
+   units scale with the viewBox, so the rings keep their proportions at any
+   section width.
+
+   The resting state is the finished badge: rings at full size and opacity.
+   index.js hides them only at the moment it starts the run that brings them
+   back, and only once the section is on screen, so a blocked script, a pruned
+   bundle or reduced motion leaves the badge readable. */
+.fx-circles {
+  --fx-bg: #0d0c0b;
+  --fx-ink: #f7f3ec;
+  --fx-muted: #918a7e;
+  --fx-accent: #e8c15a;
+  --fx-button: #e8c15a;
+  --fx-button-ink: #16130d;
+  --fx-dim: min(86vmin, 44rem);
+  --fx-button-dim: min(11.5vmin, 5.5rem);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 5vw, 4rem);
+  background:
+    radial-gradient(60% 50% at 50% 50%, color-mix(in oklab, var(--fx-accent) 10%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-circles *,
+.fx-circles *::before,
+.fx-circles *::after { box-sizing: border-box; }
+
+.fx-circles__badge {
+  position: relative;
+  width: var(--fx-dim);
+  height: var(--fx-dim);
+  display: grid;
+  place-items: center;
+}
+
+.fx-circles__svg {
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.fx-circles__text {
+  text-transform: uppercase;
+  transform-origin: 700px 700px;
+  transform-box: view-box;
+  will-change: transform, opacity;
+  fill: var(--fx-ink);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.fx-circles__text--1 { font-size: 168px; fill: color-mix(in oklab, var(--fx-ink) 26%, transparent); }
+.fx-circles__text--2 { font-size: 128px; fill: color-mix(in oklab, var(--fx-ink) 42%, transparent); }
+.fx-circles__text--3 { font-size: 92px;  fill: color-mix(in oklab, var(--fx-accent) 78%, transparent); }
+.fx-circles__text--4 { font-size: 62px;  fill: var(--fx-ink); }
+
+/* The centre control. Upstream's .enter plus .enter__bg: a round disc that
+   swells on hover with the label riding above it. */
+.fx-circles__enter {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--fx-button-dim);
+  height: var(--fx-button-dim);
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  font-size: clamp(0.8rem, 1.6vmin, 1rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  /* The disc is painted twice on purpose. --enter-bg is the layer index.js
+     swells to 1.2 on hover, which is upstream's separate .enter__bg element;
+     the same fill sits on the control itself so the label always has its own
+     opaque plate underneath, whatever the swelling layer is doing. */
+  background: var(--fx-button);
+  border-radius: 50%;
+  color: var(--fx-button-ink);
+}
+.fx-circles__enter-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--fx-button);
+}
+.fx-circles__enter-text { position: relative; }
+
+.fx-circles__caption {
+  position: absolute;
+  bottom: clamp(1.5rem, 4vw, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: 26rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+}

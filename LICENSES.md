@@ -73,6 +73,40 @@ gradients into every cell and document an `--fx-img` slot for a site's own
 pictures; `infinite-menu-loop`, `text-block-swap` and `kinetic-type-transition`
 drop the demos' Adobe Typekit `<link>` and `preloadFonts` call for a system
 stack.
+| **Codrops wave, ranks 21-36 (fx-cd-d)** | | |
+| text-repetition | MIT | [codrops/TextRepetitionEffect](https://github.com/codrops/TextRepetitionEffect) `fabaafe`, `src/js/demo1/repeatTextScrollFx.js` + `src/js/utils.js` + `src/css/base.css` |
+| sliced-text | MIT | [codrops/SlicedTextEffect](https://github.com/codrops/SlicedTextEffect) `45bbcfd`, `js/item.js` + `js/index.js` + `css/base.css` |
+| circular-text | MIT | [codrops/CircularTextEffect](https://github.com/codrops/CircularTextEffect) `fcd9aaa`, `src/js/demo1/intro.js` + `src/index.html` + `src/css/base.css` |
+| terminal-hover | MIT | [codrops/LineTextHoverAnimations](https://github.com/codrops/LineTextHoverAnimations) `00fdd50`, `js/effect-1/text-animator.js` + `js/effect-1/index.js` + `js/textSplitter.js` + `css/base.css` |
+| image-trail | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `005-image-motion-trail-opaque/js/index.js` + `005-image-motion-trail-opaque/css/base.css` |
+| pixel-tooltip | MIT | [codrops/PixelGooeyTooltip](https://github.com/codrops/PixelGooeyTooltip) `60ade47`, `js/tooltip.js` + `js/index.js` + `css/tooltip.css` + `index.html` |
+| clip-hover | MIT | [codrops/ClipHoverEffect](https://github.com/codrops/ClipHoverEffect) `57b5cc1`, `js/card.js` + `js/utils.js` + `css/base.css` |
+| grid-3d-stagger | MIT | [codrops/Staggered3DGridAnimations](https://github.com/codrops/Staggered3DGridAnimations) `7c2703d`, `js/index.js` + `index.html` + `css/base.css` |
+| expanding-menu | MIT | [codrops/ExpandingRoundedMenu](https://github.com/codrops/ExpandingRoundedMenu) `9f8174a`, `src/js/index.js` + `src/index.html` + `src/css/base.css` |
+| card-stack-scroll | MIT | [codrops/3DStackMotion](https://github.com/codrops/3DStackMotion) `75cbda9`, `js/effect-1/stackMotionEffect.js` + `js/utils.js` + `index.html` + `css/base.css` |
+
+
+The ten Codrops ports at ranks 21-36 all copy upstream code rather than calling
+a library for it, so each carries the upstream MIT header in `index.js` and each
+`origin.path` lists every upstream file the port spans -- the effect class, the
+`utils.js` the class imports from, the `index.html` when the markup carries part
+of the mechanism (the four `<textPath>` rings, the tooltip's cell grid), and the
+`base.css` when the layout does (the stacked grid cell that makes
+`text-repetition` read as one word, the overflow window each `sliced-text` band
+looks through). Nine of the ten call the vendored anime.js for the motion GSAP
+used to drive, so their runtime obligation is the `anime.LICENSE` the build
+already emits; `image-trail` needs nothing at all, because its upstream sketch
+is a `requestAnimationFrame` loop with no library under it.
+
+**None of them ships a photograph or a typeface.** Codrops licenses the demo
+imagery separately from the code, so every image-led port here paints a CSS
+gradient instead and documents the slot a site author fills: `--fx-image` on
+`image-trail` and `clip-hover`, `--fx-cover-image` on `expanding-menu`,
+`--fx-card-image` and `--fx-cell-image` per card and per cell on
+`card-stack-scroll` and `grid-3d-stagger`. Each records that swap in
+`meta.json.deviations` under `kind: "ours"`. The Typekit stylesheets 23 of the
+surveyed repos pull in through a `<link>` or a `WebFont.load` call are dropped
+the same way; every effect here declares a system stack.
 
 `mesh-gradient` imports its GLSL from `vendor/paper.js` rather than carrying a
 copy, so the Apache-2.0 obligation it creates is the vendored one: `paper.LICENSE`

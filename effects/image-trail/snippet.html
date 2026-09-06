@@ -1,0 +1,18 @@
+<!-- image-trail section. Finished at rest with CSS alone: the stack paints one
+     panel from --fx-image (a gradient by default, a photograph when a site
+     author sets it) and index.js replaces that with five copies it drags
+     behind the pointer. A blocked script, a pruned bundle or
+     prefers-reduced-motion leaves the single panel exactly as it reads here.
+     Drop your own picture in with one declaration:
+       .fx-trail { --fx-image: url("/media/studio.jpg"); }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/image-trail/style.css">
+<section class="fx-trail" data-fx="image-trail">
+  <div class="fx-trail__copy">
+    <p class="fx-trail__eyebrow">Selected work</p>
+    <h2 class="fx-trail__title">Move across the panel and it follows you home.</h2>
+    <p class="fx-trail__lede">Five copies of the same frame, each catching up at its own rate. Swap the gradient for your own photography and the trail carries it.</p>
+  </div>
+  <div class="fx-trail__stack"></div>
+</section>

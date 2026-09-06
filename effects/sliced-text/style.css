@@ -1,0 +1,96 @@
+/* sliced-text: a headline cut into four vertical bands that slide apart and
+   re-register as the section scrolls.
+
+   The trick is upstream's and it is all grid: the heading becomes four columns
+   each --fx-offset wide, and each column is an overflow-hidden window holding
+   a WHOLE copy of the word pushed left by one column. Column 0 therefore shows
+   the first quarter, column 1 the second, and the four together read as the
+   word. index.js measures one copy to set --fx-text-width and slides the
+   copies sideways on scroll.
+
+   The resting state is the plain heading. index.js only rebuilds it into
+   columns whose end state is the same word in register, so a blocked script, a
+   pruned bundle or reduced motion leaves the section readable.
+
+   `overflow: clip` on the section, not `hidden`: hidden would make the section
+   a scroll container, and the scroll-linked animation inside it would then
+   resolve against a box that never scrolls. */
+.fx-sliced {
+  --fx-bg: #f4f1ec;
+  --fx-ink: #14120f;
+  --fx-muted: #5f584f;
+  --fx-accent: #a8330f;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: grid;
+  align-content: center;
+  gap: clamp(2.5rem, 7vw, 6rem);
+  padding: clamp(6rem, 16vw, 14rem) clamp(1.25rem, 5vw, 4rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-sliced *,
+.fx-sliced *::before,
+.fx-sliced *::after { box-sizing: border-box; }
+
+.fx-sliced__eyebrow {
+  margin: 0;
+  text-align: center;
+  font-size: 0.76rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+/* The split target. The grid columns only matter once index.js has measured a
+   copy and written --fx-text-width; before that the heading is plain text. */
+.fx-sliced__word {
+  --fx-text-width: 100px;
+  --fx-splits: 4;
+  --fx-offset: calc(var(--fx-text-width) / var(--fx-splits));
+  margin: 0;
+  display: grid;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-size: clamp(3rem, 14vw, 12rem);
+  text-transform: uppercase;
+  grid-template-columns: repeat(var(--fx-splits), var(--fx-offset));
+}
+.fx-sliced__word--alt {
+  font-size: clamp(2.25rem, 9vw, 7.5rem);
+  font-weight: 300;
+  font-style: italic;
+  text-transform: lowercase;
+  color: var(--fx-accent);
+}
+
+/* One band. overflow: hidden is the window that shows a quarter of the copy
+   inside it; the half-pixel pull closes the seam between two windows. */
+.fx-sliced__box {
+  overflow: hidden;
+  position: relative;
+  will-change: transform;
+  margin-right: -0.5px;
+}
+.fx-sliced__box-inner {
+  width: max-content;
+  position: relative;
+  display: block;
+  will-change: transform;
+}
+
+.fx-sliced__lede {
+  margin: 0 auto;
+  max-width: 34rem;
+  text-align: center;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
