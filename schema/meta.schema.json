@@ -31,8 +31,11 @@
         "scroll",
         "text",
         "cursor",
-        "transition"
-      ]
+        "transition",
+        "menu",
+        "gallery"
+      ],
+      "description": "Which shelf the effect sits on. `menu` covers navigation reveals and hover treatments on nav items; `gallery` covers image grids, sliders and looping galleries. Both were added when the Codrops survey found its two strongest families had nowhere to go."
     },
     "tags": {
       "type": "array",
