@@ -210,3 +210,15 @@ test("the leading-dot allowance does not swallow real invention", () => {
 test("a dotted version string still tokenises to nothing", () => {
   expect(untracedNumbers('const v = "1.0.0";', [""])).toEqual([]);
 });
+
+// Copied GLSL ships two ways and both are legitimate: embedded in a template
+// literal in index.js, or as a sibling .frag next to the effect. The sibling
+// layout is the better one, because the file IS the upstream bytes rather than a
+// reconstruction of them. Reading only index.js failed all eight shader-gallery
+// ports whose .frag files matched upstream's sha256 exactly, so the gate now
+// reads siblings first. This fixture alters one constant in a sibling and must
+// still be caught, or the wider search has quietly disarmed the rule.
+test("an altered constant in a sibling .frag is still caught", () => {
+  const r = verify("tests/fixtures/bad-frag-sibling-altered");
+  expect(r.fails.join("\n")).toContain("copied GLSL differs from upstream");
+});

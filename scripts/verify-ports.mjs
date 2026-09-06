@@ -289,9 +289,21 @@ const checkPaperImport = (ctx) => {
 const checkCopiedGlsl = (ctx) => {
   const fragPaths = Object.keys(ctx.upstream).filter((p) => /\.(?:frag|glsl|vert)$/i.test(p));
   if (!fragPaths.length) return;
-  const ours = templateLiterals(ctx.js).filter(looksLikeGlsl).map(normaliseGlsl);
+  // Two shapes ship copied GLSL, and both are legitimate. An effect may embed it
+  // in a template literal in index.js, or keep it as a sibling .frag file next to
+  // the effect, which is the better layout: the file IS the upstream bytes, so
+  // byte-identical is literal rather than reconstructed. Sibling files are read
+  // first for that reason. Looking only inside index.js failed all eight
+  // shader-gallery ports whose .frag files matched upstream's sha256 exactly.
+  const siblings = readdirSync(ctx.dir)
+    .filter((f) => /\.(?:frag|glsl|vert)$/i.test(f))
+    .map((f) => readFileSync(join(ctx.dir, f), "utf8"));
+  const ours = [...siblings, ...templateLiterals(ctx.js).filter(looksLikeGlsl)].map(normaliseGlsl);
   if (!ours.length) {
-    ctx.fails.push(`no GLSL found in index.js to compare with upstream ${fragPaths.join(", ")}`);
+    ctx.fails.push(
+      `no GLSL found to compare with upstream ${fragPaths.join(", ")}: expected a sibling ` +
+        `.frag/.glsl file in the effect directory or a shader template literal in index.js`,
+    );
     return;
   }
   for (const path of fragPaths) {
@@ -440,7 +452,7 @@ export function verifyEffect(dir, opts = {}) {
   }
 
   const ctx = {
-    meta, upstream, opts,
+    meta, upstream, opts, dir,
     js: readFileSync(join(dir, "index.js"), "utf8"),
     fails: out.fails, warns: out.warns, errors: out.errors,
     diffLines: [], untraced: [],
