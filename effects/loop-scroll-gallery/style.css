@@ -1,0 +1,147 @@
+/* loop-scroll-gallery: a gallery that scrolls forever -- reach the end and you
+   are seamlessly back at the start.
+
+   THE SIZING IS THE EFFECT. Lenis wraps from scrollTop = limit straight to 0,
+   so the last viewport-worth of content has to be pixel-identical to the
+   first. That holds exactly when the cloned block measures one viewport.
+   Upstream's vertical sketch clones six items into three columns -- two rows --
+   at 47.5vh each with a 5vh gap, its own comment's "for an item height of
+   50vh, remove half the gap"; the horizontal one clones four columns at
+   23.5vw with a 2vw gap. Both are the same sum. Here that sum is written once
+   as a calc() against the box the gallery actually scrolls in, so changing
+   --fx-gap or --fx-box keeps the loop seamless instead of quietly breaking it:
+
+     vertical    cell height = (box - gap) / 2      two cloned rows = box
+     horizontal  cell width  = (box - 3 * gap) / 4  four cloned columns = box
+
+   THE IMAGE SLOT. Codrops' photographs are not ours to redistribute, so every
+   cell paints a CSS gradient. A site drops its own picture in per cell with an
+   inline custom property and nothing else changes:
+
+     <div class="fx-loopgal__item" style="--fx-img:url(/img/1.jpg)"></div>
+
+   The resting state is a plain native scroll box: overflow is auto here, not
+   hidden, so with the script blocked or reduced motion on the reader still
+   gets every item and can still scroll through them. What they lose is the
+   wrap, which is the effect and not the content. */
+.fx-loopgal {
+  --fx-bg: #0b0b0e;
+  --fx-ink: #f2f1ee;
+  --fx-muted: #8b8996;
+  --fx-accent: #6ee7b7;
+  --fx-box: 78svh;
+  --fx-gap: 2.5rem;
+  --fx-radius: 2rem;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-content: center;
+  min-height: 100svh;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-loopgal *,
+.fx-loopgal *::before,
+.fx-loopgal *::after { box-sizing: border-box; }
+
+.fx-loopgal__head { display: grid; gap: 0.75rem; max-width: 40rem; }
+.fx-loopgal__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-loopgal__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+.fx-loopgal__note {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* Lenis' `wrapper`. A real scroller at rest, which is what makes the no-script
+   state a working gallery rather than a cropped one. */
+.fx-loopgal__viewport {
+  height: var(--fx-box);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  /* The horizontal cell width has to be a fraction of THIS box. The grid
+     inside is width: min-content, so a percentage there would resolve against
+     the grid's own width and go circular -- measured, it collapsed the cells
+     to 60px and left the content narrower than the box, which is a loop with
+     nothing to loop. cqw resolves against this element instead, which is the
+     scoped equivalent of upstream's 23.5vw. */
+  container-type: inline-size;
+}
+.fx-loopgal__viewport::-webkit-scrollbar { display: none; }
+
+/* Lenis' `content`. */
+.fx-loopgal__grid {
+  display: grid;
+  gap: var(--fx-gap);
+}
+.fx-loopgal__item {
+  border-radius: var(--fx-radius);
+  background-image: var(--fx-img, linear-gradient(135deg, #3b3170, #7b4b8f 45%, #d0725a));
+  background-size: cover;
+  background-position: 50% 20%;
+}
+/* Enough distinct plates that a gallery of six reads as six pictures rather
+   than one repeated. A site overrides any of them with --fx-img. */
+.fx-loopgal__item:nth-child(6n + 2) { background-image: var(--fx-img, linear-gradient(160deg, #123b4a, #2f7c86 50%, #9fd8c4)); }
+.fx-loopgal__item:nth-child(6n + 3) { background-image: var(--fx-img, linear-gradient(200deg, #4a1f2b, #a1424a 55%, #e8a97e)); }
+.fx-loopgal__item:nth-child(6n + 4) { background-image: var(--fx-img, linear-gradient(120deg, #1b2440, #3f5aa6 50%, #8fb3f5)); }
+.fx-loopgal__item:nth-child(6n + 5) { background-image: var(--fx-img, linear-gradient(210deg, #2c3a20, #5e7c33 50%, #c9d98a)); }
+.fx-loopgal__item:nth-child(6n + 6) { background-image: var(--fx-img, linear-gradient(150deg, #3a2140, #6e3b7a 50%, #d59ac8)); }
+
+/* ---- vertical: sketch 024. Three columns; two cloned rows are one box. ---- */
+.fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+.fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__item {
+  height: calc((var(--fx-box) - var(--fx-gap)) / 2);
+}
+/* Upstream's alternating corner radii: the outer columns round away from the
+   edge they sit against and the middle one rounds all four. */
+.fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__item:nth-child(3n-2) { border-radius: 0 var(--fx-radius) var(--fx-radius) 0; }
+.fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__item:nth-child(3n) { border-radius: var(--fx-radius) 0 0 var(--fx-radius); }
+
+/* ---- horizontal: sketch 025. One row; four cloned columns are one box. ---- */
+.fx-loopgal[data-fx-orientation="horizontal"] .fx-loopgal__viewport { overflow-x: auto; overflow-y: hidden; }
+.fx-loopgal[data-fx-orientation="horizontal"] .fx-loopgal__grid {
+  height: 100%;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100cqw - 3 * var(--fx-gap)) / 4);
+  width: min-content;
+}
+.fx-loopgal[data-fx-orientation="horizontal"] .fx-loopgal__item {
+  height: 100%;
+  background-position: 50% 50%;
+}
+
+@media (max-width: 40em) {
+  /* Two columns on a phone, so a cell is not a stripe -- and the cell height
+     changes with it, because six clones over two columns is three rows and
+     three rows still have to come to exactly one box or the seam shows.
+     Horizontal is deliberately left alone: four narrow columns is what a
+     sideways gallery looks like on a phone, and re-columning it would break
+     the same sum the other way. */
+  .fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__grid { grid-template-columns: repeat(2, 1fr); }
+  .fx-loopgal:not([data-fx-orientation="horizontal"]) .fx-loopgal__item {
+    height: calc((var(--fx-box) - 2 * var(--fx-gap)) / 3);
+    border-radius: var(--fx-radius);
+  }
+}

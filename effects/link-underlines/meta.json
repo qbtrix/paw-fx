@@ -1,0 +1,46 @@
+{
+  "name": "link-underlines",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "links", "hover", "underline", "css-only", "codrops", "navigation"],
+  "summary": "A list of oversized links whose underline arrives on hover: one rule wiping across, two rules travelling in opposite directions, or the label swapping for a duplicate over a thicker rule. No JavaScript, upstream ships none either.",
+  "needs": [],
+  "options": {
+    "variant": {
+      "type": "string",
+      "default": "wipe",
+      "description": "Which upstream treatment to use: wipe (.link--metis, one rule scaled in from the right and out to the left), dual (.link--io, two rules 4px apart travelling in opposite directions) or swap (.link--leda, the label slides out left while a duplicate from data-text slides in from the right over a 2px rule)."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/LineHoverStyles",
+    "commit": "5ff7fb48e2d415fb217dda5942e0cd08bc4ed768",
+    "path": [
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Three of upstream's twelve treatments are ported (.link--metis, .link--io, .link--leda, renamed wipe, dual and swap) and exposed as one `variant` option. The other nine are not carried, and neither are the two SVG-graphic links (.link--iocaste, .link--herse) whose stroke lives in inline markup.",
+      "why": "Twelve near-identical underlines would be a worse library than three that read differently. These three are the three distinct mechanisms in the set -- a single travelling rule, a pair travelling against each other, and a label swap -- while the rest are variations in thickness, delay and easing on the first two.",
+      "kind": "ours"
+    },
+    {
+      "what": "Every :hover rule is repeated on :focus-visible.",
+      "why": "Upstream is a hover demo, and a link that only reveals its state to a pointer is unreachable from a keyboard. Accessibility basics are not a place to be faithful to a demo.",
+      "kind": "ours"
+    },
+    {
+      "what": "The transition declarations sit inside a prefers-reduced-motion: no-preference query; the transformed states themselves do not.",
+      "why": "Effect contract: a reader who asked for stillness still gets the hover state, it simply arrives with no travel. Putting the positions behind the query instead would leave the underline permanently absent.",
+      "kind": "seam"
+    },
+    {
+      "what": "Class names are ours (.fx-links__link for .link, a data-fx-variant attribute on the section for the .link--<moon> modifier), the type is set in a system stack, and the section carries its own background, spacing and copy.",
+      "why": "Upstream owns a whole demo page and sets each link in a different Adobe Typekit face, which is a hosted stylesheet under separate terms and not ours to redistribute or to bill to someone else's kit id. Scoping the variant to the section rather than to each link is also what lets one option switch the whole list, which is the surface a site-building agent can actually drive.",
+      "kind": "seam"
+    }
+  ]
+}

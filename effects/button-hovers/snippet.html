@@ -1,0 +1,22 @@
+<!-- button-hovers section. Finished at rest with CSS alone, and finished
+     without any script at all: upstream ships no JavaScript and neither does
+     this. The default variant is on the section already, so the buttons work
+     before index.js loads and after it is blocked; mount() only ever swaps
+     the variant.
+     Every button nests two <span>s because the `swap` variant clips the outer
+     one and pushes the inner one out of it. The other two variants only use
+     the outer span, and ignore the inner.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/button-hovers/style.css">
+<section class="fx-buttons" data-fx="button-hovers" data-fx-variant="sweep">
+  <div class="fx-buttons__inner">
+    <p class="fx-buttons__eyebrow">Ready when you are</p>
+    <h2 class="fx-buttons__title">One button, done properly, beats a page of them.</h2>
+    <div class="fx-buttons__row">
+      <button class="fx-buttons__btn" type="button"><span><span>Start a project</span></span></button>
+      <button class="fx-buttons__btn" type="button"><span><span>See the work</span></span></button>
+    </div>
+    <p class="fx-buttons__note">Replace this copy and these labels with your own. The fill is parked over each button at rest and leaves on hover or keyboard focus.</p>
+  </div>
+</section>

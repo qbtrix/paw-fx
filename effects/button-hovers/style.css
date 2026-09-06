@@ -1,0 +1,209 @@
+/* Button Hover Styles
+   MIT License
+   Copyright (c) 2009 - 2022 [Codrops](https://tympanus.net/codrops)
+   https://github.com/codrops/ButtonHoverStyles
+
+   button-hovers: a port of Codrops' ButtonHoverStyles, commit
+   3976fa1b65dced5d330db43c51081787c3e7b46e, css/base.css plus the markup shape
+   in index.html. Upstream ships twenty-one button treatments; three are
+   carried here behind a `variant` option, and every transform, duration,
+   keyframe and cubic-bezier below is upstream's, verbatim:
+
+     sweep = upstream .button--mimas     a skewed black fill parked over the
+                                         button slides off to the right,
+                                         0.4s cubic-bezier(0.3, 1, 0.8, 1)
+     swap  = upstream .button--hyperion  the label pushes up out of the box
+                                         while a duplicate rises into its
+                                         place, MoveUpInitial 0.2s then
+                                         MoveUpEnd 0.2s at 0.2s, over a fill
+                                         that scales away from the left,
+                                         0.3s cubic-bezier(0.7, 0, 0.2, 1)
+     morph = upstream .button--pallene   the corner radius opens to a circle
+                                         while an inset box-shadow floods the
+                                         fill, 0.3s cubic-bezier(0.7, 0, 0.2, 1)
+                                         with the label colour 0.2s behind
+
+   All three read as an inverted button at rest and an un-inverted one on
+   hover, which is upstream's own arrangement: .button::before is parked over
+   the whole box and the label sits on it in mix-blend-mode: difference, so the
+   hover is the fill LEAVING. That matters for the CSS-only contract -- there
+   is no state in which the label is unreadable, and there is no script here to
+   block.
+
+   Two things are ours and declared in meta.json: every :hover rule is repeated
+   on :focus-visible, and the transitions and keyframes sit behind
+   prefers-reduced-motion: no-preference so a reader who asked for stillness
+   gets the end state with no travel. */
+.fx-buttons {
+  --fx-bg: #efece4;
+  --fx-plate: #e7e7e7;
+  --fx-fill: #000;
+  --fx-ink: #16151a;
+  --fx-muted: #5f5d68;
+  --fx-accent: #b03a20;
+  box-sizing: border-box;
+  position: relative;
+  min-height: 70svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(4rem, 10vw, 9rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-buttons *,
+.fx-buttons *::before,
+.fx-buttons *::after { box-sizing: border-box; }
+
+.fx-buttons__inner { width: 100%; max-width: 44rem; text-align: center; }
+.fx-buttons__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-buttons__title {
+  margin: 0 0 2.75rem;
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+.fx-buttons__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1rem, 3vw, 2rem);
+  justify-content: center;
+}
+.fx-buttons__note {
+  margin: 2.75rem auto 0;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* upstream .button */
+.fx-buttons__btn {
+  pointer-events: auto;
+  cursor: pointer;
+  background: var(--fx-plate);
+  border: none;
+  padding: 1.5rem 3rem;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  position: relative;
+  display: inline-block;
+}
+/* upstream .button::before, .button::after */
+.fx-buttons__btn::before,
+.fx-buttons__btn::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- sweep: upstream .button--mimas ---- */
+.fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn {
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  color: #fff;
+}
+.fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn > span {
+  position: relative;
+  mix-blend-mode: difference;
+}
+.fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn::before {
+  content: "";
+  background: var(--fx-fill);
+  width: 120%;
+  left: -10%;
+  transform: skew(30deg);
+}
+.fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn:hover::before,
+.fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn:focus-visible::before {
+  transform: translate3d(100%, 0, 0);
+}
+
+/* ---- swap: upstream .button--hyperion ---- */
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn {
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--fx-fill);
+  overflow: hidden;
+  color: #fff;
+}
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn span {
+  display: block;
+  position: relative;
+}
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn > span { overflow: hidden; }
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn > span > span {
+  overflow: hidden;
+  mix-blend-mode: difference;
+}
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn::before {
+  content: "";
+  background: var(--fx-fill);
+  transform-origin: 100% 50%;
+}
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn:hover::before,
+.fx-buttons[data-fx-variant="swap"] .fx-buttons__btn:focus-visible::before {
+  transform: scale3d(0, 1, 1);
+  transform-origin: 0% 50%;
+}
+
+/* ---- morph: upstream .button--pallene ---- */
+.fx-buttons[data-fx-variant="morph"] .fx-buttons__btn {
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: 2px solid var(--fx-fill);
+  box-shadow: inset 0 0 0 0px var(--fx-fill);
+}
+.fx-buttons[data-fx-variant="morph"] .fx-buttons__btn:hover,
+.fx-buttons[data-fx-variant="morph"] .fx-buttons__btn:focus-visible {
+  color: var(--fx-plate);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 40px var(--fx-fill);
+}
+
+/* The travel, and only the travel, is behind the motion query. Every rule
+   above describes a state, so a reader who asked for stillness still gets the
+   hover state -- it simply arrives with no transition. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-buttons[data-fx-variant="sweep"] .fx-buttons__btn::before {
+    transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+  }
+  .fx-buttons[data-fx-variant="swap"] .fx-buttons__btn::before {
+    transition: transform 0.3s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .fx-buttons[data-fx-variant="swap"] .fx-buttons__btn:hover > span > span,
+  .fx-buttons[data-fx-variant="swap"] .fx-buttons__btn:focus-visible > span > span {
+    animation: fx-buttons-move-up-initial 0.2s forwards, fx-buttons-move-up-end 0.2s forwards 0.2s;
+  }
+  @keyframes fx-buttons-move-up-initial {
+    to { transform: translate3d(0, -105%, 0); }
+  }
+  @keyframes fx-buttons-move-up-end {
+    from { transform: translate3d(0, 100%, 0); }
+    to { transform: translate3d(0, 0, 0); }
+  }
+  .fx-buttons[data-fx-variant="morph"] .fx-buttons__btn {
+    transition: border-radius 0.3s, box-shadow 0.3s, color 0.3s;
+    transition-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .fx-buttons[data-fx-variant="morph"] .fx-buttons__btn:hover,
+  .fx-buttons[data-fx-variant="morph"] .fx-buttons__btn:focus-visible {
+    transition-delay: 0s, 0s, 0.2s;
+  }
+}
