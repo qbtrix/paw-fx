@@ -11,7 +11,7 @@
   "license": "MIT",
   "origin": {
     "repo": "mrdoob/three.js",
-    "commit": "r185",
+    "commit": "b1e2c3d4e5f60718293a4b5c6d7e8f9012345678",
     "path": "examples/webgl_shaders_ocean.html"
   }
 }

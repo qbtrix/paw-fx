@@ -138,3 +138,50 @@ test.each([
 ])("a %s in style.css is not flagged", (_form, spec) => {
   expect(cssRefs.some((e) => e.includes(spec))).toBe(false);
 });
+
+// A port often spans several upstream files: every paper-design shader splices
+// in shader-utils.ts, every vanta effect extends src/_base.js, the marquee needs
+// its component plus the globals.css holding its keyframes. Pinning only the
+// main file makes the port-fidelity gate read that shared upstream code as
+// invention, so origin.path takes a list.
+const ported = (over = {}) => ({
+  ...meta({ repo: "tengbao/vanta", commit: "a".repeat(40), path: "src/vanta.net.js" }),
+  ...over,
+});
+
+test("origin.path takes a single file or a list", () => {
+  expect(validate(schema, ported())).toEqual([]);
+  const many = ported();
+  many.origin = { ...many.origin, path: ["src/vanta.net.js", "src/_base.js"] };
+  expect(validate(schema, many)).toEqual([]);
+});
+
+test("an empty path list is rejected", () => {
+  const m = ported();
+  m.origin = { ...m.origin, path: [] };
+  expect(validate(schema, m).length).toBeGreaterThan(0);
+});
+
+// The gate fetches origin.commit verbatim. A branch name resolves to whatever
+// upstream moved to since, which is exactly the drift the pin exists to stop.
+test("a branch name is not a commit", () => {
+  const m = ported();
+  m.origin = { ...m.origin, commit: "main" };
+  expect(validate(schema, m).length).toBeGreaterThan(0);
+});
+
+// An undeclared change to shader source or timing constants is invention and
+// fails the gate. Declaring it with a reason is how a necessary change passes.
+test("deviations must carry what, why and a known kind", () => {
+  const ok = ported();
+  ok.deviations = [{ what: "blending: null dropped", why: "already broken at the pinned commit", kind: "upstream-bug" }];
+  expect(validate(schema, ok)).toEqual([]);
+
+  const badKind = ported();
+  badKind.deviations = [{ what: "x", why: "y", kind: "because-i-said-so" }];
+  expect(validate(schema, badKind).length).toBeGreaterThan(0);
+
+  const noWhy = ported();
+  noWhy.deviations = [{ what: "x", kind: "ours" }];
+  expect(validate(schema, noWhy).length).toBeGreaterThan(0);
+});

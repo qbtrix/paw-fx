@@ -91,11 +91,59 @@
           "type": "string"
         },
         "commit": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A real resolved commit sha, never a branch or tag name. The gate fetches this exact commit."
         },
         "path": {
-          "type": "string"
+          "description": "The upstream file this effect is ported from. A LIST when the port genuinely spans several upstream files: a paper-design shader splices in shader-utils.ts and shader-sizing.ts, every vanta effect extends src/_base.js, and the marquee needs its component plus the globals.css that defines its keyframes. Listing them all is what stops the port-fidelity gate reading shared upstream code as invention.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          ]
         }
+      }
+    },
+    "deviations": {
+      "description": "Deliberate, declared departures from upstream. The port-fidelity gate treats an undeclared change to shader source, easing curves or timing constants as invention and fails it; declaring it here with a reason is how a necessary change passes. Use `kind` to say which sort it is.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "what",
+          "why",
+          "kind"
+        ],
+        "properties": {
+          "what": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "seam",
+              "upstream-bug",
+              "api-migration",
+              "ours"
+            ],
+            "description": "seam = plumbing we always change. upstream-bug = broken at the pinned commit itself, so fixing it is not a migration. api-migration = a dependency version forced it. ours = a deliberate product choice, which must be justified."
+          }
+        },
+        "additionalProperties": false
       }
     }
   },
