@@ -1,0 +1,4 @@
+/* fixture: local-only CSS; this fixture must lint clean. */
+.fx-fixture {
+  background: #07070b;
+}

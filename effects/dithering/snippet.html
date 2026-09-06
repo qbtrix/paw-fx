@@ -1,0 +1,22 @@
+<!-- dithering section. Finished at rest with CSS alone: .fx-dithering__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/dithering/style.css">
+<section class="fx-dithering" data-fx="dithering">
+  <div class="fx-dithering__rest" aria-hidden="true"></div>
+  <div class="fx-dithering__dots" aria-hidden="true"></div>
+  <div class="fx-dithering__scrim" aria-hidden="true"></div>
+  <div class="fx-dithering__grain" aria-hidden="true"></div>
+  <div class="fx-dithering__inner">
+    <p class="fx-dithering__eyebrow">1-bit, on purpose</p>
+    <h1 class="fx-dithering__title">Ship the thing, not the deck.</h1>
+    <p class="fx-dithering__lede">Replace this copy with your own. The headline holds one line or three, and the sphere keeps turning beside it.</p>
+    <div class="fx-dithering__actions">
+      <a class="fx-dithering__cta fx-dithering__cta--primary" href="#">Get started</a>
+      <a class="fx-dithering__cta fx-dithering__cta--ghost" href="#">Read the changelog</a>
+    </div>
+  </div>
+</section>

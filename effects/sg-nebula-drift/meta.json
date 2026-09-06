@@ -1,0 +1,71 @@
+{
+  "name": "sg-nebula-drift",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "nebula",
+    "space",
+    "volumetric",
+    "dark",
+    "glow",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's nebula drift: a deep emission field of drifting gas threaded by dark dust lanes and bright ionization filaments, two parallaxing depth layers deep, over a matched CSS nebula.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#3b2a8f",
+        "#8b4cff",
+        "#2f7fd4",
+        "#ff6aa6"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Rate the gas drifts past; 0 holds the field still. Upstream default, range 0 to 1.5."
+    },
+    "dust": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Weight of the dark dust lanes silhouetted against the backlight. Upstream default, range 0 to 1."
+    },
+    "filament": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Brightness of the thin ionization filaments lacing the gas. Upstream default, range 0 to 1.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "nebula-drift/shader.frag",
+      "nebula-drift/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `midnight` preset.",
+      "why": "nebula-drift/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a midnight set: indigo and violet gas, a cold blue mid, and one warm filament accent, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.06, vignette 0.30, saturation 1.12 and bloom 0.5 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

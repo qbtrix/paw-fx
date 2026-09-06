@@ -1,0 +1,21 @@
+<!-- sg-laminar section. Finished at rest with CSS alone: .fx-laminar__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-laminar/style.css">
+<section class="fx-laminar" data-fx="sg-laminar">
+  <div class="fx-laminar__rest" aria-hidden="true"></div>
+  <div class="fx-laminar__scrim" aria-hidden="true"></div>
+  <div class="fx-laminar__grain" aria-hidden="true"></div>
+  <div class="fx-laminar__inner">
+    <p class="fx-laminar__eyebrow">Throughput, measured</p>
+    <h1 class="fx-laminar__title">Nothing crosses. Nothing queues.</h1>
+    <p class="fx-laminar__lede">Replace this copy with your own. The headline holds one line or three, and the flow keeps running behind it either way.</p>
+    <div class="fx-laminar__actions">
+      <a class="fx-laminar__cta fx-laminar__cta--primary" href="#">Read the benchmarks</a>
+      <a class="fx-laminar__cta fx-laminar__cta--ghost" href="#">See the architecture</a>
+    </div>
+  </div>
+</section>

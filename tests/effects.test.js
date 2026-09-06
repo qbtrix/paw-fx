@@ -8,9 +8,17 @@
 // assert about one here is the opposite: that running it somewhere with no
 // DOM and no WebGL is a quiet fall back to the CSS resting state rather than a
 // throw. Bun has neither, which makes this suite a free harness for the guard.
+//
+// The last test in the file is the cheapest one here and covers every effect:
+// `export const meta` in index.js and meta.json describe the same effect, so
+// they have to agree. Importing an effect module under Bun is also, by itself,
+// the check that nothing in it touches the DOM at import time.
 import { test, expect } from "bun:test";
+import { readFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import { mount } from "../effects/aurora-css/index.js";
 import { mount as mountMesh } from "../effects/mesh-gradient/index.js";
+import { effectDirs } from "../scripts/lint.mjs";
 
 const stubEl = () => ({
   attrs: {},
@@ -86,4 +94,25 @@ test("mesh-gradient meta carries upstream's default preset values", async () => 
     grainMixer: 0,
     grainOverlay: 0,
   });
+});
+
+// index.js carries `export const meta` and meta.json carries the same thing; the
+// registry serves the JSON while the browser runs the module, so a value that
+// drifts between them is documentation the effect does not obey. Three of the
+// ports drifted exactly this way while their uniforms were being tuned -- the
+// module said one preset, the JSON still described the one before it -- and
+// nothing caught it, because every other check reads one file or the other.
+test.each(effectDirs().map((d) => [basename(d), d]))("%s: index.js meta agrees with meta.json", async (name, dir) => {
+  const { meta } = await import(join(dir, "index.js"));
+  const json = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8"));
+  expect(meta.name).toBe(json.name);
+  expect(meta.version).toBe(json.version);
+  expect(meta.category).toBe(json.category);
+  expect(meta.license).toBe(json.license);
+  expect(meta.needs).toEqual(json.needs);
+  expect(Object.keys(meta.options).sort()).toEqual(Object.keys(json.options).sort());
+  for (const [key, opt] of Object.entries(meta.options)) {
+    expect([name, key, opt.default]).toEqual([name, key, json.options[key].default]);
+    expect([name, key, opt.type]).toEqual([name, key, json.options[key].type]);
+  }
 });

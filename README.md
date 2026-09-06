@@ -6,6 +6,8 @@ Vanilla animated-section library for Paw Sites. Every effect is a port of a name
 
 ```
 effects/<name>/   index.js  style.css  snippet.html  meta.json  preview.png
+                  shader.frag, when the port's GLSL is a standalone upstream file
+effects/_shared/  paw-fx code shared between effects (glsl-mount.js)
 vendor/           manifest.json plus the files it lists (anime, three, paper, tsparticles, lenis)
 schema/           meta.schema.json
 scripts/          lint.mjs  build-registry.mjs  validate.mjs  smoke.mjs
@@ -13,12 +15,17 @@ tests/            bun test (fixtures under tests/fixtures/)
 dist/registry/    build output (gitignored)
 ```
 
+A directory under `effects/` whose name starts with `_` is shared code, not an
+effect: `effectDirs()` skips it, so lint, build and smoke never walk it.
+
 ## Effect contract
 
 - `index.js` is an ES module exporting `mount(el, opts = {})` which returns `{ update(next), destroy() }`, plus `export const meta` mirroring meta.json. Nothing touches globals at import time (see Vendor). No bare-specifier imports in any form: side-effect `import "x"`, binding imports, `export ... from "x"`, dynamic `import("x")` all count, and dependencies are `../../vendor/<file>` where the file is one `vendor/manifest.json` lists for a key in `needs`. Inside a site the files land at `_fx/effects/<name>/` and `_fx/vendor/`, the same two-level shape, so the relative import resolves unchanged.
 - `style.css` is plain CSS. Custom properties are prefixed `--fx-`. It fetches nothing off-site: `@import` and `url()` take a relative path, a `data:` URI, or a `#frag` reference. Write the leading `./` — a relative URL without one is indistinguishable from a bare specifier and lint flags it.
 - `snippet.html` is the section markup. Its resting state must look finished with CSS only. It links `style.css` (or inlines a `<style>`). A `<script>` is allowed only as `type="module"` importing `index.js`.
 - `mount()` honours `prefers-reduced-motion` (stay at rest). WebGL effects pass `failIfMajorPerformanceCaveat: true` and fall back to the resting state on failure.
+- `../_shared/<file>` is the one other specifier the build accepts: paw-fx's own code shared between effects, with no manifest key, and it must import nothing itself (one level, no graph walk). Items stay standalone, so each one carries its own copy at `_fx/effects/_shared/<file>`.
+- `shader.frag`, when present, is emitted beside `index.js` and fetched at mount from `new URL("./shader.frag", import.meta.url)`. It exists for ports whose upstream *is* a bare GLSL file: keeping it as a file means a port-fidelity gate can diff it against upstream byte for byte, instead of extracting a template literal out of JS and hoping the escaping is faithful.
 
 ## Vendor
 
@@ -40,7 +47,7 @@ Lint enforces: schema, licence allow-list and origin, every `needs` key present 
 
 ## Registry
 
-`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license) and `dist/registry/items/<name>.json` (meta plus `files[{path, content}]`, `snippet`, `usage`). Files are the effect's `index.js` and `style.css` plus, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it.
+`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license) and `dist/registry/items/<name>.json` (meta plus `files[{path, content}]`, `snippet`, `usage`). Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it.
 
 Paths in `usage` and in `snippet.html` are root-absolute (`/_fx/...`), not page-relative. An html Paw Site is served by an assets-only Worker with `assets.directory: "."` and the sites code has no base-path concept, so a site always sits at the origin root: `./_fx/...` would resolve wrong on any nested page such as `/blog/post.html`. `usage` mounts with `querySelectorAll` and a loop, because the scroll, text and cursor categories routinely appear several times on one page.
 
@@ -94,4 +101,23 @@ bun test
 bun run check   # lint + build + smoke + test
 ```
 
-Preview images are 640x360 PNGs. `mesh-gradient/preview.png` is a real capture of the mounted shader; `aurora-css/preview.png` is still a generated gradient placeholder. Capture one by materialising the built item into a directory, serving it, and screenshotting at 1280x720. Hide `.fx-*__grain` first and box-average down to 640: the grain and the shader's own dithering are close to random noise, and a full-resolution capture with both lands at ~500 KB against ~100 KB without them.
+Preview images are 640x360 PNGs. Every shader effect's is a real capture of the mounted shader; `aurora-css/preview.png` is still a generated gradient placeholder. Capture one by materialising the built item into a directory, serving it, and screenshotting at 1280x720. Hide `.fx-*__grain` first and scale down to 640: the grain and the shaders' own dithering are close to random noise, and a full-resolution capture with both lands at ~500 KB against ~100-250 KB without them.
+
+Assert `[data-fx-live]` on the section before capturing. It is set only once the
+shader has a context and a linked program, so without that check a "real
+capture" is silently the CSS resting state on any machine whose browser refuses
+the context -- which is the exact failure the preview is meant to rule out.
+
+## Contrast
+
+A hero that passes at rest and fails mid-animation is a failure, so contrast is
+measured against the **live** shader across several animation frames, not
+against the resting state. Method: mount with scripts on, hide the copy, capture
+at four times, and take the worst ratio between each text run's computed ink and
+the pixels under its box, skipping any run that paints its own opaque plate (a
+filled CTA sits on its own background, not on the shader). Read the ink by
+painting it to a canvas -- `getComputedStyle` serialises a `color-mix()` as
+`oklab(...)`, and scraping the first three numbers out of that reads lightness
+as red. Every effect here clears 4.5:1 on every text run; the per-effect worst
+case is in the PR that landed it, and `--fx-scrim` is the knob to raise if a
+restyle brings one down.

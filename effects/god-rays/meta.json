@@ -1,0 +1,49 @@
+{
+  "name": "god-rays",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["rays", "light", "volumetric", "webgl", "shader", "hero", "dark", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' god rays on WebGL2: coloured volumetric shafts sweeping out of a bloom below the fold, over black, with a matched CSS ray fan as the resting state.",
+  "needs": ["paper"],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#a600ff6e", "#6200fff0", "#ffffff", "#33fff5"],
+      "description": "Up to ten ray colours; 8-digit hex is honoured, and the upstream default leans on it to keep the violet shafts translucent. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.75,
+      "description": "Rate the rays sweep. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Length and reach of the rays; low keeps them near the origin, high throws them across the section."
+    },
+    "bloom": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Glow pooled at the ray origin, tinted by the shader's own colorBloom."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/god-rays.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/god-rays.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The noise texture is decoded before ShaderMount is constructed, so the shader starts one microtask later than a React mount would.",
+      "why": "Seam. Upstream's React component hands getShaderNoiseTexture() straight to ShaderMount and re-renders when it loads; a vanilla mount has no re-render, and ShaderMount throws on an image that is not complete. The image is a data: URI, so nothing is fetched.",
+      "kind": "seam"
+    }
+  ]
+}

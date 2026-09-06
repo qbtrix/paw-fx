@@ -1,0 +1,22 @@
+<!-- liquid-metal section. Finished at rest with CSS alone: .fx-metal__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/liquid-metal/style.css">
+<section class="fx-metal" data-fx="liquid-metal">
+  <div class="fx-metal__rest" aria-hidden="true"></div>
+  <div class="fx-metal__bloom" aria-hidden="true"></div>
+  <div class="fx-metal__scrim" aria-hidden="true"></div>
+  <div class="fx-metal__grain" aria-hidden="true"></div>
+  <div class="fx-metal__inner">
+    <p class="fx-metal__eyebrow">Hardware-grade</p>
+    <h1 class="fx-metal__title">Precision you can feel through the glass.</h1>
+    <p class="fx-metal__lede">Replace this copy with your own. The headline holds one line or three, and the sheen keeps folding beside it.</p>
+    <div class="fx-metal__actions">
+      <a class="fx-metal__cta fx-metal__cta--primary" href="#">See the spec</a>
+      <a class="fx-metal__cta fx-metal__cta--ghost" href="#">Request a sample</a>
+    </div>
+  </div>
+</section>

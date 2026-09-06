@@ -11,9 +11,16 @@
 // drifts breaks these tests rather than a generated site.
 //
 // vendor/ having contents is covered separately, in tests/vendor.test.js.
+//
+// The last three tests cover the two paths the shader.gallery ports added: a
+// `shader.frag` emitted beside index.js, and `../_shared/<file>` -- paw-fx's own
+// code shared between effects, with no manifest key behind it. Both have to
+// reach a site at the path their relative reference resolves to, and a shared
+// file that imports something else is refused rather than emitted half-built.
 import { test, expect } from "bun:test";
 import { readFileSync, existsSync } from "node:fs";
 import { build, buildItem } from "../scripts/build-registry.mjs";
+import { effectDirs } from "../scripts/lint.mjs";
 
 const out = new URL("../dist/registry", import.meta.url).pathname;
 const fx = (p) => new URL(`../${p}`, import.meta.url).pathname;
@@ -83,4 +90,38 @@ test("a manifest file missing from vendor/ is a clear error", () => {
   expect(() => buildItem(fx("tests/fixtures/good-vendor-global"), stubVendor)).toThrow(
     'needs "tsparticles" but vendor/tsparticles.slim.bundle.min.js is missing',
   );
+});
+
+// The shape the shader.gallery ports carry: GLSL as its own file beside
+// index.js, and one runtime shared out of effects/_shared/. Both have to reach
+// a site, at the paths the relative references resolve to inside it -- the
+// import is "../_shared/<file>" from _fx/effects/<name>/, and the .frag is
+// fetched from "./shader.frag" -- or the item ships broken with no build step
+// to catch it.
+test("an effect with shader.frag and a shared import emits both", () => {
+  const item = buildItem(fx("tests/fixtures/good-shared-frag"));
+  expect(item.files.map((f) => f.path)).toEqual([
+    "_fx/effects/good-shared-frag/index.js",
+    "_fx/effects/good-shared-frag/style.css",
+    "_fx/effects/good-shared-frag/shader.frag",
+    "_fx/effects/_shared/stub-mount.js",
+  ]);
+  expect(item.files.find((f) => f.path.endsWith("shader.frag")).content).toContain("gl_FragColor");
+});
+
+// One level deep only. A shared file that imports something else would need a
+// graph walk to emit, and refusing it is better than emitting an item whose
+// transitive file is missing -- which is the same hole the vendor scan closed.
+test("a shared file that is not self-contained is refused", () => {
+  expect(() => buildItem(fx("tests/fixtures/bad-shared-chain"))).toThrow(
+    "shared files must be self-contained",
+  );
+});
+
+// effects/_shared/ is code, not an effect: it has no meta.json, snippet or
+// preview, so walking it would fail lint, build and smoke at once.
+test("effectDirs skips underscore-prefixed directories", () => {
+  const dirs = effectDirs().map((d) => d.split("/").pop());
+  expect(dirs).toContain("mesh-gradient");
+  expect(dirs.some((d) => d.startsWith("_"))).toBe(false);
 });

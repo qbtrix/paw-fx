@@ -1,0 +1,21 @@
+<!-- sg-suffuse section. Finished at rest with CSS alone: .fx-suffuse__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-suffuse/style.css">
+<section class="fx-suffuse" data-fx="sg-suffuse">
+  <div class="fx-suffuse__rest" aria-hidden="true"></div>
+  <div class="fx-suffuse__scrim" aria-hidden="true"></div>
+  <div class="fx-suffuse__grain" aria-hidden="true"></div>
+  <div class="fx-suffuse__inner">
+    <p class="fx-suffuse__eyebrow">Quietly capable</p>
+    <h1 class="fx-suffuse__title">The calm surface over a very fast machine.</h1>
+    <p class="fx-suffuse__lede">Replace this copy with your own. The headline holds one line or three, and the wash keeps bleeding behind it either way.</p>
+    <div class="fx-suffuse__actions">
+      <a class="fx-suffuse__cta fx-suffuse__cta--primary" href="#">Try it free</a>
+      <a class="fx-suffuse__cta fx-suffuse__cta--ghost" href="#">See pricing</a>
+    </div>
+  </div>
+</section>

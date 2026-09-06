@@ -1,0 +1,74 @@
+{
+  "name": "liquid-metal",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "metal",
+    "chrome",
+    "sheen",
+    "shard",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "paper-shaders"
+  ],
+  "summary": "Full-bleed hero running Paper Shaders' liquid metal on WebGL2: a soft chrome shard folding through itself on black, off-centre so the copy sits beside it, over a matched CSS shard.",
+  "needs": [
+    "paper"
+  ],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#000000",
+        "#606060"
+      ],
+      "description": "Ground then metal tint. Omit to read --fx-c1 and --fx-c2 off the section, which is what keeps the shader and the CSS resting state on one pair. Upstream noir preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the sheen travels. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "repetition": {
+      "type": "number",
+      "default": 1.5,
+      "description": "How many bands the sheen folds into; high turns the sheet into stripes."
+    },
+    "softness": {
+      "type": "number",
+      "default": 0.45,
+      "description": "Blur on the band edges. Low is polished chrome, high is brushed; the noir preset sits in between."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/liquid-metal.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/liquid-metal.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Uniforms come from upstream's `noirPreset`, not `defaultPreset`.",
+      "why": "defaultPreset is a white-and-chrome sheet with the chromatic edge shift turned up: white, near-black and saturated red/cyan fringes all in one frame, which no ink colour clears 4.5:1 against. noirPreset is upstream's own soft dark variant -- #000000 ground, #606060 tint, softness 0.45, no shift, no distortion -- so the values are still upstream's, just the preset a hero can carry copy over.",
+      "kind": "ours"
+    },
+    {
+      "what": "u_offsetX is 0.3; every upstream liquid-metal preset uses 0.",
+      "why": "The shader draws one object, and at offset 0 it sits dead centre, under the headline. 0.3 moves it right (measured: negative moves left) so the copy column has the left half of the section to itself. Nothing else about the shape changes.",
+      "kind": "ours"
+    },
+    {
+      "what": "No image is passed, so u_isImage is false and the shader draws its own shape.",
+      "why": "The shader plates an image when given one. A generated site has to be self-contained, so paw-fx takes the no-image branch upstream already ships rather than fetching a mask. Nothing on that branch reads the sampler.",
+      "kind": "ours"
+    }
+  ]
+}

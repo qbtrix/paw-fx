@@ -1,0 +1,76 @@
+{
+  "name": "water",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "water",
+    "caustics",
+    "refraction",
+    "liquid",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "paper-shaders"
+  ],
+  "summary": "Full-bleed hero running Paper Shaders' water on WebGL2: waves and caustics refracting a deep blue-teal gradient the section paints for itself, with that same gradient as the CSS resting state.",
+  "needs": [
+    "paper"
+  ],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#0d1a45",
+        "#1f6f92",
+        "#57cbbc",
+        "#1a1038"
+      ],
+      "description": "Four blooms painted into the source gradient the water refracts. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the surface moves. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "waves": {
+      "type": "number",
+      "default": 1,
+      "description": "Depth of the wave distortion applied before the image is sampled."
+    },
+    "caustic": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Strength of the caustic light banding riding over the surface."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/water.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/water.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Uniforms come from upstream's `abstractPreset`, not `defaultPreset`.",
+      "why": "defaultPreset fits the source image with `contain` at scale 0.8, which centres a small framed picture in the section. abstractPreset is upstream's own full-bleed variant (fit cover, scale 3), so the values are still upstream's, just the preset built for this job.",
+      "kind": "ours"
+    },
+    {
+      "what": "The source image is generated in the page rather than supplied by the caller: four soft blooms in the --fx-c* palette painted to a canvas and handed over as a data: URI.",
+      "why": "The shader mixes its output toward `texture(u_image, uv)` weighted by that texel's alpha, so with no texture bound the sampler reads opaque black and the whole hero renders flat. It genuinely needs an input, and a generated site must fetch nothing off-site, so the section paints its own from the same custom properties the CSS resting state uses.",
+      "kind": "ours"
+    },
+    {
+      "what": "The GLSL that actually runs is @paper-design/shaders 0.0.80's water shader, which differs from the pinned commit in two lines: upstream guards the layering term with `if (u_layering > 0.)`, and multiplies the highlight mix by `u_colorHighlight.a`. The vendored build does neither.",
+      "why": "vendor/paper.js is the published 0.0.80 bundle (see vendor/PROVENANCE.md), and the port imports the shader from it rather than carrying a copy, so the vendored build is the one that ships. Checked line by line against the pinned commit: god-rays, metaballs, dithering and liquid-metal match it exactly; water is the only one that does not. Neither difference is reachable at our defaults -- abstractPreset sets layering 0, and colorHighlight is opaque #ffffff -- but a caller who raises `layering` or passes a translucent highlight gets 0.0.80's behaviour, not the pinned commit's.",
+      "kind": "api-migration"
+    }
+  ]
+}
