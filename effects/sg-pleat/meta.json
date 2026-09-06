@@ -1,0 +1,53 @@
+{
+  "name": "sg-pleat",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["cloth", "folds", "pleat", "geometric", "cool", "dark", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's pleat: accordion-folded cloth breaking the frame into flat-shaded panels split by hard crease lines, with a broad band of light rolling horizontally across them.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#7fd8e8", "#3f8fbf", "#cfeef5", "#2a5f7a"],
+      "description": "Four tints cycled panel to panel through a colour wheel, so all four appear across the frame rather than one owning a corner. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "pleatWidth": {
+      "type": "number",
+      "default": 110,
+      "description": "Width of one accordion panel in CSS pixels, normalised against the frame by the shader so a panel keeps its share of the width at any size. Upstream default, range 30 to 300."
+    },
+    "rollSpeed": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Rate the band of light sweeps across the cloth; 0 leaves it parked and the facets still read. Upstream default, range 0 to 2."
+    },
+    "sway": {
+      "type": "number",
+      "default": 0.45,
+      "description": "How far the creases bow and lean over a breath; 0 gives a rigid vertical accordion. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["pleat/shader.frag", "pleat/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette tints are ours, not upstream's `glacier` preset.",
+      "why": "pleat/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a cool glacier set chosen to match the CSS resting state, which reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.4 at radius 3.5, saturation 1.15, contrast 1.12, dither and a 0.28 backdrop over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so the ridge catch-lights carry no bloom and the section will not match the upstream poster. The CSS grain layer covers the banding the poster's dither was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

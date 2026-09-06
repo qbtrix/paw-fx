@@ -1,0 +1,53 @@
+{
+  "name": "sg-benday",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["dots", "halftone", "pop-art", "light", "high-key", "graphic", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's benday: a regular screen of flat pop-art dots over newsprint cream, each dot taking its tone from a colour field drifting underneath, so blocks of colour roll across the grid without the grid ever moving.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#ff7a63", "#8fbaff", "#ffd45e", "#79dbcb"],
+      "description": "Four dot tones the drifting colour field blends between. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette. The cream ground is a constant inside the shader and does not follow this."
+    },
+    "dots": {
+      "type": "number",
+      "default": 30,
+      "description": "Dots across the frame; lower is a coarser, bolder screen. Upstream default, range 8 to 90."
+    },
+    "flow": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Drift rate of the colour field under the screen; 0 freezes the colour blocks. Upstream default, range 0 to 1.2."
+    },
+    "size": {
+      "type": "number",
+      "default": 0.62,
+      "description": "Dot radius as a fraction of its cell, so how much ink the screen lays down. Upstream default, range 0.1 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["benday/shader.frag", "benday/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette dot tones are ours, not upstream's `prism` preset.",
+      "why": "benday/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a high-key pop set picked so near-black copy clears 4.5:1 over any dot, which a fully saturated primary set does not.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.04, vignette 0.16, contrast 1.05 and saturation 1.12 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "sg-weft",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["weave", "cloth", "threads", "texture", "warm", "copper", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's weft: warp and weft threads interlacing in a plain tabby weave, one riding over and the other dipping under at every crossing, with a diagonal band of light travelling across the cloth.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#c9622f", "#f0a15e", "#ffd9a8", "#8a4b2a"],
+      "description": "A four-stop ramp: warp threads take their tint from their position across the frame, weft threads from theirs down it. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "spacing": {
+      "type": "number",
+      "default": 22,
+      "description": "Distance between threads in CSS pixels, the same for warp and weft, normalised against the frame by the shader. Upstream default, range 8 to 80."
+    },
+    "thick": {
+      "type": "number",
+      "default": 1.8,
+      "description": "Thread half-width in CSS pixels. Upstream default from weft/meta.json; note the .frag's own comment says 3, and the meta.json is what the runtime feeds. Range 0.5 to 8."
+    },
+    "ripple": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Amplitude of the slow cloth ripple that keeps the grid from being dead straight; 0 gives graph paper. Upstream default, range 0 to 2."
+    },
+    "sheenSpeed": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Rate the diagonal band of light travels across the cloth; 0 parks it and the weave stays evenly lit. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["weft/shader.frag", "weft/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette ramp stops are ours, not upstream's `clay` preset.",
+      "why": "weft/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a copper cloth ordered so the warp warms across the frame, because the shader reads the four as a ramp by thread position rather than as independent poles.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.55 at radius 4, vignette 0.26, saturation 1.08 and dither over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so the lit crossings carry only the halo the GLSL draws around each thread and the section will not match the upstream poster. The CSS grain layer covers the banding the poster's dither was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

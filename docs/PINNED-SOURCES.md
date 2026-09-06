@@ -55,6 +55,25 @@ verification gate will perform, so no row here is a plausible-looking guess.
 | cursor / spotlight | github.com/magicuidesign/magicui | `1246d6d404c556f03867fc6d447f2867eee8a42b` | `apps/www/registry/magicui/magic-card.tsx` | MIT | same — **React only, see notes** |
 | cursor / trail | github.com/tholman/cursor-effects | `182a33839ad3ef63b14ad296e18bc1bb24a45bd6` | `src/trailingCursor.js` | MIT **claimed, no LICENSE file** | `contents/LICENSE` → 404, `/license` API → 404; only evidence is `package.json` + README |
 
+<!-- 2026-09-07, the second wave off the two already-cleared shader upstreams.
+     Same two commits as the rows above, so the pins were already fetch-checked;
+     each row below was re-fetched through `gh api repos/{repo}/contents/{path}?ref={sha}`
+     by `bun run verify`, which is the same call the gate makes. 14/14 resolved. -->
+| bg / sg-bask | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `bask/shader.frag` (+ `bask/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-benday | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `benday/shader.frag` (+ `benday/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-haze | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `haze/shader.frag` (+ `haze/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-contour | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `contour/shader.frag` (+ `contour/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-cubit | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `cubit/shader.frag` (+ `cubit/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-louver | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `louver/shader.frag` (+ `louver/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-pleat | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `pleat/shader.frag` (+ `pleat/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-sheen | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `sheen/shader.frag` (+ `sheen/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / sg-weft | github.com/shader-gallery/shaders | `cd06eee100810a9682fb2fe49d7d43c81bee52c8` | `weft/shader.frag` (+ `weft/meta.json`) | MIT | same LICENSE file as the eight above: MIT, © 2026 E. T. Carter |
+| bg / grain-gradient | github.com/paper-design/shaders | `7002061d8389781a45e479584deeca0cf538474e` | `packages/shaders/src/shaders/grain-gradient.ts` (+ the three shared GLSL files above, + `packages/shaders-react/src/shaders/grain-gradient.tsx` for the preset) | Apache-2.0 | same |
+| bg / neuro-noise | github.com/paper-design/shaders | `7002061d8389781a45e479584deeca0cf538474e` | `packages/shaders/src/shaders/neuro-noise.ts` (+ the three shared GLSL files above, + `packages/shaders-react/src/shaders/neuro-noise.tsx` for the preset) | Apache-2.0 | same |
+| bg / static-mesh-gradient | github.com/paper-design/shaders | `7002061d8389781a45e479584deeca0cf538474e` | `packages/shaders/src/shaders/static-mesh-gradient.ts` (+ the three shared GLSL files above, + `packages/shaders-react/src/shaders/static-mesh-gradient.tsx` for the preset) | Apache-2.0 | same |
+| bg / smoke-ring | github.com/paper-design/shaders | `7002061d8389781a45e479584deeca0cf538474e` | `packages/shaders/src/shaders/smoke-ring.ts` (+ the three shared GLSL files above, + `packages/shaders-react/src/shaders/smoke-ring.tsx` for the preset) | Apache-2.0 | same |
+| bg / warp | github.com/paper-design/shaders | `7002061d8389781a45e479584deeca0cf538474e` | `packages/shaders/src/shaders/warp.ts` (+ the three shared GLSL files above, + `packages/shaders-react/src/shaders/warp.tsx` for the preset) | Apache-2.0 | same |
+
 ---
 
 ## Per-effect notes

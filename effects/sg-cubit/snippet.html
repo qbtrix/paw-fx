@@ -1,0 +1,21 @@
+<!-- sg-cubit section. Finished at rest with CSS alone: the isometric lattice in
+     .fx-cubit__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The two decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-cubit/style.css">
+<section class="fx-cubit" data-fx="sg-cubit">
+  <div class="fx-cubit__rest" aria-hidden="true"></div>
+  <div class="fx-cubit__scrim" aria-hidden="true"></div>
+  <div class="fx-cubit__inner">
+    <p class="fx-cubit__eyebrow"><span class="fx-cubit__dot" aria-hidden="true"></span>Blocks, not boxes</p>
+    <h1 class="fx-cubit__title">Composable down to the last unit.</h1>
+    <p class="fx-cubit__lede">Your words go here. The headline takes one line or three, and the grid keeps rising and settling behind it either way.</p>
+    <div class="fx-cubit__actions">
+      <a class="fx-cubit__cta fx-cubit__cta--primary" href="#">Read the primitives</a>
+      <a class="fx-cubit__cta fx-cubit__cta--ghost" href="#">Browse the registry</a>
+    </div>
+  </div>
+</section>

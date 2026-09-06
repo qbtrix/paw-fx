@@ -1,0 +1,58 @@
+{
+  "name": "sg-cubit",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["isometric", "cubes", "geometric", "grid", "dark", "blue", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's cubit: a field of isometric cubes rising and falling like a block city, three shaded faces meeting at crisp seams with a dark groove between every cell.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#4d7ce8", "#3f5aa6", "#7de3ff", "#1d2440"],
+      "description": "Cube tones. The shader mixes index 3 toward index 0 per cube and lifts the result toward index 2; index 1 is read by the CSS resting state only. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "cells": {
+      "type": "number",
+      "default": 8,
+      "description": "Cubes across the frame; lower is a bolder, blockier grid. Upstream default, range 3 to 24."
+    },
+    "rise": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How far each cube rises and falls, which reads as brightness because taller blocks catch more light. Upstream default, range 0 to 1."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Rate the cubes rise and fall; 0 holds the grid still. Upstream default, range 0 to 2."
+    },
+    "contrast": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Shading spread between the three visible faces; 0 flattens the cubes into plain hexagons. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["cubit/shader.frag", "cubit/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette tones are ours, not upstream's `nocturne` preset.",
+      "why": "cubit/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a night-city blue with a cyan lift, chosen to match the CSS resting state, which reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.04, vignette 0.34, contrast 1.06 and saturation 1.05 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own vignette and grain layers stand in for the parts that matter to a hero.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

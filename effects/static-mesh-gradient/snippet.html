@@ -1,0 +1,23 @@
+<!-- static-mesh-gradient section. Finished at rest with CSS alone: the gradient
+     in .fx-smg__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL canvas once it has a context and a linked program. Nothing
+     here animates in either state, because upstream's preset ships speed 0.
+     The _fx paths are root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html.
+     The three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/static-mesh-gradient/style.css">
+<section class="fx-smg" data-fx="static-mesh-gradient">
+  <div class="fx-smg__rest" aria-hidden="true"></div>
+  <div class="fx-smg__scrim" aria-hidden="true"></div>
+  <div class="fx-smg__grain" aria-hidden="true"></div>
+  <div class="fx-smg__inner">
+    <p class="fx-smg__eyebrow"><span class="fx-smg__dot" aria-hidden="true"></span>Volume two</p>
+    <h1 class="fx-smg__title">Some things are better when they hold still.</h1>
+    <p class="fx-smg__lede">Your copy replaces this. The headline sits on one line or three, and the field stays exactly where it is behind it.</p>
+    <div class="fx-smg__actions">
+      <a class="fx-smg__cta fx-smg__cta--primary" href="#">Start reading</a>
+      <a class="fx-smg__cta fx-smg__cta--ghost" href="#">Subscribe</a>
+    </div>
+  </div>
+</section>

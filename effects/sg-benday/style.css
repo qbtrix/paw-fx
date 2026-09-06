@@ -1,0 +1,237 @@
+/* sg-benday: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The dot tones are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting screen together.
+
+   --fx-bg is NOT free to change with them. The shader hard-codes its newsprint
+   ground as vec3(0.93, 0.92, 0.88) unless u_ink is pushed up, so #edebe0 here
+   is that same cream and not a design choice. Recolour the dots freely; change
+   the ground and the two states stop agreeing the moment the canvas paints.
+
+   The resting screen is a real dot screen, not a photograph of one: four
+   offset radial-gradient grids on the same 34px pitch, each carrying one
+   palette tone, which is how the colour blocks read as rolling across a fixed
+   grid the way the shader's do.
+
+   Stacking:
+     -2  .fx-benday__rest    the CSS screen, covered by the canvas once it paints
+     -1  <canvas>            inserted by glsl-mount.js (inline style)
+      0  .fx-benday__scrim   legibility wash, over whichever layer is showing
+      1  .fx-benday__inner   the copy */
+.fx-benday {
+  --fx-c1: #ff7a63;
+  --fx-c2: #8fbaff;
+  --fx-c3: #ffd45e;
+  --fx-c4: #79dbcb;
+  --fx-bg: #edebe0;
+  --fx-ink: #15120c;
+  --fx-muted: #4c4436;
+  --fx-dot: 34px;
+  --fx-speed: 1;
+  --fx-scrim: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* One grid, four colours. Each layer is a full dot lattice masked to a broad
+   region of the frame by its own radial falloff, so the section reads as blocks
+   of one tone at a time rather than as a rainbow confetti. */
+.fx-benday__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 50%, var(--fx-c1) 30%, transparent 32%) 0 0 / var(--fx-dot) var(--fx-dot),
+    radial-gradient(70% 62% at 82% 22%, #fff 40%, transparent 72%) 0 0 / 100% 100%,
+    var(--fx-bg);
+  transition: opacity 420ms ease;
+}
+
+.fx-benday__rest::before,
+.fx-benday__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* c2 owns the upper right, c3 the lower left. Both are the same lattice on the
+   same pitch, so the dots line up exactly and only the colour changes. */
+.fx-benday__rest::before {
+  background:
+    radial-gradient(circle at 50% 50%, var(--fx-c2) 30%, transparent 32%) 0 0 / var(--fx-dot) var(--fx-dot);
+  -webkit-mask-image: radial-gradient(62% 66% at 84% 16%, #000 22%, transparent 78%);
+  mask-image: radial-gradient(62% 66% at 84% 16%, #000 22%, transparent 78%);
+}
+
+.fx-benday__rest::after {
+  background:
+    radial-gradient(circle at 50% 50%, var(--fx-c3) 30%, transparent 32%) 0 0 / var(--fx-dot) var(--fx-dot),
+    radial-gradient(circle at 50% 50%, var(--fx-c4) 30%, transparent 32%) calc(var(--fx-dot) / 2) calc(var(--fx-dot) / 2) / var(--fx-dot) var(--fx-dot);
+  -webkit-mask-image: radial-gradient(74% 70% at 14% 92%, #000 18%, transparent 82%);
+  mask-image: radial-gradient(74% 70% at 14% 92%, #000 18%, transparent 82%);
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-benday[data-fx-live] .fx-benday__rest {
+  opacity: 0;
+}
+
+/* A cream wash, not a dark one: the copy is near-black and the dots are the
+   bright thing, so legibility comes from flattening the screen under the text.
+   Heavier than the dark heroes' scrim because a saturated dot at full strength
+   under 4.5:1 body copy is the worst case here, not a soft gradient. Held flat
+   across the inner 40% -- the whole content column -- then eased out over four
+   stops so no hard-edged ellipse appears. Measured worst case across four
+   animation frames with the copy hidden is recorded in the PR; re-measure the
+   same way before lowering --fx-scrim. */
+.fx-benday__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    108% 94% at 50% 50%,
+    color-mix(in oklab, #fbf9f2 95%, transparent) 0%,
+    color-mix(in oklab, #fbf9f2 95%, transparent) 40%,
+    color-mix(in oklab, #fbf9f2 70%, transparent) 58%,
+    color-mix(in oklab, #fbf9f2 40%, transparent) 74%,
+    color-mix(in oklab, #fbf9f2 16%, transparent) 89%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-benday__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-benday__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 2px solid var(--fx-ink);
+  border-radius: 999px;
+  background: #fffdf6;
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-benday__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c1);
+  box-shadow: 0 0 0 2px var(--fx-ink);
+}
+
+.fx-benday__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.fx-benday__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-benday__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-benday__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 2px solid var(--fx-ink);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+/* The one flourish the pop-art reference earns: a hard offset shadow instead
+   of a blur, which is the printing register the Ben-Day screen came from. */
+.fx-benday__cta--primary {
+  background: var(--fx-ink);
+  color: #fffdf6;
+  box-shadow: 4px 4px 0 var(--fx-c1);
+}
+
+.fx-benday__cta--ghost {
+  background: #fffdf6;
+  color: var(--fx-ink);
+  box-shadow: 4px 4px 0 var(--fx-c2);
+}
+
+.fx-benday__cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 var(--fx-c3);
+}
+
+.fx-benday__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed: the colour
+   masks slide while the dot grid stays exactly where it is, the way the shader
+   drifts its field under a fixed screen. The shader has its own reduced-motion
+   path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-benday__rest::before {
+    animation: fx-benday-a calc(30s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  .fx-benday__rest::after {
+    animation: fx-benday-b calc(38s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-benday-a {
+    to {
+      -webkit-mask-position: -14% 12%;
+      mask-position: -14% 12%;
+    }
+  }
+  @keyframes fx-benday-b {
+    to {
+      -webkit-mask-position: 16% -10%;
+      mask-position: 16% -10%;
+    }
+  }
+}

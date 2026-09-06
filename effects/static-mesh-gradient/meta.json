@@ -1,0 +1,42 @@
+{
+  "name": "static-mesh-gradient",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["gradient", "mesh", "static", "light", "warm", "still", "webgl", "shader", "hero", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' static mesh gradient on WebGL2: amber, violet and blush folded into one smooth still field. The only background here that does not animate, which is upstream's own preset and not a restriction.",
+  "needs": ["paper"],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#ffad0a", "#6200ff", "#e2a3ff", "#ff99fd"],
+      "description": "Up to seven colour points. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette. Upstream default preset."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0,
+      "description": "Upstream ships 0, so the section paints once and holds. Raise it to let the mesh drift; prefers-reduced-motion pins it back to 0."
+    },
+    "positions": {
+      "type": "number",
+      "default": 2,
+      "description": "Which layout the colour points start from before the waves displace them."
+    },
+    "mixing": {
+      "type": "number",
+      "default": 0.93,
+      "description": "How far the points bleed into one another. Low leaves visible seams between them, high is one continuous field."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/static-mesh-gradient.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/static-mesh-gradient.tsx"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "sg-louver",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["shadow", "blinds", "stripes", "penumbra", "architectural", "warm", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's louver: a low lamp washes a plaster wall while the shadow of venetian blinds stripes it on a slight diagonal, bottom bars knife-sharp and top bars melting into grey as each slat hangs farther from the wall.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#ffb45c", "#e07a5f", "#6bb6c9", "#ffe9c9"],
+      "description": "Four separate jobs rather than four poles: lamp core, wide wash and ambient, cool limb in the penumbra, hairline along each slat. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "slatGap": {
+      "type": "number",
+      "default": 56,
+      "description": "Distance between successive shadow bars in CSS pixels, scaled to the display by the shader itself. Upstream default, range 16 to 160."
+    },
+    "tiltRange": {
+      "type": "number",
+      "default": 0.55,
+      "description": "How far the slats swing over one breath, which is how wide the dark bars get at their widest. Upstream default, range 0 to 1."
+    },
+    "penumbra": {
+      "type": "number",
+      "default": 0.9,
+      "description": "How fast the edge blur grows up the wall; 0 keeps every bar knife-sharp top to bottom. Upstream default, range 0 to 2."
+    },
+    "driftSpeed": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Lateral lamp drift, which shears the diagonal as it moves; 0 pins the light. Upstream default, range 0 to 1.2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["louver/shader.frag", "louver/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `midnight` preset.",
+      "why": "louver/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a warm lamplight with a cool limb, chosen to match the CSS resting state, which reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

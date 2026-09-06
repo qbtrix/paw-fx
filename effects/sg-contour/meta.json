@@ -1,0 +1,53 @@
+{
+  "name": "sg-contour",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["contour", "topographic", "lines", "dark", "technical", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's contour: a plan-view topographic map of terrain that does not exist, thin glowing isolines over near-black with every fifth index contour twice as wide, the land creeping under them.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#2f4bd8", "#16b8c8", "#4ade9b", "#ffd166"],
+      "description": "A four-stop elevation ramp, low ground first: each isoline is coloured by the elevation of its own level, so the order carries the map's reading. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "morphSpeed": {
+      "type": "number",
+      "default": 0.3,
+      "description": "How fast the terrain deforms under the lines; 0 freezes the land, though the levels still creep uphill. Upstream default, range 0 to 1.5."
+    },
+    "density": {
+      "type": "number",
+      "default": 12,
+      "description": "Contour levels across the height range; higher packs the lines tighter. Upstream default, range 3 to 40."
+    },
+    "lineWidth": {
+      "type": "number",
+      "default": 1.2,
+      "description": "Ordinary isoline width in CSS pixels, scaled to the display by the shader itself. Every fifth index contour is drawn at twice this. Upstream default, range 0.4 to 4."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": ["contour/shader.frag", "contour/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette ramp stops are ours, not upstream's `midnight` preset.",
+      "why": "contour/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a survey ramp ordered low ground to high, because the shader reads the four by elevation rather than as independent poles, and it is picked away from the teal of the already-shipped sg-isobar so the two do not read as the same effect twice.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.4 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so the isolines carry only the halo the GLSL itself draws around each stroke and will not match the upstream poster's bloom.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

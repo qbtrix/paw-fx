@@ -1,0 +1,206 @@
+/* static-mesh-gradient: the CSS half of the effect. This file is the whole hero
+   on its own -- with JavaScript off, before vendor/paper.js has loaded, or
+   after a WebGL failure sends mount() back to rest, this is what a visitor
+   sees.
+
+   The colour points are declared here as --fx-c1..--fx-c4 and index.js reads
+   them back off the section, so overriding the custom properties moves the
+   shader and the resting gradient together.
+
+   THE COMPOSITION IS DIAGONAL, and that is upstream's doing: its preset carries
+   rotation 270, which lays the amber into the top left, runs the violet ridge
+   across the middle and leaves the blush bottom right. The resting gradient
+   follows that line, so the swap from CSS to canvas is a sharpening rather than
+   a re-composition.
+
+   THE SCRIM IS A LIGHT WASH. The field is bright at both ends and dark only
+   along the violet ridge, so no single ink colour clears 4.5:1 against all of
+   it. Near-black copy over a cream wash does; white copy over a dark wash would
+   have to be heavy enough to hide the gradient entirely.
+
+   Nothing here animates, and that is not an omission: upstream's preset ships
+   speed 0, so the shader is a still too.
+
+   Stacking:
+     -2  .fx-smg__rest    the CSS gradient, covered by the canvas once it paints
+     -1  <canvas>         inserted by ShaderMount
+      0  .fx-smg__scrim   legibility wash, over whichever layer is showing
+      0  .fx-smg__grain   de-banding
+      1  .fx-smg__inner   the copy */
+.fx-smg {
+  --fx-c1: #ffad0a;
+  --fx-c2: #6200ff;
+  --fx-c3: #e2a3ff;
+  --fx-c4: #ff99fd;
+  --fx-bg: #f6e6ff;
+  --fx-ink: #1c0a2c;
+  --fx-muted: #4a2a63;
+  --fx-scrim: 0.66;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-smg__rest {
+  position: absolute;
+  inset: -10%;
+  z-index: -2;
+  background:
+    radial-gradient(56% 60% at 14% 12%, color-mix(in oklab, var(--fx-c1) 88%, transparent), transparent 72%),
+    radial-gradient(64% 44% at 46% 46%, color-mix(in oklab, var(--fx-c2) 72%, transparent), transparent 68%),
+    radial-gradient(58% 62% at 86% 84%, color-mix(in oklab, var(--fx-c4) 90%, transparent), transparent 74%),
+    radial-gradient(70% 64% at 92% 26%, color-mix(in oklab, var(--fx-c3) 84%, transparent), transparent 74%),
+    linear-gradient(126deg, color-mix(in oklab, var(--fx-c1) 40%, var(--fx-bg)), var(--fx-bg) 54%, color-mix(in oklab, var(--fx-c4) 44%, var(--fx-bg)));
+  filter: blur(44px) saturate(1.08);
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-smg[data-fx-live] .fx-smg__rest {
+  opacity: 0;
+}
+
+/* Multiply, not overlay: on a bright field additive noise reads as haze rather
+   than as grain. Inline SVG, so the section fetches nothing off-site. */
+.fx-smg__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* Held flat across the inner 40% -- wider than the dark heroes' scrims, because
+   the violet ridge runs diagonally through the copy column and near-black body
+   text needs the whole column lifted, not just its centre. Then eased out over
+   four stops so no hard-edged ellipse appears. The field does not move, so the
+   worst case is a single frame rather than four; it is still recorded in the PR
+   the same way. Re-measure before lowering --fx-scrim. */
+.fx-smg__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    110% 96% at 50% 50%,
+    color-mix(in oklab, #fdf6ff 95%, transparent) 0%,
+    color-mix(in oklab, #fdf6ff 95%, transparent) 40%,
+    color-mix(in oklab, #fdf6ff 70%, transparent) 58%,
+    color-mix(in oklab, #fdf6ff 40%, transparent) 74%,
+    color-mix(in oklab, #fdf6ff 15%, transparent) 89%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-smg__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-smg__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, #ffffff 66%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-smg__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c2);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c2) 22%, transparent);
+}
+
+.fx-smg__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-smg__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-smg__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-smg__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-smg__cta--primary {
+  background: var(--fx-ink);
+  color: #fbf3ff;
+}
+
+.fx-smg__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 28%, transparent);
+  background: color-mix(in oklab, #ffffff 58%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-smg__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-smg__cta--ghost:hover {
+  background: color-mix(in oklab, #ffffff 84%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 46%, transparent);
+}
+
+.fx-smg__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
