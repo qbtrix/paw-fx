@@ -456,7 +456,8 @@ export function verifyEffect(dir, opts = {}) {
 // share: lint learned to skip underscore-prefixed directories, this file did
 // not, and the gate crashed looking for _shared/meta.json. One definition of
 // what counts as an effect directory is the fix, not two that agree today.
-export { effectDirs } from "./lint.mjs";
+import { effectDirs } from "./lint.mjs";
+export { effectDirs };
 
 // ---------------------------------------------------------------- reporting
 
