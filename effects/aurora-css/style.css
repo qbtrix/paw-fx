@@ -12,6 +12,10 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  /* An effect drops into a site whose CSS reset it does not control, so it sets
+     this itself. Without it, 100svh plus the padding below renders a section
+     taller than the viewport: 720 + 204.8 = a 925px hero on a 720px screen. */
+  box-sizing: border-box;
   min-height: 100svh;
   display: grid;
   place-items: center;
