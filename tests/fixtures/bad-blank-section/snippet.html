@@ -1,0 +1,8 @@
+<!-- Smoke fixture. Every visible pixel arrives from index.js, which is exactly
+     the effect shape the resting-state contract forbids. The module script is
+     here on purpose: with its script allowed through, this section paints a
+     gradient and passes, so the fixture only fails while smoke really is
+     blocking script. That makes it a check on the harness as well as the rule. -->
+<link rel="stylesheet" href="/_fx/effects/bad-blank-section/style.css">
+<section class="fx-blank" data-fx="bad-blank-section"></section>
+<script type="module" src="/_fx/effects/bad-blank-section/index.js"></script>

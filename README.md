@@ -8,7 +8,7 @@ Vanilla animated-section library for Paw Sites. Every effect is a port of a name
 effects/<name>/   index.js  style.css  snippet.html  meta.json  preview.png
 vendor/           manifest.json plus the files it lists (anime, three, paper, tsparticles, lenis)
 schema/           meta.schema.json
-scripts/          lint.mjs  build-registry.mjs  validate.mjs
+scripts/          lint.mjs  build-registry.mjs  validate.mjs  smoke.mjs
 tests/            bun test (fixtures under tests/fixtures/)
 dist/registry/    build output (gitignored)
 ```
@@ -44,13 +44,54 @@ Lint enforces: schema, licence allow-list and origin, every `needs` key present 
 
 Paths in `usage` and in `snippet.html` are root-absolute (`/_fx/...`), not page-relative. An html Paw Site is served by an assets-only Worker with `assets.directory: "."` and the sites code has no base-path concept, so a site always sits at the origin root: `./_fx/...` would resolve wrong on any nested page such as `/blog/post.html`. `usage` mounts with `querySelectorAll` and a loop, because the scroll, text and cursor categories routinely appear several times on one page.
 
+## Resting-state smoke
+
+`bun run smoke` is the gate on the CSS-only promise. For every effect it
+materialises the built registry item into a temp site, serves it, loads
+`snippet.html` in a real Chrome with **every script request aborted**, and
+fails the effect if the section's box is under 200x100 at 1440x900, if the
+pixels inside that box are effectively one colour, or if the section has no
+height at 375 wide. Errors read `<effect>: <reason>` and exit 1, same as lint.
+
+Aborting script requests at the network layer is the markup-and-stylesheet-only
+equivalent of a browser with scripting off, and here the gap between the two is
+narrow: lint tests the `<script>` opening tag for `type="module"` and for
+`index.js`, so every script it accepts is meant to be an external module fetch,
+and every one of those is aborted. The residue is an inline module hand-crafted
+to put `index.js` in an attribute, which would still run; closing that is
+lint's job rather than smoke's. A wrapper page
+loads an external `/_marker.js`; if that marker ever runs, the block is not
+working and the whole run throws rather than reporting green. Reduced motion
+and a light colour scheme are pinned, so the capture is the resting frame.
+
+Disabling scripting outright (`--blink-settings=scriptEnabled=false`) also
+works and was the first build, but Playwright's screenshot path evaluates
+script in the page and then waits out its 30s timeout on every capture:
+measured 197ms with scripting on against 31.4s with it off, on the same page.
+
+What it proves is that the section paints something without the effect's
+script and does not collapse on a phone. It does not judge whether the section
+looks good, and it does not separately simulate a refused WebGL context or a
+pruned bundle -- both fall back to this same no-script path.
+
+`tests/fixtures/bad-blank-section/` is the proof the gate can fail: a section
+that reserves a full-height box and paints only from `index.js`. It clears
+every box check and fails on pixels. `tests/smoke.test.js` asserts that, and
+then re-runs the same measurements with the pixel rule relaxed to show the
+fixture passing, because a gate that cannot fail is worse than no gate.
+
+Needs the `agent-browser` CLI on PATH (`brew install agent-browser &&
+agent-browser install`). Smoke uses its own browser session and closes it
+afterwards, so a session you have open elsewhere is left alone.
+
 ## Commands
 
 ```
 bun run lint    # contract checks, exits 1 with effect + reason
 bun run build   # dist/registry
+bun run smoke   # resting state renders with no effect script (needs agent-browser)
 bun test
-bun run check   # lint + build + test
+bun run check   # lint + build + smoke + test
 ```
 
 Preview images are 640x360 PNGs. `mesh-gradient/preview.png` is a real capture of the mounted shader; `aurora-css/preview.png` is still a generated gradient placeholder. Capture one by materialising the built item into a directory, serving it, and screenshotting at 1280x720. Hide `.fx-*__grain` first and box-average down to 640: the grain and the shader's own dithering are close to random noise, and a full-resolution capture with both lands at ~500 KB against ~100 KB without them.

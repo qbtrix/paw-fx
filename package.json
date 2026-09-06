@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "bun scripts/lint.mjs",
     "build": "bun scripts/build-registry.mjs",
+    "smoke": "bun scripts/smoke.mjs",
     "test": "bun test",
-    "check": "bun run lint && bun run build && bun test"
+    "check": "bun run lint && bun run build && bun run smoke && bun test"
   }
 }
