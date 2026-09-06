@@ -30,9 +30,13 @@ const schema = JSON.parse(readFileSync(join(ROOT, "schema/meta.schema.json"), "u
 const SIZE_LIMIT = 60 * 1024;
 
 // `[^;()=]*?` holds the binding scan inside one statement -- an import's
-// binding list contains none of those three characters, a statement after it
-// hits one almost immediately -- which is what lets these stay off the line
-// anchor and still match multi-line import lists.
+// binding list contains none of those four characters, and a statement after
+// it hits one almost immediately -- which is what lets these stay off the line
+// anchor and still match multi-line import lists. The cost is one known blind
+// spot: a `(`, `)` or `=` inside a comment *within* a binding list blocks the
+// scan (`import {\n a, // helper()\n b\n} from "three"` goes uncaught).
+// Dropping `()` from the exclusion would trade that for false positives on
+// ordinary code, which is the worse trade.
 const JS_SPECIFIERS = [
   /\b(?:import|export)\b[^;()=]*?\bfrom\s*["']([^"']+)["']/g, // import d / {n} / * as ns / d, {n} from "s"; export * / {n} from "s"
   /\bimport\b\s*["']([^"']+)["']/g,                           // side-effect: import "s"
