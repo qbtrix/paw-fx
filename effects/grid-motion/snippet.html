@@ -1,0 +1,39 @@
+<!-- grid-motion section. Finished at rest with CSS alone: the wall is already
+     at full scale and at the opacity the arrival fades to, so a blocked
+     script, a pruned bundle or prefers-reduced-motion leaves the same
+     backdrop. index.js only supplies the arrival and the pointer drift.
+
+     IMAGES ARE A SLOT. Nothing ships with this effect -- every cell paints a
+     gradient until you give it one:
+
+         <div class="fx-gridmotion__img" style="--fx-img:url(/img/studio-01.jpg)"></div>
+
+     Ten cells, ten placements, in the order they appear here; the first ten
+     children take upstream's collage positions and any extras are ignored. Any
+     aspect ratio works, the cell crops with background-size: cover, and the
+     gradient stays underneath as the fallback while an image loads or if it
+     fails. Below 53em the collage becomes a four-column wall and cells nine
+     and ten are dropped.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/grid-motion/style.css">
+<section class="fx-gridmotion" data-fx="grid-motion">
+  <div class="fx-gridmotion__grid" aria-hidden="true">
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+    <div class="fx-gridmotion__item"><div class="fx-gridmotion__img"></div></div>
+  </div>
+  <div class="fx-gridmotion__content">
+    <p class="fx-gridmotion__eyebrow">Selected work</p>
+    <h2 class="fx-gridmotion__title">Grip<span class="fx-gridmotion__title-sub">tapes</span></h2>
+    <p class="fx-gridmotion__note">Ten pieces, one wall. Move the pointer and it shifts against you, every panel at its own rate.</p>
+  </div>
+</section>

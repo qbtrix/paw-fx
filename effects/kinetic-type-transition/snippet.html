@@ -1,0 +1,36 @@
+<!-- kinetic-type-transition section. Finished at rest with CSS alone: the word
+     wall is already at scale 1, unrotated, at --fx-line-opacity -- which is
+     exactly where the sweep leaves it. A blocked script, a pruned bundle or
+     prefers-reduced-motion gives the same composition; index.js only takes it
+     away and gives it back the first time the section is on screen.
+
+     The wall is aria-hidden decoration. Repeat one word three times per row
+     and give it eight to twelve rows: the repetition is what makes a row read
+     as a band rather than as a sentence, and the rows sliding at 40ms apart is
+     what makes the wall look like a machine. Swap the words for your own.
+
+     No image ships with or is needed by this effect -- the wall is type.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/kinetic-type-transition/style.css">
+<section class="fx-kinetic" data-fx="kinetic-type-transition">
+  <div class="fx-kinetic__type" aria-hidden="true">
+    <div class="fx-kinetic__line">bonjour bonjour bonjour</div>
+    <div class="fx-kinetic__line">attrayant attrayant attrayant</div>
+    <div class="fx-kinetic__line">charmante charmante charmante</div>
+    <div class="fx-kinetic__line">rosetta rosetta rosetta</div>
+    <div class="fx-kinetic__line">tendresse tendresse tendresse</div>
+    <div class="fx-kinetic__line">chatoyer chatoyer chatoyer</div>
+    <div class="fx-kinetic__line">bonjour bonjour bonjour</div>
+    <div class="fx-kinetic__line">attrayant attrayant attrayant</div>
+    <div class="fx-kinetic__line">charmante charmante charmante</div>
+    <div class="fx-kinetic__line">rosetta rosetta rosetta</div>
+    <div class="fx-kinetic__line">tendresse tendresse tendresse</div>
+  </div>
+  <div class="fx-kinetic__content">
+    <p class="fx-kinetic__eyebrow">Chapter two</p>
+    <h2 class="fx-kinetic__title">The part of the studio nobody photographs</h2>
+    <p class="fx-kinetic__note">Scroll into this section once and the wall behind turns ninety degrees, sweeps left and comes back to where it started.</p>
+  </div>
+</section>

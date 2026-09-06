@@ -1,0 +1,25 @@
+<!-- text-block-swap section. Finished at rest with CSS alone: the first block
+     carries --current, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves one readable paragraph. The control is
+     display: none until index.js sets data-fx-live, so it is never a dead
+     button.
+
+     Add as many .fx-swap__text blocks as you like; the swap walks them in
+     order and wraps. Pick the transition with the `variant` option -- "rise"
+     (upstream demo1, the default), "dissolve" (demo2) or "roll" (demo6) -- and
+     set `interval` to a number of milliseconds if the block should rotate on
+     its own as well.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/text-block-swap/style.css">
+<section class="fx-swap" data-fx="text-block-swap">
+  <p class="fx-swap__eyebrow">What we do</p>
+  <div class="fx-swap__stage">
+    <p class="fx-swap__text fx-swap__text--current">We build the parts of a product nobody sees until they break: the deploy path, the audit trail, the thing that pages someone at four in the morning.</p>
+    <p class="fx-swap__text">We write the boring half well, so the interesting half has somewhere to stand. Twelve years of it, mostly for teams who inherited the mess.</p>
+    <p class="fx-swap__text">We leave documentation a new hire can follow on their first afternoon, and a test suite that fails for the right reason.</p>
+  </div>
+  <button class="fx-swap__trigger" type="button">Next</button>
+  <p class="fx-swap__note">Three statements, one cell. The words leave and arrive under whichever rule the variant option picks.</p>
+</section>

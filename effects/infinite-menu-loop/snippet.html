@@ -1,0 +1,34 @@
+<!-- infinite-menu-loop section. Finished at rest with CSS alone: every item is
+     in the markup, in order, inside a scrollable box. index.js clones a
+     screenful onto the tail and wraps the scroll position so the list never
+     reaches an end; with the script blocked, the bundle pruned, on a coarse
+     pointer or under prefers-reduced-motion the reader gets the same list and
+     scrolls it normally.
+
+     The menu is a column, not the full section, on purpose: a container that
+     never reaches its own scroll edge never chains the wheel to the page, so
+     the gutter beside it stays ordinary page scroll. Swap the labels and
+     hrefs for your own; any number of items works, the clone count is
+     measured.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/infinite-menu-loop/style.css">
+<section class="fx-loopmenu" data-fx="infinite-menu-loop">
+  <p class="fx-loopmenu__eyebrow">Index</p>
+  <nav class="fx-loopmenu__menu" aria-label="Case studies">
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Fascination Street</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">The Last Dance</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Rebel Fantasies</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Love Letters</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Henry and the Kids</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Downtown Blank</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Georgetown Blues</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">When Alice Comes</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">A Rabbit's Dream</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Foundation Fabrics</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Whenever Whatever</a></div>
+    <div class="fx-loopmenu__item"><a class="fx-loopmenu__link" href="#">Golden Freckles</a></div>
+  </nav>
+  <p class="fx-loopmenu__note">Twelve entries, no end. Scroll the column and it wraps; scroll beside it and the page moves on.</p>
+</section>

@@ -1,0 +1,72 @@
+{
+  "name": "cursor-gooey",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": [
+    "cursor",
+    "svg-filter",
+    "turbulence",
+    "menu",
+    "lerp",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Two stroked rings chase the pointer at 0.15 and 0.1, so one always trails the other; crossing a link swells both from r 20 to r 50 while an feTurbulence warp runs baseFrequency 0.35 to 0 over a second and shakes them apart.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "amt": {
+      "type": "number",
+      "default": 0.15,
+      "description": "How closely the ring follows the pointer, 0 to 1. Upstream's renderedStyles amt; the second ring overrides it to 0.1 with data-amt."
+    },
+    "radiusOnEnter": {
+      "type": "number",
+      "default": 50,
+      "description": "Ring radius while the pointer is over a link. Upstream's radiusOnEnter."
+    },
+    "turbulence": {
+      "type": "number",
+      "default": 0.35,
+      "description": "Peak feTurbulence baseFrequency the warp starts from. Upstream's startAt turbulence."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/codrops-sketches",
+    "commit": "bbf47ca34766fd2ca5f97d8b376d2eca148bf48f",
+    "path": [
+      "013-custom-cursor-filter/js/index.js",
+      "013-custom-cursor-filter/index.html",
+      "013-custom-cursor-filter/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP is replaced by anime.js: the paused filter timeline becomes an animate() on the same primitiveValues object with autoplay false, ease 'expo' becomes 'outExpo', and every duration is multiplied by 1000 because GSAP counts seconds and anime.js milliseconds. restart() maps to restart(); progress(1).kill() maps to complete(), which is what still fires onComplete and puts filter: none back.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is. The turbulence range, the curve and the one-second run are upstream's and unchanged.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The filter's id is minted per mount (fx-gooey-filter-<n>) and both rings are pointed at the new one, instead of every CursorElement reading a fixed document-wide #cursor-filter.",
+      "why": "A registry item can appear more than once on a page. Two <filter> elements sharing one id is a silent cross-wire: whichever the document resolves first warps for both sections. This also closes upstream's unterminated url(#cursor-filter with no closing parenthesis, which browsers forgive and a reader should not have to.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "The pointer is tracked on the section and measured against its box, the rings are positioned absolutely inside it rather than fixed to the viewport, and the trigger selector is the section's own links rather than every <a> in the document.",
+      "why": "paw-fx ships sections, not pages. A viewport-fixed cursor bound to every link on the page would follow the reader out of the section and fight any other cursor effect on the same site.",
+      "kind": "seam"
+    },
+    {
+      "what": "The opacity channel carries the show/hide as the pointer crosses the section edge: it goes to 0 on the section's mouseleave and back to 1 on the next move inside.",
+      "why": "Upstream sets opacityOnEnter to 1 and leave() back to 1, so the channel it lerps every frame never actually varies -- it exists for a data attribute nobody sets. A section-scoped cursor does need to disappear when the pointer is elsewhere, and reusing the lerp already there is smaller and smoother than a second mechanism.",
+      "kind": "seam"
+    },
+    {
+      "what": "The user-agent-free equivalent of upstream's breakpoint: the rings are display: none except under (pointer: fine), mount() returns early on (pointer: coarse) or prefers-reduced-motion, and the requestAnimationFrame handle is cancelled on destroy along with every listener, with r, transform, opacity and filter reset.",
+      "why": "Upstream hides .cursor below 53em, which is a proxy for 'there is no pointer to decorate'. Stating it as a pointer query is exact. Upstream keeps no frame handle because its page never tears the cursor down; here a destroy would otherwise leave a loop writing transforms into detached nodes.",
+      "kind": "seam"
+    }
+  ]
+}

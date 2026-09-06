@@ -1,0 +1,170 @@
+/* grid-motion: a scattered wall of images behind the copy, drifting against
+   the pointer.
+
+   The resting state is the finished wall: full scale, at the opacity the
+   arrival animation FADES TO (--fx-opacity, upstream's 0.4). That ordering is
+   the contract -- with the script blocked, the bundle pruned or reduced motion
+   on, the section is the backdrop it ends as, and index.js only supplies the
+   arrival and the drift.
+
+   The ten grid-area placements below are upstream's pos-1..pos-10, verbatim,
+   on the same 50x50 track grid at 110% of the section inset by -5%. That
+   overhang is what lets a cell drift up to 60px in any direction without
+   showing an edge.
+
+   IMAGES: none ship with this effect. Each cell paints a gradient built from
+   --fx-hue until a site sets --fx-img on it:
+
+       <div class="fx-gridmotion__img" style="--fx-img:url(/img/1.jpg)"></div>
+
+   Any aspect ratio works; the cell crops with background-size: cover. The
+   gradient stays as the fallback under a slow or failed image load. */
+.fx-gridmotion {
+  --fx-bg: #0a0a0c;
+  --fx-ink: #f5f2ec;
+  --fx-muted: #9a958c;
+  --fx-accent: #e0623a;
+  --fx-opacity: 0.4;
+  /* Raise this if a restyle brings the copy's contrast down. */
+  --fx-scrim: 0.72;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-gridmotion *,
+.fx-gridmotion *::before,
+.fx-gridmotion *::after { box-sizing: border-box; }
+
+/* Upstream's .grid: a 50 x 50 track grid, 110% of the box, inset -5%. */
+.fx-gridmotion__grid {
+  pointer-events: none;
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  top: -5%;
+  left: -5%;
+  display: grid;
+  grid-template-columns: repeat(50, 2%);
+  grid-template-rows: repeat(50, 2%);
+  z-index: 0;
+}
+
+/* Upstream's .grid--img .grid__item. The settled opacity lives here, not in
+   the script, so the wall is finished before any of it runs. */
+.fx-gridmotion__item {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: var(--fx-opacity);
+  border-radius: 4px;
+  will-change: transform;
+}
+
+/* Upstream's .grid--img .grid__item-img: 100px larger than its cell on both
+   axes, so the image never shows an edge inside the crop. */
+.fx-gridmotion__img {
+  position: relative;
+  flex: none;
+  width: calc(100% + 100px);
+  height: calc(100% + 100px);
+  background-image: var(--fx-img, linear-gradient(140deg,
+    oklch(0.62 0.14 var(--fx-hue, 30)),
+    oklch(0.34 0.09 calc(var(--fx-hue, 30) + 40)) 55%,
+    oklch(0.19 0.05 calc(var(--fx-hue, 30) + 80))));
+  background-size: cover;
+  background-position: 50% 50%;
+  will-change: transform;
+}
+/* Ten hues so the placeholder wall reads as a composition rather than as ten
+   copies of one tile. A site that sets --fx-img on a cell overrides all of it. */
+.fx-gridmotion__item:nth-child(1) .fx-gridmotion__img { --fx-hue: 24; }
+.fx-gridmotion__item:nth-child(2) .fx-gridmotion__img { --fx-hue: 58; }
+.fx-gridmotion__item:nth-child(3) .fx-gridmotion__img { --fx-hue: 152; }
+.fx-gridmotion__item:nth-child(4) .fx-gridmotion__img { --fx-hue: 196; }
+.fx-gridmotion__item:nth-child(5) .fx-gridmotion__img { --fx-hue: 262; }
+.fx-gridmotion__item:nth-child(6) .fx-gridmotion__img { --fx-hue: 318; }
+.fx-gridmotion__item:nth-child(7) .fx-gridmotion__img { --fx-hue: 8; }
+.fx-gridmotion__item:nth-child(8) .fx-gridmotion__img { --fx-hue: 88; }
+.fx-gridmotion__item:nth-child(9) .fx-gridmotion__img { --fx-hue: 222; }
+.fx-gridmotion__item:nth-child(10) .fx-gridmotion__img { --fx-hue: 288; }
+
+/* Upstream's pos-1 .. pos-10, verbatim.
+   Shorthand grid-area: grid-row-start / grid-column-start / grid-row-end / grid-column-end */
+.fx-gridmotion__item:nth-child(1) { grid-area: 10 / 1 / 26 / 7; }
+.fx-gridmotion__item:nth-child(2) { grid-area: 1 / 18 / 9 / 27; }
+.fx-gridmotion__item:nth-child(3) { grid-area: 1 / 36 / 14 / 42; }
+.fx-gridmotion__item:nth-child(4) { grid-area: 13 / 11 / 32 / 18; }
+.fx-gridmotion__item:nth-child(5) { grid-area: 17 / 32 / 32 / 38; }
+.fx-gridmotion__item:nth-child(6) { grid-area: 20 / 46 / 28 / 51; }
+.fx-gridmotion__item:nth-child(7) { grid-area: 43 / 1 / 51 / 10; }
+.fx-gridmotion__item:nth-child(8) { grid-area: 38 / 14 / 46 / 22; }
+.fx-gridmotion__item:nth-child(9) { grid-area: 40 / 26 / 51 / 32; }
+.fx-gridmotion__item:nth-child(10) { grid-area: 37 / 39 / 48 / 47; }
+
+/* The copy sits over the busiest part of the wall, so it carries its own
+   plate. Measured against the live drift, not against the resting frame. */
+.fx-gridmotion__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border-radius: 1.25rem;
+  background: radial-gradient(120% 120% at 50% 50%,
+    color-mix(in oklab, var(--fx-bg) calc(var(--fx-scrim) * 100%), transparent),
+    transparent 78%);
+}
+.fx-gridmotion__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-gridmotion__title {
+  margin: 0;
+  font-size: clamp(2.75rem, 10vw, 8rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+.fx-gridmotion__title-sub {
+  display: block;
+  margin-left: 3vw;
+  font-size: 0.45em;
+  line-height: 1;
+  color: var(--fx-accent);
+}
+.fx-gridmotion__note {
+  margin: 0;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* The 50-track collage is a desktop composition; below that it reads as ten
+   slivers. The same cells become a plain four-column wall. */
+@media (max-width: 52.99em) {
+  .fx-gridmotion__grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 2%;
+    padding: 2%;
+  }
+  .fx-gridmotion__item { grid-area: auto !important; }
+  .fx-gridmotion__item:nth-child(n + 9) { display: none; }
+}

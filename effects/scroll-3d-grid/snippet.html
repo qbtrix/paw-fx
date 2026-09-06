@@ -1,0 +1,51 @@
+<!-- scroll-3d-grid section. Finished at rest with CSS alone: the wall stands
+     on a plane turned 25 degrees away from the reader, at x 0, with each image
+     already un-zoomed to the 0.5 the sweep ends on. A blocked script, a pruned
+     bundle or prefers-reduced-motion leaves that composition; index.js only
+     scatters the depths and hands the sideways sweep to the scrollbar.
+
+     The sweep runs over the whole time the wall is on screen, so the wall is
+     centred exactly when the section is centred. Nothing waits for an
+     observer -- the composition IS the middle of the range.
+
+     Do not put overflow: hidden, a transform or a filter on this section or on
+     an ancestor: hidden makes the section a scroll container, and a
+     scroll-linked animation measured against a container that never scrolls
+     resolves at one constant progress and silently does nothing. The
+     stylesheet uses overflow: clip, which cuts the sweep off without that.
+
+     IMAGES ARE A SLOT. Nothing ships with this effect -- every panel paints a
+     gradient until you give it one:
+
+         <div class="fx-grid3d__inner" style="--fx-img:url(/img/01.jpg)"></div>
+
+     Twelve panels in four columns, two below 53em. Any aspect ratio works, the
+     panel crops with background-size: cover, and the gradient stays underneath
+     as the fallback while an image loads or if it fails.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/scroll-3d-grid/style.css">
+<section class="fx-grid3d" data-fx="scroll-3d-grid">
+  <div class="fx-grid3d__grid">
+    <div class="fx-grid3d__wrap" aria-hidden="true">
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+      <div class="fx-grid3d__item"><div class="fx-grid3d__inner"></div></div>
+    </div>
+  </div>
+  <div class="fx-grid3d__content">
+    <p class="fx-grid3d__eyebrow">Field notes</p>
+    <h2 class="fx-grid3d__title">Everything we photographed and did not use</h2>
+    <p class="fx-grid3d__note">Scroll and the wall passes you, each panel at its own depth and its own moment.</p>
+  </div>
+</section>

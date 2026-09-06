@@ -1,0 +1,126 @@
+/* text-block-swap: one paragraph leaving as the next arrives, word by word.
+
+   The resting state is the first block. Upstream hides every block with a
+   `.js`-gated rule and lets its script pick the current one at load; here the
+   markup ships --current on the first, so a blocked script, a pruned bundle or
+   reduced motion leaves one readable paragraph rather than all of them
+   stacked in the same grid cell.
+
+   The control is not drawn until index.js sets data-fx-live on the section. A
+   button that swaps nothing is worse than no button.
+
+   The blocks share one grid area so they can cross-fade in place, and the area
+   holds a min-height so a shorter block does not collapse the section as it
+   arrives. */
+.fx-swap {
+  --fx-bg: #f6f4ef;
+  --fx-ink: #14130f;
+  --fx-muted: #6c675c;
+  --fx-accent: #b4441f;
+  --fx-rule: color-mix(in oklab, var(--fx-ink) 14%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: clip;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-swap *,
+.fx-swap *::before,
+.fx-swap *::after { box-sizing: border-box; }
+
+.fx-swap__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+/* One cell, every block in it. */
+.fx-swap__stage {
+  display: grid;
+  grid-template-areas: 'content';
+  align-items: start;
+  min-height: clamp(14rem, 34vh, 22rem);
+  max-width: 62rem;
+}
+
+/* Upstream's .content__text: a wrapping flex row of words. */
+.fx-swap__text {
+  grid-area: content;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  hyphens: auto;
+  font-size: clamp(1.5rem, 4.4vw, 3.25rem);
+  font-weight: 300;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-swap__text--current {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* anime's splitter wraps each word in a bare span carrying data-word; the roll
+   variant asks for a clipping wrapper around it as well. Both need a block
+   box so a transform on them cannot collapse the line, and a trailing space so
+   the flex row still reads as a sentence. */
+.fx-swap__text [data-word] {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+.fx-swap__text [data-word]::after { content: '\00a0'; }
+
+.fx-swap__trigger {
+  display: none;
+  justify-self: start;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--fx-rule);
+  border-radius: 999px;
+  background: transparent;
+  padding: 0.7rem 1.35rem;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: var(--fx-ink);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.fx-swap[data-fx-live] .fx-swap__trigger { display: inline-flex; }
+.fx-swap__trigger:hover,
+.fx-swap__trigger:focus-visible {
+  background: color-mix(in oklab, var(--fx-accent) 12%, transparent);
+  border-color: var(--fx-accent);
+  outline: none;
+}
+.fx-swap__trigger::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-accent);
+}
+
+.fx-swap__note {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-swap__trigger { transition: none; }
+}

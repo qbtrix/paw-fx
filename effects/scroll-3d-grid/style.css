@@ -1,0 +1,157 @@
+/* scroll-3d-grid: a wall of thumbnails on a plane turned away from the reader,
+   sweeping sideways through perspective as the section scrolls.
+
+   The resting state is the wall standing still on that plane at x 0, with each
+   image un-zoomed to the 0.5 the sweep ends on. With the script blocked, the
+   bundle pruned or reduced motion on, the reader gets that composition -- the
+   sweep passes through it rather than building it, which is what lets the
+   whole thing be finished before any script runs.
+
+   The turn and the perspective live here rather than in the script. Upstream
+   sets --perspective, --grid-inner-scale and the wrap's rotationY from
+   JavaScript at load; both are static properties of the composition, and in
+   the stylesheet they are part of the frame a reader with no script sees.
+
+   overflow is clip, never hidden: a panel travels up to ten times its own
+   width in each direction and has to be cut off, but `hidden` computes
+   overflow-y to auto and makes the section a scroll container, which is the
+   one thing that would stop the scroll-linked sweep from resolving at all.
+   `clip` cuts without scrolling.
+
+   IMAGES: none ship with this effect. Each panel paints a gradient built from
+   --fx-hue until a site sets --fx-img on it:
+
+       <div class="fx-grid3d__inner" style="--fx-img:url(/img/01.jpg)"></div> */
+.fx-grid3d {
+  --fx-bg: #000;
+  --fx-ink: #fff;
+  --fx-muted: #9c9689;
+  /* Upstream's --color-title is #907030. At 12px on this plate that measures
+     4.02:1, under the 4.5 floor for body text; lightened until it measured
+     5.8:1 against the busiest frame of the sweep. */
+  --fx-accent: #b08a3c;
+  /* Upstream's type1 overrides, and the :root defaults it keeps. */
+  --fx-perspective: 1000px;
+  --fx-inner-scale: 0.5;
+  --fx-grid-columns: 4;
+  --fx-grid-gap: 2vw;
+  --fx-grid-ratio: 1.5;
+  --fx-turn: 25deg;
+  box-sizing: border-box;
+  position: relative;
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) 0;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-grid3d *,
+.fx-grid3d *::before,
+.fx-grid3d *::after { box-sizing: border-box; }
+
+/* Upstream's .grid. */
+.fx-grid3d__grid {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  width: 100%;
+  perspective: var(--fx-perspective);
+}
+
+/* Upstream's .grid-wrap, with type1's rotationY moved out of the script. */
+.fx-grid3d__wrap {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--fx-grid-columns), 1fr);
+  gap: var(--fx-grid-gap);
+  transform-style: preserve-3d;
+  transform: rotateY(var(--fx-turn));
+}
+
+/* Upstream's .grid__item. */
+.fx-grid3d__item {
+  aspect-ratio: var(--fx-grid-ratio);
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+/* Upstream's .grid__item-inner: 1 / --grid-inner-scale of the panel, so at
+   inner-scale 0.5 it is twice the panel and the sweep's closing scale of 0.5
+   brings it back to exactly filling. That closing value is the resting one. */
+.fx-grid3d__inner {
+  position: relative;
+  width: calc(1 / var(--fx-inner-scale) * 100%);
+  height: calc(1 / var(--fx-inner-scale) * 100%);
+  transform: scale(var(--fx-inner-scale));
+  background-image: var(--fx-img, linear-gradient(155deg,
+    oklch(0.7 0.13 var(--fx-hue, 40)),
+    oklch(0.4 0.09 calc(var(--fx-hue, 40) + 45)) 58%,
+    oklch(0.2 0.04 calc(var(--fx-hue, 40) + 90))));
+  background-size: cover;
+  background-position: 50% 50%;
+  will-change: transform;
+}
+/* Four hue bands across the columns so twelve placeholders read as a wall
+   rather than as one tile twelve times. --fx-img overrides all of it. */
+.fx-grid3d__item:nth-child(4n + 1) .fx-grid3d__inner { --fx-hue: 34; }
+.fx-grid3d__item:nth-child(4n + 2) .fx-grid3d__inner { --fx-hue: 96; }
+.fx-grid3d__item:nth-child(4n + 3) .fx-grid3d__inner { --fx-hue: 208; }
+.fx-grid3d__item:nth-child(4n + 4) .fx-grid3d__inner { --fx-hue: 296; }
+
+/* Upstream's .content__title: centred over the wall, at the size that made
+   the demo. It sits on the same grid cell as the wall rather than on top of
+   the page. */
+.fx-grid3d__content {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  max-width: min(90%, 34rem);
+  text-align: center;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 1.25rem;
+  background: color-mix(in oklab, var(--fx-bg) 78%, transparent);
+  pointer-events: none;
+}
+.fx-grid3d__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-grid3d__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 6vw, 4rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+.fx-grid3d__note {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+@media (max-width: 52.99em) {
+  .fx-grid3d {
+    --fx-grid-columns: 2;
+    --fx-grid-gap: 4vw;
+    --fx-turn: 14deg;
+  }
+  .fx-grid3d__grid { padding: 1rem; }
+}

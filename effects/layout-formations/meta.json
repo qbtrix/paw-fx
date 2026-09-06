@@ -1,0 +1,87 @@
+{
+  "name": "layout-formations",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "grid",
+    "scroll",
+    "3d",
+    "pin",
+    "formation",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Thirty-six panels scattered through depth converge into a flat grid as the section is scrolled: each one starts 250px out along its angle from centre, rotated up to 300 degrees and dropped up to 2000px back in z, all three scaled by its distance from the middle so the centre barely moves and the corners come from a long way away.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "offsetDistance": {
+      "type": "number",
+      "default": 250,
+      "description": "How far each panel starts from where it lands, in px along the angle from centre. Upstream's calculateInitialTransform offsetDistance."
+    },
+    "maxRotation": {
+      "type": "number",
+      "default": 300,
+      "description": "Degrees of rotation for the panels furthest from centre. Upstream's maxRotation."
+    },
+    "maxZTranslation": {
+      "type": "number",
+      "default": 2000,
+      "description": "How far back in z the furthest panels start, in px. Upstream's maxZTranslation."
+    },
+    "sync": {
+      "type": "number",
+      "default": 0.2,
+      "description": "How closely the formation tracks the scrollbar. Upstream's ScrollTrigger scrub."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/OnScrollLayoutFormations",
+    "commit": "68910ecf85275bdd7e4d0e47013ba4bf9ec94bde",
+    "path": [
+      "js/index.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "One of upstream's nine formations is ported: animateFourthGrid, with calculateInitialTransform. The frame parallax and the other eight formations -- first, second, third, fourth-v2, fifth, sixth, seventh, eighth and ninth -- are not here.",
+      "why": "The fourth is the one the effect is named for: panels converging out of depth into an ordered formation. The rest are rise-and-fade variants of each other over different markup -- several need their own text items, their own aspect-ratio classes and their own column counts, so shipping them behind an option would mean nine markup contracts in one snippet. A library of near-duplicates is worse than a short one, and any of the eight is a better port in its own right.",
+      "kind": "ours"
+    },
+    {
+      "what": "ScrollTrigger's pin is replaced by CSS: a 300svh track with a sticky 100svh stage, which is also the range anime's onScroll reads with enter 'top top' and leave 'bottom bottom'. GSAP's scrub becomes anime's sync.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is, and anime.js has no pin. position: sticky is the platform's own version of the same thing and needs no library at all. 300svh is upstream's 100% stage plus its end: '+=200%'.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP is otherwise replaced by anime.js: the timeline becomes createTimeline, fromTo becomes from/to tween objects, autoAlpha becomes opacity, ease 'expo' becomes outExpo, and the stagger amount of 0.2 -- a total spread in GSAP -- is divided by the gaps between the panels because anime's stagger takes a per-step delay. The stagger's grid: [4, 9] and from: 'center' are unchanged.",
+      "why": "Same licence. Every number in calculateInitialTransform, the 0.7 start scale, the halved rotateX and the 0.2 spread are upstream's and unchanged.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "calculateInitialTransform measures the centre from the pinned stage's clientWidth and clientHeight rather than window.innerWidth and window.innerHeight, and is called once per panel instead of five times.",
+      "why": "offsetLeft and offsetTop are measured against the stage, so the centre they are compared with should be the stage's too -- while the stage is stuck the two rectangles are the same, and reading the stage stays correct before it sticks and at any width. Upstream calls the helper separately for x, y, z, rotateX and rotateY, recomputing five identical results each time.",
+      "kind": "seam"
+    },
+    {
+      "what": "The grid is laid out 9 columns by 4 rows and the perspective: 1000px the script sets inline lives in the stylesheet.",
+      "why": "Upstream's .grid declares 8 columns and 3 rows and then puts 36 panels in it, while this formation's own stagger declares a 4 by 9 grid; the two do not agree and the extra rows have no height to fall into. 9 by 4 is the layout the stagger describes. The perspective is a static property of the composition rather than part of the animation, and in the stylesheet it is part of the resting frame a reader with no script sees.",
+      "kind": "ours"
+    },
+    {
+      "what": "No image ships with the effect. Every panel paints a gradient built from a --fx-hue until a site sets --fx-img on it, and the gradient stays as the fallback under a slow or failed load. imagesloaded and the preloadImages gate are dropped with them.",
+      "why": "Upstream's 42 demo photographs are Codrops', licensed separately from the code, and redistributing them is not ours to do. With no images to wait for there is nothing for a load gate to hold, and holding the section behind one would hide a grid that is already finished.",
+      "kind": "ours"
+    },
+    {
+      "what": "Below 53em the grid turns 4 columns by 9 rows.",
+      "why": "Nine columns of a 375px viewport is a 38px panel, which is not a photograph. The same thirty-six panels in the transposed shape stay legible and keep the same motion.",
+      "kind": "ours"
+    }
+  ]
+}

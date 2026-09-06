@@ -1,0 +1,114 @@
+/* kinetic-type-transition: a wall of oversized repeated words that sweeps
+   away and comes back as the section arrives.
+
+   The resting state is out()'s END state: scale 1, no rotation, rows at 0%
+   and at --fx-line-opacity. That ordering is the contract -- with the script
+   blocked, the bundle pruned or reduced motion on, the section is already the
+   composition the sweep settles into, and index.js only takes it away and
+   gives it back.
+
+   --fx-line-opacity is upstream's --type-line-opacity and index.js reads it
+   off this section, so changing it here changes where the sweep lands too.
+
+   overflow is clip rather than hidden: hidden computes overflow-y to auto and
+   would make the section a scroll container, which a 2.7x wall inside a pinned
+   box has no use for. The wall needs the clip either way -- it turns 90
+   degrees at almost three times its size. */
+.fx-kinetic {
+  --fx-bg: #101014;
+  --fx-ink: #f7f5f0;
+  --fx-muted: #97929f;
+  --fx-accent: #f0b429;
+  --fx-type: #f7f5f0;
+  --fx-line-opacity: 0.05;
+  /* Raise this if a restyle brings the copy's contrast down. Measured against
+     the busiest frame of the sweep, not against this resting one: the rows
+     reach full opacity a second in. */
+  --fx-scrim: 0.88;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-kinetic *,
+.fx-kinetic *::before,
+.fx-kinetic *::after { box-sizing: border-box; }
+
+/* Upstream's .type: a square the size of the larger viewport axis, centred,
+   so a 90-degree turn never exposes a corner. Absolute to the section rather
+   than fixed to the viewport, because paw-fx ships sections. */
+.fx-kinetic__type {
+  position: absolute;
+  z-index: 0;
+  height: 100vmax;
+  width: 100vmax;
+  top: 50%;
+  left: 50%;
+  margin: -50vmax 0 0 -50vmax;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Upstream's .type__line. */
+.fx-kinetic__line {
+  white-space: nowrap;
+  font-size: clamp(7rem, 18.75vh, 15rem);
+  line-height: 0.75;
+  font-weight: bold;
+  letter-spacing: -0.03em;
+  color: var(--fx-type);
+  opacity: var(--fx-line-opacity);
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform, opacity;
+}
+
+/* The copy sits in front of a wall that reaches full opacity a second into
+   the sweep, so it carries its own plate rather than relying on the resting
+   contrast. */
+.fx-kinetic__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  max-width: 44rem;
+  text-align: center;
+  padding: clamp(1.75rem, 5vw, 3.25rem);
+  border-radius: 1.5rem;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-scrim) * 100%), transparent);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--fx-ink) 10%, transparent) inset;
+}
+.fx-kinetic__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-kinetic__title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.fx-kinetic__note {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

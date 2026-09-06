@@ -1,0 +1,117 @@
+/* cursor-gooey: two stroked rings that chase the pointer and warp on a link.
+
+   The resting state is the menu, full stop. The rings are pointer decoration
+   drawn on top of it, and the visitor keeps their own cursor -- upstream does
+   not hide it either, because a thin outline reads as a halo around the real
+   arrow rather than as a replacement for it. With the script blocked, on a
+   coarse pointer or under reduced motion the section is a finished list of
+   links.
+
+   The rings are display: none until the section says otherwise, which is
+   upstream's rule: below its breakpoint .cursor is not drawn at all. Here the
+   same rule is written as a pointer query, because that is the condition it
+   was standing in for.
+
+   overflow is clip rather than hidden: hidden computes overflow-y to auto and
+   makes the section a scroll container. */
+.fx-gooey {
+  --fx-bg: #0d0c10;
+  --fx-ink: #f2efe9;
+  --fx-muted: #8b8797;
+  --fx-accent: #c9a227;
+  --fx-ring: color-mix(in oklab, var(--fx-accent) 80%, #fff);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 80svh;
+  display: grid;
+  align-content: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(65% 60% at 15% 100%, color-mix(in oklab, var(--fx-accent) 16%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-gooey *,
+.fx-gooey *::before,
+.fx-gooey *::after { box-sizing: border-box; }
+
+.fx-gooey__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+.fx-gooey__menu {
+  display: grid;
+  gap: clamp(0.25rem, 1.5vw, 0.75rem);
+  justify-items: start;
+}
+.fx-gooey__link {
+  position: relative;
+  display: inline-block;
+  padding: 0.25rem 0;
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  color: var(--fx-ink);
+  transition: color 0.3s;
+}
+.fx-gooey__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.15em;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform 0.3s;
+}
+.fx-gooey__link:hover,
+.fx-gooey__link:focus-visible { color: var(--fx-accent); outline: none; }
+.fx-gooey__link:hover::after,
+.fx-gooey__link:focus-visible::after { transform: scaleX(1); transform-origin: 0% 50%; }
+
+.fx-gooey__note {
+  margin: 0;
+  max-width: 38rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* Upstream's .cursor / .cursor__inner. Fixed there because the cursor is the
+   page's; absolute here because it is the section's, which is also what keeps
+   two of these on one page from drawing over each other. */
+.fx-gooey__cursor {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-gooey__ring {
+  fill: none;
+  stroke: var(--fx-ring);
+  stroke-width: 1px;
+}
+@media (pointer: fine) {
+  .fx-gooey__cursor { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-gooey__cursor { display: none; }
+  .fx-gooey__link,
+  .fx-gooey__link::after { transition: none; }
+}
