@@ -377,8 +377,17 @@ const checkDeviationsReal = (ctx) => {
   // Comments are stripped on purpose. A deviation restated in the header
   // comment is prose agreeing with prose; what makes it real is code, a GLSL
   // line that actually differs, or a constant the numeric check could not
-  // trace. Those three are the haystack.
-  const observable = [stripComments(ctx.js), ...ctx.diffLines, ...ctx.untraced.map((u) => u.text)]
+  // trace.
+  //
+  // style.css is in the haystack too, and leaving it out was a blind spot
+  // rather than a choice. A CSS-only port has almost nothing in index.js, so a
+  // deviation describing a stylesheet change could never be evidenced and
+  // warned forever. It surfaced on a wave of Codrops hover ports: one declared
+  // a focus-visible deviation and warned, while its sibling declared the same
+  // thing and passed only because the word "hover" happened to appear in its
+  // effect name.
+  const css = existsSync(join(ctx.dir, "style.css")) ? readFileSync(join(ctx.dir, "style.css"), "utf8") : "";
+  const observable = [stripComments(ctx.js), css, ...ctx.diffLines, ...ctx.untraced.map((u) => u.text)]
     .join("\n")
     .toLowerCase();
   for (const d of deviations) {
