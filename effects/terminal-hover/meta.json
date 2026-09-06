@@ -1,0 +1,73 @@
+{
+  "name": "terminal-hover",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "hover", "monospace", "decode", "list", "codrops", "anime"],
+  "summary": "A monospace manifest whose rows decode under the pointer: every character rolls through four random glyphs behind a block cursor before the real letter comes back.",
+  "needs": ["anime"],
+  "options": {
+    "tick": {
+      "type": "number",
+      "default": 0.03,
+      "description": "Seconds one pass of a character takes. Upstream's duration."
+    },
+    "gap": {
+      "type": "number",
+      "default": 0.04,
+      "description": "Seconds between one pass and the next. Upstream's repeatDelay."
+    },
+    "lag": {
+      "type": "number",
+      "default": 0.07,
+      "description": "Seconds each character waits behind the one to its left. Upstream's (position + 1) * 0.07."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/LineTextHoverAnimations",
+    "commit": "00fdd50a5daa48a9fcb400d19d17b1dac5935e68",
+    "path": [
+      "js/effect-1/text-animator.js",
+      "js/effect-1/index.js",
+      "js/textSplitter.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Durations and delays are milliseconds: every upstream second value is multiplied by the SEC constant, 1000.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds. Keeping upstream's own numbers and scaling them in one named place is what makes the timing readable against the source rather than pre-multiplied.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "SplitType, wrapped by upstream's textSplitter.js, is replaced by anime.js' splitText, and the characters are read from [data-char] rather than from .char.",
+      "why": "SplitType is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to the vendor keys the manifest lists. The split is the same one: words and characters, each character its own inline element, which is all .char::after needs to keep painting the block cursor.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The glyph is re-randomised from onBegin and onLoop rather than by GSAP's repeatRefresh re-evaluating a function-valued innerHTML on each pass, and the cursor custom property is --fx-opa rather than --opa.",
+      "why": "repeatRefresh is a GSAP scheduling feature with no anime.js equivalent; anime's loop callbacks fire at exactly the same four moments, so the character changes on the same schedule. The property is renamed because the contract prefixes every custom property --fx-.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Selectors are ours (.fx-terminal__row and .fx-terminal__cell for upstream's .list__item and .hover-effect) and the rows are resolved inside the mounted section rather than from the document.",
+      "why": "The demo owns its whole page and binds document.querySelectorAll. An effect is one section among several and a page may carry this one twice, so two mounts would otherwise animate each other's rows.",
+      "kind": "seam"
+    },
+    {
+      "what": "The a.hover-effect branch of upstream's index.js, which wires the same animator to every link in the page furniture, is dropped.",
+      "why": "Those are the demo's own nav and article links, not part of the section. The row list is the effect.",
+      "kind": "ours"
+    },
+    {
+      "what": "Every pending timeout and animation is tracked and killed on destroy, and the split is reverted.",
+      "why": "Upstream keeps none, because its page never tears the effect down. Here a destroy mid-roll would otherwise leave a row frozen on random glyphs and a restore timer firing into detached nodes.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion nothing is split and no hover listener is bound.",
+      "why": "Effect contract: mount() stays at rest, and the list is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

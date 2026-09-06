@@ -1,0 +1,51 @@
+<!-- grid-3d-stagger section. Finished at rest with CSS alone: a two-column
+     gallery, laid out and captioned. index.js only writes transforms and a
+     filter onto cells that are already on the page, so a blocked script, a
+     pruned bundle or prefers-reduced-motion leaves the grid exactly as it
+     reads here.
+     Drop your own pictures in per cell:
+       .fx-grid3d__item:nth-child(3) { --fx-cell-image: url("/media/3.jpg"); }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/grid-3d-stagger/style.css">
+<section class="fx-grid3d" data-fx="grid-3d-stagger">
+  <div class="fx-grid3d__head">
+    <p class="fx-grid3d__eyebrow">Field archive</p>
+    <h2 class="fx-grid3d__title">Everything arrives out of depth</h2>
+    <p class="fx-grid3d__lede">Each cell tips in from its own side of the viewport, unblurs, and tips back out as it leaves. Scroll to run it.</p>
+  </div>
+  <div class="fx-grid3d__grid">
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">01 Dune</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">02 Tidal</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">03 Ember</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">04 Fern</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">05 Iris</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">06 Cinder</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">07 Slate</figcaption>
+    </figure>
+    <figure class="fx-grid3d__item">
+      <div class="fx-grid3d__imgwrap"><div class="fx-grid3d__img"></div></div>
+      <figcaption class="fx-grid3d__caption">08 Moss</figcaption>
+    </figure>
+  </div>
+</section>

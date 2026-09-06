@@ -1,0 +1,96 @@
+/* text-repetition: a word stamped nine times into one grid cell, fanning
+   apart as the section scrolls.
+
+   The resting state is the plain heading. index.js replaces its contents with
+   nine copies of the same text, all in `grid-area: 1 / 1 / 2 / 2` so they
+   stack exactly, each painting an opaque background over the one behind it --
+   which is why the stack still reads as a single word before the scrollbar
+   moves and why a blocked script leaves the section correct.
+
+   line-height 0.745 and the 0.059 padding factor are upstream's: the copies
+   have to sit on the cap height rather than on the line box, or the fan opens
+   with a gap the size of the leading. */
+.fx-textrep {
+  --fx-bg: #0b0a10;
+  --fx-ink: #f4f1ea;
+  --fx-muted: #8d8798;
+  --fx-accent: #ff5a3c;
+  --fx-rep-bg: var(--fx-bg);
+  --fx-rep-ink: var(--fx-ink);
+  --fx-line: 0.745;
+  --fx-pad-factor: 0.059;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(5rem, 12vw, 11rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 50% at 50% 0%, color-mix(in oklab, var(--fx-accent) 16%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-textrep *,
+.fx-textrep *::before,
+.fx-textrep *::after { box-sizing: border-box; }
+
+.fx-textrep__inner {
+  width: 100%;
+  max-width: 64rem;
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  text-align: center;
+}
+
+.fx-textrep__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+/* The split target. `display: grid` is what puts every copy in the same cell;
+   it is set here rather than by the script so the two states share one box. */
+.fx-textrep__word {
+  --fx-size: clamp(3.5rem, 15vw, 11rem);
+  margin: 0;
+  display: grid;
+  font-size: var(--fx-size);
+  font-weight: 800;
+  line-height: var(--fx-line);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  cursor: default;
+  user-select: none;
+}
+.fx-textrep__word--sm { --fx-size: clamp(2.25rem, 9vw, 6.5rem); }
+
+/* Every copy in one cell, painting over the copy behind it. */
+.fx-textrep--split span {
+  grid-area: 1 / 1 / 2 / 2;
+  color: var(--fx-ink);
+  background: var(--fx-rep-bg);
+  line-height: var(--fx-line);
+  padding-bottom: calc(var(--fx-pad-factor) * var(--fx-size));
+  will-change: transform;
+}
+/* Upstream's demo 1 paints every copy in the SAME ink as the centred original
+   -- --color-rep-text and --color-rep-text-main are both var(--color-text)
+   there -- and lets the opaque background do the hiding. Tinting the copies
+   down is what demos 2 and 3 do, and it would also drop the fanned copies
+   below the 4.5:1 the contract asks of text, so --fx-rep-ink stays at the
+   section's ink unless a site author deliberately changes it. */
+.fx-textrep--split span:not(:last-child) { color: var(--fx-rep-ink); }
+
+.fx-textrep__lede {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

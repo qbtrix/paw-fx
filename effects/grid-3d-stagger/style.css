@@ -1,0 +1,135 @@
+/* grid-3d-stagger: a gallery whose cells arrive out of a perspective box.
+
+   The composition is upstream's: every `.grid__item` carries its own
+   `perspective: 800px`, the wrap inside it is `preserve-3d`, and the picture
+   layer is oversized by --fx-item-translate on all four sides so the stretch
+   index.js puts on it never shows an edge.
+
+   THE IMAGE SLOT. Upstream ships photographs; this library ships none, so each
+   cell paints a gradient tinted by --fx-cell-hue. The default is written into
+   the background shorthand rather than into a section-level --fx-image,
+   because a var() nested inside a custom property resolves where that property
+   is DECLARED -- every cell would inherit one already-resolved hue. A site
+   author overrides one cell, or all of them, with --fx-cell-image:
+
+       .fx-grid3d__item:nth-child(3) { --fx-cell-image: url("/media/3.jpg"); }
+
+   `overflow: clip` throughout, never `hidden`: hidden makes an element a
+   scroll container, and a scroll-linked animation resolving against a box that
+   never scrolls sits at progress 0.5 forever with every cell at the identity
+   transform -- a failure that builds green and does nothing. */
+.fx-grid3d {
+  --fx-bg: #08080a;
+  --fx-ink: #f0eff2;
+  --fx-muted: #86848f;
+  --fx-accent: #f5a524;
+  --fx-cell-hue: 30;
+  --fx-item-ratio: 1.2;
+  --fx-item-radius: 4px;
+  --fx-item-translate: 20px;
+  --fx-gap: clamp(1.25rem, 4vw, 2rem);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: grid;
+  justify-items: center;
+  gap: clamp(2rem, 6vw, 4rem);
+  padding: clamp(4rem, 10vw, 9rem) clamp(1.25rem, 5vw, 4rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-grid3d *,
+.fx-grid3d *::before,
+.fx-grid3d *::after { box-sizing: border-box; }
+
+.fx-grid3d__head {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  max-width: 36rem;
+  text-align: center;
+}
+.fx-grid3d__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-grid3d__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 5.5vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+.fx-grid3d__lede {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-grid3d__grid {
+  width: 100%;
+  max-width: 300px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--fx-gap);
+}
+
+/* One cell. The perspective lives here, per item, which is what lets each one
+   tip on its own axis instead of sharing a single vanishing point. */
+.fx-grid3d__item {
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  perspective: 800px;
+  will-change: transform, opacity;
+}
+.fx-grid3d__imgwrap {
+  position: relative;
+  overflow: clip;
+  width: 100%;
+  aspect-ratio: var(--fx-item-ratio);
+  border-radius: var(--fx-item-radius);
+  transform-style: preserve-3d;
+  will-change: filter;
+}
+.fx-grid3d__img {
+  position: absolute;
+  top: calc(-1 * var(--fx-item-translate));
+  left: calc(-1 * var(--fx-item-translate));
+  height: calc(100% + var(--fx-item-translate) * 2);
+  width: calc(100% + var(--fx-item-translate) * 2);
+  background: var(--fx-cell-image,
+    radial-gradient(70% 55% at 32% 22%, hsl(var(--fx-cell-hue) 90% 62% / 0.9), transparent 70%),
+    linear-gradient(155deg, hsl(var(--fx-cell-hue) 55% 30%), hsl(var(--fx-cell-hue) 65% 8%)));
+  background-size: cover;
+  background-position: 50% 20%;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+.fx-grid3d__item:nth-child(1) { --fx-cell-hue: 30; }
+.fx-grid3d__item:nth-child(2) { --fx-cell-hue: 195; }
+.fx-grid3d__item:nth-child(3) { --fx-cell-hue: 340; }
+.fx-grid3d__item:nth-child(4) { --fx-cell-hue: 145; }
+.fx-grid3d__item:nth-child(5) { --fx-cell-hue: 265; }
+.fx-grid3d__item:nth-child(6) { --fx-cell-hue: 15; }
+.fx-grid3d__item:nth-child(7) { --fx-cell-hue: 215; }
+.fx-grid3d__item:nth-child(8) { --fx-cell-hue: 95; }
+
+.fx-grid3d__caption {
+  margin: 0.6rem 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+@media (min-width: 46em) {
+  .fx-grid3d__grid { max-width: 560px; }
+}

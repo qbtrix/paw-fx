@@ -1,0 +1,54 @@
+<!-- expanding-menu section. Finished at rest with CSS alone: a nav bar over a
+     hero, with the cover parked off the top and the menu panel clipped above
+     its window. Clicking any link in the bar unrolls the cover and drops the
+     panel; the close control reverses it. A blocked script or a pruned bundle
+     leaves the bar and the hero exactly as they read here, and under
+     prefers-reduced-motion the panel still opens -- it just arrives instead of
+     travelling, because it is navigation rather than decoration.
+     Drop your own pictures in:
+       .fx-emenu { --fx-cover-image: url("/media/cover.jpg"); }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/expanding-menu/style.css">
+<section class="fx-emenu" data-fx="expanding-menu">
+  <div class="fx-emenu__content">
+    <div class="fx-emenu__img"></div>
+    <h2 class="fx-emenu__title">Montebello</h2>
+    <div class="fx-emenu__img fx-emenu__img--wide"></div>
+    <p class="fx-emenu__note">Click anything in the bar. The cover unrolls from the top while the menu drops in behind it.</p>
+  </div>
+  <div class="fx-emenu__cover-wrap" aria-hidden="true">
+    <div class="fx-emenu__cover">
+      <div class="fx-emenu__cover-inner"></div>
+    </div>
+  </div>
+  <div class="fx-emenu__menu">
+    <div class="fx-emenu__top">
+      <p class="fx-emenu__brand">Asor</p>
+      <a class="fx-emenu__link" href="#">Collections</a>
+      <a class="fx-emenu__link" href="#">Studio</a>
+      <a class="fx-emenu__link" href="#">Stockists</a>
+      <a class="fx-emenu__link" href="#">Journal</a>
+    </div>
+    <div class="fx-emenu__panel-wrap">
+      <div class="fx-emenu__panel">
+        <nav class="fx-emenu__column">
+          <h3 class="fx-emenu__column-title">New in</h3>
+          <a class="fx-emenu__link" href="#">Outerwear</a>
+          <a class="fx-emenu__link" href="#">Knitwear</a>
+          <a class="fx-emenu__link" href="#">Trousers</a>
+          <a class="fx-emenu__link" href="#">Shirting</a>
+        </nav>
+        <nav class="fx-emenu__column">
+          <h3 class="fx-emenu__column-title">Trending</h3>
+          <a class="fx-emenu__link" href="#">New season</a>
+          <a class="fx-emenu__link" href="#">Workwear</a>
+          <a class="fx-emenu__link" href="#">Archive</a>
+        </nav>
+        <h3 class="fx-emenu__tagline">Montebello</h3>
+        <a class="fx-emenu__author" href="#">@studio</a>
+        <button class="fx-emenu__back" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+</section>

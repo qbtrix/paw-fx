@@ -1,0 +1,78 @@
+{
+  "name": "card-stack-scroll",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["scroll", "3d", "cards", "stack", "perspective", "codrops", "anime"],
+  "summary": "A deck of cards stacked in one tipped, preserve-3d cell that the scrollbar flies through the camera, back card first, turning as it comes.",
+  "needs": ["anime"],
+  "options": {
+    "near": {
+      "type": "number",
+      "default": 1.4,
+      "description": "How far past the camera the deck ends, in viewport widths. Upstream's z end factor."
+    },
+    "far": {
+      "type": "number",
+      "default": 2.65,
+      "description": "How far behind the camera the deck starts, in viewport widths. Upstream's z start factor."
+    },
+    "stagger": {
+      "type": "number",
+      "default": 0.005,
+      "description": "Seconds each card trails the one before it. Upstream's stagger."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/3DStackMotion",
+    "commit": "75cbda91ed26d31aeeb5a5b9887848e5a7005c7f",
+    "path": [
+      "js/effect-1/stackMotionEffect.js",
+      "js/utils.js",
+      "index.html",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "imagesTotal counts the cards. Upstream writes `this.imageElements = [this.contentElement.querySelectorAll('.card')]`, an array holding one NodeList, so `this.imagesTotal` is 1 no matter how many cards the deck has and the per-card term of the end z position collapses to a constant.",
+      "why": "The line is a bug at the pinned commit, not a design choice: the variable is named imagesTotal, it is read only as `(this.imagesTotal - pos - 1)`, and that expression is only meaningful as a count of the cards. GSAP flattens the nested array so the targets are still right, which is why the bug is invisible in the demo.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "The scroll driver is anime.js' onScroll with enter 'center top' and leave '-100% top', not ScrollTrigger's start 'top center' with end '+=150%' and Lenis underneath.",
+      "why": "GSAP is not a dependency this library can take. anime has no relative end, so the same range is written as an absolute pair: the container position at the end is the centre minus one and a half screens, which is minus 100 percent, and the target position stays its top. Lenis is dropped because smooth scrolling is a page-level choice and paw-fx already ships smooth-scroll as its own effect.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's power1 ease is written as anime's outQuad, which is the same quadratic curve out, and the stagger is milliseconds.",
+      "why": "GSAP names its power curves by exponent minus one and defaults them to .out; anime names them after the polynomial and counts in milliseconds rather than seconds.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The opacity gate is dropped: the four ScrollTrigger callbacks that set the deck to opacity 0 outside the range and 1 inside it, and the `contentElement.style.opacity = 0` the constructor writes.",
+      "why": "Effect contract: the section must look finished on CSS alone and must never be left blank by a callback that did not fire. Hiding the deck from script is exactly that risk, and the reason upstream needs it goes away here -- its deck scrolls out of the viewport halfway through the range, and this one is pinned for the whole of it.",
+      "kind": "ours"
+    },
+    {
+      "what": "The deck is pinned: .fx-stack__inner is sticky over a 250svh track, where upstream's .wrap__inner is static inside a min-height 100vh wrap.",
+      "why": "Upstream's deck leaves the viewport partway through its own one-and-a-half-screen range, so most of the flight happens off screen and the opacity gate papers over it. Pinning shows the flight the numbers describe, and it is what makes the section legible as a section rather than as a page.",
+      "kind": "ours"
+    },
+    {
+      "what": "The cards paint the --fx-card-image custom property, tinted per card by --fx-card-hue, instead of the demo's inline background-image URLs.",
+      "why": "Codrops ships the demo's photographs under separate terms and this library redistributes none of them. Six differently tinted faces keep the flight readable -- you can see which card is which as they pass -- and a site author points --fx-card-image at real pictures per card.",
+      "kind": "ours"
+    },
+    {
+      "what": "The resize rebuild uses a trailing 100ms timeout rather than upstream's throttle helper from js/utils.js, and everything is reverted and unbound on destroy.",
+      "why": "Same 100ms interval and the same rebuild; importing a throttle for one call site is more code than the call. Upstream leaves its listener bound for the life of the tab, which here would keep rebuilding a timeline over detached nodes after a page transition.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no timeline and no scroll observer are created.",
+      "why": "Effect contract: mount() stays at rest, and the tipped deck style.css draws is already the finished composition.",
+      "kind": "seam"
+    }
+  ]
+}

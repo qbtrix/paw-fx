@@ -1,0 +1,62 @@
+{
+  "name": "sliced-text",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "scroll", "sliced", "kinetic", "typography", "codrops", "anime"],
+  "summary": "A headline cut into four vertical windows onto four copies of itself, sliding out of alignment and back into register as the section scrolls.",
+  "needs": ["anime"],
+  "options": {
+    "cells": {
+      "type": "number",
+      "default": 4,
+      "description": "How many vertical bands the word is cut into. Upstream's totalCells for effect 1."
+    },
+    "offset": {
+      "type": "number",
+      "default": 13,
+      "description": "Percent each band starts away from register, multiplied by its distance from the centre. Upstream's fx1 initialValues.x."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/SlicedTextEffect",
+    "commit": "45bbcfd96b0c87a5a5299cb4bacc583dd3b71bf8",
+    "path": [
+      "js/item.js",
+      "js/index.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The scroll driver is anime.js' onScroll with enter 'bottom top' and leave '10% top', not ScrollTrigger's start 'top bottom' / end 'top top+=10%' with Lenis smoothing underneath.",
+      "why": "GSAP is not a dependency this library can take. The two thresholds are the same window written the other way round: anime puts the container position first and the target position second, where ScrollTrigger puts the trigger first. Lenis is dropped because smooth scrolling is a page-level choice, and paw-fx already ships smooth-scroll as its own effect for a site that wants it.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's power1 ease is written as anime's outQuad, which is the same quadratic curve out.",
+      "why": "GSAP names its power curves by exponent minus one and defaults them to .out; anime names them after the polynomial. Same function, different spelling.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only effect 1 is ported. fx2 through fx6, defaultTimeline, the data-effect switch and the fxImagesTimeline that rotates the demo's background photographs are dropped.",
+      "why": "fx1 is the plainest of the six and the only one that needs nothing but the bands themselves; the others add a second axis, a rotation or a scale on top. Shipping six variants behind an option would be five untested code paths in a library where each effect is meant to be one thing. The image timeline goes because the pictures it rotates are not ours to redistribute.",
+      "kind": "ours"
+    },
+    {
+      "what": "Custom properties are renamed --fx-text-width, --fx-splits and --fx-offset from upstream's --text-width, --gsplits and --offset, and the class names are ours.",
+      "why": "The effect contract prefixes every custom property --fx-, and an effect is one section among several: resolving the headings inside the mounted section is what keeps a second instance on the page independent.",
+      "kind": "seam"
+    },
+    {
+      "what": "Each heading's original innerHTML is kept and restored on destroy, along with the two custom properties, and the resize listener is removed.",
+      "why": "Upstream is a demo page that never tears the effect down and leaves its resize handler bound for the life of the tab. Here a destroy would otherwise leave four column copies in the markup and a listener re-measuring detached nodes.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the heading is never rebuilt and no scroll observer is created.",
+      "why": "Effect contract: mount() stays at rest, and the heading in the markup is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

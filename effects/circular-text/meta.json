@@ -1,0 +1,72 @@
+{
+  "name": "circular-text",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "svg", "circular", "badge", "hover", "codrops", "anime"],
+  "summary": "Four concentric rings of type on SVG circle paths that scale in when the section arrives and take another half turn, outer ring leading, when the centre control is hovered.",
+  "needs": ["anime"],
+  "options": {
+    "introDuration": {
+      "type": "number",
+      "default": 2.5,
+      "description": "Seconds the rings take to scale in. Upstream's start() duration."
+    },
+    "turn": {
+      "type": "number",
+      "default": 180,
+      "description": "Degrees each ring turns on hover. Upstream's rotate '+=180'."
+    },
+    "turnDuration": {
+      "type": "number",
+      "default": 4,
+      "description": "Seconds that turn takes. Upstream's hover duration."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/CircularTextEffect",
+    "commit": "fcd9aaa5d55d0d6ce5f9d1b6795e4c3d45dd93b2",
+    "path": [
+      "src/js/demo1/intro.js",
+      "src/index.html",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Durations are milliseconds: every upstream second value is multiplied by the SEC constant, 1000.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds. Keeping upstream's own numbers and scaling them in one named place is what makes the timing readable against the source rather than pre-multiplied.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's stagger amount is converted to anime's per-target gap by the spread() helper: the amount is divided by one less than the number of targets, and a negative amount becomes from: 'last'.",
+      "why": "GSAP's `amount` spreads the whole stagger across that many seconds regardless of how many targets there are; anime's stagger takes the gap between one target and the next. Dividing is what makes the two describe the same total spread, and GSAP's negative amount is its spelling of running the set backwards.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's expo and power4 easings are written as anime's outExpo and outQuint, which are the same curves.",
+      "why": "GSAP names its power curves by exponent minus one and defaults every named ease to .out; anime names them after the polynomial and spells the direction in the name.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "enter(), the second half of intro.js, is not ported: the click handler, the timeline that scales the rings away to 1.5 + n * 0.3 and fades them out, and the reveal of the demo's .content and .frame children.",
+      "why": "That half is a page intro, not a section: it exists to get the reader off the splash screen and into the demo page behind it, and it animates elements that belong to that page. What is left -- the rings, their entrance and the hover turn -- is the part that is a section, and it is self-contained.",
+      "kind": "ours"
+    },
+    {
+      "what": "The `.js` class that hides the rings and the control at page load becomes the run itself: index.js animates opacity from 0 rather than the stylesheet setting it, and the run starts on an IntersectionObserver rather than on page load.",
+      "why": "Effect contract: the section must look finished on CSS alone, so nothing may hide the badge before the script that brings it back is running. A section can also sit far down a document, where an on-load run would be over before the reader ever saw it.",
+      "kind": "seam"
+    },
+    {
+      "what": "Ring font sizes are SVG user units rather than upstream's vmin clamps, and the centre control is an anchor rather than a button.",
+      "why": "Upstream's badge is a 186vmin fixed overlay, so vmin sizes it against the window; here it is a section-sized SVG, and user units keep the four rings in proportion at any width. The control is an anchor because in a section it is a call to action a site author points somewhere, not a splash-screen dismiss.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no animation is created and no observer is registered.",
+      "why": "Effect contract: mount() stays at rest, and the badge at full size is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "name": "pixel-tooltip",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": ["cursor", "tooltip", "grid", "pointer", "glossary", "codrops", "anime"],
+  "summary": "A tooltip that assembles out of its own background cells, each one delayed by its distance from the pointer, and takes itself apart the same way.",
+  "needs": ["anime"],
+  "options": {
+    "maximumDelay": {
+      "type": "number",
+      "default": 1.8,
+      "description": "Seconds the furthest cell waits before it appears. Upstream's maximumDelay."
+    },
+    "duration": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Seconds one cell takes to fade. Upstream's createDefaultTimeline duration."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/PixelGooeyTooltip",
+    "commit": "60ade47c343adbe40bdfa1bb0210a898e03ca536",
+    "path": [
+      "js/tooltip.js",
+      "js/index.js",
+      "css/tooltip.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "A trigger is paired with its tooltip by DOM order rather than by getElementById on the trigger's data-tooltip attribute.",
+      "why": "Element ids are document-global. Two copies of this section on one page would give two tooltips the same id, and every trigger in both would resolve to the first -- a failure that looks like the effect working, on one instance, while the other silently drives it. Order is local to the mounted section and needs no ids at all.",
+      "kind": "seam"
+    },
+    {
+      "what": "The panel is positioned against the mounted section rather than against the document: clientX/clientY minus the section's own box, clamped to the section's width and height instead of to the viewport plus scroll offset.",
+      "why": "Upstream's tooltip is a child of the body, so page coordinates are its frame. Here the tooltip lives inside the section, which is its containing block, and the same four clamps keep it inside that. The scrollLeft / scrollTop terms go with the change, because a section-relative offset does not move with the scrollbar.",
+      "kind": "seam"
+    },
+    {
+      "what": "Durations and delays are milliseconds: every upstream second value is multiplied by the SEC constant, 1000, and GSAP's expo ease is written as anime's outExpo.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds, and GSAP defaults a bare ease name to .out where anime spells the direction. Same numbers, same curve.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only effect 1 is ported. animateEffect2 through animateEffect6, the #animateCells method-name dispatch and the data-effect attribute that chooses between them are dropped.",
+      "why": "Effect 1 is the one the distance-to-delay formula belongs to and the only one that makes the panel assemble from the pointer; the other five are ordinary staggers over the same cells. Shipping six variants behind an option would be five untested code paths in a library where each effect is meant to be one thing.",
+      "kind": "ours"
+    },
+    {
+      "what": "The `glitch` class the timeline adds to the title at 0.8s and the description at 1s is dropped, and so is the SVG gooey filter defined at the bottom of upstream's index.html.",
+      "why": "The glitch is a 60-line keyframe set in the demo's page stylesheet that clips and offsets the text on a 4s infinite loop -- a second effect riding on this one, and one that never settles. The gooey filter is defined in the markup but never referenced: no rule in either of upstream's stylesheets applies url(#gooey) to anything, so at this commit it contributes nothing to what the demo shows.",
+      "kind": "ours"
+    },
+    {
+      "what": "The `.js` class that empties the panel's flat background becomes the [data-fx-live] attribute mount() sets, and every cell, listener, timer and inline style is removed on destroy.",
+      "why": "Upstream sets .js on the document element at page load and never tears the effect down. Keying it on the mounted section is what keeps the resting panel solid when the script is blocked, and a destroy mid-assembly would otherwise leave half a grid of cells and two debounce timers firing into detached nodes.",
+      "kind": "seam"
+    },
+    {
+      "what": "The listeners are always mouseenter, mousemove and mouseleave: the isTouchDevice branch that swaps them for touchstart, touchmove and touchend, and the preventDefault calls that go with it, are dropped.",
+      "why": "The effect is pointer-following by construction, and on a touch screen upstream's own path swallows the tap that would otherwise scroll the page. A term whose definition needs a tap is a different component; here the definitions stay in the markup where a touch reader can reach them.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion no cells are built and no listener is bound.",
+      "why": "Effect contract: mount() stays at rest. The prose is the content, and the panels stay at the opacity 0 the stylesheet gives them.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+<!-- card-stack-scroll section. Finished at rest with CSS alone: a deck of six
+     cards stacked in a tipped, preserve-3d box, plus the heading above it.
+     index.js only writes z and rotation onto the cards as the track scrolls,
+     so a blocked script, a pruned bundle or prefers-reduced-motion leaves the
+     stack exactly as it reads here.
+     Drop your own pictures in per card:
+       .fx-stack__card:nth-child(2) { --fx-card-image: url("/media/2.jpg"); }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/card-stack-scroll/style.css">
+<section class="fx-stack" data-fx="card-stack-scroll">
+  <div class="fx-stack__head">
+    <p class="fx-stack__eyebrow">Release 9</p>
+    <h2 class="fx-stack__title">The whole deck, one scroll</h2>
+    <p class="fx-stack__lede">Six cards stacked in a single cell and tipped on three axes. Scrolling flies them past the camera, back to front.</p>
+  </div>
+  <div class="fx-stack__wrap">
+    <div class="fx-stack__inner">
+      <div class="fx-stack__content">
+        <div class="fx-stack__card"><p class="fx-stack__card-label">01 Horizons</p></div>
+        <div class="fx-stack__card"><p class="fx-stack__card-label">02 Drift</p></div>
+        <div class="fx-stack__card"><p class="fx-stack__card-label">03 Signal</p></div>
+        <div class="fx-stack__card"><p class="fx-stack__card-label">04 Harbour</p></div>
+        <div class="fx-stack__card"><p class="fx-stack__card-label">05 Lantern</p></div>
+        <div class="fx-stack__card"><p class="fx-stack__card-label">06 Ferrous</p></div>
+      </div>
+    </div>
+  </div>
+</section>
