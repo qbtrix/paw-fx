@@ -1,0 +1,79 @@
+<!-- gooey-text section. Finished at rest with CSS alone: four words at full
+     size. Each item's svg carries both words; the second is opacity 0 in
+     style.css, which is the same state upstream rests in, so a blocked script,
+     a pruned bundle or prefers-reduced-motion leaves a legible menu.
+     The <filter> in each item is the effect. index.js renames its id at mount
+     so several of these can share a page, and applies it to the <g> only for
+     the length of the animation.
+     The viewBox is upstream's 110x20 and an SVG root clips to its own box, so
+     keep both words to roughly a dozen characters; widen the viewBox on every
+     item together if you need longer ones.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/gooey-text/style.css">
+<section class="fx-gooey" data-fx="gooey-text">
+  <p class="fx-gooey__eyebrow">Menu</p>
+  <nav class="fx-gooey__menu">
+    <a class="fx-gooey__item" href="#studio">
+      <svg class="fx-gooey__text" viewBox="0 0 110 20" preserveAspectRatio="xMinYMid meet">
+        <defs>
+          <filter id="fx-gooey-goo-1">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"></feGaussianBlur>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  1 0 1 0 0  0 0 0 15 -8" result="goo"></feColorMatrix>
+            <feComposite in="SourceGraphic" in2="goo" operator="atop"></feComposite>
+          </filter>
+        </defs>
+        <g>
+          <text x="0" y="15">Studio</text>
+          <text x="0" y="15">Since 2009</text>
+        </g>
+      </svg>
+    </a>
+    <a class="fx-gooey__item" href="#method">
+      <svg class="fx-gooey__text" viewBox="0 0 110 20" preserveAspectRatio="xMinYMid meet">
+        <defs>
+          <filter id="fx-gooey-goo-2">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"></feGaussianBlur>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  1 0 1 0 0  0 0 0 15 -8" result="goo"></feColorMatrix>
+            <feComposite in="SourceGraphic" in2="goo" operator="atop"></feComposite>
+          </filter>
+        </defs>
+        <g>
+          <text x="0" y="15">Method</text>
+          <text x="0" y="15">Six weeks</text>
+        </g>
+      </svg>
+    </a>
+    <a class="fx-gooey__item" href="#archive">
+      <svg class="fx-gooey__text" viewBox="0 0 110 20" preserveAspectRatio="xMinYMid meet">
+        <defs>
+          <filter id="fx-gooey-goo-3">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"></feGaussianBlur>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  1 0 1 0 0  0 0 0 15 -8" result="goo"></feColorMatrix>
+            <feComposite in="SourceGraphic" in2="goo" operator="atop"></feComposite>
+          </filter>
+        </defs>
+        <g>
+          <text x="0" y="15">Archive</text>
+          <text x="0" y="15">142 pieces</text>
+        </g>
+      </svg>
+    </a>
+    <a class="fx-gooey__item" href="#contact">
+      <svg class="fx-gooey__text" viewBox="0 0 110 20" preserveAspectRatio="xMinYMid meet">
+        <defs>
+          <filter id="fx-gooey-goo-4">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur"></feGaussianBlur>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  1 0 1 0 0  0 0 0 15 -8" result="goo"></feColorMatrix>
+            <feComposite in="SourceGraphic" in2="goo" operator="atop"></feComposite>
+          </filter>
+        </defs>
+        <g>
+          <text x="0" y="15">Contact</text>
+          <text x="0" y="15">Say hello</text>
+        </g>
+      </svg>
+    </a>
+  </nav>
+  <p class="fx-gooey__lede">Replace this copy with your own. Each item carries two words; hovering melts the first into the second through an SVG goo filter and back again.</p>
+</section>

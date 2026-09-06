@@ -1,0 +1,26 @@
+<!-- cursor-follow section. Finished at rest with CSS alone: a readable menu on
+     grey, with the native pointer. The circle is opacity 0 in style.css until
+     index.js starts tracking, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves the section exactly as it reads here rather
+     than parking a white dot in the corner.
+     The svg carries upstream's data-scale-enter / data-opacity-enter; mount()
+     reads its options rather than these, so change them together or pass
+     { scaleOnEnter, opacityOnEnter } when you mount.
+     Two of these can sit on one page: each section owns its own circle and
+     only shows it while the pointer is inside that section.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/cursor-follow/style.css">
+<section class="fx-cursor-follow" data-fx="cursor-follow">
+  <p class="fx-cursor-follow__eyebrow">Index</p>
+  <nav class="fx-cursor-follow__menu">
+    <a href="#work">Duhkha</a>
+    <a href="#studio">Nirodha</a>
+    <a href="#journal">Nibbana</a>
+    <a href="#contact">Sukha</a>
+  </nav>
+  <p class="fx-cursor-follow__lede">Replace this copy with your own. On a device with a fine pointer the cursor becomes a filled circle that trails behind the hand and swells over each link.</p>
+  <svg class="fx-cursor-follow__cursor" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" data-scale-enter="2" data-opacity-enter=".8">
+    <circle class="fx-cursor-follow__cursor-inner" cx="12" cy="12" r="6"></circle>
+  </svg>
+</section>

@@ -1,0 +1,94 @@
+{
+  "name": "letter-shuffle-menu",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": [
+    "menu",
+    "navigation",
+    "text",
+    "letters",
+    "slot-machine",
+    "codrops",
+    "anime"
+  ],
+  "summary": "A big menu whose first letters start as one shared word spelled down the edge; the columns roll 87.5% to land each entry's real initial over 1.7s while the rest of the word swings in from x 100% and 10deg.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "verticalTitle": {
+      "type": "string",
+      "default": "HAPUKU",
+      "description": "The word spelled down the menu's left edge before it resolves; its nth character is the nth item's resting letter. Upstream's menuConfig.displayVerticalTitle."
+    },
+    "totalLetters": {
+      "type": "number",
+      "default": 8,
+      "description": "How many letters each slot-machine column holds: the item's initial, then random ones, then the title's letter. Upstream's menuConfig.slotMachineTotalLetters."
+    },
+    "duration": {
+      "type": "number",
+      "default": 1.7,
+      "description": "Seconds the open runs for. Upstream's timeline defaults duration."
+    },
+    "columnStagger": {
+      "type": "number",
+      "default": 0.03,
+      "description": "Seconds between each column starting to slide. Upstream's slot machine stagger."
+    },
+    "letterStagger": {
+      "type": "number",
+      "default": 0.04,
+      "description": "Seconds between each letter of an item swinging in. Upstream's per-item chars stagger."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/LetterShuffleMenu",
+    "commit": "32cf37157f32f6e3f323de63d872319704429cc7",
+    "path": [
+      "src/js/menuItem.js",
+      "src/js/menu.js",
+      "src/js/menuConfig.js",
+      "src/css/base.css",
+      "src/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The resting state is inverted: style.css draws the open menu (plain legible links) and index.js builds the columns, sets the closed state and runs the open once the section scrolls into view. The hamburger button, the close() timeline, the sliding .menu__bg panel with its gradient crossfade, and the vertical tagline are dropped.",
+      "why": "Upstream is an overlay menu behind a button, so its resting state is closed and, with the script blocked or the bundle pruned, permanently closed -- a menu whose items are unreadable until an animation runs is a broken menu, and the effect contract forbids trapping content behind motion. Resting on the end of the timeline is the same inversion pin-progress makes. A section menu has no open and close, so everything belonging to the overlay goes with it.",
+      "kind": "seam"
+    },
+    {
+      "what": "The gsap.timeline becomes an anime createTimeline: ease 'expo.inOut' becomes 'inOutExpo', the startAt {x, rotation, opacity} object becomes from-to arrays, GSAP's stagger becomes anime's delay: stagger(), and durations are multiplied by a single MS constant of 1000.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without code. Every duration, stagger, offset and easing shape is upstream's; the conversion is only that GSAP counts in seconds and anime.js counts in milliseconds, and that anime writes a from-value as [from, to].",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Splitting.js is replaced by an eight-line character split that writes the item's text into span.fx-shuffle__char cells inside one aria-hidden holder, with the original text kept on the link as aria-label.",
+      "why": "Splitting is a second dependency for a job that fits in a few lines, and the effect contract limits an effect to the vendor keys the manifest lists. anime's own splitText was the obvious alternative and is the wrong one here: it keeps a ResizeObserver and re-splits from a cached string, which would silently throw away every letter-wrap and slot-machine column layout() builds underneath it. Hand-splitting keeps ownership of that subtree. The aria-label is what keeps a screen reader reading a word rather than six letters.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Two colours are lightened: --color-link (#6b4e65), which the item's own letters use, becomes #c9a9c2, and --color-menu-hover (#af449a), which the eyebrow and the hover state use, becomes #d67ac0.",
+      "why": "Upstream's values measure 2.1:1 and 3.4:1 against its own background, both under the 4.5:1 floor this library holds text to. The lighter tone of each hue keeps the reading upstream intends -- title letters at menu strength, the item's own letters quieter, magenta on hover -- at 7.3:1 and 5.5:1.",
+      "kind": "ours"
+    },
+    {
+      "what": "displayVerticalTitle.charAt(itemPosition) falls back to the item's own initial when the title has no character at that position.",
+      "why": "Upstream's title is exactly as long as its menu, so the case never arises there. A site author who adds a seventh item would otherwise get an empty column, which is a blank first letter on a live menu.",
+      "kind": "ours"
+    },
+    {
+      "what": "The typekit stylesheets (space-mono, acumin-pro-wide, kudryashev-d-excontrast-sans) and the WebFont loader are dropped for system stacks, with a monospace stack on the menu, and the page chrome -- frame, content columns, next button, page loader -- goes with an eyebrow and lede in its place.",
+      "why": "A hosted font stylesheet is a fetch a generated site cannot make offline, and no repo in this survey ships a font file to vendor instead. The cells are fixed-width by upstream's own rule, so any monospace face keeps the columns aligned. The rest is Codrops' demo furniture.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's `background: linear-gradient(to bottom, #2b192c, #1a191c)` is split into a background-color of #1a191c plus the same gradient as background-image.",
+      "why": "A gradient-only background leaves the section's computed background-color transparent, so whatever the section is placed over shows through if the gradient fails to paint, and any tool measuring text contrast reads the page behind it rather than the section. The painted result is identical.",
+      "kind": "seam"
+    }
+  ]
+}

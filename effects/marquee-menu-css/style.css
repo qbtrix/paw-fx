@@ -1,0 +1,225 @@
+/* marquee-menu-css: giant outlined navigation. Hovering an item fades its
+   outline away and runs an infinite marquee band of the same word across the
+   row behind it, with a thumbnail riding along.
+
+   Ported from codrops/CSSMarqueeMenu css/base.css @ e7cea3a. The custom
+   property block (--marquee-width / --offset / --move-initial / --move-final /
+   --item-font-size), the sibling-selector choreography and @keyframes marquee
+   are upstream's; the prefixes and the palette variables are ours.
+
+   RESTING STATE. Five outlined words, a rule between each, on cream. That is
+   the finished section: nothing here is hidden waiting for script, and the
+   band underneath only exists while a pointer is on an item.
+
+   REDUCED MOTION. Everything hover-driven sits inside
+   `@media (prefers-reduced-motion: no-preference)`, because a CSS-only effect
+   has no mount() to bail out of -- the stylesheet is the only place that can
+   honour the preference. Under `reduce` the outline fills in on hover instead,
+   so the menu still answers the pointer without anything moving. */
+.fx-marquee-menu {
+  /* base.css body: --color-text #111, --color-bg #f8ecde. --color-link was
+     #b19e7f; see the contrast deviation in meta.json. */
+  --fx-bg: #f8ecde;
+  --fx-ink: #111;
+  --fx-muted: #6b5c42;
+  --fx-stroke: 1.5px;
+  /* base.css .menu, verbatim. */
+  --fx-marquee-width: 100vw;
+  --fx-offset: 20vw;
+  --fx-move-initial: calc(-25% + var(--fx-offset));
+  --fx-move-final: calc(-50% + var(--fx-offset));
+  --fx-item-size: 10vw;
+  --fx-duration: 5s;
+  /* The outlined words only. San Francisco -- what ui-sans-serif and
+     system-ui resolve to on a Mac -- draws the crossbar of an "e" as a
+     contour that overshoots the bowl, and -webkit-text-stroke strokes it, so
+     every "e" gets a rectangle through it. Measured at 150px against weights
+     700, 800 and 900 and against font-synthesis: none: it is the face, not
+     the weight. A grotesque renders clean, which is also what upstream's
+     sofia-pro falls back to. */
+  --fx-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  padding: clamp(2.5rem, 6vw, 5rem) 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-marquee-menu *,
+.fx-marquee-menu *::before,
+.fx-marquee-menu *::after { box-sizing: border-box; }
+
+.fx-marquee-menu__eyebrow {
+  margin: 0 0 clamp(1.5rem, 4vw, 3rem);
+  padding: 0 5vw;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+/* base.css .menu */
+.fx-marquee-menu__list {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  counter-reset: menu;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* base.css .menu__item */
+.fx-marquee-menu__item {
+  cursor: default;
+  position: relative;
+  padding: 0 5vw;
+  border-top: 1px solid color-mix(in oklab, var(--fx-ink) 18%, transparent);
+}
+.fx-marquee-menu__item:last-child {
+  border-bottom: 1px solid color-mix(in oklab, var(--fx-ink) 18%, transparent);
+}
+
+/* base.css .menu__item-link */
+.fx-marquee-menu__link {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  font-family: var(--fx-display);
+  -webkit-text-stroke: var(--fx-stroke) currentColor;
+  text-stroke: var(--fx-stroke) currentColor;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  color: var(--fx-ink);
+  transition: opacity 0.4s;
+}
+
+/* base.css .menu__item-link::before -- the counter that numbers each row. */
+.fx-marquee-menu__link::before {
+  all: initial;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  counter-increment: menu;
+  content: counter(menu);
+  position: absolute;
+  bottom: 60%;
+  left: 0;
+  pointer-events: none;
+  color: var(--fx-muted);
+  font-size: 0.8rem;
+}
+
+/* base.css .menu__item-img. The thumbnail is an IMAGE SLOT: it paints a
+   gradient by default so the section is finished without shipping anyone
+   else's photograph, and a site author swaps the whole background for
+   `background-image: url("./your.jpg"); background-size: cover;`. */
+.fx-marquee-menu__thumb {
+  pointer-events: none;
+  position: absolute;
+  height: 50vh;
+  max-height: 400px;
+  aspect-ratio: 3 / 4;
+  opacity: 0;
+  left: 100%;
+  top: 50%;
+  border-radius: 2px;
+  background:
+    radial-gradient(80% 60% at 30% 25%, color-mix(in oklab, var(--fx-ink) 22%, transparent), transparent 70%),
+    linear-gradient(155deg, #d9c3a5, #b19e7f 55%, #6f6250);
+  background-size: cover;
+  background-position: 50% 50%;
+  transform: translate3d(calc(-100% - 6vw), -30%, 0) translate3d(0, 20px, 0);
+}
+
+/* base.css .marquee */
+.fx-marquee-menu__marquee {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--fx-marquee-width);
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: color-burn;
+}
+
+/* base.css .marquee__inner */
+.fx-marquee-menu__marquee-inner {
+  width: fit-content;
+  display: flex;
+  position: relative;
+  transform: translate3d(var(--fx-move-initial), 0, 0);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.fx-marquee-menu__marquee span { text-align: center; }
+
+/* base.css .menu__item-link, .marquee span */
+.fx-marquee-menu__link,
+.fx-marquee-menu__marquee span {
+  white-space: nowrap;
+  font-size: var(--fx-item-size);
+  padding: 0 1vw;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.fx-marquee-menu__marquee span {
+  font-family: var(--fx-display);
+  font-style: italic;
+  color: var(--fx-ink);
+}
+
+/* base.css @keyframes marquee */
+@keyframes fx-marquee-menu {
+  0%   { transform: translate3d(var(--fx-move-initial), 0, 0); }
+  100% { transform: translate3d(var(--fx-move-final), 0, 0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fx-marquee-menu__marquee-inner {
+    animation: fx-marquee-menu var(--fx-duration) linear infinite;
+    animation-play-state: paused;
+  }
+  /* base.css .menu__item-link:hover */
+  .fx-marquee-menu__link:hover,
+  .fx-marquee-menu__link:focus-visible {
+    transition-duration: 0.1s;
+    opacity: 0;
+  }
+  /* base.css .menu__item-link:hover + .menu__item-img */
+  .fx-marquee-menu__link:hover + .fx-marquee-menu__thumb,
+  .fx-marquee-menu__link:focus-visible + .fx-marquee-menu__thumb {
+    opacity: 1;
+    transform: translate3d(calc(-100% - 6vw), -30%, 0) rotate3d(0, 0, 1, 4deg);
+    transition: all 0.4s;
+  }
+  /* base.css .menu__item-link:hover ~ .marquee .marquee__inner */
+  .fx-marquee-menu__link:hover ~ .fx-marquee-menu__marquee .fx-marquee-menu__marquee-inner,
+  .fx-marquee-menu__link:focus-visible ~ .fx-marquee-menu__marquee .fx-marquee-menu__marquee-inner {
+    animation-play-state: running;
+    opacity: 1;
+    transition-duration: 0.4s;
+  }
+}
+
+/* Under `reduce` nothing translates and nothing fades, so hover fills the
+   outline in instead. A menu that gives no feedback at all is worse than one
+   that gives a still one. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-marquee-menu__link:hover,
+  .fx-marquee-menu__link:focus-visible {
+    -webkit-text-fill-color: var(--fx-ink);
+    text-fill-color: var(--fx-ink);
+  }
+}
+
+/* Upstream sets --item-font-size: 10vw against a full-page nav. In a section
+   that reads too small on a phone and too large on a wide desktop, so the
+   size is clamped rather than pinned to the viewport. */
+@media screen and (max-width: 53em) {
+  .fx-marquee-menu { --fx-item-size: 14vw; }
+  .fx-marquee-menu__thumb { display: none; }
+}

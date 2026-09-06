@@ -1,0 +1,67 @@
+<!-- image-repeat-reveal section. Finished at rest with CSS alone: a heading and
+     eight captioned thumbnails. The detail panel is `opacity: 0;
+     pointer-events: none` in style.css, exactly as upstream rests it, so a
+     blocked script, a pruned bundle or prefers-reduced-motion leaves a gallery
+     that reads correctly and simply does not open.
+     IMAGE SLOT: each .fx-repeat__image carries its background-image INLINE,
+     because index.js copies that exact string onto every stepping copy and
+     onto the panel. Swap the gradient for `url("./your.jpg")` on the item and
+     the whole transition carries it -- nothing else changes.
+     Each item is role="button" tabindex="0" because index.js answers Enter and
+     Space as well as click; a grid of pictures you can only reach with a mouse
+     is not finished.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/image-repeat-reveal/style.css">
+<section class="fx-repeat" data-fx="image-repeat-reveal">
+  <div class="fx-repeat__frame">
+    <h2>Field Recordings</h2>
+    <p class="fx-repeat__tags">eight plates &middot; 2024&ndash;2026</p>
+  </div>
+  <div class="fx-repeat__heading">
+    <h3 class="fx-repeat__heading-title">Drift</h3>
+    <span class="fx-repeat__heading-meta">an index of surfaces</span>
+  </div>
+  <div class="fx-repeat__grid">
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #f2c9a0, #c2604a 55%, #3d1f1a)"></div>
+      <figcaption><h3>Ember</h3><p>A low sun on brick, held long enough to lose its edges.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #cfe3ef, #6f95ad 55%, #1f3140)"></div>
+      <figcaption><h3>Slate</h3><p>Cold water under cold light, and nothing moving on it.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #e7e2cf, #a89b74 55%, #3a3524)"></div>
+      <figcaption><h3>Chaff</h3><p>Dry grass in late August, the colour of paper left out.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #d9cfe8, #8a72ad 55%, #2c2340)"></div>
+      <figcaption><h3>Vesper</h3><p>The half hour after sunset, before the streetlights catch.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #cfe8d6, #63a37c 55%, #1d3a2a)"></div>
+      <figcaption><h3>Verdigris</h3><p>Copper that has given up arguing with the weather.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #f0dcc4, #b98a55 55%, #402c17)"></div>
+      <figcaption><h3>Kiln</h3><p>Fired clay, still warm, stacked where it was made.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #e4e4e6, #9a9aa2 55%, #2e2e34)"></div>
+      <figcaption><h3>Ash</h3><p>Everything grey has three colours in it if you wait.</p></figcaption>
+    </figure>
+    <figure class="fx-repeat__item" role="button" tabindex="0">
+      <div class="fx-repeat__image" style="background-image: linear-gradient(150deg, #f5d7dd, #c1697f 55%, #3d1c28)"></div>
+      <figcaption><h3>Quartz</h3><p>Pink stone at the edge of a road nobody finished.</p></figcaption>
+    </figure>
+  </div>
+  <figure class="fx-repeat__panel">
+    <div class="fx-repeat__panel-img" role="img" aria-label="Selected plate"></div>
+    <figcaption class="fx-repeat__panel-content">
+      <h3>Ember</h3>
+      <p>A low sun on brick, held long enough to lose its edges.</p>
+      <button class="fx-repeat__panel-close" type="button">close</button>
+    </figcaption>
+  </figure>
+</section>

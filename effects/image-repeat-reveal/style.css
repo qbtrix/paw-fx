@@ -1,0 +1,289 @@
+/* image-repeat-reveal: clicking a grid thumbnail spawns a run of repeated
+   copies of it that step across the screen and land as the full-bleed image of
+   a detail panel.
+
+   Ported from codrops/RepeatingImageTransition css/base.css @ 354c584. The
+   .grid / .grid__item-image / .panel / .panel__img / .mover blocks, the
+   --column / --aspect / --panel-img-size variables and the panel's two grid
+   templates are upstream's; the prefixes, the palette and the gradient
+   placeholders are ours. Upstream's nested syntax is flattened.
+
+   RESTING STATE. The gallery: eight thumbnails with captions under a heading.
+   The panel is `opacity: 0; pointer-events: none` here, exactly as upstream
+   rests it, so a blocked script, a pruned bundle or reduced motion leaves a
+   grid that reads correctly and simply does not open. Every caption the panel
+   would show is already in the markup.
+
+   IMAGE SLOT. Each .fx-repeat__image carries its `background-image` INLINE, in
+   snippet.html, because index.js copies that exact string onto every mover and
+   onto the panel. Replace the gradient with `url("./your.jpg")` on the item
+   and the whole transition carries it -- no other change.
+
+   The section takes no transform, filter, will-change or contain: any of them
+   would make it the containing block for the position:fixed movers and panel,
+   and both are positioned in viewport coordinates. */
+.fx-repeat {
+  /* base.css :root, verbatim apart from the prefixes. */
+  --fx-ink: #151515;
+  --fx-bg: #fff;
+  --fx-close: #a22d1d;
+  --fx-page-padding: 1.5rem;
+  --fx-c-gap: 0.5rem;
+  --fx-column: 80px;
+  --fx-column-count: 4;
+  --fx-aspect: 4/5;
+  --fx-font-size-l: 18px;
+  --fx-font-size-xl: clamp(2rem, 10vw, 6rem);
+  --fx-panel-gap: 1rem;
+  --fx-panel-img-size: calc((100vh - var(--fx-page-padding) * 2) * 4 / 5 - var(--fx-panel-gap));
+  box-sizing: border-box;
+  position: relative;
+  padding: var(--fx-page-padding);
+  color: var(--fx-ink);
+  background-color: var(--fx-bg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.2;
+  text-transform: lowercase;
+  font-size: 14px;
+}
+.fx-repeat *,
+.fx-repeat *::before,
+.fx-repeat *::after { box-sizing: border-box; }
+
+/* base.css .frame */
+.fx-repeat__frame {
+  font-size: var(--fx-font-size-l);
+  font-weight: 500;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fx-c-gap) 1.5rem;
+  z-index: 1000;
+  width: 100%;
+  position: relative;
+  justify-content: space-between;
+}
+.fx-repeat__frame h2 {
+  font-size: inherit;
+  margin: 0;
+  font-weight: inherit;
+}
+.fx-repeat__tags {
+  display: flex;
+  gap: 0.5rem;
+  align-items: start;
+  margin: 0;
+  color: color-mix(in oklab, var(--fx-ink) 62%, #fff);
+}
+
+/* base.css .heading */
+.fx-repeat__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 6rem 0 1rem;
+}
+/* base.css .heading__title */
+.fx-repeat__heading-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--fx-font-size-xl);
+  margin: 0;
+  line-height: 0.77;
+}
+/* base.css .heading__meta::after */
+.fx-repeat__heading-meta::after {
+  content: '\00B7';
+  font-family: serif;
+  font-size: 3.5rem;
+  line-height: 0.2;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  display: inline-flex;
+}
+
+/* base.css .grid */
+.fx-repeat__grid {
+  padding: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(var(--fx-column-count), minmax(var(--fx-column), 1fr));
+  grid-column-gap: var(--fx-c-gap);
+  grid-row-gap: 5rem;
+}
+
+/* base.css .grid__item */
+.fx-repeat__item {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  cursor: pointer;
+  will-change: transform, clip-path;
+  overflow: hidden;
+}
+.fx-repeat__item:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 4px;
+}
+
+/* base.css .grid__item-image. The inline background-image in snippet.html is
+   what index.js copies onto every mover; this rule only sizes it. */
+.fx-repeat__image {
+  width: 100%;
+  aspect-ratio: var(--fx-aspect);
+  background-size: cover;
+  background-position: 50% 50%;
+  transition: opacity 0.15s cubic-bezier(0.2, 0, 0.2, 1);
+}
+.fx-repeat__item:hover .fx-repeat__image,
+.fx-repeat__item:focus-visible .fx-repeat__image { opacity: 0.7; }
+
+/* base.css .grid__item-caption */
+.fx-repeat__item figcaption h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  text-align: right;
+}
+/* base.css .grid__item-caption p -- the description the panel shows. It is in
+   the markup for the panel to read and for a reader with no script; it is not
+   drawn in the grid. */
+.fx-repeat__item figcaption p {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* base.css .panel -- hidden at rest, in CSS, which is the whole reason a
+   script-blocked page is finished rather than broken. */
+.fx-repeat__panel {
+  position: fixed;
+  margin: 0;
+  width: 100%;
+  height: 100vh;
+  padding: var(--fx-page-padding);
+  top: 0;
+  left: 0;
+  display: grid;
+  gap: var(--fx-panel-gap);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2000;
+  will-change: transform, clip-path;
+  justify-content: center;
+  grid-template-rows: 1fr min-content;
+  grid-template-columns: 100%;
+  grid-template-areas: 'panel-image' 'panel-content';
+}
+
+/* Not upstream. Upstream's panel is transparent and simply sits over a page
+   whose body is already the same white; a section cannot assume that, so the
+   panel carries its own ground. It has to arrive WITH the image rather than
+   with the panel: index.js sets the panel's opacity to 1 the moment the
+   transition starts, and an opaque plate at that instant would hide the very
+   copies that are stepping across it. --fx-panel-ground is tweened alongside
+   the image's clip-path reveal. */
+.fx-repeat__panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--fx-bg);
+  opacity: var(--fx-panel-ground, 0);
+}
+
+/* base.css .panel__img */
+.fx-repeat__panel-img {
+  grid-area: panel-image;
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--fx-aspect);
+  clip-path: inset(0% 0% 100% 0%);
+}
+
+/* base.css .panel__content */
+.fx-repeat__panel-content {
+  grid-area: panel-content;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: end;
+  align-items: end;
+  text-align: right;
+}
+.fx-repeat__panel-content h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.fx-repeat__panel-content p {
+  margin: 0;
+  max-width: 150px;
+  text-wrap: pretty;
+}
+
+/* base.css .panel__close */
+.fx-repeat__panel-close {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--fx-close);
+}
+.fx-repeat__panel-close:hover,
+.fx-repeat__panel-close:focus-visible { color: #000; }
+
+/* base.css .mover */
+.fx-repeat__mover {
+  position: fixed;
+  aspect-ratio: var(--fx-aspect);
+  background-size: cover;
+  background-position: 50% 50%;
+  will-change: transform, clip-path;
+  pointer-events: none;
+}
+
+/* base.css @media (min-width: 40em) on .panel / .panel--right / .panel__img */
+@media screen and (min-width: 40em) {
+  .fx-repeat__panel {
+    grid-template-columns: var(--fx-panel-img-size) 1fr;
+    grid-template-areas: 'panel-image panel-content';
+    grid-template-rows: 100%;
+  }
+  .fx-repeat__panel--right {
+    grid-template-columns: 1fr var(--fx-panel-img-size);
+    grid-template-areas: 'panel-content panel-image';
+  }
+  .fx-repeat__panel-img {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+/* base.css @media (min-width: 65em) */
+@media screen and (min-width: 65em) {
+  .fx-repeat { --fx-column-count: 8; }
+  .fx-repeat__panel--right .fx-repeat__panel-content {
+    align-items: start;
+    text-align: left;
+  }
+}
+
+/* mount() returns before it binds anything under reduce, so the panel never
+   opens. The grid stops claiming otherwise. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-repeat__item { cursor: default; }
+}

@@ -1,0 +1,112 @@
+{
+  "name": "image-repeat-reveal",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "grid",
+    "transition",
+    "clip-path",
+    "detail-panel",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Clicking a thumbnail spawns six repeated copies that step across the screen 0.05s apart, each wiping in over 0.35s and back out, landing as the full-bleed image of a detail panel.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "steps": {
+      "type": "number",
+      "default": 6,
+      "description": "How many repeated copies step between the thumbnail and the panel. Upstream's config.steps."
+    },
+    "stepDuration": {
+      "type": "number",
+      "default": 0.35,
+      "description": "Seconds each copy takes to wipe in, and again to wipe out. Upstream's config.stepDuration."
+    },
+    "stepInterval": {
+      "type": "number",
+      "default": 0.05,
+      "description": "Seconds between one copy starting and the next. Upstream's config.stepInterval."
+    },
+    "moverPauseBeforeExit": {
+      "type": "number",
+      "default": 0.14,
+      "description": "Seconds a copy holds at full size before it wipes back out. Upstream's config.moverPauseBeforeExit."
+    },
+    "clipPathDirection": {
+      "type": "string",
+      "default": "top-bottom",
+      "description": "Which way every wipe runs: top-bottom, bottom-top, left-right or right-left. Upstream's config.clipPathDirection."
+    },
+    "pathMotion": {
+      "type": "string",
+      "default": "linear",
+      "description": "Straight line between the two boxes, or 'sine' to bow the path. Upstream's config.pathMotion."
+    },
+    "rotationRange": {
+      "type": "number",
+      "default": 0,
+      "description": "Maximum random tilt in degrees applied to each copy. Upstream's config.rotationRange."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/RepeatingImageTransition",
+    "commit": "354c58487ad6a8b728e35b34d6666fca72e9b4eb",
+    "path": [
+      "js/index.js",
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Every gsap.to, gsap.fromTo, gsap.set and gsap.delayedCall becomes an anime animate(), utils.set() or setTimeout, with the eases mapped by name: sine to outSine, sine.in to inSine, sine.inOut to inOutSine and expo to outExpo. Durations and delays are multiplied by a single MS constant of 1000.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without code. GSAP's power scale is power1=Quad through power4=Quint and a bare name means the out variant, so the mapping is by name rather than by exponent. The only other change is that GSAP counts in seconds and anime.js counts in milliseconds.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The panel-content tween's GSAP position '<-=.2' is written out as arithmetic on the same constants rather than as a timeline position, and the resetView timeline's '>' becomes a nested onComplete.",
+      "why": "anime's timeline positions are the mirror image of GSAP's: '<' is the PREVIOUS END where GSAP's is the previous start, and '<<' is the previous start. Transcribing across that inversion is the easiest place in this port to be quietly wrong, so the two positions that depend on it are written as the sums they resolve to.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "animateGridItems is split into two animate() calls, one for the clicked item and one for the rest.",
+      "why": "Upstream is a single gsap.to whose clipPath is a per-element function handing every non-clicked item the literal 'none', which is not an inset() and has nothing to interpolate towards -- GSAP quietly sets it, anime would try to decompose it. Splitting says the same thing without asking for a tween between a shape and a keyword; the scale, duration and per-element stagger stay exactly as upstream computes them.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "pointerEvents is written with utils.set alongside each fade rather than as a tweened property.",
+      "why": "GSAP's CSSPlugin applies a non-numeric value like 'auto' or 'none' directly instead of interpolating it, so this is the same instruction; anime would treat it as a value to animate.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The grid, the panel, the frame and the mover cleanup query the section rather than the document, every timer and animation handle is kept for destroy(), and the config is per-mount rather than a module-level object mutated in place.",
+      "why": "Upstream is one page with one gallery, so document-wide lookups and a shared config cost it nothing. Two of these on one page would open each other's panel, sweep each other's grid and overwrite each other's per-click config overrides, and a destroyed section would leave movers, timers and an Escape listener behind.",
+      "kind": "seam"
+    },
+    {
+      "what": "extractItemConfigOverrides and the eighteen data-* attributes it reads are dropped; the same keys are mount() options instead, and seven of them are declared in options{}.",
+      "why": "The data attributes exist so one demo page can show eighteen variants of the same transition. A paw-fx effect is configured at mount, and the whole upstream config object is still here -- nothing it switches on has been removed, including the sine path, the wobble, the blend mode and the automatic horizontal flip.",
+      "kind": "seam"
+    },
+    {
+      "what": "The 33 bundled photographs and the preloadImages call go; each thumbnail carries an inline CSS gradient as its background-image instead. The panel gains an opaque ground of its own on a ::before, faded in by a --fx-panel-ground custom property tweened on the image's own schedule, and the caption paragraph is visually hidden rather than display: none.",
+      "why": "Codrops' demo photographs are licensed separately from the code and are not ours to redistribute. The mover copies whatever background-image string the thumbnail holds, so a gradient travels through the transition exactly as a photograph would and a site author swaps in url(...) with no other change; with nothing to preload the loader has nothing to hide. The panel is a fixed overlay inside a page it does not own, so without a ground of its own the rest of the site shows through it -- but upstream sets the panel's opacity to 1 the instant the transition starts, so an opaque plate there would hide the very copies that are stepping across, which is why it arrives with the image instead. display: none takes the description away from a screen reader as well as from the eye, and it is the only copy the panel has.",
+      "kind": "ours"
+    },
+    {
+      "what": "Each item is role=\"button\" tabindex=\"0\" and answers Enter and Space, and a click is refused while the panel is already open.",
+      "why": "Upstream binds click to a bare <figure>, so the gallery cannot be opened from a keyboard at all. The open guard is defensive rather than a fix: upstream's panel covers the viewport, so the case does not arise there, but nothing in the effect guarantees that in a section.",
+      "kind": "ours"
+    },
+    {
+      "what": "The typekit stylesheets (halyard-display, owners-xnarrow) are dropped for a system sans stack, the page chrome -- frame links, sponsor slot, footer, page loader -- is dropped, and upstream's nested CSS is flattened.",
+      "why": "A hosted font stylesheet is a fetch a generated site cannot make offline, and no repo in this survey ships a font file to vendor instead. The rest is Codrops' demo furniture. Nesting is recent enough that a flat stylesheet costs nothing and reaches further.",
+      "kind": "seam"
+    }
+  ]
+}

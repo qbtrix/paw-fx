@@ -1,0 +1,162 @@
+/* code-reveal-grid: a grid of tiles with a wall of random characters hidden
+   under each one. Moving the pointer over a tile drags a soft circular window
+   across it, and the characters reroll as the hand moves.
+
+   Ported from codrops/AnimatedCodeBackground css/base.css @ 4aa37f6. The
+   .grid / .grid__item / .grid__item-img block, its ::after gradient plate and
+   the .grid__item-img-deco mask are upstream's; the prefixes, the palette
+   variables and the monogram plate are ours.
+
+   RESTING STATE. Six tiles, each painting the radial-gradient plate under a
+   monogram, with a label and a tag. The character layer is opacity 0 and it is
+   decoration, not content -- with the script blocked, a pruned bundle or
+   reduced motion the grid reads exactly the same, minus the reveal. */
+.fx-code-grid {
+  /* base.css :root, verbatim. */
+  --fx-ink: #a6a6ab;
+  --fx-bg: #030014;
+  --fx-line: #2a2b3a;
+  --fx-link: rgb(142, 100, 255);
+  --fx-link-hover: rgb(249, 38, 114);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 4vw, 3rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: "neue-haas-grotesk-text", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.fx-code-grid *,
+.fx-code-grid *::before,
+.fx-code-grid *::after { box-sizing: border-box; }
+
+.fx-code-grid__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-link);
+}
+.fx-code-grid__title {
+  margin: 0 0 clamp(2rem, 5vw, 3.5rem);
+  max-width: 34rem;
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.15;
+  font-weight: 400;
+  color: #fff;
+  text-wrap: balance;
+}
+
+/* base.css .grid */
+.fx-code-grid__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--fx-line);
+  background: var(--fx-line);
+  gap: 1px;
+  margin: 0 auto;
+  max-width: 1300px;
+}
+
+/* base.css .grid__item */
+.fx-code-grid__cell {
+  padding: 1.5rem 1.5rem 2rem;
+  display: grid;
+  gap: 1.5rem;
+  background: var(--fx-bg);
+  align-content: start;
+  grid-template-rows: auto 1fr auto;
+}
+
+/* base.css .grid__item-img -- the masked stage. --fx-x / --fx-y are written
+   by index.js on every animation frame; the px units are what the declared
+   0px defaults establish. */
+.fx-code-grid__tile {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 1.6rem;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  --fx-x: 0px;
+  --fx-y: 0px;
+  /* base.css `a { text-decoration: none; color: var(--color-link) }`, scoped.
+     Without it the UA underlines the monogram in link blue. */
+  text-decoration: none;
+  color: inherit;
+}
+.fx-code-grid__tile:focus-visible {
+  outline: 2px solid var(--fx-link);
+  outline-offset: 4px;
+}
+
+/* base.css .grid__item-img::after, verbatim. This gradient plate is the
+   resting picture of a tile. */
+.fx-code-grid__tile::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(rgb(23, 24, 37) 40%, rgb(102, 51, 238) 50%, rgb(142, 100, 255), rgb(249, 38, 114));
+  mix-blend-mode: darken;
+}
+
+/* base.css .grid__item-img-deco, verbatim apart from the property names. */
+.fx-code-grid__deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "input-mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  word-wrap: break-word;
+  line-height: 1.15;
+  color: #fff;
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(300px circle at var(--fx-x) var(--fx-y), black 20%, rgba(0, 0, 0, 0.25), transparent);
+  mask-image: radial-gradient(300px circle at var(--fx-x) var(--fx-y), black 20%, rgba(0, 0, 0, 0.25), transparent);
+}
+
+/* Upstream centres a client logo here as inline SVG. A monogram costs nothing
+   to ship and says the same thing: the tile has a subject the mask reveals
+   code underneath. */
+.fx-code-grid__mark {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #fff;
+  mix-blend-mode: normal;
+}
+
+/* base.css .grid__item-label */
+.fx-code-grid__label {
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* base.css .grid__item-tag */
+.fx-code-grid__tag {
+  align-self: end;
+  justify-self: start;
+  border: 1px solid var(--fx-line);
+  border-radius: 1em;
+  line-height: 0.75;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+/* base.css media queries */
+@media screen and (min-width: 33em) {
+  .fx-code-grid__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media screen and (min-width: 53em) {
+  .fx-code-grid__grid { grid-template-columns: repeat(3, 1fr); }
+}
