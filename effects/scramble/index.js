@@ -86,8 +86,10 @@ export function mount(el, opts = {}) {
   // Upstream's isAnimating, which its trigger() checks so a second click
   // cannot start a second run over a run already in flight.
   let isAnimating = false;
-  // Not upstream: the splitter re-splits on resize and re-runs its effects,
-  // which would re-scramble the headline every time the window is dragged.
+  // Not upstream: the run plays once per mount. A character split does not
+  // re-run its effects on an ordinary resize, but a cache-clearing refresh
+  // would, and a headline that re-scrambles whenever the window is dragged is
+  // noise rather than an effect.
   let played = false;
 
   const later = (fn, ms) => {

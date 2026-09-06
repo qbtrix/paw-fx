@@ -96,17 +96,22 @@ export function mount(el, opts = {}) {
   const settings = { ...UPSTREAM, ...opts };
   let container = null;
   let torn = false;
+  // Which load is the current one. An update() called before the first load
+  // resolves would otherwise leave two containers running: `container` is
+  // still null, so nothing gets destroyed, and both awaits come back.
+  let generation = 0;
 
   const load = () => {
+    const gen = ++generation;
     const engine = globalThis.tsParticles;
     const loadSlim = globalThis.loadSlim;
     if (!engine || !loadSlim) return; // bundle pruned or blocked
     (async () => {
       try {
         await loadSlim(engine);
-        if (torn) return;
+        if (torn || gen !== generation) return;
         const c = await engine.load({ id: `fx-starfield-${++seq}`, element: host, options: optionsFor(settings) });
-        if (torn) { c?.destroy(); return; }
+        if (torn || gen !== generation) { c?.destroy(); return; }
         container = c;
         el.setAttribute("data-fx-live", "");
       } catch {

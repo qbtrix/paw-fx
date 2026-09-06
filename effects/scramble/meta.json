@@ -2,9 +2,19 @@
   "name": "scramble",
   "version": "1.0.0",
   "category": "text",
-  "tags": ["text", "scramble", "typewriter", "glitch", "codrops", "anime", "monospace"],
+  "tags": [
+    "text",
+    "scramble",
+    "typewriter",
+    "glitch",
+    "codrops",
+    "anime",
+    "monospace"
+  ],
   "summary": "A monospace headline that resolves out of noise: every character is blanked, then rolls 45 times at 15ms while each line starts 200ms behind the one above it.",
-  "needs": ["anime"],
+  "needs": [
+    "anime"
+  ],
   "options": {
     "iterations": {
       "type": "number",
@@ -38,12 +48,12 @@
       "kind": "ours"
     },
     {
-      "what": "Splitting.js is replaced by anime.js' splitText, and the Line/Cell tree is built from split.lines plus each line's [data-char] elements instead of from Splitting's results[0].lines.",
-      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists. The structure the port needs -- characters grouped per line, positions counted from the start of each line -- is the same either way.",
+      "what": "Splitting.js is replaced by anime.js' splitText, asked for a character split rather than a line one. The Line/Cell tree is rebuilt by bucketing split.chars on the data-line attribute the splitter stamps on each word, instead of walking Splitting's results[0].lines.",
+      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists. A line split was the obvious mapping and is the wrong one: it defers the split until document.fonts settles, and every later re-split rebuilds the character spans from a cached string, so the cells end up pointing at detached nodes and the run fires into nothing. The character split is synchronous, survives a re-split, and carries the same per-line grouping upstream needs -- characters grouped per line, positions counted from the start of each line.",
       "kind": "api-migration"
     },
     {
-      "what": "The run is triggered by an IntersectionObserver the first time the section is on screen, once per mount, rather than by a button. A resize re-split rebuilds the cells but does not replay.",
+      "what": "The run is triggered by an IntersectionObserver the first time the section is on screen, and plays once per mount. A re-split leaves the cells pointing at the same elements and does not replay.",
       "why": "Upstream is a demo page with six buttons. A section has no button, and a headline that re-scrambles every time the window is dragged is noise rather than an effect.",
       "kind": "seam"
     },
