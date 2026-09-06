@@ -1,0 +1,87 @@
+/* starfield: night-sky hero. The resting state is a real star field drawn with
+   radial-gradient dots, so the section is finished before index.js exists; the
+   tsParticles canvas covers it once a container has actually loaded, which is
+   the only thing that sets data-fx-live. Colours and density are --fx-*. */
+.fx-stars {
+  --fx-bg: #05060d;
+  --fx-star: #ffffff;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #9ca3af;
+  --fx-accent: #7c8cff;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 50% at 50% 105%, color-mix(in oklab, var(--fx-accent) 26%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-stars *,
+.fx-stars *::before,
+.fx-stars *::after { box-sizing: border-box; }
+
+/* The CSS star field. Two layers at different scales read as depth, which is
+   what the animated opacity does upstream. */
+.fx-stars__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.6px 1.6px at 18% 22%, var(--fx-star), transparent 60%),
+    radial-gradient(1.2px 1.2px at 62% 12%, var(--fx-star), transparent 60%),
+    radial-gradient(2px 2px at 84% 38%, var(--fx-star), transparent 60%),
+    radial-gradient(1.4px 1.4px at 33% 68%, var(--fx-star), transparent 60%),
+    radial-gradient(1px 1px at 72% 74%, var(--fx-star), transparent 60%),
+    radial-gradient(1.8px 1.8px at 8% 84%, var(--fx-star), transparent 60%),
+    radial-gradient(1.1px 1.1px at 47% 45%, var(--fx-star), transparent 60%),
+    radial-gradient(1.3px 1.3px at 92% 88%, var(--fx-star), transparent 60%);
+  background-size: 340px 340px, 220px 220px, 400px 400px, 260px 260px, 180px 180px, 300px 300px, 240px 240px, 360px 360px;
+  opacity: 0.75;
+  transition: opacity 600ms ease;
+}
+/* Only a loaded container sets this, so a refused canvas keeps the stars. */
+.fx-stars[data-fx-live] .fx-stars__rest { opacity: 0; }
+
+/* tsParticles appends its canvas here and sizes it to the host. */
+.fx-stars__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.fx-stars__canvas canvas { display: block; }
+
+.fx-stars__inner {
+  max-width: 60rem;
+  text-align: center;
+}
+.fx-stars__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-stars__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6.5vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-stars__lede {
+  margin: 1.5rem auto 0;
+  max-width: 36rem;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

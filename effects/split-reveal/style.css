@@ -1,0 +1,72 @@
+/* split-reveal: a large pull-quote whose lines and words breathe.
+
+   Nothing here hides the copy. Upstream's animation plays over text that is
+   already on screen -- it drifts and rescales it, it does not reveal it from
+   nothing -- so the resting state is simply the paragraph, set at display
+   size. index.js splits it into line and word wrappers and runs the wave on
+   top; with the script blocked, pruned, or reduced motion on, the reader gets
+   exactly the same words at the same size.
+
+   --fx-accent is the colour upstream's lines animate FROM (its var(--sega-1)),
+   so it is declared here and the JS reads it back off the element. */
+.fx-split {
+  --fx-bg: #0c0a14;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  --fx-accent: #f472b6;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 70svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(4rem, 9vw, 8rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(55% 60% at 20% 20%, color-mix(in oklab, var(--fx-accent) 22%, transparent), transparent 68%),
+    radial-gradient(50% 55% at 82% 78%, color-mix(in oklab, #8b5cf6 22%, transparent), transparent 66%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-split *,
+.fx-split *::before,
+.fx-split *::after { box-sizing: border-box; }
+
+.fx-split__inner {
+  max-width: 54rem;
+  text-align: center;
+}
+.fx-split__eyebrow {
+  margin: 0 0 1.5rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+/* The split target. Line height has room for the y: -10 drift so a line never
+   crowds the one above it while the wave runs. */
+.fx-split__copy {
+  margin: 0;
+  font-size: clamp(1.7rem, 4.4vw, 3.2rem);
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+  overflow: visible;
+}
+/* anime's splitter wraps each line and word in a bare span carrying
+   data-line / data-word and no class. The child combinator matters: data-line
+   is also the grouping attribute the splitter stamps on every word, so an
+   unscoped rule would turn each word into a block. Only the split target's
+   direct children are line wrappers. A word has to be inline-block or
+   upstream's scale on an inline box does nothing, and a line has to be block
+   or the clones it builds all reflow onto one row. */
+.fx-split__copy > [data-line] { display: block; }
+.fx-split__copy [data-word] { display: inline-block; }
+.fx-split__cite {
+  margin: 2.25rem 0 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--fx-muted);
+}

@@ -1,0 +1,45 @@
+<!-- reveal-stagger section. Finished at rest with CSS alone, and the resting
+     state is deliberately the END of the animation: the deck is already the
+     fan the cards fly into. index.js takes them away and hands them back as
+     you scroll, so a blocked script, a pruned bundle or prefers-reduced-motion
+     leaves the reader with the finished deck rather than an empty stage.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/reveal-stagger/style.css">
+<section class="fx-reveal" data-fx="reveal-stagger">
+  <div class="fx-reveal__track">
+    <div class="fx-reveal__stage">
+      <div class="fx-reveal__head">
+        <p class="fx-reveal__eyebrow">What you get</p>
+        <h2 class="fx-reveal__title">Five things, and none of them are a slide deck.</h2>
+      </div>
+      <div class="fx-reveal__deck">
+        <article class="fx-reveal__card">
+          <p class="fx-reveal__k">01</p>
+          <h3 class="fx-reveal__h">One inbox</h3>
+          <p class="fx-reveal__p">Everything that needs a decision, in the order it needs one.</p>
+        </article>
+        <article class="fx-reveal__card">
+          <p class="fx-reveal__k">02</p>
+          <h3 class="fx-reveal__h">Real audit trail</h3>
+          <p class="fx-reveal__p">Who changed what, when, and what it looked like before.</p>
+        </article>
+        <article class="fx-reveal__card">
+          <p class="fx-reveal__k">03</p>
+          <h3 class="fx-reveal__h">Your own keys</h3>
+          <p class="fx-reveal__p">Bring the account you already pay for. Nothing is proxied.</p>
+        </article>
+        <article class="fx-reveal__card">
+          <p class="fx-reveal__k">04</p>
+          <h3 class="fx-reveal__h">Exports that open</h3>
+          <p class="fx-reveal__p">CSV, JSON and a real API. Leaving is a supported path.</p>
+        </article>
+        <article class="fx-reveal__card">
+          <p class="fx-reveal__k">05</p>
+          <h3 class="fx-reveal__h">Humans on call</h3>
+          <p class="fx-reveal__p">A person answers, in the same hour, in your timezone.</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>

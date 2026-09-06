@@ -1,0 +1,63 @@
+{
+  "name": "pin-progress",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["scroll", "sticky", "pinned", "cards", "3d", "anime", "progress"],
+  "summary": "A section that pins while the scrollbar drives a 3D card stack through a flip: the stack turns rotateY -180 to 0, every spinner unwinds a full turn, and the cards rise and land.",
+  "needs": ["anime"],
+  "options": {
+    "sync": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How closely the timeline tracks the scrollbar. Upstream's onScroll sync."
+    },
+    "enter": {
+      "type": "string",
+      "default": "top top",
+      "description": "Where the pinned range starts, as element/container edges. Upstream's onScroll enter."
+    },
+    "leave": {
+      "type": "string",
+      "default": "bottom bottom",
+      "description": "Where the pinned range ends, as element/container edges. Upstream's onScroll leave."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": "examples/onscroll-sticky/index.js"
+  },
+  "deviations": [
+    {
+      "what": "The .fx-pin__spinner wrappers are in snippet.html instead of being created and inserted around each card at runtime.",
+      "why": "Two reasons. The CSS resting state has to position them, which it cannot do for elements that only exist once the script has run; and destroy() becomes a revert rather than an unwrap, so tearing a section down cannot leave rearranged DOM behind.",
+      "kind": "seam"
+    },
+    {
+      "what": "debug: true on the scroll observer is off.",
+      "why": "It draws anime's scroll-range rulers over the page. That is an example looking at itself, not something a generated site should ship.",
+      "kind": "seam"
+    },
+    {
+      "what": "Each spinner carries a small `top` offset in CSS (0, 10, 20, 30, 40px).",
+      "why": "The timeline's end state is a perfect overlap -- rotate 0 and rotateZ at a multiple of -360 -- so with nothing else the landed deck reads as a single card. The offset is a layout property, not a transform, so anime's inline transforms compose with it and neither state is disturbed.",
+      "kind": "ours"
+    },
+    {
+      "what": "Selectors are ours (.fx-pin__card, .fx-pin__spinner, .fx-pin__stack, .fx-pin__face--front/--back, .fx-pin__track for upstream's .card, .spinner, .stack, .front, .back, .sticky-container) and targets are passed as elements.",
+      "why": "The example owns its whole page; an effect is one section among several and may appear twice on a page. Passing the elements the section actually holds is what keeps two mounts independent.",
+      "kind": "seam"
+    },
+    {
+      "what": "The CSS resting state is the timeline's end state rather than the section being blank until the observer fires.",
+      "why": "Effect contract: the section has to look finished on CSS alone. A pinned reveal whose observer never runs must not leave the cards invisible.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion nothing is set, animated or observed.",
+      "why": "Effect contract: mount() stays at rest, and the resting deck is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

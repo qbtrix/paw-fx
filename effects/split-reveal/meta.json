@@ -1,0 +1,53 @@
+{
+  "name": "split-reveal",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "split", "lines", "words", "pull-quote", "anime"],
+  "summary": "A display pull-quote split into lines and words by anime.js, with a slow looping wave: lines drift and colour-shift on a 100ms stagger while the words inside each line breathe.",
+  "needs": ["anime"],
+  "options": {
+    "duration": {
+      "type": "number",
+      "default": 1500,
+      "description": "Length of one half of the wave, in ms. Upstream's timeline default; it alternates, so a full cycle is twice this."
+    },
+    "loopDelay": {
+      "type": "number",
+      "default": 75,
+      "description": "Pause between wave repetitions, in ms. Upstream's timeline default."
+    },
+    "stagger": {
+      "type": "number",
+      "default": 100,
+      "description": "Delay added per line, and per word within a line, in ms. Upstream's stagger value on both tracks."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": "examples/text/split-effects/index.js"
+  },
+  "deviations": [
+    {
+      "what": "The second addEffect -- the one that scatters words to utils.random(-50, 50) on pointerenter and caches their coordinates -- is dropped, along with the tweaks GUI panel that drives split, revert, tidy-up and debug.",
+      "why": "The scatter makes the copy unreadable on hover, which is the wrong trade for a section a site ships to readers, and it only makes sense next to the GUI's 'Tidy up' button. The GUI is an examples-page dependency (tweaks/gui) that a generated site has no way to load.",
+      "kind": "ours"
+    },
+    {
+      "what": "The colour the lines animate from is var(--fx-accent) rather than upstream's var(--sega-1).",
+      "why": "--sega-1 is a palette variable from the anime examples' own stylesheet. The contract prefixes custom properties --fx-, and the section declares this one so the resting state and the animation read the same value.",
+      "kind": "seam"
+    },
+    {
+      "what": "splitText is given the section's own paragraph element instead of the selector 'p'.",
+      "why": "The example owns its whole page; an effect is one section among several and may appear twice on a page. Passing the element the section holds is what keeps two mounts from splitting each other's copy.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the text is not split at all.",
+      "why": "Effect contract: mount() stays at rest. It also leaves the copy as one selectable, screen-reader-plain block, which is strictly better than a split one that never moves.",
+      "kind": "seam"
+    }
+  ]
+}

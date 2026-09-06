@@ -1,0 +1,124 @@
+<!-- pin-progress section. Finished at rest with CSS alone, and the resting
+     state is deliberately the END of the timeline: fronts facing the reader,
+     the cards landed at -60%, the spinners unwound. index.js scatters the
+     stack and hands the scrollbar the job of putting it back, so a blocked
+     script, a pruned bundle or prefers-reduced-motion leaves the reader with
+     the finished deck rather than a blank stage.
+     The .fx-pin__spinner wrappers are in the markup rather than built at
+     runtime, which is what lets the stylesheet draw the deck and lets
+     destroy() be a revert instead of an unwrap.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/pin-progress/style.css">
+<section class="fx-pin" data-fx="pin-progress">
+  <div class="fx-pin__track">
+    <div class="fx-pin__stage">
+      <div class="fx-pin__head">
+        <p class="fx-pin__eyebrow">Under the hood</p>
+        <h2 class="fx-pin__title">Scroll once. The whole stack turns over.</h2>
+      </div>
+      <div class="fx-pin__stack">
+      <div class="fx-pin__spinner">
+        <article class="fx-pin__card">
+          <div class="fx-pin__face fx-pin__face--front">
+            <p class="fx-pin__k">01</p>
+            <div>
+              <h3 class="fx-pin__h">Everything in one pass</h3>
+              <p class="fx-pin__p">Ingest, normalise and route in a single trip. No staging table nobody owns.</p>
+            </div>
+            <p class="fx-pin__foot">Median run: 4.2s</p>
+          </div>
+          <div class="fx-pin__face fx-pin__face--back">
+            <p class="fx-pin__k">03</p>
+            <div>
+              <h3 class="fx-pin__h">Costs you can read</h3>
+              <p class="fx-pin__p">Per-team, per-run, per-row. The bill arrives with a receipt attached.</p>
+            </div>
+            <p class="fx-pin__foot">No egress fees</p>
+          </div>
+        </article>
+      </div>
+      <div class="fx-pin__spinner">
+        <article class="fx-pin__card">
+          <div class="fx-pin__face fx-pin__face--front">
+            <p class="fx-pin__k">02</p>
+            <div>
+              <h3 class="fx-pin__h">Rollback is a button</h3>
+              <p class="fx-pin__p">Every write is versioned. Undo the last hour without a restore ticket.</p>
+            </div>
+            <p class="fx-pin__foot">Retention: 90 days</p>
+          </div>
+          <div class="fx-pin__face fx-pin__face--back">
+            <p class="fx-pin__k">04</p>
+            <div>
+              <h3 class="fx-pin__h">Runs where you do</h3>
+              <p class="fx-pin__p">Your VPC, your cloud, your keys. We never hold the data at rest.</p>
+            </div>
+            <p class="fx-pin__foot">SOC 2 Type II</p>
+          </div>
+        </article>
+      </div>
+      <div class="fx-pin__spinner">
+        <article class="fx-pin__card">
+          <div class="fx-pin__face fx-pin__face--front">
+            <p class="fx-pin__k">03</p>
+            <div>
+              <h3 class="fx-pin__h">Costs you can read</h3>
+              <p class="fx-pin__p">Per-team, per-run, per-row. The bill arrives with a receipt attached.</p>
+            </div>
+            <p class="fx-pin__foot">No egress fees</p>
+          </div>
+          <div class="fx-pin__face fx-pin__face--back">
+            <p class="fx-pin__k">05</p>
+            <div>
+              <h3 class="fx-pin__h">Boring on purpose</h3>
+              <p class="fx-pin__p">Postgres, S3, and a queue. Nothing here needs a conference talk.</p>
+            </div>
+            <p class="fx-pin__foot">Uptime: 99.98%</p>
+          </div>
+        </article>
+      </div>
+      <div class="fx-pin__spinner">
+        <article class="fx-pin__card">
+          <div class="fx-pin__face fx-pin__face--front">
+            <p class="fx-pin__k">04</p>
+            <div>
+              <h3 class="fx-pin__h">Runs where you do</h3>
+              <p class="fx-pin__p">Your VPC, your cloud, your keys. We never hold the data at rest.</p>
+            </div>
+            <p class="fx-pin__foot">SOC 2 Type II</p>
+          </div>
+          <div class="fx-pin__face fx-pin__face--back">
+            <p class="fx-pin__k">01</p>
+            <div>
+              <h3 class="fx-pin__h">Everything in one pass</h3>
+              <p class="fx-pin__p">Ingest, normalise and route in a single trip. No staging table nobody owns.</p>
+            </div>
+            <p class="fx-pin__foot">Median run: 4.2s</p>
+          </div>
+        </article>
+      </div>
+      <div class="fx-pin__spinner">
+        <article class="fx-pin__card">
+          <div class="fx-pin__face fx-pin__face--front">
+            <p class="fx-pin__k">05</p>
+            <div>
+              <h3 class="fx-pin__h">Boring on purpose</h3>
+              <p class="fx-pin__p">Postgres, S3, and a queue. Nothing here needs a conference talk.</p>
+            </div>
+            <p class="fx-pin__foot">Uptime: 99.98%</p>
+          </div>
+          <div class="fx-pin__face fx-pin__face--back">
+            <p class="fx-pin__k">02</p>
+            <div>
+              <h3 class="fx-pin__h">Rollback is a button</h3>
+              <p class="fx-pin__p">Every write is versioned. Undo the last hour without a restore ticket.</p>
+            </div>
+            <p class="fx-pin__foot">Retention: 90 days</p>
+          </div>
+        </article>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>

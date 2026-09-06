@@ -28,8 +28,33 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 |---|---|---|
 | aurora-css | MIT | paw-fx (original) |
 | mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `6046740`, `packages/shaders/src/shaders/mesh-gradient.ts` |
+| starfield | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/stars/src/options.ts` |
+| links-network | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/links/src/options.ts` |
+| reveal-stagger | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/onscroll-responsive-scope/index.js` |
+| pin-progress | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/onscroll-sticky/index.js` |
+| split-reveal | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/text/split-effects/index.js` |
+| scramble | MIT | [codrops/TypeShuffleAnimation](https://github.com/codrops/TypeShuffleAnimation) `8f171f1`, `src/js/typeShuffle.js` + `src/js/utils.js` |
+| smooth-scroll | MIT | [darkroomengineering/lenis](https://github.com/darkroomengineering/lenis) `eea7159` (v1.3.26), `packages/core/src/lenis.ts` + `packages/core/lenis.css` |
+| marquee-css | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/marquee.tsx` + `apps/www/styles/globals.css` |
 
 `mesh-gradient` imports its GLSL from `vendor/paper.js` rather than carrying a
 copy, so the Apache-2.0 obligation it creates is the vendored one: `paper.LICENSE`
 and `paper.NOTICE` are emitted into every site that uses the effect, which the
 build does automatically from the `paper` key's `licenseFiles`.
+
+Three ports copy upstream code rather than importing it, so each carries the
+upstream header in `index.js`: `scramble` reimplements TypeShuffle's `fx1`
+including its letter table and timing constants, `marquee-css` writes out Magic
+UI's keyframes and Tailwind classes as plain CSS, and `smooth-scroll` carries
+`packages/core/lenis.css` inside its `style.css` because a registry item emits
+one stylesheet per effect. The two tsParticles ports and the three anime ones
+copy only configuration -- options objects, timings, easings and staggers --
+and call the vendored library for everything else, so their obligation is the
+vendored `tsparticles.LICENSE` / `anime.LICENSE` the build already emits.
+
+`origin.path` is a list wherever a port genuinely spans several upstream files:
+`scramble` (typeShuffle.js plus the utils it imports), `smooth-scroll` (the ESM
+entry plus its stylesheet) and `marquee-css` (the component plus the globals.css
+that defines its keyframes). Every one of those effects also carries a
+`deviations` array recording what was changed and why, which is what keeps a
+necessary departure from reading as invention.

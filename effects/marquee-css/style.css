@@ -1,0 +1,130 @@
+/* marquee-css: Magic UI's Marquee, keyframes verbatim from
+   apps/www/styles/globals.css at commit 1246d6d. The only change to them is
+   the variable name: the contract prefixes custom properties --fx-, so
+   upstream's var(--gap) is var(--fx-gap) here and nothing else moved.
+
+   Upstream's Tailwind classes, written out:
+     outer  .group.flex.gap-(--gap).overflow-hidden.p-2.[--duration:40s].[--gap:1rem]
+     row    .flex.shrink-0.justify-around.gap-(--gap).animate-marquee.flex-row
+   The band is finished on CSS alone; index.js only republishes the two knobs. */
+.fx-marquee {
+  --fx-duration: 40s;
+  --fx-gap: 1rem;
+  --fx-bg: #07070b;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  --fx-chip: #14141c;
+  --fx-edge: #2a2a3a;
+  --fx-accent: #5b3df5;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(3rem, 7vw, 5.5rem) 0;
+  background:
+    radial-gradient(60% 80% at 12% 0%, color-mix(in oklab, var(--fx-accent) 30%, transparent), transparent 68%),
+    radial-gradient(50% 70% at 88% 100%, color-mix(in oklab, #14b8a6 22%, transparent), transparent 66%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-marquee *,
+.fx-marquee *::before,
+.fx-marquee *::after { box-sizing: border-box; }
+
+.fx-marquee__head {
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+  max-width: 46rem;
+  padding: 0 clamp(1.25rem, 5vw, 3rem);
+  text-align: center;
+}
+.fx-marquee__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-marquee__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* upstream outer div: flex, gap-(--gap), overflow-hidden, p-2 */
+.fx-marquee__band {
+  display: flex;
+  flex-direction: row;
+  gap: var(--fx-gap);
+  overflow: hidden;
+  padding: 0.5rem;
+  /* Not upstream: a site drops this band mid-page, and a hard cut at the
+     viewport edge reads as clipped content rather than as motion. */
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.fx-marquee__band + .fx-marquee__band { margin-top: var(--fx-gap); }
+
+/* upstream row div: flex, shrink-0, justify-around, gap-(--gap), animate-marquee */
+.fx-marquee__row {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: space-around;
+  gap: var(--fx-gap);
+  /* upstream --animate-marquee: marquee var(--duration) infinite linear */
+  animation: fx-marquee var(--fx-duration) infinite linear;
+}
+/* upstream [animation-direction:reverse] */
+.fx-marquee__band--reverse .fx-marquee__row { animation-direction: reverse; }
+/* upstream group-hover:[animation-play-state:paused] */
+.fx-marquee[data-fx-pause-on-hover] .fx-marquee__band:hover .fx-marquee__row {
+  animation-play-state: paused;
+}
+
+.fx-marquee__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--fx-edge);
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--fx-chip) 88%, transparent);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.fx-marquee__dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--fx-accent);
+}
+.fx-marquee__band--reverse .fx-marquee__dot { background: #14b8a6; }
+
+/* upstream globals.css, verbatim apart from the --fx- prefix on the gap */
+@keyframes fx-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--fx-gap))); }
+}
+@keyframes fx-marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-100% - var(--fx-gap))); }
+}
+
+/* The vertical variant is upstream's second keyframe set, reachable by adding
+   .fx-marquee__band--vertical in the markup. */
+.fx-marquee__band--vertical { flex-direction: column; max-height: 22rem; }
+.fx-marquee__band--vertical .fx-marquee__row {
+  flex-direction: column;
+  animation: fx-marquee-vertical var(--fx-duration) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The band stays at the from-frame, which is the finished row of items. */
+  .fx-marquee__row { animation: none; }
+}

@@ -1,0 +1,92 @@
+/* links-network: constellation hero. The resting state is a real inline SVG
+   graph in snippet.html -- nodes and the lines between them -- so the section
+   is finished before index.js exists; the tsParticles canvas covers it once a
+   container has actually loaded, which is the only thing that sets
+   data-fx-live. Colours are --fx-*. */
+.fx-links {
+  --fx-bg: #06070f;
+  --fx-node: #ffffff;
+  --fx-link: #6b7bd6;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #9ca3af;
+  --fx-accent: #4f46e5;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(55% 60% at 15% 15%, color-mix(in oklab, var(--fx-accent) 34%, transparent), transparent 70%),
+    radial-gradient(50% 55% at 85% 80%, color-mix(in oklab, #0ea5e9 24%, transparent), transparent 68%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-links *,
+.fx-links *::before,
+.fx-links *::after { box-sizing: border-box; }
+
+/* The SVG graph that stands in for the particle field. */
+.fx-links__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 600ms ease;
+}
+.fx-links__rest line { stroke: var(--fx-link); stroke-width: 1; opacity: 0.45; }
+.fx-links__rest circle { fill: var(--fx-node); }
+/* Only a loaded container sets this, so a refused canvas keeps the graph. */
+.fx-links[data-fx-live] .fx-links__rest { opacity: 0; }
+
+/* tsParticles appends its canvas here and sizes it to the host. */
+.fx-links__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.fx-links__canvas canvas { display: block; }
+
+/* Keeps the headline legible over a busy graph without dimming the graph. */
+.fx-links__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(52% 44% at 50% 50%, color-mix(in oklab, var(--fx-bg) 82%, transparent), transparent 72%);
+}
+
+.fx-links__inner {
+  max-width: 60rem;
+  text-align: center;
+}
+.fx-links__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-links__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6.5vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-links__lede {
+  margin: 1.5rem auto 0;
+  max-width: 36rem;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

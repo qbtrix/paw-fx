@@ -87,3 +87,85 @@ test("mesh-gradient meta carries upstream's default preset values", async () => 
     grainOverlay: 0,
   });
 });
+
+// ---------------------------------------------------------------------------
+// The ported effects. Two things are worth a mechanical check across all of
+// them, and neither is covered by lint (which reads files, not behaviour):
+//
+//   1. mount() has to survive being handed nothing. A site generator loops
+//      querySelectorAll and mounts what it finds, and one throw there takes the
+//      rest of the page's effects with it. Bun has no DOM, so importing the
+//      module and calling mount(null) here is a free harness for every guard at
+//      once -- and it also proves no module touches the document at import
+//      time, which the vendored bundles make easy to get wrong.
+//
+//   2. `export const meta` has to mirror meta.json. The registry ships
+//      meta.json and the browser sees the module's copy, so a drift between
+//      them is an effect documented as one thing and behaving as another.
+
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const EFFECTS = join(import.meta.dir, "../effects");
+const NAMES = readdirSync(EFFECTS);
+
+test.each(NAMES)("%s survives mount(null) and mirrors meta.json", async (name) => {
+  const mod = await import(join(EFFECTS, name, "index.js"));
+  let handle;
+  expect(() => { handle = mod.mount(null); }).not.toThrow();
+  expect(typeof handle.update).toBe("function");
+  expect(typeof handle.destroy).toBe("function");
+  expect(() => { handle.update({}); handle.destroy(); handle.destroy(); }).not.toThrow();
+
+  const json = JSON.parse(readFileSync(join(EFFECTS, name, "meta.json"), "utf8"));
+  expect(mod.meta.name).toBe(name);
+  for (const key of ["name", "version", "category", "license"]) expect(mod.meta[key]).toEqual(json[key]);
+  expect(mod.meta.needs).toEqual(json.needs);
+  const defaults = (m) => Object.fromEntries(Object.entries(m.options).map(([k, v]) => [k, v.default]));
+  expect(defaults(mod.meta)).toEqual(defaults(json));
+});
+
+// The values the port-fidelity gate cares about, read off the upstream files at
+// the pinned commits. A wrapper is easy to rewrite and easy to rewrite wrongly;
+// this is the table that says which numbers are not ours to change.
+test.each([
+  // presets/stars/src/options.ts @ ae866a5
+  ["starfield", { count: 100, color: "#ffffff", speed: 0.1 }],
+  // presets/links/src/options.ts @ ae866a5
+  ["links-network", { count: 100, color: "#ffffff", linkDistance: 150 }],
+  // examples/onscroll-responsive-scope/index.js @ 01b81be
+  ["reveal-stagger", { sync: 0.1, enter: "top", leave: "bottom" }],
+  // examples/onscroll-sticky/index.js @ 01b81be
+  ["pin-progress", { sync: 0.5, enter: "top top", leave: "bottom bottom" }],
+  // examples/text/split-effects/index.js @ 01b81be
+  ["split-reveal", { duration: 1500, loopDelay: 75, stagger: 100 }],
+  // src/js/typeShuffle.js fx1 @ 8f171f1
+  ["scramble", { iterations: 45, tick: 15, lineDelay: 200 }],
+  // packages/core/src/lenis.ts constructor @ eea7159
+  ["smooth-scroll", { lerp: 0.1, wheelMultiplier: 1, touchMultiplier: 1 }],
+  // apps/www/registry/magicui/marquee.tsx @ 1246d6d
+  ["marquee-css", { duration: "40s", gap: "1rem", pauseOnHover: false }],
+])("%s carries upstream's values", async (name, upstream) => {
+  const { meta } = await import(join(EFFECTS, name, "index.js"));
+  expect(Object.fromEntries(Object.entries(meta.options).map(([k, v]) => [k, v.default]))).toEqual(upstream);
+});
+
+// marquee-css is the one port with a guard worth its own test. Its keyframes
+// translate by calc(-100% - var(--fx-gap)), which a unitless gap makes an
+// invalid declaration -- the row silently parks instead of scrolling. Same for
+// a duration without a unit.
+test.each([
+  ["a bare number", { gap: "16", duration: "40" }, { "--fx-gap": "1rem", "--fx-duration": "40s" }],
+  ["a nonsense string", { gap: "wide", duration: "slow" }, { "--fx-gap": "1rem", "--fx-duration": "40s" }],
+  ["an injected value", { gap: "1rem);color:red", duration: "40s" }, { "--fx-gap": "1rem", "--fx-duration": "40s" }],
+  ["real lengths", { gap: "2.5rem", duration: "12s" }, { "--fx-gap": "2.5rem", "--fx-duration": "12s" }],
+  ["zero", { gap: "0", duration: "40s" }, { "--fx-gap": "0", "--fx-duration": "40s" }],
+])("marquee-css rejects %s", async (_case, opts, expected) => {
+  const { mount: mountMarquee } = await import("../effects/marquee-css/index.js");
+  const el = { ...stubEl(), toggleAttribute(k, on) { if (on) this.attrs[k] = ""; else delete this.attrs[k]; } };
+  const handle = mountMarquee(el, opts);
+  expect(el.style.props).toEqual(expected);
+  handle.destroy();
+  expect(el.style.props).toEqual({});
+  expect(el.attrs["data-fx-live"]).toBeUndefined();
+});
