@@ -161,3 +161,12 @@ html[data-fx-reduced] *::before,
 html[data-fx-reduced] *::after {
   animation: none !important;
 }
+
+/* Shown only on a demo whose section links were rewired to reach a real page.
+   Quiet on purpose: it is a footnote, not a warning. */
+.fxd-bar__note {
+  color: color-mix(in oklab, currentColor 55%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+@media (max-width: 720px) { .fxd-bar__note { display: none; } }

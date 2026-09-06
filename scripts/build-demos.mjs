@@ -109,22 +109,49 @@ const filler = (blocks, cls = "") =>
 
 // Both toggle states ship in the markup and CSS shows one, so the control needs
 // no script of its own and works on the first paint.
-function bar(item) {
+function bar(item, rewired = false) {
   const two = item.demo?.length
     ? `\n  <a class="fxd-bar__extra" href="/${esc(item.demo[0].path)}">Two-page demo</a>`
+    : "";
+  // Said out loud on the page, because a visitor who clicks a link here should
+  // know the destination is a demo convenience and not part of the section.
+  const note = rewired
+    ? `\n  <span class="fxd-bar__note">Links point at the two-page demo, the section ships its own routes</span>`
     : "";
   return `<nav class="fxd-bar" aria-label="Demo controls">
   <a class="fxd-bar__back" href="../index.html">All effects</a>
   <span class="fxd-bar__name">${esc(item.name)}</span>
-  <span class="fxd-bar__cat">${esc(item.category)}</span>${two}
+  <span class="fxd-bar__cat">${esc(item.category)}</span>${two}${note}
   <a class="fxd-bar__rm fxd-bar__rm--go" href="?reduced=1">Reduced motion</a>
   <a class="fxd-bar__rm fxd-bar__rm--back" href="./${esc(item.name)}.html">Motion on</a>
 </nav>`;
 }
 
+/**
+ * A section may carry links to site routes that do not exist inside the gallery.
+ * page-fade is the only one today, and it is the case that matters most: on a
+ * page transition, clicking a link IS the effect, so leaving those links to 404
+ * means the one demo whose whole point is navigation cannot be demonstrated.
+ *
+ * The shipped snippet is not touched. It stays exactly what get_effect returns,
+ * and the gallery panel still shows it verbatim. Only the demo copy is rewired,
+ * to the effect's own two-page demo, and the bar says so on the page so nobody
+ * mistakes a demo convenience for the section's real markup.
+ */
+const rewireDemoLinks = (item) => {
+  const dest = (item.demo ?? []).find((f) => /\/(a|index)\.html$/.test(f.path))?.path;
+  if (!dest) return { snippet: item.snippet, rewired: false };
+  const snippet = item.snippet.replace(
+    /href="\/(?!_fx\/)[^"]*"/g,
+    `href="/${dest.replace(/^\//, "")}"`,
+  );
+  return { snippet, rewired: snippet !== item.snippet };
+};
+
 export function demoPage(item) {
   const [link, , mount] = item.usage.split("\n");
   const scroll = item.category === "scroll";
+  const { snippet, rewired } = rewireDemoLinks(item);
   return `<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -135,8 +162,8 @@ export function demoPage(item) {
 <link rel="stylesheet" href="/demo/demo.css">
 ${link}
 <body class="fxd">
-${scroll ? `${filler(FILLER_BEFORE, " fxd-filler--lead")}\n` : ""}${item.snippet}
-${scroll ? `${filler(FILLER_AFTER)}\n` : ""}${bar(item)}
+${scroll ? `${filler(FILLER_BEFORE, " fxd-filler--lead")}\n` : ""}${snippet}
+${scroll ? `${filler(FILLER_AFTER)}\n` : ""}${bar(item, rewired)}
 ${mount}
 </body>
 `;
