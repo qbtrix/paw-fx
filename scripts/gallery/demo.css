@@ -1,0 +1,172 @@
+/* demo.css: the only chrome on a live demo page, copied verbatim into
+   dist/registry/gallery/demo/ by scripts/build-demos.mjs. It carries no effect
+   data; every demo page is generated from dist/registry/ by that script.
+
+   Three rules keep it out of the effect's way, and they are the whole design:
+
+     - Custom properties are --d-, never --fx-*. Effects read --fx-* off their
+       own section, so a collision here would restyle the thing being shown.
+
+     - Nothing styles the effect. The only selectors that reach outside .fxd-*
+       are html/body resets and the reduced-motion override, because the page
+       has exactly one job: get out of the way of one section.
+
+     - The bar is fixed to the BOTTOM edge and sized in one line of text. It
+       cannot take flow space: 21 of the 29 sections fill the viewport, so a bar
+       in flow would put its own height of scroll on a page that should have
+       none. Bottom rather than top because page-fade ships its own top nav.
+
+   The reduced-motion rule is `animation: none` and nothing more. Effects
+   declare their motion inside `@media (prefers-reduced-motion: no-preference)`
+   blocks, so not applying those IS the resting state, and killing the
+   animation reaches the same frame from the other side. Deliberately NOT
+   `transition: none`: cursor-spotlight and the rest gate their pointer work in
+   JS off matchMedia, which the page's shim already flips, and a blanket
+   transition kill would show a state real reduced motion never produces. */
+
+:root {
+  --d-ink: #f5f5f7;
+  --d-muted: #a2a2b0;
+  --d-line: #2a2a36;
+  --d-panel: #0d0d13;
+  --d-accent: #8b4cff;
+  --d-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  color-scheme: dark;
+}
+
+html,
+body.fxd {
+  margin: 0;
+  padding: 0;
+}
+
+body.fxd {
+  background: #08080d;
+  color: var(--d-ink);
+  font-family: var(--d-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- the bar ---------- */
+
+.fxd-bar {
+  position: fixed;
+  z-index: 2147483000; /* above any effect layer; none of them go this high */
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem clamp(0.75rem, 3vw, 1.5rem);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  background: color-mix(in oklab, var(--d-panel) 72%, transparent);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid color-mix(in oklab, var(--d-line) 70%, transparent);
+  /* Quiet: the bar should read as browser furniture, not as a second design. */
+  color: var(--d-muted);
+}
+
+.fxd-bar__back,
+.fxd-bar__extra,
+.fxd-bar__rm {
+  color: var(--d-muted);
+  text-decoration: none;
+  border: 1px solid var(--d-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  white-space: nowrap;
+}
+
+.fxd-bar__back:hover,
+.fxd-bar__extra:hover,
+.fxd-bar__rm:hover {
+  color: var(--d-ink);
+  border-color: color-mix(in oklab, var(--d-accent) 55%, var(--d-line));
+}
+
+.fxd-bar__name {
+  color: var(--d-ink);
+  font-weight: 600;
+}
+
+.fxd-bar__cat {
+  color: var(--d-muted);
+}
+
+/* The toggle is two links and CSS, so it needs no script and is correct on the
+   first paint. data-fx-reduced is set by the page's head shim from ?reduced=1. */
+.fxd-bar__rm {
+  margin-left: auto;
+}
+
+html:not([data-fx-reduced]) .fxd-bar__rm--back,
+html[data-fx-reduced] .fxd-bar__rm--go {
+  display: none;
+}
+
+html[data-fx-reduced] .fxd-bar__rm--back {
+  color: var(--d-ink);
+  border-color: color-mix(in oklab, var(--d-accent) 55%, var(--d-line));
+}
+
+@media (max-width: 30rem) {
+  .fxd-bar__cat,
+  .fxd-bar__name {
+    display: none;
+  }
+}
+
+/* ---------- generated filler, scroll demos only ---------- */
+
+.fxd-filler {
+  display: grid;
+  place-items: center;
+  min-height: 80svh;
+  padding: 4rem 1.5rem;
+  background: #08080d;
+  border-block: 1px solid color-mix(in oklab, var(--d-line) 45%, transparent);
+}
+
+/* Half a screen, not a whole one: the block above the effect exists to give a
+   view-timeline somewhere to start, and a full screen of it would make the
+   demo's first paint an empty page with one sentence on it. */
+.fxd-filler--lead {
+  min-height: 45svh;
+}
+
+.fxd-filler__in {
+  max-width: 34rem;
+  text-align: center;
+}
+
+.fxd-filler__tag {
+  margin: 0 0 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--d-muted) 70%, transparent);
+}
+
+.fxd-filler__p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--d-muted);
+}
+
+/* ---------- the reduced-motion state ---------- */
+
+html[data-fx-reduced] *,
+html[data-fx-reduced] *::before,
+html[data-fx-reduced] *::after {
+  animation: none !important;
+}
+
+/* Shown only on a demo whose section links were rewired to reach a real page.
+   Quiet on purpose: it is a footnote, not a warning. */
+.fxd-bar__note {
+  color: color-mix(in oklab, currentColor 55%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+@media (max-width: 720px) { .fxd-bar__note { display: none; } }

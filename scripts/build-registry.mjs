@@ -1,7 +1,17 @@
-// Builds dist/registry/ from effects/: registry.json (index) plus one
-// items/<name>.json per effect carrying the files a site needs under _fx/.
+// Builds dist/registry/ from effects/: registry.json (index), one
+// items/<name>.json per effect carrying the files a site needs under _fx/, and
+// previews/<name>.png beside them.
 // Layout inside a site mirrors the repo (_fx/effects/<name>/, _fx/vendor/), so
 // the "../../vendor/<file>" imports in index.js resolve unchanged.
+//
+// An item carries `deviations` and the build copies `preview.png` because
+// dist/registry/ is the whole of what a consumer sees: the MCP server serves it,
+// and scripts/build-gallery.mjs reads it and nothing else. Both were in
+// effects/ only, which meant the two questions a human asks before trusting an
+// effect -- what does it look like, and where does it depart from upstream --
+// could not be answered from the registry at all. An effect with no preview.png
+// is copied over silently rather than failing the build: previews are a
+// presentation asset, not part of the contract lint gates.
 //
 // Two things travel beside index.js and style.css when they exist:
 //   - effects/<name>/shader.frag, the upstream GLSL kept as its own file so a
@@ -33,8 +43,16 @@
 // exercise the shipped one rather than a copy that can drift. Because it is an
 // optional second parameter, build() must call buildItem through an arrow and
 // never pass it straight to .map(), which supplies the index as arg two.
+//
+// An item also carries `demo`: the hand-written pages under effects/<name>/demo/,
+// for an effect that one page cannot show. It is a SEPARATE key from `files`,
+// not another entry in it, and the split is the whole point -- `files` is what a
+// site-building agent writes into a client site, and a sample page about a
+// fictional company does not belong there, while the gallery's demo builder does
+// want it. The emitted path mirrors the repo (_fx/effects/<name>/demo/<file>),
+// so the "../style.css" those pages already use resolves with no rewriting.
 
-import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync, rmSync, copyFileSync } from "node:fs";
 import { join, basename } from "node:path";
 import { execSync } from "node:child_process";
 import { effectDirs, jsSpecifiers } from "./lint.mjs";
@@ -106,10 +124,21 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
     `<!-- place snippet.html markup where the section goes -->`,
     `<script type="module">import {mount} from '/_fx/effects/${name}/index.js'; document.querySelectorAll('[data-fx="${name}"]').forEach((el) => mount(el))</script>`,
   ].join("\n");
-  const { version, category, summary, license, origin, options, tags } = meta;
+  // page-fade's fade is a NAVIGATION between two documents, so no single page
+  // can show it and the effect ships the pair by hand. Any effect may.
+  const demoDir = join(dir, "demo");
+  const demo = existsSync(demoDir)
+    ? readdirSync(demoDir)
+        .filter((f) => f.endsWith(".html"))
+        .sort()
+        .map((f) => ({ path: `_fx/effects/${name}/demo/${f}`, content: readFileSync(join(demoDir, f), "utf8") }))
+    : [];
+  const { version, category, summary, license, origin, options, tags, deviations } = meta;
   return {
     name, version, category, tags, summary, needs, license, origin, options,
+    deviations: deviations ?? [],
     files: [...files].map(([path, content]) => ({ path, content })),
+    demo,
     snippet: read("snippet.html"),
     usage,
   };
@@ -118,13 +147,19 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
 export function build(out = join(ROOT, "dist/registry")) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(join(out, "items"), { recursive: true });
+  mkdirSync(join(out, "previews"), { recursive: true });
   // Not `.map(buildItem)`: map passes (element, index, array), so the index
   // lands in vendorDir and every vendor path resolves against a number. That
   // was invisible while every effect had `needs: []` -- vendorDir is only read
   // when a key has files to emit -- and fired on the first effect with a
   // dependency. The arrow is what keeps the default parameter reachable.
-  const items = effectDirs().map((dir) => buildItem(dir));
+  const dirs = effectDirs();
+  const items = dirs.map((dir) => buildItem(dir));
   for (const it of items) writeFileSync(join(out, "items", `${it.name}.json`), JSON.stringify(it, null, 2));
+  for (const dir of dirs) {
+    const png = join(dir, "preview.png");
+    if (existsSync(png)) copyFileSync(png, join(out, "previews", `${basename(dir)}.png`));
+  }
   const registry = {
     version: version(),
     generatedAt: new Date().toISOString(),
