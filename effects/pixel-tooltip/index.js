@@ -22,7 +22,7 @@
 // markup that style.css keeps at opacity 0 and pointer-events none, so with
 // the script blocked, the bundle pruned or reduced motion on, the reader gets
 // the paragraph with its terms marked -- and destroy() puts the cells back.
-import { animate, createTimeline, stagger, utils } from "../../vendor/anime.esm.js";
+import { createTimeline, stagger } from "../../vendor/anime.esm.js";
 
 export const meta = {
   name: "pixel-tooltip",
@@ -183,7 +183,11 @@ export function mount(el, opts = {}) {
         b.tip.el.style.removeProperty("--fx-tt-columns");
         b.tip.el.style.removeProperty("--fx-tt-rows");
         b.tip.bg.innerHTML = "";
-        utils.set([b.tip.title, b.tip.desc], { opacity: "" });
+        // removeProperty, not a set to "": anime parses an empty value as zero
+        // and writes `opacity: 0` back onto the title and the description,
+        // which is the one piece of residue a destroy must not leave.
+        b.tip.title.style.removeProperty("opacity");
+        b.tip.desc.style.removeProperty("opacity");
       }
       bound.length = 0;
       el.removeAttribute("data-fx-live");

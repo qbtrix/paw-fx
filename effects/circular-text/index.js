@@ -68,19 +68,33 @@ export function mount(el, opts = {}) {
 
   const settings = { ...UPSTREAM, ...opts };
   let observer = null;
+  // The intro is held apart from the hover animations on purpose. Upstream
+  // kills only the hover pair on a re-enter; killing the intro with them would
+  // freeze the rings at whatever partial scale and opacity it had reached, and
+  // those inline values would no longer belong to any animation revert() could
+  // undo.
+  let intro = null;
   let running = [];
   let played = false;
+  let unlock = 0;
+
+  // setup(): no hovering until the intro has had a second to run. Upstream
+  // sets pointerEvents 'none' on the control up front and restores it at
+  // start+=1, which is what stops a hover landing mid-entrance.
+  enterCtrl.style.pointerEvents = "none";
 
   // start(): the rings and the control scale up from 0.3 and fade in.
   const start = () => {
     played = true;
-    running.push(animate([...rings, enterCtrl], {
+    intro = animate([...rings, enterCtrl], {
       duration: settings.introDuration * SEC,
       ease: "outExpo",
       scale: [0.3, 1],
       opacity: [0, 1],
       delay: spread(0.5, rings.length + 1),
-    }));
+    });
+    // 'start+=1': the control becomes hoverable one second in.
+    unlock = setTimeout(() => { enterCtrl.style.pointerEvents = "auto"; }, 1 * SEC);
   };
 
   // The hover pair: the disc swells while every ring turns another half turn.
@@ -132,11 +146,16 @@ export function mount(el, opts = {}) {
       observer = null;
       enterCtrl.removeEventListener("mouseenter", onEnter);
       enterCtrl.removeEventListener("mouseleave", onLeave);
+      clearTimeout(unlock);
       // revert() strips the inline transform and opacity anime wrote, which
       // is what hands the badge back at full size rather than leaving it
-      // frozen at 0.3 if the tear-down lands mid-run.
+      // frozen at 0.3 if the tear-down lands mid-run. The intro is reverted
+      // too, which is why it had to stay reachable.
+      intro?.revert();
+      intro = null;
       for (const anim of running) anim.revert();
       running = [];
+      enterCtrl.style.removeProperty("pointer-events");
       el.removeAttribute("data-fx-live");
     },
   };

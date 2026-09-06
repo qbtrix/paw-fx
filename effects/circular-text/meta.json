@@ -54,6 +54,11 @@
       "kind": "ours"
     },
     {
+      "what": "Upstream's pointerEvents gate on the control is a plain style write plus a setTimeout, not a gsap.set inside the timeline at 'start+=1', and the intro animation is held in its own variable rather than in the list the hover handler kills.",
+      "why": "Same second, same effect: the control cannot be hovered until the entrance has had a second to run. It has to be here, because the hover handler kills whatever it finds running before it starts the turn -- and killing the intro halfway leaves the rings frozen at a partial scale and opacity that no revert can undo. Keeping the intro separate is what makes destroy() able to hand the badge back.",
+      "kind": "api-migration"
+    },
+    {
       "what": "The `.js` class that hides the rings and the control at page load becomes the run itself: index.js animates opacity from 0 rather than the stylesheet setting it, and the run starts on an IntersectionObserver rather than on page load.",
       "why": "Effect contract: the section must look finished on CSS alone, so nothing may hide the badge before the script that brings it back is running. A section can also sit far down a document, where an on-load run would be over before the reader ever saw it.",
       "kind": "seam"
