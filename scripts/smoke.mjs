@@ -63,13 +63,19 @@
 // effect whose section is legitimately a flat plate may need it revisited --
 // change the constant, do not delete the check.
 
+import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { effectDirs } from "./lint.mjs";
 import { buildItem } from "./build-registry.mjs";
 
-const SESSION = "paw-fx-smoke";
+// One session name per checkout. Several worktrees of this repo run smoke at the
+// same time during a curation wave, and a fixed name means each run's `close`
+// kills a sibling's browser mid-measurement, which surfaces as effect failures
+// that are really collisions. The suffix is derived from the checkout path so it
+// is stable across runs in the same worktree and distinct between worktrees.
+const SESSION = `paw-fx-smoke-${createHash("sha1").update(new URL("..", import.meta.url).pathname).digest("hex").slice(0, 8)}`;
 const DESKTOP = [1440, 900];
 const MOBILE = [375, 812];
 const MIN_W = 200;
