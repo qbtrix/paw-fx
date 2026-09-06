@@ -2,10 +2,18 @@
 // reasons. Every module specifier form index.js can carry and every non-local
 // reference style.css can carry gets a case of its own, alongside the local
 // controls -- relative path, "#frag", data: URI -- that must stay unflagged.
+//
+// The single-purpose fixtures assert an exact error list rather than "some
+// error mentions X". A fixture that fails for a second, accidental reason
+// proves nothing about the rule it is named for, which is how the header rule
+// stayed a no-op: bad-no-origin happens to carry a real header comment.
 import { test, expect } from "bun:test";
+import { readFileSync } from "node:fs";
 import { lintEffect } from "../scripts/lint.mjs";
+import { validate } from "../scripts/validate.mjs";
 
 const fx = (p) => new URL(`../${p}`, import.meta.url).pathname;
+const schema = JSON.parse(readFileSync(fx("schema/meta.schema.json"), "utf8"));
 
 test("aurora-css passes lint", () => {
   expect(lintEffect(fx("effects/aurora-css"))).toEqual([]);
@@ -14,6 +22,69 @@ test("aurora-css passes lint", () => {
 test("ported effect without origin fails", () => {
   const errs = lintEffect(fx("tests/fixtures/bad-no-origin"));
   expect(errs.some((e) => e.includes('missing required "origin"'))).toBe(true);
+});
+
+// The header rule used to pass any ported effect, because every effect must
+// declare `license` in its meta block and the scan matched that line.
+test("ported effect with no header comment fails", () => {
+  expect(lintEffect(fx("tests/fixtures/bad-no-header"))).toEqual([
+    "bad-no-header: ported effect needs an upstream licence header comment in the first 20 lines of index.js",
+  ]);
+});
+
+test("the header shape ports carry passes, vendor import and all", () => {
+  expect(lintEffect(fx("tests/fixtures/good-ported-header"))).toEqual([]);
+});
+
+// Control: bad-no-origin carries a real header comment, so the header rule
+// must stay quiet on it. Without this, "fails" above could just mean "always".
+test("a real header comment is not flagged", () => {
+  const errs = lintEffect(fx("tests/fixtures/bad-no-origin"));
+  expect(errs.some((e) => e.includes("licence header"))).toBe(false);
+});
+
+test("a vendor global read at module scope fails", () => {
+  expect(lintEffect(fx("tests/fixtures/bad-global-module-scope"))).toEqual([
+    "bad-global-module-scope: index.js reads a vendor global at module scope (`const engine = globalThis.tsParticles;`); read it inside mount()",
+  ]);
+});
+
+test("the same global read inside mount() passes", () => {
+  expect(lintEffect(fx("tests/fixtures/good-vendor-global"))).toEqual([]);
+});
+
+// swup is dropped from the project, so it is gone from both gates at once.
+test("a needs key the enum and the manifest dropped fails twice", () => {
+  expect(lintEffect(fx("tests/fixtures/bad-needs-unknown"))).toEqual([
+    "bad-needs-unknown: meta.json $.needs[0]: must be one of anime, three, paper, tsparticles, lenis",
+    'bad-needs-unknown: needs "swup", which vendor/manifest.json does not list',
+  ]);
+});
+
+// The origin carve-out. Listing repo/commit/path under properties.origin made
+// the paw-fx branch dead, so originals shipped a placeholder "commit": "".
+const meta = (origin) => ({
+  name: "probe", version: "1.0.0", category: "backgrounds", tags: [],
+  summary: "s", needs: [], options: {}, license: "MIT", origin,
+});
+
+test("a paw-fx original needs no commit or path", () => {
+  expect(validate(schema, meta({ repo: "paw-fx" }))).toEqual([]);
+});
+
+test("a ported effect still needs commit and path", () => {
+  expect(validate(schema, meta({ repo: "mrdoob/three.js" }))).toEqual([
+    '$.origin: missing required "commit"',
+    '$.origin: missing required "path"',
+  ]);
+});
+
+test("an empty origin is ported, not an original", () => {
+  expect(validate(schema, meta({}))).toEqual([
+    '$.origin: missing required "repo"',
+    '$.origin: missing required "commit"',
+    '$.origin: missing required "path"',
+  ]);
 });
 
 test("bare-specifier import fails", () => {

@@ -9,5 +9,5 @@
     "speed": { "type": "number", "default": 1, "description": "Drift speed multiplier; 1 = 28s per cycle." }
   },
   "license": "MIT",
-  "origin": { "repo": "paw-fx", "commit": "", "path": "effects/bad-bare-import" }
+  "origin": { "repo": "paw-fx" }
 }

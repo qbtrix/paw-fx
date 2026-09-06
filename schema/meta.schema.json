@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/qbtrix/paw-fx/schema/meta.schema.json",
   "title": "paw-fx effect meta",
-  "description": "meta.json for one effect under effects/<name>/. Validated by scripts/lint.mjs.",
+  "description": "meta.json for one effect under effects/<name>/. Validated by scripts/lint.mjs. origin is always required; repo, commit and path inside it are required only for a ported effect, which is why they live in the else branch and not in properties.origin -- listing them there made the paw-fx carve-out dead and forced originals to ship an empty commit.",
   "type": "object",
   "required": [
     "name",
@@ -12,7 +12,8 @@
     "summary",
     "needs",
     "options",
-    "license"
+    "license",
+    "origin"
   ],
   "properties": {
     "name": {
@@ -50,8 +51,7 @@
           "three",
           "paper",
           "tsparticles",
-          "lenis",
-          "swup"
+          "lenis"
         ]
       }
     },
@@ -86,11 +86,6 @@
     },
     "origin": {
       "type": "object",
-      "required": [
-        "repo",
-        "commit",
-        "path"
-      ],
       "properties": {
         "repo": {
           "type": "string"
@@ -105,11 +100,11 @@
     }
   },
   "if": {
-    "required": [
-      "origin"
-    ],
     "properties": {
       "origin": {
+        "required": [
+          "repo"
+        ],
         "properties": {
           "repo": {
             "const": "paw-fx"
@@ -119,8 +114,14 @@
     }
   },
   "else": {
-    "required": [
-      "origin"
-    ]
+    "properties": {
+      "origin": {
+        "required": [
+          "repo",
+          "commit",
+          "path"
+        ]
+      }
+    }
   }
 }

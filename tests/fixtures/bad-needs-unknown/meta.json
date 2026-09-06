@@ -1,0 +1,17 @@
+{
+  "name": "bad-needs-unknown",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "fixture: a needs key the enum and the manifest both dropped",
+  "needs": [
+    "swup"
+  ],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "paw-fx"
+  }
+}

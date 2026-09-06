@@ -1,0 +1,17 @@
+{
+  "name": "bad-global-module-scope",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "fixture: vendor global read at module scope",
+  "needs": [
+    "tsparticles"
+  ],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "paw-fx"
+  }
+}

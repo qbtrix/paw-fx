@@ -1,0 +1,7 @@
+{
+  "anime":       { "files": ["anime.esm.js"], "license": "MIT", "licenseFiles": ["anime.LICENSE"], "package": "animejs", "version": "4.5.0" },
+  "three":       { "files": ["three.module.js", "three.core.js"], "license": "MIT", "licenseFiles": ["three.LICENSE"], "package": "three", "version": "0.185.1" },
+  "paper":       { "files": ["paper.js"], "license": "Apache-2.0", "licenseFiles": ["paper.LICENSE", "paper.NOTICE"], "package": "@paper-design/shaders", "version": "0.0.80" },
+  "tsparticles": { "files": ["tsparticles.slim.bundle.min.js"], "license": "MIT", "licenseFiles": ["tsparticles.LICENSE"], "package": "@tsparticles/slim", "version": "4.3.2" },
+  "lenis":       { "files": ["lenis.js"], "license": "MIT", "licenseFiles": ["lenis.LICENSE"], "package": "lenis", "version": "1.3.26" }
+}

@@ -7,5 +7,5 @@
   "needs": [],
   "options": {},
   "license": "MIT",
-  "origin": { "repo": "paw-fx", "commit": "", "path": "tests/fixtures/bad-vendor-unlisted" }
+  "origin": { "repo": "paw-fx" }
 }
