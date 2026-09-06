@@ -1,0 +1,15 @@
+/* fixture: every non-local CSS reference must fail lint, one form per line,
+   each with its own specifier so a test can name which form regressed. The
+   allowed forms sit at the bottom as controls -- relative path, same-document
+   fragment, and an inline data: URI that nests a url() inside itself. */
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter");
+.fx-fixture {
+  background-image: url("https://cdn.example.com/bg.png");
+  border-image: url(three/logo.svg);
+  cursor: url('//cdn.example.com/pointer.cur'), auto;
+  /* allowed below this line */
+  mask-image: url("./mask.svg");
+  filter: url(#fx-noise);
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}

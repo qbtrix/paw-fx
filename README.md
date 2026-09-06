@@ -15,8 +15,8 @@ dist/registry/    build output (gitignored)
 
 ## Effect contract
 
-- `index.js` is an ES module exporting `mount(el, opts = {})` which returns `{ update(next), destroy() }`, plus `export const meta` mirroring meta.json. Nothing touches globals at import time. No bare-specifier imports: dependencies are `../../vendor/<key>.js`. Inside a site the files land at `_fx/effects/<name>/` and `_fx/vendor/`, the same two-level shape, so the relative import resolves unchanged.
-- `style.css` is plain CSS. Custom properties are prefixed `--fx-`.
+- `index.js` is an ES module exporting `mount(el, opts = {})` which returns `{ update(next), destroy() }`, plus `export const meta` mirroring meta.json. Nothing touches globals at import time. No bare-specifier imports in any form — side-effect `import "x"`, binding imports, `export ... from "x"`, dynamic `import("x")` all count: dependencies are `../../vendor/<key>.js`. Inside a site the files land at `_fx/effects/<name>/` and `_fx/vendor/`, the same two-level shape, so the relative import resolves unchanged.
+- `style.css` is plain CSS. Custom properties are prefixed `--fx-`. It fetches nothing off-site: `@import` and `url()` take a relative path, a `data:` URI, or a `#frag` reference. Write the leading `./` — a relative URL without one is indistinguishable from a bare specifier and lint flags it.
 - `snippet.html` is the section markup. Its resting state must look finished with CSS only. It links `style.css` (or inlines a `<style>`). A `<script>` is allowed only as `type="module"` importing `index.js`.
 - `mount()` honours `prefers-reduced-motion` (stay at rest). WebGL effects pass `failIfMajorPerformanceCaveat: true` and fall back to the resting state on failure.
 
@@ -28,7 +28,7 @@ Validated against `schema/meta.schema.json`: `name` (kebab), `version`, `categor
 
 Port, never invent. Find the upstream, record `repo`, `commit` and `path` in `meta.json.origin`, keep the upstream licence header in the first 20 lines of `index.js`, and change only the seams: the `mount/update/destroy` wrapper, vendor import paths, `--fx-` variables. The visual logic stays upstream's. Add the effect to LICENSES.md. Run `bun run check`.
 
-Lint enforces: schema, licence allow-list and origin, snippet rules, no bare imports, own code (index.js + style.css + snippet.html) at most 60 KB gzipped, licence header on ported code.
+Lint enforces: schema, licence allow-list and origin, snippet rules, self-contained references (every module specifier in index.js, every `@import` and `url()` in style.css), own code (index.js + style.css + snippet.html) at most 60 KB gzipped, licence header on ported code. A generated site has no build step, so a specifier that is not a path is a hard failure in the browser and this lint is the only thing standing in front of it.
 
 ## Registry
 
