@@ -1,0 +1,12 @@
+{
+  "name": "paw-fx",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "bun scripts/lint.mjs",
+    "build": "bun scripts/build-registry.mjs",
+    "test": "bun test",
+    "check": "bun run lint && bun run build && bun test"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/qbtrix/paw-fx/schema/meta.schema.json",
+  "title": "paw-fx effect meta",
+  "description": "meta.json for one effect under effects/<name>/. Validated by scripts/lint.mjs.",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "category",
+    "tags",
+    "summary",
+    "needs",
+    "options",
+    "license"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "backgrounds",
+        "particles",
+        "3d-hero",
+        "scroll",
+        "text",
+        "cursor",
+        "transition"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "string"
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "anime",
+          "three",
+          "paper",
+          "tsparticles",
+          "lenis",
+          "swup"
+        ]
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "type",
+          "default",
+          "description"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "license": {
+      "enum": [
+        "MIT",
+        "Apache-2.0",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "Unlicense",
+        "CC0-1.0"
+      ]
+    },
+    "origin": {
+      "type": "object",
+      "required": [
+        "repo",
+        "commit",
+        "path"
+      ],
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "if": {
+    "required": [
+      "origin"
+    ],
+    "properties": {
+      "origin": {
+        "properties": {
+          "repo": {
+            "const": "paw-fx"
+          }
+        }
+      }
+    }
+  },
+  "else": {
+    "required": [
+      "origin"
+    ]
+  }
+}
