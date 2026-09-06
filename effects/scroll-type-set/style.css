@@ -1,0 +1,81 @@
+/* scroll-type-set: a display headline that assembles itself as the section
+   scrolls through the viewport.
+
+   The resting state is the finished headline, full stop. index.js splits it
+   into per-character spans and only then writes the `from` values upstream
+   starts each reveal at, so with the script blocked, the bundle pruned or
+   reduced motion on the reader gets the same sentence at the same size.
+
+   Two static values are upstream's and live here rather than in index.js
+   because they are set once and never tweened: fx2's transform-origin
+   50% 0% and fx13's `gsap.set(char.parentNode, { perspective: 2000 })`. Both
+   are inert until a transform exists, so the resting frame is unaffected.
+
+   The section reserves a full viewport with the headline centred inside it.
+   That is not decoration: the reveal is scroll-linked, and a section with no
+   room above or below it has no scroll range for the link to run over. */
+.fx-typeset {
+  --fx-bg: #0c0b10;
+  --fx-ink: #f6f5f2;
+  --fx-muted: #9d9aa8;
+  --fx-accent: #ff5f3d;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(5rem, 14vw, 12rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 60% at 15% 12%, color-mix(in oklab, var(--fx-accent) 18%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 88% 88%, color-mix(in oklab, #4b6cff 22%, transparent), transparent 68%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-typeset *,
+.fx-typeset *::before,
+.fx-typeset *::after { box-sizing: border-box; }
+
+.fx-typeset__inner {
+  width: 100%;
+  max-width: 68rem;
+  text-align: center;
+}
+.fx-typeset__eyebrow {
+  margin: 0 0 2rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+/* The split target. */
+.fx-typeset__title {
+  margin: 0;
+  font-size: clamp(2.25rem, 9vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  text-wrap: balance;
+}
+.fx-typeset__lede {
+  margin: 2.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* anime's splitter wraps each word and each character in a bare span carrying
+   data-word / data-char and no class. Characters need inline-block so a
+   transform applies to them at all, and the words need it so a whole word can
+   sit on its own line without the character boxes collapsing. */
+.fx-typeset__title [data-char] { display: inline-block; }
+.fx-typeset__title [data-word] { display: inline-block; }
+
+/* fx2: transform-origin: '50% 0%'. */
+.fx-typeset[data-fx-variant="rise"] .fx-typeset__title [data-char] { transform-origin: 50% 0%; }
+/* fx13: gsap.set(char.parentNode, { perspective: 2000 }). */
+.fx-typeset[data-fx-variant="flip"] .fx-typeset__title [data-word] { perspective: 2000px; }

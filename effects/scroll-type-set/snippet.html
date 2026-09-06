@@ -1,0 +1,16 @@
+<!-- scroll-type-set section. Finished at rest with CSS alone: the headline is
+     the headline. index.js splits it into per-character spans and writes the
+     starting transforms only at the moment it links the reveal to the
+     scrollbar, so a blocked script, a pruned bundle or prefers-reduced-motion
+     leaves the sentence exactly as it reads here -- and a destroy mid-scroll
+     puts the original markup back rather than freezing it part-assembled.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/scroll-type-set/style.css">
+<section class="fx-typeset" data-fx="scroll-type-set">
+  <div class="fx-typeset__inner">
+    <p class="fx-typeset__eyebrow">Chapter two</p>
+    <h2 class="fx-typeset__title">Everything worth building is built twice.</h2>
+    <p class="fx-typeset__lede">Replace this copy with your own. The headline assembles itself as this section scrolls through the viewport, and reads as finished type the rest of the time.</p>
+  </div>
+</section>

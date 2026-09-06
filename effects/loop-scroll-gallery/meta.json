@@ -1,0 +1,63 @@
+{
+  "name": "loop-scroll-gallery",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["gallery", "scroll", "infinite", "loop", "grid", "codrops", "lenis"],
+  "summary": "A gallery that scrolls forever: reach the end and the first cell is seamlessly back, with no jump. Vertical three-column grid or a horizontal strip, Lenis' own infinite flag plus a cloned block sized to exactly one viewport.",
+  "needs": ["lenis"],
+  "options": {
+    "orientation": {
+      "type": "string",
+      "default": "vertical",
+      "description": "vertical is upstream sketch 024 (three-column grid, six cloned cells); horizontal is sketch 025 (single row, four cloned cells)."
+    },
+    "lerp": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Linear interpolation per frame. Lower is heavier. Lenis' own default."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/codrops-sketches",
+    "commit": "bbf47ca34766fd2ca5f97d8b376d2eca148bf48f",
+    "path": [
+      "024-infinite-loop-scrolling/js/index.js",
+      "024-infinite-loop-scrolling/css/base.css",
+      "025-infinite-loop-scrolling-horizontal/js/index.js",
+      "025-infinite-loop-scrolling-horizontal/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Lenis is given the section's own scroll box through `wrapper` and `content` instead of taking over the document, and the section markup gains a .fx-loopgal__viewport element with overflow: auto to be that box.",
+      "why": "Upstream makes the whole page infinite, which is a page-level decision a section is not entitled to make: a generated page carries several sections and paw-fx already ships smooth-scroll for the document-wide case. Two Lenis instances fighting over one scroll position is the bug that follows from the alternative. Scoping it is also what lets the same page carry this gallery twice.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's `smooth: true` is dropped and `direction` / `gestureDirection` are written as `orientation` / `gestureOrientation`. lerp is exposed as an option at Lenis' own 0.1 default.",
+      "why": "The vendored Lenis is 1.3.26 and upstream pinned 0.2.28. `smooth` no longer exists -- smoothWheel is on by default, which is the same behaviour -- and the two direction keys were renamed. The values are unchanged; only the spelling is.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The cell size is a calc() against the scroll box (vertical: height = (box - gap) / 2; horizontal: width = (box - 3 * gap) / 4) rather than upstream's literal 47.5vh / 5vh and 23.5vw / 2vw, and the phone breakpoint re-solves the same sum for two columns and three rows.",
+      "why": "Those literals are not decoration, they are the seam: Lenis wraps from limit straight to 0, so the cloned block has to measure exactly one viewport or the loop visibly jumps. Upstream's own comment derives them the same way ('for an item height of 50vh we need to remove half the gap'). Writing the relationship instead of the answer means changing --fx-gap or --fx-box keeps the loop seamless rather than quietly breaking it, and it is what lets the gallery scroll in a section-sized box rather than a full page.",
+      "kind": "seam"
+    },
+    {
+      "what": "No photographs ship. Every cell paints a CSS gradient through a --fx-img custom property a site overrides per cell.",
+      "why": "Codrops' demo imagery is credited to a named photographer and licensed separately from the code, so it is not ours to redistribute. The gradients make the effect legible with nothing to license, and the custom property is the documented slot a site drops its own picture into.",
+      "kind": "ours"
+    },
+    {
+      "what": "imagesLoaded and the body loading class are dropped; each clone is marked data-fx-clone and aria-hidden.",
+      "why": "There are no images to wait for once the cells are gradients, and imagesloaded is a dependency the manifest does not carry. The clone marker is what lets destroy() remove exactly the nodes this mount added rather than guessing by count, and a duplicated cell is the same picture twice, which assistive technology should not read again.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion Lenis is never constructed, and the viewport stays a plain native scroll box with no clones.",
+      "why": "Effect contract: mount() stays at rest. Constructing Lenis and stopping it would still install its wheel and touch listeners, and the resting scroll box is already a working gallery -- the reader loses the wrap, not the content.",
+      "kind": "seam"
+    }
+  ]
+}

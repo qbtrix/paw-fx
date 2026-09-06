@@ -1,0 +1,30 @@
+<!-- curtain-transition section. Finished at rest with CSS alone: the curtain
+     path below is collapsed to a line along the bottom edge, so it covers
+     nothing until index.js sweeps it, and the first view reads as an ordinary
+     hero with the script blocked or the bundle pruned. The second view is a
+     second state, the way a tab panel is -- it ships closed and inert, and
+     under prefers-reduced-motion index.js still swaps to it, instantly.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/curtain-transition/style.css">
+<section class="fx-curtain" data-fx="curtain-transition">
+  <div class="fx-curtain__view fx-curtain__view--1">
+    <div class="fx-curtain__inner">
+      <p class="fx-curtain__eyebrow">Volume one</p>
+      <h2 class="fx-curtain__title">Pull the curtain and see the other half.</h2>
+      <p class="fx-curtain__lede">Replace this copy with your own. The panel sweeps across, swaps what is underneath, and peels away from the far side.</p>
+      <button class="fx-curtain__btn fx-curtain__open" type="button" aria-expanded="false">Open</button>
+    </div>
+  </div>
+  <div class="fx-curtain__view fx-curtain__view--2" inert>
+    <div class="fx-curtain__inner">
+      <p class="fx-curtain__eyebrow">Volume two</p>
+      <h2 class="fx-curtain__title">And this is what was behind it.</h2>
+      <p class="fx-curtain__lede">The second view holds whatever the first one does not: a price list, a manifesto, the long version of the pitch.</p>
+      <button class="fx-curtain__btn fx-curtain__close" type="button">Back</button>
+    </div>
+  </div>
+  <svg class="fx-curtain__overlay" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    <path class="fx-curtain__path" vector-effect="non-scaling-stroke" d="M 0 100 V 100 Q 50 100 100 100 V 100 z" />
+  </svg>
+</section>

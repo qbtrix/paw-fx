@@ -42,6 +42,12 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 | cursor-spotlight | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/magic-card.tsx` |
 | page-fade | MIT | paw-fx (original; native View Transitions) |
 | scroll-parallax | MIT | paw-fx (original; native scroll-driven animations) |
+| scroll-type-set | MIT | [codrops/OnScrollTypographyAnimations](https://github.com/codrops/OnScrollTypographyAnimations) `af28d61`, `src/js/index.js` + `src/css/base.css` |
+| link-underlines | MIT | [codrops/LineHoverStyles](https://github.com/codrops/LineHoverStyles) `5ff7fb4`, `css/base.css` + `index.html` |
+| scroll-blur-text | MIT | [codrops/ScrollBlurTypography](https://github.com/codrops/ScrollBlurTypography) `3e64d4b`, `js/effect-1/blurScrollEffect.js` + `js/textSplitter.js` + `css/base.css` |
+| loop-scroll-gallery | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `024-infinite-loop-scrolling/js/index.js` + `024-.../css/base.css` + `025-infinite-loop-scrolling-horizontal/js/index.js` + `025-.../css/base.css` |
+| curtain-transition | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `021-svg-path-page-transition-vertical/js/index.js` + `021-.../css/base.css` + `022-svg-path-page-transition-horizontal/js/index.js` |
+| button-hovers | MIT | [codrops/ButtonHoverStyles](https://github.com/codrops/ButtonHoverStyles) `3976fa1`, `css/base.css` + `index.html` |
 
 `mesh-gradient` imports its GLSL from `vendor/paper.js` rather than carrying a
 copy, so the Apache-2.0 obligation it creates is the vendored one: `paper.LICENSE`
@@ -114,3 +120,30 @@ parallax in the Codrops corpus is built on GSAP ScrollSmoother, Lenis or
 Locomotive Scroll, so there is no vanilla upstream to port. Both are built on
 native CSS instead, and both record the reasoning in `meta.json.deviations`
 under `kind: "ours"`.
+
+## The six Codrops ports of 2026-09
+
+`scroll-type-set`, `link-underlines`, `scroll-blur-text`, `loop-scroll-gallery`,
+`curtain-transition` and `button-hovers` all come from repos in the `codrops`
+org that carry a real `LICENSE` file with full MIT text -- not the older
+"don't republish, redistribute or sell as-is" READMEs that cover the pre-2020
+catalogue, which has no LICENSE file at all and is excluded from this library
+entirely. `CANDIDATES.md` records the licence gate that separated the two.
+
+None of the six ships a byte of Codrops' imagery or type. Every one of those
+repos pulls its display faces from a hosted Adobe Typekit kit rather than
+bundling font files, so the port drops the `<link>` or the `WebFont.load` call
+and declares a system stack. `loop-scroll-gallery` is the only one whose
+upstream carries photographs -- credited to a named photographer and licensed
+separately from the code -- so its cells paint CSS gradients behind a
+`--fx-img` custom property a site fills with its own picture.
+
+GSAP does not ship in any of them. Its licence bars use in a tool that lets
+people build animations without writing code, which is what a site-building
+agent is, so the four ports with motion are rebuilt on the vendored anime.js
+v4: `animate()` for its tweens, `onScroll()` for ScrollTrigger's scrub,
+`createTimeline()` for its timelines. Two translations are mechanical and easy
+to get silently wrong, so both are named in every affected `meta.json`:
+GSAP's `powerN` is degree N+1 (`power4` is a quintic, not a quartic), and
+ScrollTrigger's `start: 'target container'` is anime's
+`enter: 'container target'` -- the halves are the other way round.

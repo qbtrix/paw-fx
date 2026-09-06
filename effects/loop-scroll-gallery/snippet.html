@@ -1,0 +1,34 @@
+<!-- loop-scroll-gallery section. Finished at rest with CSS alone: the viewport
+     below is a real native scroll box, so with the script blocked, the bundle
+     pruned or prefers-reduced-motion on the reader still gets every item and
+     can still scroll through them. What the script adds is the wrap at the
+     end -- the loop is the effect, not the content.
+
+     THE IMAGE SLOT. The cells paint CSS gradients because Codrops' demo
+     photography is not ours to redistribute. Drop your own picture into any
+     cell with one inline custom property and change nothing else:
+       <div class="fx-loopgal__item" style="--fx-img:url(/img/1.jpg)"></div>
+     Six cells is the right number to ship: index.js clones the first six
+     (four in horizontal mode) and that cloned block is what has to measure one
+     box for the loop to be seamless.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/loop-scroll-gallery/style.css">
+<section class="fx-loopgal" data-fx="loop-scroll-gallery">
+  <div class="fx-loopgal__head">
+    <p class="fx-loopgal__eyebrow">Archive</p>
+    <h2 class="fx-loopgal__title">Everything we shipped, on a loop.</h2>
+    <p class="fx-loopgal__note">Replace these cells with your own images. Scroll past the last one and the first comes back around.</p>
+  </div>
+  <div class="fx-loopgal__viewport">
+    <div class="fx-loopgal__grid">
+      <div class="fx-loopgal__item"></div>
+      <div class="fx-loopgal__item"></div>
+      <div class="fx-loopgal__item"></div>
+      <div class="fx-loopgal__item"></div>
+      <div class="fx-loopgal__item"></div>
+      <div class="fx-loopgal__item"></div>
+    </div>
+  </div>
+</section>

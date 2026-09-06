@@ -1,0 +1,52 @@
+{
+  "name": "curtain-transition",
+  "version": "1.0.0",
+  "category": "transition",
+  "tags": ["transition", "svg", "curtain", "overlay", "codrops", "anime", "reveal"],
+  "summary": "A coloured curtain sweeps over the section with a curved leading edge that bulges then flattens, swaps the view underneath at full cover, and peels away from the far side. One SVG path, four states, vertical or horizontal.",
+  "needs": ["anime"],
+  "options": {
+    "axis": {
+      "type": "string",
+      "default": "vertical",
+      "description": "vertical is upstream sketch 021, whose two directions use different in-between curves; horizontal is sketch 022, which uses one in-between for both."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/codrops-sketches",
+    "commit": "bbf47ca34766fd2ca5f97d8b376d2eca148bf48f",
+    "path": [
+      "021-svg-path-page-transition-vertical/js/index.js",
+      "021-svg-path-page-transition-vertical/css/base.css",
+      "022-svg-path-page-transition-horizontal/js/index.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP is replaced by anime.js v4's createTimeline. The six steps, their order, their durations and the path strings are unchanged; the easings are translated by degree, because GSAP's powerN is degree N+1: power4.in is inQuint, power3.in is inQuart, power1 (its .out default) is outQuad, power4 is outQuint, sine.in is inSine. Seconds become milliseconds against MS = 1000.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. The survey flagged the d-attribute interpolation as the one unverified assumption in this port, so it was measured before any code was written: tweening the vertical sketch's unfilled path to its first curve reads the exact numeric midpoint of every value at half way, on the vendored anime build. No morph plugin and no svg.morphTo are involved -- this is the same numeric interpolation GSAP's attr plugin performs.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Upstream's reveal() and unreveal() are one run(to) function, and the two sketches are one effect behind an `axis` option.",
+      "why": "The two functions are the same six steps with the step1 / step2 pair swapped and the other in-between curve; writing them twice would be a copy to drift rather than a port. The two sketches are the same effect on two axes at one commit, which is a variant, not a second effect.",
+      "kind": "seam"
+    },
+    {
+      "what": "Everything is scoped to the mounted section: the path, the second view and both buttons are found through el.querySelector, and switchPages() no longer toggles the .frame class.",
+      "why": "Upstream is a whole demo page with one curtain and its own header. A section is one of several on a page, and a page may carry this one twice, so a document-wide querySelector would have the second mount driving the first one's curtain. The .frame class belongs to the demo's header, which a section does not have.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the buttons still swap the views, with no timeline and no path movement. The closed view ships with the inert attribute and the open button carries aria-expanded.",
+      "why": "Effect contract: mount() stays at rest. Stillness means no travel, not an unreachable second view, so the swap is kept and only the sweep is dropped. inert and aria-expanded are ours: upstream leaves the hidden view in the tab order, so a keyboard lands on copy nobody can see.",
+      "kind": "seam"
+    },
+    {
+      "what": "The section carries its own two-view layout, background, copy and buttons, and the curtain colour is a --fx-* custom property.",
+      "why": "Upstream's views are two pages of a demo. A drop-in section has to bring its own resting composition, and the fill has to be themeable because the curtain is the loudest thing on the page for a second and a half.",
+      "kind": "seam"
+    }
+  ]
+}

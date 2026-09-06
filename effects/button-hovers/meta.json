@@ -1,0 +1,46 @@
+{
+  "name": "button-hovers",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "button", "cta", "hover", "css-only", "codrops"],
+  "summary": "A row of CTA buttons whose fill leaves on hover: a skewed plate sliding off to the right, the label pushed up and replaced by a duplicate rising into its place, or the corner radius opening to a circle as an inset shadow floods it. No JavaScript, upstream ships none either.",
+  "needs": [],
+  "options": {
+    "variant": {
+      "type": "string",
+      "default": "sweep",
+      "description": "Which upstream treatment to use: sweep (.button--mimas, a skewed fill sliding off to the right), swap (.button--hyperion, the label pushed up out of the box while a duplicate rises into its place over a fill that scales away) or morph (.button--pallene, corner radius opening to a circle while an inset box-shadow floods the fill)."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ButtonHoverStyles",
+    "commit": "3976fa1b65dced5d330db43c51081787c3e7b46e",
+    "path": [
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Three of upstream's twenty-one treatments are ported (.button--mimas, .button--hyperion, .button--pallene, renamed sweep, swap and morph) and exposed as one `variant` option. The rest are not carried, and neither are the ones built on clip-path shapes, rotating background images or an extra .button__bg element.",
+      "why": "Twenty-one near-identical buttons would be a worse library than three that read differently. These three are three distinct mechanisms -- a fill that travels, a label that swaps, and a box that morphs -- and all three work on any label at any length, which the shape-clipped ones (janus, rhea) do not: those are sized to their own demo string.",
+      "kind": "ours"
+    },
+    {
+      "what": "Every :hover rule is repeated on :focus-visible.",
+      "why": "Upstream is a hover demo, and a button that only reveals its state to a pointer is unreachable from a keyboard. Accessibility basics are not a place to be faithful to a demo.",
+      "kind": "ours"
+    },
+    {
+      "what": "The transition and animation declarations sit inside a prefers-reduced-motion: no-preference query; the hover states themselves do not.",
+      "why": "Effect contract: a reader who asked for stillness still gets the hover state, it simply arrives with no travel. Putting the states behind the query instead would leave the button inert on hover.",
+      "kind": "seam"
+    },
+    {
+      "what": "Class names are ours (.fx-buttons__btn for .button, a data-fx-variant attribute on the section for the .button--<moon> modifier), the keyframes are renamed fx-buttons-move-up-initial / -end, the black fill and the plate are --fx-* custom properties, and the type is set in a system stack.",
+      "why": "Upstream owns a whole demo page, sets each button in a different Adobe Typekit face -- a hosted stylesheet under separate terms, not ours to redistribute or to bill to someone else's kit id -- and names its keyframes MoveUpInitial / MoveUpEnd in the global keyframe namespace, which a drop-in section shares with every other effect on the page. Scoping the variant to the section rather than to each button is what lets one option switch the whole row, which is the surface a site-building agent can actually drive.",
+      "kind": "seam"
+    }
+  ]
+}
