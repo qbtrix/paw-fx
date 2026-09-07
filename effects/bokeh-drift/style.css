@@ -1,0 +1,104 @@
+/* bokeh-drift: three tiers of circles -- a hairline ring, a mid fill and a
+   large soft fill -- drifting slowly and bouncing off the section's edges.
+   The background is upstream's own #191d1e with its 0deg gradient to #283139,
+   split into a colour plus an image so the section still has a computed
+   background-color if the gradient never paints.
+
+   The resting state draws the same three tiers as static dots and rings, so
+   the section is a bokeh field before index.js exists; the canvas covers it
+   once a container has loaded, which is the only thing that sets
+   data-fx-live. */
+.fx-bokeh {
+  --fx-bg: #191d1e;
+  --fx-bg-far: #283139;
+  --fx-ring: #0cdbf3;
+  --fx-mid: #6fd2f3;
+  --fx-soft: #93e9f3;
+  --fx-ink: #f2f7f8;
+  --fx-muted: #b6c4c9;
+  --fx-accent: #7fdcef;
+  --fx-scrim: color-mix(in oklab, #101416 60%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background-color: var(--fx-bg);
+  background-image: linear-gradient(0deg, var(--fx-bg) 50%, var(--fx-bg-far) 100%);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-bokeh *,
+.fx-bokeh *::before,
+.fx-bokeh *::after { box-sizing: border-box; }
+
+/* The CSS bokeh field: the large soft tier as blurred discs, the mid tier as
+   small fills, and the ring tier as hairline circles drawn with a transparent
+   centre and a coloured edge stop. */
+.fx-bokeh__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(18px 18px at 26% 30%, color-mix(in oklab, var(--fx-soft) 40%, transparent), transparent 66%),
+    radial-gradient(14px 14px at 72% 22%, color-mix(in oklab, var(--fx-soft) 34%, transparent), transparent 66%),
+    radial-gradient(20px 20px at 58% 76%, color-mix(in oklab, var(--fx-soft) 30%, transparent), transparent 66%),
+    radial-gradient(6px 6px at 40% 52%, color-mix(in oklab, var(--fx-mid) 60%, transparent), transparent 62%),
+    radial-gradient(5px 5px at 84% 60%, color-mix(in oklab, var(--fx-mid) 55%, transparent), transparent 62%),
+    radial-gradient(6px 6px at 14% 68%, color-mix(in oklab, var(--fx-mid) 50%, transparent), transparent 62%),
+    radial-gradient(circle at 34% 18%, transparent 0 3px, color-mix(in oklab, var(--fx-ring) 75%, transparent) 3px 4px, transparent 4px),
+    radial-gradient(circle at 66% 44%, transparent 0 2.5px, color-mix(in oklab, var(--fx-ring) 70%, transparent) 2.5px 3.5px, transparent 3.5px),
+    radial-gradient(circle at 20% 88%, transparent 0 3.5px, color-mix(in oklab, var(--fx-ring) 65%, transparent) 3.5px 4.5px, transparent 4.5px);
+  background-size:
+    420px 420px, 300px 300px, 500px 500px,
+    240px 240px, 190px 190px, 280px 280px,
+    170px 170px, 130px 130px, 210px 210px;
+  opacity: 0.9;
+  transition: opacity 600ms ease;
+}
+.fx-bokeh[data-fx-live] .fx-bokeh__rest { opacity: 0; }
+
+/* tsParticles appends its canvas here and sizes it to the host. */
+.fx-bokeh__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.fx-bokeh__canvas canvas { display: block; }
+
+.fx-bokeh__inner {
+  max-width: 52rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(2px);
+}
+.fx-bokeh__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-bokeh__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-bokeh__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

@@ -1,0 +1,63 @@
+{
+  "name": "snow-fall",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["snow", "winter", "particles", "hero", "tsparticles", "falling", "dark"],
+  "summary": "A directional snow field running the tsParticles snow preset: 100 flakes from 1px to 10px falling at mixed opacity, over a CSS flake field that stands in whenever the canvas cannot.",
+  "needs": ["tsparticles"],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 100,
+      "description": "Flake count. Upstream's particles.number.value."
+    },
+    "color": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Flake fill. Stands in for the preset's palette key. Set --fx-flake to match so the CSS resting field agrees."
+    },
+    "speed": {
+      "type": "number",
+      "default": 2,
+      "description": "Fall speed. The engine default the preset leaves unset, exposed so a section can slow the drift."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tsparticles/presets",
+    "commit": "ae866a538fa40b4b06f8a2b8d4b168d134bf6ba7",
+    "path": "presets/snow/src/options.ts"
+  },
+  "deviations": [
+    {
+      "what": "particles.wobble { distance: 20, enable: true, speed: { min: -5, max: 5 } } is dropped, so the flakes fall straight rather than swaying.",
+      "why": "The wobble updater is not registered in the vendored @tsparticles/slim 4.3.2 bundle. The engine ignores the unknown key silently -- the container still loads with the full count and paints -- so leaving it in would put a line in the port that does nothing and read as if the sway shipped. The mixed 1-10px size range is what still carries the depth.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "palette: \"snowfall\" is dropped and the flake colour becomes an explicit paint.fill.color, defaulting to #ffffff.",
+      "why": "A palette name is resolved by the presets package's own theme registry, which a vendored engine bundle does not carry; loading the preset's key would leave the colour unset. White is what \"snowfall\" reads as and is the engine's own default, so the painted result is the same and a section can now recolour the fall.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "MoveDirection.bottom is written as the string \"bottom\".",
+      "why": "The preset imports the enum from @tsparticles/engine. The vendored slim bundle publishes its engine on globalThis and exports nothing, so there is no enum to import; the member is this string and the loaded options are identical.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "move.speed is exposed as an option with the engine's own default of 2, which the preset leaves unset.",
+      "why": "Snow is the first directional field in the library, and how fast it falls is the one thing a section actually needs to tune -- a hero wants it slower than a footer band. The default is the value the preset runs at today, so an untouched mount is unchanged.",
+      "kind": "ours"
+    },
+    {
+      "what": "Upstream is a preset registered on the engine and applied by name; here the options object is passed straight to engine.load().",
+      "why": "A preset only exists to be looked up by name, which a single-effect module has no use for. The options object it registers is what actually configures the container, and that is what travels.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the container is never created.",
+      "why": "Effect contract: mount() stays at rest. The CSS flake field is the finished section, so not loading is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "dock-magnify",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": ["menu", "navigation", "dock", "magnify", "pointer", "spring", "anime", "glass", "footer"],
+  "summary": "A macOS-style dock: each icon's size is a clamped linear function of its distance from the pointer along x, from 40px at rest to 60px under the cursor within 140px, settled on a spring rather than snapped.",
+  "needs": ["anime"],
+  "options": {
+    "size": {
+      "type": "number",
+      "default": 40,
+      "description": "Resting icon size in pixels. Upstream's DEFAULT_SIZE. Set --fx-dock-size to match so the no-script bar agrees."
+    },
+    "magnification": {
+      "type": "number",
+      "default": 60,
+      "description": "Size in pixels of the icon directly under the pointer. Upstream's DEFAULT_MAGNIFICATION."
+    },
+    "distance": {
+      "type": "number",
+      "default": 140,
+      "description": "How far along x the pointer's influence reaches, in pixels. Upstream's DEFAULT_DISTANCE."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "magicuidesign/magicui",
+    "commit": "1246d6d404c556f03867fc6d447f2867eee8a42b",
+    "path": "apps/www/registry/magicui/dock.tsx"
+  },
+  "deviations": [
+    {
+      "what": "React, framer-motion and class-variance-authority are all gone: useMotionValue / useTransform / useSpring become one anime createAnimatable per icon with a spring ease driven from a pointermove listener, and the two Tailwind class strings become the rules in style.css.",
+      "why": "This library ships vanilla ES modules into generated sites with no build step, so a component is not a shippable unit. Every number survives the move -- size 40, magnification 60, distance 140, padding max(6, size * 0.2), and mass 0.1 / stiffness 150 / damping 12, which anime's spring takes under the same three names. The useTransform mapping is a clamped linear ramp between two points and is written out as one. marquee-css and cursor-spotlight are the same kind of port in this repo already.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The pointer is read from e.clientX rather than e.pageX.",
+      "why": "Upstream compares e.pageX against getBoundingClientRect().x, and those two are in different coordinate systems -- they differ by the horizontal scroll offset. It never shows on the docs page, which does not scroll sideways, but a dock inside a horizontally scrolled region would magnify the wrong icon. clientX is the space the rect is already in.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "pointermove and pointerleave listen on the bar rather than being props on the component, and the icons are looked up inside the section.",
+      "why": "React passes mouseX down by cloning children; a vanilla mount has the DOM instead. Scoping both to this mount's own bar is what lets two docks sit on one page without each one driving the other.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no listeners are attached and the icons stay at their resting size.",
+      "why": "Effect contract: mount() stays at rest. Nothing is lost -- that is upstream's own disableMagnification mode, and the bar is still a complete row of working links rather than a control that has stopped doing its job.",
+      "kind": "seam"
+    },
+    {
+      "what": "Each icon carries a text label that appears on hover and on keyboard focus, and the section supplies six plain inline SVG glyphs.",
+      "why": "Upstream's docs preview hands the component lucide icons from the page, so nothing about labelling is part of the component -- but a dock of unlabelled pictures is unreadable, and a keyboard user gets no hover at all. The glyphs are drawn here rather than pulled from an icon set so the effect ships no third-party art and a site can swap them for its own.",
+      "kind": "ours"
+    }
+  ]
+}

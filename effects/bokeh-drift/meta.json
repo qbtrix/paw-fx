@@ -1,0 +1,63 @@
+{
+  "name": "bokeh-drift",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "bokeh", "ambient", "depth", "tsparticles", "cyan", "dark", "hero"],
+  "summary": "A three-tier bokeh field: hairline rings at 3-5px, mid fills at 5-7px and soft discs at 10-20px drifting at 0.1-0.5 and bouncing off the section's edges, each tier breathing its own opacity.",
+  "needs": ["tsparticles"],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 200,
+      "description": "Total particles across the three tiers. Upstream's particles.number.value."
+    },
+    "ring": {
+      "type": "string",
+      "default": "#0cdbf3",
+      "description": "Stroke of the small hairline tier. Upstream's first circle tier. Set --fx-ring to match so the CSS resting field agrees."
+    },
+    "mid": {
+      "type": "string",
+      "default": "#6fd2f3",
+      "description": "Fill of the mid tier. Upstream's second circle tier. Set --fx-mid to match."
+    },
+    "soft": {
+      "type": "string",
+      "default": "#93e9f3",
+      "description": "Fill of the large soft tier. Upstream's third circle tier. Set --fx-soft to match."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tsparticles/presets",
+    "commit": "ae866a538fa40b4b06f8a2b8d4b168d134bf6ba7",
+    "path": "presets/ambient/src/options.ts"
+  },
+  "deviations": [
+    {
+      "what": "The background block -- color #191d1e plus the linear-gradient(0deg, #191d1e 50%, #283139 100%) image -- moves out of the options object and into style.css, split into background-color and background-image.",
+      "why": "The section's CSS owns the background, the same seam starfield's meta.json records: painting it on the canvas would hide the resting field that has to show through until the container loads. Both values are upstream's and land on the section unchanged. Splitting colour from gradient is what keeps the section's computed background-color from being transparent, so a contrast measurement reads the section rather than whatever is behind it.",
+      "kind": "seam"
+    },
+    {
+      "what": "MoveDirection.none and OutMode.bounce are written as the strings \"none\" and \"bounce\".",
+      "why": "The preset imports both enums from @tsparticles/engine. The vendored slim bundle publishes its engine on globalThis and exports nothing, so there is no enum to import; the members are these strings and the loaded options are identical.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The three tier colours are options rather than literals in the config.",
+      "why": "The tiers are the whole effect, so recolouring them is the one thing a section needs to do to fit a brand -- and the CSS resting field has to be given the same three values or the two states disagree. The defaults are upstream's.",
+      "kind": "ours"
+    },
+    {
+      "what": "Upstream is a preset registered on the engine and applied by name; here the options object is passed straight to engine.load().",
+      "why": "A preset only exists to be looked up by name, which a single-effect module has no use for. The options object it registers is what actually configures the container, and that is what travels.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the container is never created.",
+      "why": "Effect contract: mount() stays at rest. The CSS bokeh field is the finished section, so not loading is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

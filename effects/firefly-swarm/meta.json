@@ -1,0 +1,61 @@
+{
+  "name": "firefly-swarm",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "cursor", "swarm", "fireflies", "additive", "glow", "anime", "dom", "warm"],
+  "summary": "225 additive DOM dots orbiting the pointer on a circle, each re-targeted four times a second with a 1-2s tween so the swarm never settles; press and hold and the whole thing blooms to a wider radius.",
+  "needs": ["anime"],
+  "options": {
+    "rows": {
+      "type": "number",
+      "default": 15,
+      "description": "Square root of the swarm size; the field holds rows squared particles. Upstream's rows."
+    },
+    "frameRate": {
+      "type": "number",
+      "default": 4,
+      "description": "How many times a second each particle picks a new target. Upstream's createTimer frameRate. Lower it to thin the work on a busy page."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": [
+      "examples/additive-fireflies/index.js",
+      "examples/additive-fireflies/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The wrapper's font-size: .2vh becomes 0.2cqh on the field's children, with container-type: size on the field itself.",
+      "why": "Every length in the design is an em against that font-size -- the glow is 100em, each particle 5em -- so upstream is really sizing them as 20% and 1% of the WINDOW height. A section is not the window and can be any height, so the same two numbers are resolved against the section's own box instead. The proportions and the numbers are unchanged.",
+      "kind": "seam"
+    },
+    {
+      "what": "mousemove and mousedown listen on the section rather than the document, mouseup listens on window, and the pointer is measured from the field's centre instead of window.innerWidth / 2.",
+      "why": "Upstream is a full-window demo where the document and the field are the same box, and it never unmounts. A section is one band of a page: a document listener would make a swarm two sections down chase a pointer that is nowhere near it. mouseup stays on window because a press released outside the section is still a release, and leaving it on the section would strand the swarm in its bloomed state.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every createTimer is kept in a list, and destroy() cancels all of them, calls utils.remove() on the particles and the glow, and removes the particle elements.",
+      "why": "Upstream creates 226 timers and never stops any, which is correct for a page that only unloads. Here a section can be torn down on a page transition, and a timer that keeps firing animate() on detached nodes is a leak that outlives the section. utils.remove() is needed specifically because composition: 'blend' means a new tween does not cancel the one still running, so several can be live per particle at teardown.",
+      "kind": "seam"
+    },
+    {
+      "what": "The three particle colours come from --fx-fly-1/2/3 rather than upstream's --red-1, --corail-1 and --orange-1, and utils.set() writes the colour AFTER the particle is appended rather than before.",
+      "why": "Those variables are defined in the examples' shared assets/css/styles.css, which is not part of this port, so the values had to be chosen here. The picks keep the warm red-to-amber run the example reads as, and they are custom properties so a section can retune them. The reorder is a fix, not a preference: a var() reference resolves against the computed style and a detached element has none, so upstream's ordering writes an empty value and every particle falls back to the wrapper's inherited colour.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "A static resting cluster (.fx-fly__rest) is added under the same glow, and the copy sits on a --fx-scrim panel.",
+      "why": "Effect contract: the section has to look finished with no script, and an empty dark field is not a section. The scrim is the contrast floor -- the live swarm is additive and crosses the copy, so text measured against the busiest frame needs a plate under it.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion no particles are built.",
+      "why": "Effect contract: mount() stays at rest. The resting cluster is the finished section, so not building is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

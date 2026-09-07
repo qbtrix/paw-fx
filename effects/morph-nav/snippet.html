@@ -1,0 +1,64 @@
+<!-- morph-nav section. Finished at rest with CSS alone: tab one already holds
+     the pill and its panel is the visible one, so with no script the section
+     is a legible tab bar with content under it. index.js wires the click and,
+     unless the reader asked for reduced motion, springs the pill across and
+     crossfades the panels.
+     There is exactly ONE .fx-morphnav__pill in the markup. It lives inside
+     whichever tab is current and gets moved, not copied -- adding a second one
+     breaks the effect.
+     Keep data-panel matched between each tab and its panel; that pairing is
+     what the swap keys on, and aria-controls / aria-labelledby follow it.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/morph-nav/style.css">
+<section class="fx-morphnav" data-fx="morph-nav">
+  <div class="fx-morphnav__inner">
+    <p class="fx-morphnav__eyebrow">How it works</p>
+    <h2 class="fx-morphnav__title">Four steps, and the first one takes a morning.</h2>
+    <div class="fx-morphnav__card">
+      <nav class="fx-morphnav__bar" aria-label="Process">
+        <ul class="fx-morphnav__list" role="tablist">
+          <li role="presentation">
+            <button class="fx-morphnav__tab" type="button" role="tab" id="fx-morphnav-tab-scope" aria-controls="fx-morphnav-panel-scope" aria-selected="true" data-panel="scope">
+              <span class="fx-morphnav__label">Scope</span>
+              <span class="fx-morphnav__pill" aria-hidden="true"></span>
+            </button>
+          </li>
+          <li role="presentation">
+            <button class="fx-morphnav__tab" type="button" role="tab" id="fx-morphnav-tab-build" aria-controls="fx-morphnav-panel-build" aria-selected="false" data-panel="build">
+              <span class="fx-morphnav__label">Build</span>
+            </button>
+          </li>
+          <li role="presentation">
+            <button class="fx-morphnav__tab" type="button" role="tab" id="fx-morphnav-tab-review" aria-controls="fx-morphnav-panel-review" aria-selected="false" data-panel="review">
+              <span class="fx-morphnav__label">Review</span>
+            </button>
+          </li>
+          <li role="presentation">
+            <button class="fx-morphnav__tab" type="button" role="tab" id="fx-morphnav-tab-ship" aria-controls="fx-morphnav-panel-ship" aria-selected="false" data-panel="ship">
+              <span class="fx-morphnav__label">Ship</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <div class="fx-morphnav__content">
+        <div class="fx-morphnav__panel is-active" role="tabpanel" id="fx-morphnav-panel-scope" aria-labelledby="fx-morphnav-tab-scope" data-panel="scope">
+          <h3>Scope</h3>
+          <p>Replace this copy with your own. Panels can be different lengths on purpose: the region measures the outgoing panel and tweens its height to the incoming one, so a short tab next to a long one is the effect rather than a layout jump.</p>
+        </div>
+        <div class="fx-morphnav__panel" role="tabpanel" id="fx-morphnav-panel-build" aria-labelledby="fx-morphnav-tab-build" data-panel="build">
+          <h3>Build</h3>
+          <p>The pill under the labels is a single element. Clicking a tab moves it into that tab and the spring carries it across, which is why the bar reads as one object travelling rather than four backgrounds taking turns.</p>
+        </div>
+        <div class="fx-morphnav__panel" role="tabpanel" id="fx-morphnav-panel-review" aria-labelledby="fx-morphnav-tab-review" data-panel="review">
+          <h3>Review</h3>
+          <p>Every tab is a real button inside a tablist, so a keyboard reaches all four and a screen reader announces which one is current. With the script blocked the first tab stays selected and its panel stays readable.</p>
+        </div>
+        <div class="fx-morphnav__panel" role="tabpanel" id="fx-morphnav-panel-ship" aria-labelledby="fx-morphnav-tab-ship" data-panel="ship">
+          <h3>Ship</h3>
+          <p>Add or remove tabs by adding or removing a list item and the panel that carries the same data-panel value. Nothing in the effect counts them, so four is a starting point rather than a limit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

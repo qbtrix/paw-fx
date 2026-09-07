@@ -194,6 +194,14 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
 | smoke-ring | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/smoke-ring.ts` |
 | warp | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/warp.ts` |
+| snow-fall | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/snow/src/options.ts` |
+| bokeh-drift | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/ambient/src/options.ts` |
+| confetti-burst | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/confettiExplosions/src/options.ts` |
+| points-waves | MIT | [mrdoob/three.js](https://github.com/mrdoob/three.js) `2431a09`, `examples/webgl_points_waves.html` |
+| firefly-swarm | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/additive-fireflies/index.js` + `examples/additive-fireflies/index.html` |
+| canvas-trails | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/canvas-2d/index.js` + `examples/canvas-2d/index.html` |
+| morph-nav | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/auto-layout/nav/index.js` + `examples/auto-layout/nav/index.html` |
+| dock-magnify | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/dock.tsx` |
 
 ## The two shader families carry their licences differently
 

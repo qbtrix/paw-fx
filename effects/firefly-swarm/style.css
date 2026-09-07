@@ -1,0 +1,171 @@
+/* firefly-swarm: 225 additive dots orbiting the pointer. The #circle glow, its
+   two pseudo-element shadows and the .particle rule (plus-lighter blend, the
+   two box-shadows, the em sizing) are upstream's index.html, renamed to .fx-*.
+
+   THE em SIZING IS THE DESIGN. Upstream sets the wrapper to font-size .2vh, so
+   every em length below is a fraction of the WINDOW height: the glow is 100em
+   = 20vh across, each particle 5em = 1vh. A section is not the window, so the
+   field is a size container and the children resolve those same numbers
+   against the section instead (0.2cqh, cqh being 1% of the container's height).
+   Identical proportions, measured off the right box.
+
+   The resting state is a static warm cluster in the middle of the field, drawn
+   with the same glow tokens, so the section is a lit swarm before index.js
+   exists. The copy sits on --fx-scrim because the live swarm crosses it. */
+.fx-fly {
+  --fx-bg: #06040a;
+  --fx-bg-far: #1b0a14;
+  --fx-fly-1: #ff3b3b;
+  --fx-fly-2: #ff8f42;
+  --fx-fly-3: #ffbe3d;
+  --fx-ink: #fdf6f4;
+  --fx-muted: #d9c3bd;
+  --fx-accent: #ff9d6b;
+  --fx-scrim: color-mix(in oklab, #08050c 52%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(60% 50% at 50% 50%, var(--fx-bg-far), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  cursor: grab;
+  user-select: none;
+}
+.fx-fly:active { cursor: grabbing; }
+.fx-fly *,
+.fx-fly *::before,
+.fx-fly *::after { box-sizing: border-box; }
+
+/* upstream #animation-wrapper */
+.fx-fly__field {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  container-type: size;
+  color: var(--fx-fly-1);
+  pointer-events: none;
+}
+/* upstream's font-size: .2vh on the wrapper, resolved against the section */
+.fx-fly__field > * { font-size: 0.2cqh; }
+
+/* upstream #circle */
+.fx-fly__circle {
+  opacity: 0.3;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100em;
+  height: 100em;
+  margin: -50em 0 0 -50em;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+.fx-fly__circle::before,
+.fx-fly__circle::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.fx-fly__circle::before {
+  z-index: 1;
+  opacity: 1;
+  box-shadow: inset 0 0 25em 0 currentColor, 0 0 10em 1px currentColor, 0 0 5em 1px currentColor;
+}
+.fx-fly__circle::after {
+  z-index: 3;
+  opacity: 0.75;
+  box-shadow: inset 0 0 30em 0 currentColor;
+  background-image: radial-gradient(circle at 50% 50%, currentColor 0%, transparent 100%);
+}
+
+/* upstream .particle */
+.fx-fly__particle {
+  opacity: 0.5;
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: 5em;
+  height: 5em;
+  margin: -2.5em 0 0 -2.5em;
+  border-radius: 5em;
+  will-change: transform;
+  mix-blend-mode: plus-lighter;
+  background: currentColor;
+  box-shadow: 0 0 15em 0 currentColor, 0 0 5em 0 currentColor;
+}
+
+/* The resting cluster: the same three warm tones scattered near the middle,
+   so a blocked script leaves a lit swarm rather than an empty field. */
+.fx-fly__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(22rem 22rem at 50% 50%, color-mix(in oklab, var(--fx-fly-1) 34%, transparent), transparent 70%),
+    radial-gradient(7px 7px at 44% 44%, var(--fx-fly-3), transparent 62%),
+    radial-gradient(6px 6px at 57% 41%, var(--fx-fly-2), transparent 62%),
+    radial-gradient(9px 9px at 52% 58%, var(--fx-fly-1), transparent 62%),
+    radial-gradient(5px 5px at 39% 57%, var(--fx-fly-2), transparent 62%),
+    radial-gradient(7px 7px at 62% 60%, var(--fx-fly-3), transparent 62%),
+    radial-gradient(4px 4px at 47% 36%, var(--fx-fly-1), transparent 62%),
+    radial-gradient(6px 6px at 60% 50%, var(--fx-fly-1), transparent 62%),
+    radial-gradient(5px 5px at 36% 48%, var(--fx-fly-3), transparent 62%);
+  opacity: 0.9;
+  transition: opacity 600ms ease;
+}
+.fx-fly[data-fx-live] .fx-fly__rest { opacity: 0; }
+
+.fx-fly__inner {
+  max-width: 50rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: var(--fx-scrim);
+}
+.fx-fly__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-fly__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 5.8vw, 4.4rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-fly__lede {
+  margin: 1.5rem auto 0;
+  max-width: 33rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+.fx-fly__hint {
+  margin: 1.75rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--fx-muted);
+}

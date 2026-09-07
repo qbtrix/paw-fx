@@ -1,0 +1,95 @@
+/* snow-fall: a winter hero. The resting state is a real flake field drawn with
+   radial-gradient dots at four sizes, so the section is finished before
+   index.js exists; the tsParticles canvas covers it once a container has
+   actually loaded, which is the only thing that sets data-fx-live. The copy
+   sits on --fx-scrim so it keeps its contrast over the busiest live frame,
+   where a 10px flake can land under a letter. */
+.fx-snow {
+  --fx-bg: #0a1220;
+  --fx-bg-far: #16233a;
+  --fx-flake: #ffffff;
+  --fx-ink: #f6f8fc;
+  --fx-muted: #b3c0d4;
+  --fx-accent: #8fd0ff;
+  --fx-scrim: color-mix(in oklab, #060b14 62%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(80% 60% at 50% -10%, var(--fx-bg-far), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-snow *,
+.fx-snow *::before,
+.fx-snow *::after { box-sizing: border-box; }
+
+/* The CSS flake field. Four layers at different scales and opacities read as
+   the mixed 1-10px size range the preset falls at. */
+.fx-snow__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(4px 4px at 22% 18%, var(--fx-flake), transparent 62%),
+    radial-gradient(2.4px 2.4px at 68% 30%, var(--fx-flake), transparent 62%),
+    radial-gradient(5px 5px at 12% 62%, var(--fx-flake), transparent 62%),
+    radial-gradient(1.6px 1.6px at 84% 12%, var(--fx-flake), transparent 62%),
+    radial-gradient(3px 3px at 44% 78%, var(--fx-flake), transparent 62%),
+    radial-gradient(2px 2px at 92% 66%, var(--fx-flake), transparent 62%),
+    radial-gradient(3.6px 3.6px at 58% 48%, var(--fx-flake), transparent 62%),
+    radial-gradient(1.2px 1.2px at 34% 36%, var(--fx-flake), transparent 62%);
+  background-size: 300px 300px, 210px 210px, 420px 420px, 160px 160px, 340px 340px, 250px 250px, 380px 380px, 190px 190px;
+  opacity: 0.4;
+  transition: opacity 600ms ease;
+}
+/* Only a loaded container sets this, so a refused canvas keeps the flakes. */
+.fx-snow[data-fx-live] .fx-snow__rest { opacity: 0; }
+
+/* tsParticles appends its canvas here and sizes it to the host. */
+.fx-snow__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.fx-snow__canvas canvas { display: block; }
+
+.fx-snow__inner {
+  max-width: 54rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(2px);
+}
+.fx-snow__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-snow__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 6.5vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-snow__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

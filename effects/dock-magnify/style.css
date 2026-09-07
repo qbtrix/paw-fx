@@ -1,0 +1,146 @@
+/* dock-magnify: a pointer-reactive dock. Upstream is a React component whose
+   design lives in two Tailwind class strings; those are the rules here.
+
+   dockVariants: "mx-auto mt-8 flex h-[58px] w-max items-center justify-center
+   gap-2 rounded-2xl border p-2 backdrop-blur-md" over
+   "supports-backdrop-blur:bg-white/10 dark:bg-black/10".
+   DockIcon: "flex aspect-square cursor-pointer items-center justify-center
+   rounded-full" with width, height and padding from the component.
+
+   The resting state is the whole bar at --fx-dock-size, which is upstream's
+   own disableMagnification mode: a finished row of links. index.js only makes
+   the sizes follow the pointer, so a blocked script or a reader who asked for
+   stillness still gets working navigation. */
+.fx-dock {
+  --fx-dock-size: 40px;
+  --fx-bg: #0a0c11;
+  --fx-bg-far: #131a26;
+  --fx-glass: rgba(255, 255, 255, 0.1);
+  --fx-edge: rgba(255, 255, 255, 0.18);
+  --fx-ink: #f1f4fa;
+  --fx-muted: #b9c2d2;
+  --fx-accent: #8ad3ff;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 2rem;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1rem, 5vw, 4rem) clamp(2.5rem, 6vw, 4rem);
+  background:
+    radial-gradient(70% 50% at 50% 12%, var(--fx-bg-far), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-dock *,
+.fx-dock *::before,
+.fx-dock *::after { box-sizing: border-box; }
+
+.fx-dock__inner {
+  align-self: center;
+  justify-self: center;
+  max-width: 46rem;
+  text-align: center;
+}
+.fx-dock__eyebrow {
+  margin: 0 0 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-dock__title {
+  margin: 0;
+  font-size: clamp(2rem, 5.4vw, 3.8rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-dock__lede {
+  margin: 1.35rem auto 0;
+  max-width: 32rem;
+  font-size: clamp(1rem, 1.6vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* upstream dockVariants */
+.fx-dock__bar {
+  margin: 2rem auto 0;
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--fx-edge);
+  background: var(--fx-glass);
+  backdrop-filter: blur(12px);
+  /* Upstream's h-[58px] is size + 2 * padding + the bar's own p-2 at the
+     defaults; expressed here so a different --fx-dock-size still fits. */
+  min-height: calc(var(--fx-dock-size) + 1rem);
+}
+.fx-dock__bar::-webkit-scrollbar { display: none; }
+
+/* upstream DockIcon */
+.fx-dock__item {
+  position: relative;
+  flex: none;
+  display: flex;
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  width: var(--fx-dock-size);
+  height: var(--fx-dock-size);
+  /* upstream padding = Math.max(6, size * 0.2). It is a constant, not part of
+     the spring, so CSS can own it. */
+  padding: max(6px, calc(var(--fx-dock-size) * 0.2));
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fx-ink);
+  cursor: pointer;
+  text-decoration: none;
+}
+.fx-dock__item:hover { background: rgba(255, 255, 255, 0.16); }
+.fx-dock__item:focus-visible { outline: 2px solid var(--fx-accent); outline-offset: 3px; }
+.fx-dock__item svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The label. Shown on hover and on keyboard focus, so a dock of glyphs is
+   still readable to somebody who cannot guess them. */
+.fx-dock__tip {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.4rem;
+  background: #f1f4fa;
+  color: #10131a;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-dock__item:hover .fx-dock__tip,
+.fx-dock__item:focus-visible .fx-dock__tip { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .fx-dock__tip { transition: opacity 140ms ease; }
+}
