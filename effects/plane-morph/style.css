@@ -1,0 +1,217 @@
+/* plane-morph: five pictures that fly and rescale between two layouts instead of
+   unloading. Clicking one in the band sends it to the hero slot of the detail
+   view, where four satellites fade in around it; the back control sends it home.
+
+   NEITHER VIEW IS display:none, AND THAT IS THE POINT. The transition tweens a
+   GPU plane from the rect it has in one view to the rect it has in the other, so
+   the incoming view must already have real layout when the tween starts. Both
+   views are absolutely positioned over the stage and always laid out; the one
+   that is not showing is opacity 0 and pointer-events none, and index.js sets
+   `inert` on it so a keyboard cannot land in it either.
+
+   THE IMAGE SLOT IS THE src. The plane's texture is read from the slot's own
+   <img>, so it cannot be a CSS background. Upstream's six Unsplash photographs
+   do not ship; these are generated SVG plates. Swap one for your own picture by
+   changing one attribute:
+     <img class="fx-morph__img" alt="" src="/img/1.jpg">
+
+   THE RESTING STATE is the band of five real pictures with their captions, which
+   is what a blocked script, a pruned bundle, a refused or lost WebGL context and
+   prefers-reduced-motion all leave on screen. data-fx-live fades the <img>
+   elements to opacity 0 rather than removing them: their boxes are what the
+   planes are measured from. */
+.fx-morph {
+  --fx-bg: #0d0c0f;
+  --fx-ink: #f4f1ea;
+  --fx-muted: #a9a49b;
+  --fx-accent: #c8f24b;
+  --fx-line: rgba(244, 241, 234, 0.16);
+  --fx-radius: 8px;
+  --fx-pad: clamp(1.25rem, 4vw, 3.5rem);
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(0.9rem, 2vw, 1.5rem);
+  min-height: 100svh;
+  padding: var(--fx-pad);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-morph *,
+.fx-morph *::before,
+.fx-morph *::after { box-sizing: border-box; }
+
+.fx-morph__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.fx-morph__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+.fx-morph__back {
+  appearance: none;
+  border: 1px solid var(--fx-line);
+  border-radius: 999px;
+  padding: 0.45rem 1.1rem;
+  background: rgba(13, 12, 15, 0.9);
+  color: var(--fx-ink);
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.fx-morph__back:hover,
+.fx-morph__back:focus-visible { border-color: var(--fx-accent); color: var(--fx-accent); }
+
+/* The stage is the scene's box: index.js matches the camera FOV to it so the
+   z=0 plane maps 1:1 to its CSS pixels. */
+.fx-morph__stage {
+  position: relative;
+  min-height: 26rem;
+}
+
+.fx-morph__view {
+  position: absolute;
+  inset: 0;
+  transition: opacity 320ms ease;
+}
+.fx-morph__view[data-view="detail"] { opacity: 0; pointer-events: none; }
+.fx-morph[data-fx-view="detail"] .fx-morph__view[data-view="grid"] { opacity: 0; pointer-events: none; }
+.fx-morph[data-fx-view="detail"] .fx-morph__view[data-view="detail"] { opacity: 1; pointer-events: auto; }
+
+/* Grid view: a horizontal band of five slots at staggered heights, which is the
+   composition upstream's home page settles into once its carousel is at rest. */
+.fx-morph__band {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.5rem, 1.6vw, 1.25rem);
+}
+.fx-morph__slot {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 17%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fx-morph__band .fx-morph__slot:nth-child(1) { aspect-ratio: 2 / 3; transform: translateY(-8%); }
+.fx-morph__band .fx-morph__slot:nth-child(2) { aspect-ratio: 3 / 2; transform: translateY(14%); }
+.fx-morph__band .fx-morph__slot:nth-child(3) { aspect-ratio: 3 / 5; transform: translateY(-14%); }
+.fx-morph__band .fx-morph__slot:nth-child(4) { aspect-ratio: 3 / 4; transform: translateY(9%); }
+.fx-morph__band .fx-morph__slot:nth-child(5) { aspect-ratio: 5 / 3; transform: translateY(-4%); }
+
+.fx-morph__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--fx-radius);
+  transition: opacity 260ms ease;
+}
+.fx-morph[data-fx-live] .fx-morph__img { opacity: 0; }
+
+.fx-morph__caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding-top: 0.45rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--fx-muted);
+}
+.fx-morph__slot:hover .fx-morph__caption,
+.fx-morph__slot:focus-visible .fx-morph__caption { color: var(--fx-accent); }
+.fx-morph__slot:focus-visible { outline: 2px solid var(--fx-accent); outline-offset: 6px; }
+
+/* Detail view: the hero slot centred, with the four satellites scattered around
+   it at upstream's own horizontal offsets. */
+.fx-morph__constellation {
+  position: absolute;
+  inset: 0;
+}
+.fx-morph__view[data-view="detail"] .fx-morph__slot {
+  position: absolute;
+  cursor: default;
+}
+.fx-morph__slot--hero {
+  left: 50%;
+  top: 50%;
+  width: 23%;
+  aspect-ratio: 3 / 4;
+  transform: translate(-50%, -50%);
+}
+.fx-morph__slot--sat {
+  width: 11%;
+  aspect-ratio: 3 / 4;
+}
+/* INNER_X_OFFSETS_VW from src/pages/inner.js: 0, -14, 10, -6, 16. The hero takes
+   the 0; the four satellites take the rest. */
+.fx-morph__slot--sat-1 { left: calc(50% - 14vw); top: 6%; transform: translateX(-50%); }
+.fx-morph__slot--sat-2 { left: calc(50% + 10vw); top: 12%; transform: translateX(-50%); }
+.fx-morph__slot--sat-3 { left: calc(50% - 6vw); bottom: 6%; transform: translateX(-50%); }
+.fx-morph__slot--sat-4 { left: calc(50% + 16vw); bottom: 12%; transform: translateX(-50%); }
+
+.fx-morph__fact {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: 24rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  background: rgba(13, 12, 15, 0.88);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--fx-ink);
+}
+
+.fx-morph__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-morph__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+@media (max-width: 52rem) {
+  .fx-morph__band { flex-wrap: wrap; align-content: center; justify-content: center; }
+  .fx-morph__slot { width: 28%; }
+  .fx-morph__band .fx-morph__slot { transform: none; }
+  .fx-morph__caption { position: static; }
+  .fx-morph__slot--hero { width: 46%; }
+  .fx-morph__slot--sat { width: 20%; }
+  .fx-morph { min-height: auto; }
+  .fx-morph__stage { min-height: 30rem; }
+}

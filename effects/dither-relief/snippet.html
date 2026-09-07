@@ -1,0 +1,35 @@
+<!-- dither-relief section. Finished at rest with CSS alone: the framed picture
+     below is a real <img> at full opacity, and index.js only fades it out once a
+     WebGL context exists and the box field is on screen. A blocked script, a
+     pruned bundle, a refused context, a lost context or prefers-reduced-motion
+     all leave the photograph exactly as it reads here.
+
+     THE IMAGE SLOT IS THE src. The picture's pixels are what the vertex shader
+     samples for each cell's brightness, so unlike most galleries here it cannot
+     be a CSS background. The plate below is generated SVG -- upstream's embedded
+     portrait is content under separate rights and does not ship. Swap in your
+     own by changing one attribute:
+       <img class="fx-dither__img" alt="" src="/img/portrait.jpg">
+     A square-ish picture with real tonal range reads best: the relief is
+     brightness and the dither needs mid-tones to cross-hatch through.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/dither-relief/style.css">
+<section class="fx-dither" data-fx="dither-relief">
+  <div class="fx-dither__head">
+    <p class="fx-dither__eyebrow">Process &mdash; 01</p>
+    <h2 class="fx-dither__title">Every pixel through a threshold map.</h2>
+    <p class="fx-dither__note">The picture is rebuilt as sixty-five thousand small solids. Each one stands proud of the plane by its own brightness, then a sweep runs through the grid and every cell decides, against a four-by-four ordered threshold, whether it is black or white.</p>
+  </div>
+  <div class="fx-dither__stage">
+    <figure class="fx-dither__frame">
+      <img class="fx-dither__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22512%22%20height%3D%22512%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f6f2e6%22%2F%3E%3Cstop%20offset%3D%220.55%22%20stop-color%3D%22%238d8778%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23161410%22%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D%22b%22%20cx%3D%220.38%22%20cy%3D%220.34%22%20r%3D%220.52%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23fffdf5%22%20stop-opacity%3D%220.95%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23fffdf5%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%3ClinearGradient%20id%3D%22c%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23efe9d9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232a251b%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22url(%23a)%22%2F%3E%3Cellipse%20cx%3D%22196%22%20cy%3D%22192%22%20rx%3D%22118%22%20ry%3D%22140%22%20fill%3D%22url(%23c)%22%2F%3E%3Cpath%20d%3D%22M78%20512%20C86%20386%20132%20330%20196%20330%20C260%20330%20306%20386%20314%20512%20Z%22%20fill%3D%22%23d9d2bf%22%2F%3E%3Ccircle%20cx%3D%22372%22%20cy%3D%22140%22%20r%3D%2278%22%20fill%3D%22%233a352a%22%20opacity%3D%220.72%22%2F%3E%3Ccircle%20cx%3D%22372%22%20cy%3D%22140%22%20r%3D%2244%22%20fill%3D%22%23f2ecd9%22%20opacity%3D%220.85%22%2F%3E%3Crect%20x%3D%22332%22%20y%3D%22286%22%20width%3D%22150%22%20height%3D%2226%22%20fill%3D%22%230e0c08%22%2F%3E%3Crect%20x%3D%22332%22%20y%3D%22330%22%20width%3D%22150%22%20height%3D%2226%22%20fill%3D%22%235a5446%22%2F%3E%3Crect%20x%3D%22332%22%20y%3D%22374%22%20width%3D%22150%22%20height%3D%2226%22%20fill%3D%22%23a49c88%22%2F%3E%3Crect%20x%3D%22332%22%20y%3D%22418%22%20width%3D%22150%22%20height%3D%2226%22%20fill%3D%22%23ded7c4%22%2F%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20fill%3D%22url(%23b)%22%2F%3E%3C%2Fsvg%3E">
+    </figure>
+  </div>
+  <div class="fx-dither__foot">
+    <span><strong>256 &times; 256</strong> cells</span>
+    <span><strong>4 &times; 4</strong> Bayer</span>
+    <span>Relief resolves to two tone</span>
+  </div>
+</section>

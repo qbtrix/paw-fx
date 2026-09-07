@@ -1,0 +1,483 @@
+=== paw-fx upstream snapshot ===================================================
+source        https://codepen.io/damarberlari/pen/pvgKamj
+title         Dithering - Part 1
+author        damarberlari
+retrieved     2026-09-07
+wrapper       https://cdpn.io/damarberlari/fullpage/pvgKamj
+wrapper bytes 131501
+wrapper sha256 e1ccc094787c62ff7500ce062a21e5a1a36614855cbe4f9da73bceb0f823b53e
+
+The MIT Licence, as CodePen prints it at
+https://codepen.io/damarberlari/details/pvgKamj:
+
+  Copyright (c) 2026 by damarberlari (https://codepen.io/damarberlari/pen/pvgKamj)
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+WHAT THIS FILE IS. A pen has no commit, so paw-fx pins a committed copy of the
+source it ported from and the gate hashes this file. The three author panels
+below are taken out of the srcdoc document inside the wrapper named above --
+never the wrapper itself, whose bytes carry CodePen's content-hashed asset URLs
+and move on CodePen's own redeploys.
+
+Panels appear in this fixed order: HTML, then CSS, then JS, each behind a
+--- <PANEL> --- delimiter line.
+
+Three transformations, all mechanical, applied by scripts/extract-panels.py:
+  1. CodePen's injected loop guards are removed. `window.CP.shouldStopExecution`
+     and `window.CP.exitedLoop` are added by CodePen's compiler; the author never
+     wrote them.
+  2. base64 image data URIs are replaced by the literal token
+     `data:image/jpeg;base64,PHOTOGRAPH-REMOVED`. 1 was/were replaced here.
+     An embedded photograph is content under separate rights, not code, and
+     paw-fx redistributes no photography.
+  3. CodePen's own injections are dropped: its <style>/<script> tags inside the
+     srcdoc (cpwebassets, codepenassets, stopExecutionOnTimeout), the
+     `window.console = window.console || function()...;` shim it prepends to
+     every compiled JS panel, and every <script> tag in the HTML panel -- the
+     script IS the JS panel below.
+===============================================================================
+
+--- HTML ---
+<canvas class="webgl"></canvas>
+
+--- CSS ---
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #222222;
+}
+
+.webgl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+--- JS ---
+import * as THREE from "https://esm.sh/three";
+import { createTimeline, animate } from "https://esm.sh/animejs";
+
+//SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#F9C939");
+
+// CAMERA
+const camera = new THREE.OrthographicCamera();
+
+camera.position.set(0, 0, 130);
+camera.lookAt(0, 0, 0);
+camera.near = 0.01;
+camera.far = 1000;
+
+const cameraAnchor = new THREE.Group();
+cameraAnchor.name = "cameraAnchor";
+cameraAnchor.add(camera);
+scene.add(cameraAnchor);
+
+//RENDERER
+const canvas = document.querySelector("canvas.webgl");
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  preserveDrawingBuffer: true,
+  antialias: true });
+
+
+//OBJECT TEMPLATE
+class Grid {
+  constructor(gridProperties) {
+    this.drawn = false;
+    this.shown = false;
+
+    this.gridProperties = gridProperties;
+    this.cellProperties = this.calculateCellProperties(gridProperties);
+  }
+
+  calculateCellProperties(gridProperties) {
+    const rows = gridProperties.rows || 1;
+    const columns = gridProperties.columns || 1;
+    const cellSize = gridProperties.cellSize || 1;
+    const cellThickness = gridProperties.cellThickness || cellSize;
+    const spacing = gridProperties.spacing || 1;
+
+    const objectCount = rows * columns;
+
+    const properties = new Array(objectCount);
+
+    const positions = (i, rows, columns) => {
+      // Calculate cell position on the grid based on index
+      const row = Math.floor(i / columns);
+      const column = i % columns;
+
+      // Center the grid around origin
+      const x = (column - (columns - 1) / 2) * spacing;
+      const y = (-row + (rows - 1) / 2) * spacing;
+      const z = 0;
+
+      return {
+        x,
+        y,
+        z,
+        row,
+        column };
+
+    };
+
+    for (let i = 0; i < objectCount; i++) {properties[i] = {};
+      properties[i].id = i;
+
+      const { x, y, z, row, column } = positions(i, rows, columns);
+      properties[i].x = x;
+      properties[i].y = y;
+      properties[i].z = z;
+      properties[i].row = row;
+      properties[i].column = column;
+      properties[i].cellSize = cellSize;
+      properties[i].cellThickness = cellThickness;
+    }return properties;
+  }
+
+  init() {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const attributes = {
+      aRow: new THREE.InstancedBufferAttribute(
+      new Float32Array(this.cellProperties.map(prop => prop.row)),
+      1),
+
+      aColumn: new THREE.InstancedBufferAttribute(
+      new Float32Array(this.cellProperties.map(prop => prop.column)),
+      1) };
+
+
+
+    geometry.setAttribute("aRow", attributes.aRow);
+    geometry.setAttribute("aColumn", attributes.aColumn);
+
+    const gridType = this.gridProperties.gridType || 0;
+
+    const vertexShader = `
+      #define GRID_TYPE ${gridType}
+      
+      uniform float uRowSize;
+      uniform float uColumnSize;
+      uniform float uAnimationProgress;
+      uniform float uGridOffsetStart;
+      uniform float uGridOffsetEnd;
+      uniform float uCellScaleStart;
+      uniform float uCellScaleEnd;
+      uniform sampler2D uTexture;
+
+      attribute float aRow;
+      attribute float aColumn;
+
+      varying vec3 vColor;
+      varying vec3 vNormal;
+
+      float bayer4x4(vec2 coord) {
+      ivec2 iCoord = ivec2(mod(coord, 4.0));
+      const mat4 bayer = mat4(
+          vec4(0.0 / 16.0, 12.0 / 16.0, 3.0 / 16.0, 15.0 / 16.0), 
+          vec4(8.0 / 16.0, 4.0 / 16.0, 11.0 / 16.0, 7.0 / 16.0), 
+          vec4(2.0 / 16.0, 14.0 / 16.0, 1.0 / 16.0, 13.0 / 16.0), 
+          vec4(10.0 / 16.0, 6.0 / 16.0, 9.0 / 16.0, 5.0 / 16.0)
+          );
+      return bayer[iCoord.y][iCoord.x];
+      }
+
+      mat3 scale(vec3 _scale){
+          return mat3(_scale.x, 0.0, 0.0,
+                  0.0, _scale.y, 0.0,
+                  0.0, 0.0, _scale.z);
+      }
+
+      void main() {
+        vec2 st = vec2(aColumn, uRowSize - 1.0 - aRow) / vec2(uColumnSize - 1.0, uRowSize - 1.0);
+        float bayerThreshold = bayer4x4(vec2(aColumn, aRow));
+
+        #if GRID_TYPE == 1 //Image Mode
+            vec4 textureColor = texture2D(uTexture, st);
+            float initialColor = textureColor.r;
+            float borderWidth = 2.0;
+        #elif GRID_TYPE == 2 //Threshold Map Mode
+            float initialColor = bayerThreshold;
+            float borderWidth = 0.0;
+        #else
+            float initialColor = 0.5;
+            float borderWidth = 0.0;
+        #endif
+
+        float cellIndex = ((aRow * uColumnSize) + aColumn) / (uRowSize * uColumnSize);
+        float animationDelay = cellIndex * 0.9;
+        float animationDuration = 0.1;
+        float animationEnd = animationDelay + animationDuration;
+        float animationProgress = smoothstep(animationDelay, animationEnd, uAnimationProgress);
+
+        float cellOffset = mix(uGridOffsetStart, uGridOffsetEnd, animationProgress);
+        float cellScale = mix(uCellScaleStart, uCellScaleEnd, animationProgress );
+        cellScale = max(cellScale, 0.0);
+
+        float ditheredColor = step(bayerThreshold, initialColor);
+        float ditherProgress = smoothstep(0.48, 0.6, animationProgress); 
+        float finalColor = mix(initialColor, ditheredColor, ditherProgress);
+        
+        //Check if border
+        float isBorder = clamp(
+          step(aColumn + 0.1, borderWidth) + 
+          step(uColumnSize - borderWidth, aColumn) + 
+          step(aRow + 0.1, borderWidth) + 
+          step(uRowSize - borderWidth, aRow), 
+        0.0, 1.0);
+        
+        //Change color to black if isBorder
+        finalColor *= (1.0 - isBorder);
+
+        vec4 cellLocalPosition = vec4(position, 1.0);
+        cellLocalPosition.xyz *= scale(vec3(cellScale));
+
+        vec4 cellPosition = modelMatrix * instanceMatrix * cellLocalPosition;
+        cellPosition.z += cellOffset;
+
+        vec4 modelNormal = modelMatrix * instanceMatrix * vec4(normal, 0.0);
+
+        gl_Position = projectionMatrix * viewMatrix * cellPosition;
+        vColor = vec3(finalColor);
+        vNormal = normalize(modelNormal.xyz);
+      }
+    `;
+
+    const fragmentShader = `
+        varying vec3 vColor;
+        varying vec3 vNormal;
+
+        void main() {
+        float shadow = dot(normalize(vec3(0.0, 0.0, 1.0)), vNormal);
+        vec3 color = vColor * (0.9 + 0.1 * shadow);
+        gl_FragColor = vec4(color, 1.0);
+
+        }
+    `;
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uRowSize: { value: this.gridProperties.rows || 1 },
+        uColumnSize: { value: this.gridProperties.columns || 1 },
+        uGridOffsetStart: { value: 0 },
+        uGridOffsetEnd: { value: 0 },
+        uCellScaleStart: { value: 1 },
+        uCellScaleEnd: { value: 1 },
+        uTexture: { value: null },
+        uAnimationProgress: { value: 0 } } });
+
+
+
+    //Add Image Texture
+    if (this.gridProperties.gridType == 1 && this.gridProperties.image) {
+      const textureLoader = new THREE.TextureLoader();
+      const texture = textureLoader.load(
+      this.gridProperties.image,
+      texture => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        material.uniforms.uTexture.value = texture;
+        material.needsUpdate = true;
+      });
+
+    }
+
+    const mesh = new THREE.InstancedMesh(
+    geometry,
+    material,
+    this.cellProperties.length);
+
+
+    const group = new THREE.Group();
+    group.add(mesh);
+
+    this.group = group;
+    this.geometry = geometry;
+    this.material = material;
+    this.instance = mesh;
+
+    //Update Cell Position and Size
+    for (let i = 0; i < this.cellProperties.length; i++) {const properties = this.cellProperties[i];
+      const { x, y, z, cellSize, cellThickness } = properties;
+
+      const objectRef = new THREE.Object3D();
+      objectRef.position.set(x, y, z);
+      objectRef.scale.set(cellSize, cellSize, cellThickness);
+      objectRef.updateMatrix();
+
+      this.instance.setMatrixAt(i, objectRef.matrix);
+    }this.instance.instanceMatrix.needsUpdate = true;
+    this.drawn = true;
+  }
+
+  showAt(scene) {
+    if (!this.drawn) {
+      this.init();
+    }
+
+    if (!this.shown) {
+      scene.add(this.group);
+      this.shown = true;
+    }
+  }
+
+  hideFrom(scene) {
+    if (this.shown) {
+      scene.remove(this.group);
+      this.shown = false;
+    }
+  }}
+
+
+
+//INITIATE OBJECTS
+const imageGrid = new Grid({
+  name: "image-grid",
+  rows: 256,
+  columns: 256,
+  cellSize: 1,
+  spacing: 1,
+  gridType: 1,
+  image: "data:image/jpeg;base64,PHOTOGRAPH-REMOVED" });
+
+imageGrid.showAt(scene);
+
+const thresholdMap = new Grid({
+  name: "threshold-map",
+  rows: 256,
+  columns: 256,
+  cellSize: 1,
+  cellThickness: 0.1,
+  spacing: 1,
+  gridType: 2 });
+
+thresholdMap.showAt(scene);
+
+//ANIMATE & RENDER
+
+//Initial Camera Position
+camera.zoom = 12;
+camera.updateProjectionMatrix();
+cameraAnchor.rotation.reorder("YXZ");
+cameraAnchor.rotation.y = Math.PI * 0.2;
+cameraAnchor.rotation.x = -Math.PI * 0.15;
+cameraAnchor.position.set(-124, 124, 0);
+
+//Initial Object State;
+imageGrid.material.uniforms.uAnimationProgress.value = 0;
+imageGrid.material.uniforms.uGridOffsetStart.value = 16;
+imageGrid.material.uniforms.uGridOffsetEnd.value = -16;
+
+thresholdMap.material.uniforms.uAnimationProgress.value = 0;
+thresholdMap.material.uniforms.uGridOffsetStart.value = 0;
+thresholdMap.material.uniforms.uGridOffsetEnd.value = -10;
+thresholdMap.material.uniforms.uCellScaleStart.value = 1;
+thresholdMap.material.uniforms.uCellScaleEnd.value = -0.6;
+
+//Animate;
+const timeline = createTimeline({
+  loop: true,
+  onUpdate: () => {
+    renderer.render(scene, camera);
+  } });
+
+
+const panCamera = animate(cameraAnchor.position, {
+  x: 0,
+  y: 0,
+  duration: 10000,
+  ease: "inOutCubic" });
+
+
+timeline.sync(panCamera, 0);
+
+const zoomOutCamera = animate(camera, {
+  zoom: 0.9,
+  duration: 10000,
+  composition: "none",
+  onUpdate: () => {
+    camera.updateProjectionMatrix();
+  } });
+
+
+timeline.sync(zoomOutCamera, 0);
+
+const animateImageGrid = animate(
+imageGrid.material.uniforms.uAnimationProgress,
+{
+  value: 1,
+  duration: 15000,
+  ease: "linear" });
+
+
+
+timeline.sync(animateImageGrid, 500);
+
+const animateThresholdMap = animate(
+thresholdMap.material.uniforms.uAnimationProgress,
+{
+  value: 1,
+  duration: 15000,
+  ease: "linear" });
+
+
+
+timeline.sync(animateThresholdMap, "<<+=660");
+
+
+//RESIZE FUNCTION
+const resize = (width, height, pixelRatio) => {
+  const boundingBoxSize = 256;
+  const aspectRatio = width / height;
+
+  //RESIZE CAMERA
+  if (aspectRatio < 1) {
+    camera.left = -boundingBoxSize / 2;
+    camera.right = boundingBoxSize / 2;
+    camera.top = boundingBoxSize / 2 / aspectRatio;
+    camera.bottom = -boundingBoxSize / 2 / aspectRatio;
+  } else {
+    camera.left = -boundingBoxSize / 2 * aspectRatio;
+    camera.right = boundingBoxSize / 2 * aspectRatio;
+    camera.top = boundingBoxSize / 2;
+    camera.bottom = -boundingBoxSize / 2;
+  }
+
+  camera.aspect = aspectRatio;
+  camera.updateProjectionMatrix();
+
+  //RESIZE RENDERER
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(pixelRatio, 2));
+};
+
+//Init resize function for the 1st time
+resize(window.innerWidth, window.innerHeight, window.devicePixelRatio);
+
+//Reinit resize function on window resize
+window.addEventListener("resize", () => {
+  resize(window.innerWidth, window.innerHeight, window.devicePixelRatio);
+});
+//# sourceURL=pen.js

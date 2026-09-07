@@ -1,0 +1,70 @@
+<!-- plane-morph section. Finished at rest with CSS alone: the band below is five
+     real pictures with captions, and index.js only fades them out once a WebGL
+     context exists and the planes are parked over their boxes. A blocked script,
+     a pruned bundle, a refused context, a lost context or prefers-reduced-motion
+     all leave the band exactly as it reads here -- and under reduced motion the
+     views still swap, instantly, so nothing is locked behind an animation.
+
+     BOTH VIEWS ARE ALWAYS LAID OUT. The detail view below is not display:none:
+     the transition tweens a plane from the rect it has in the band to the rect it
+     has in the detail view, so that rect must already exist when the tween starts.
+     It is opacity 0 and inert until it is the showing view.
+
+     THE IMAGE SLOT IS THE src. The plane's texture is read from the slot's own
+     <img>, so it cannot be a CSS background. These five are generated SVG plates;
+     upstream's Unsplash photographs do not ship. Swap one for your own picture by
+     changing one attribute:
+       <img class="fx-morph__img" alt="" src="/img/1.jpg">
+     The satellite slots carry no <img> on purpose -- all five satellites reuse the
+     clicked picture's texture, which is what upstream does too.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/plane-morph/style.css">
+<section class="fx-morph" data-fx="plane-morph">
+  <div class="fx-morph__head">
+    <h2 class="fx-morph__title">Selected</h2>
+    <button type="button" class="fx-morph__back" hidden>Back to selected</button>
+  </div>
+  <div class="fx-morph__stage">
+    <div class="fx-morph__view" data-view="grid">
+      <div class="fx-morph__band">
+      <button type="button" class="fx-morph__slot" aria-expanded="false">
+        <img class="fx-morph__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22900%22%20viewBox%3D%220%200%20600%20900%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22s0%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23243b53%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237fb2d9%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g0%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%237fb2d9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230b1622%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22600%22%20height%3D%22900%22%20fill%3D%22url(%23s0)%22%2F%3E%3Ccircle%20cx%3D%22444%22%20cy%3D%22153%22%20r%3D%2251%22%20fill%3D%22%23e8f2fb%22%20opacity%3D%220.75%22%2F%3E%3Cpath%20d%3D%22M0%20468%20L108%20324%20L186%20423%20L282%20216%20L378%20450%20L474%20297%20L600%20405%20L600%20900%20L0%20900%20Z%22%20fill%3D%22url(%23g0)%22%2F%3E%3Cpath%20d%3D%22M282%20216%20L318%20324%20L246%20324%20Z%22%20fill%3D%22%23e8f2fb%22%20opacity%3D%220.9%22%2F%3E%3Cpath%20d%3D%22M0%20774%20L600%20711%20L600%20900%20L0%20900%20Z%22%20fill%3D%22%230b1622%22%20opacity%3D%220.7%22%2F%3E%3C%2Fsvg%3E">
+        <span class="fx-morph__caption">Seealpsee</span>
+      </button>
+      <button type="button" class="fx-morph__slot" aria-expanded="false">
+        <img class="fx-morph__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%22600%22%20viewBox%3D%220%200%20900%20600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22s1%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%233d2b1f%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23c98b4b%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g1%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23c98b4b%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23120c08%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22900%22%20height%3D%22600%22%20fill%3D%22url(%23s1)%22%2F%3E%3Ccircle%20cx%3D%22666%22%20cy%3D%22102%22%20r%3D%2251%22%20fill%3D%22%23f6e2c4%22%20opacity%3D%220.75%22%2F%3E%3Cpath%20d%3D%22M0%20312%20L162%20216%20L279%20282%20L423%20144%20L567%20300%20L711%20198%20L900%20270%20L900%20600%20L0%20600%20Z%22%20fill%3D%22url(%23g1)%22%2F%3E%3Cpath%20d%3D%22M423%20144%20L477%20216%20L369%20216%20Z%22%20fill%3D%22%23f6e2c4%22%20opacity%3D%220.9%22%2F%3E%3Cpath%20d%3D%22M0%20516%20L900%20474%20L900%20600%20L0%20600%20Z%22%20fill%3D%22%23120c08%22%20opacity%3D%220.7%22%2F%3E%3C%2Fsvg%3E">
+        <span class="fx-morph__caption">Cirque</span>
+      </button>
+      <button type="button" class="fx-morph__slot" aria-expanded="false">
+        <img class="fx-morph__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%221000%22%20viewBox%3D%220%200%20600%201000%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22s2%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231f3a30%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2366b593%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g2%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2366b593%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2308130f%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22600%22%20height%3D%221000%22%20fill%3D%22url(%23s2)%22%2F%3E%3Ccircle%20cx%3D%22444%22%20cy%3D%22170%22%20r%3D%2251%22%20fill%3D%22%23dff3e8%22%20opacity%3D%220.75%22%2F%3E%3Cpath%20d%3D%22M0%20520%20L108%20360%20L186%20470%20L282%20240%20L378%20500%20L474%20330%20L600%20450%20L600%201000%20L0%201000%20Z%22%20fill%3D%22url(%23g2)%22%2F%3E%3Cpath%20d%3D%22M282%20240%20L318%20360%20L246%20360%20Z%22%20fill%3D%22%23dff3e8%22%20opacity%3D%220.9%22%2F%3E%3Cpath%20d%3D%22M0%20860%20L600%20790%20L600%201000%20L0%201000%20Z%22%20fill%3D%22%2308130f%22%20opacity%3D%220.7%22%2F%3E%3C%2Fsvg%3E">
+        <span class="fx-morph__caption">North Face</span>
+      </button>
+      <button type="button" class="fx-morph__slot" aria-expanded="false">
+        <img class="fx-morph__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22800%22%20viewBox%3D%220%200%20600%20800%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22s3%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%233a2340%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a37cc4%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g3%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23a37cc4%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23100a14%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22600%22%20height%3D%22800%22%20fill%3D%22url(%23s3)%22%2F%3E%3Ccircle%20cx%3D%22444%22%20cy%3D%22136%22%20r%3D%2251%22%20fill%3D%22%23ecdff5%22%20opacity%3D%220.75%22%2F%3E%3Cpath%20d%3D%22M0%20416%20L108%20288%20L186%20376%20L282%20192%20L378%20400%20L474%20264%20L600%20360%20L600%20800%20L0%20800%20Z%22%20fill%3D%22url(%23g3)%22%2F%3E%3Cpath%20d%3D%22M282%20192%20L318%20288%20L246%20288%20Z%22%20fill%3D%22%23ecdff5%22%20opacity%3D%220.9%22%2F%3E%3Cpath%20d%3D%22M0%20688%20L600%20632%20L600%20800%20L0%20800%20Z%22%20fill%3D%22%23100a14%22%20opacity%3D%220.7%22%2F%3E%3C%2Fsvg%3E">
+        <span class="fx-morph__caption">Aoraki</span>
+      </button>
+      <button type="button" class="fx-morph__slot" aria-expanded="false">
+        <img class="fx-morph__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221000%22%20height%3D%22600%22%20viewBox%3D%220%200%201000%20600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22s4%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23402a2a%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23d2716a%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22g4%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23d2716a%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23150b0b%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221000%22%20height%3D%22600%22%20fill%3D%22url(%23s4)%22%2F%3E%3Ccircle%20cx%3D%22740%22%20cy%3D%22102%22%20r%3D%2251%22%20fill%3D%22%23f8dcd8%22%20opacity%3D%220.75%22%2F%3E%3Cpath%20d%3D%22M0%20312%20L180%20216%20L310%20282%20L470%20144%20L630%20300%20L790%20198%20L1000%20270%20L1000%20600%20L0%20600%20Z%22%20fill%3D%22url(%23g4)%22%2F%3E%3Cpath%20d%3D%22M470%20144%20L530%20216%20L410%20216%20Z%22%20fill%3D%22%23f8dcd8%22%20opacity%3D%220.9%22%2F%3E%3Cpath%20d%3D%22M0%20516%20L1000%20474%20L1000%20600%20L0%20600%20Z%22%20fill%3D%22%23150b0b%22%20opacity%3D%220.7%22%2F%3E%3C%2Fsvg%3E">
+        <span class="fx-morph__caption">Ridgeline</span>
+      </button>
+      </div>
+    </div>
+    <div class="fx-morph__view" data-view="detail">
+      <div class="fx-morph__constellation">
+        <div class="fx-morph__slot fx-morph__slot--hero"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-1"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-2"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-3"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-4"></div>
+        <p class="fx-morph__fact">The plane never leaves the GPU. Its bounds tween from the rect it held in the band to the rect it holds here, so the picture flies and rescales instead of unloading and loading again.</p>
+      </div>
+    </div>
+  </div>
+  <div class="fx-morph__foot">
+    <span>Click a frame</span>
+    <span>25 planes, one scene</span>
+    <span>Bounds tween, nothing reloads</span>
+  </div>
+</section>

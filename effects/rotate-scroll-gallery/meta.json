@@ -1,0 +1,80 @@
+{
+  "name": "rotate-scroll-gallery",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["gallery", "scroll", "3d", "rotate", "codrops", "anime", "marquee", "hold"],
+  "summary": "A serpentining column of cards, each offset sideways by a sine of its own index. As a card rises through the viewport it flips in on the X axis, squashes and stretches its own box, brightens out of black, then HOLDS flat and legible through the middle quarter of its range before flipping away, while a marquee scrubs across the section behind it. Four upstream variants ship behind one option.",
+  "needs": ["anime"],
+  "options": {
+    "variant": {
+      "type": "string",
+      "default": "hold",
+      "description": "hold is upstream index5 (flip, squash, hold flat at the middle, flip away). tumble is index (a plain three-axis tumble). fold is index3 (a cosine fold with a saturate and brightness pass). spin is index4 (a Y-axis spin through the frame)."
+    },
+    "amplitude": {
+      "type": "number",
+      "default": 0.05,
+      "description": "How far a row is offset sideways, as a fraction of the viewport width. Upstream's index5 amplitude of innerWidth * 0.05; the other variants use 0.2."
+    },
+    "marquee": {
+      "type": "boolean",
+      "default": true,
+      "description": "Scrub the marquee strip across the section as it passes. Upstream's animateMarquee, x from 100vw to -100%."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/RotatingOnScrollAnimations",
+    "commit": "ebbe2c9bd80237d05c709475e47aad171030e21f",
+    "path": [
+      "js/index5.js",
+      "js/index.js",
+      "js/index3.js",
+      "js/index4.js",
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "index5 is the default variant rather than index, and index2 does not ship at all. hold, tumble, fold and spin are upstream's index5, index, index3 and index4 behind one `variant` option, each carrying its own onUpdate body, its own random draws and its own sideways amplitude and angle.",
+      "why": "This sits beside two scroll-driven 3D galleries already in the library -- scroll-3d-grid sweeps a wall past a fixed camera, grid-3d-stagger tips cells in and out -- and both run their transform straight off scroll progress, so a picture is never still in either. index5's holdAtMiddle() is the one thing neither does: it remaps the middle 25% of the range to a constant 0.5 and the card STOPS, flat and legible, while the reader passes it. That hold is what earns the slot, so it leads. index2 is index with wider rotation ranges and a different z curve; shipping it would be a fifth name for a variant a number already covers.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP and ScrollTrigger are replaced by anime.js v4's onScroll with sync. Every variant's ScrollTrigger.create({trigger: item, start: 'top bottom+=20%', end: 'bottom top-=20%', scrub: true, onUpdate}) becomes onScroll({target: item, enter: 'bottom+=20% top', leave: 'top-=20% bottom', sync: true, onUpdate}) -- the two halves of the threshold are the other way round between the libraries, because GSAP writes target then container and anime writes container then target. gsap.utils.interpolate and gsap.utils.mapRange are written out as one line each, gsap.quickSetter is a style write, and every number, curve and exponent in the onUpdate bodies is unchanged.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. The scrub was never the mechanism here -- the maths is all in onUpdate, and both libraries hand it the same progress. The reversed threshold spelling is the trap worth naming: getting it round the wrong way does not throw, it pins progress and leaves every card frozen at its start transform for the whole section.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Lenis is not a dependency. initSmoothScrolling, the gsap.ticker.add bridge and gsap.ticker.lagSmoothing(0) do not ship. imagesLoaded and the .loading body class do not ship either.",
+      "why": "Upstream's Lenis exists to drive ScrollTrigger.update off its own raf; anime's onScroll listens to the real scroll container, so there is nothing to bridge. Smooth scrolling already ships separately as smooth-scroll and composes with this. imagesLoaded only gated the reveal on 3.2 MB of photographs that do not ship here, so there is nothing to wait for.",
+      "kind": "seam"
+    },
+    {
+      "what": "createGalleryWrappers() does not run: the wrapper element around each item is written into snippet.html rather than inserted by script at DOMContentLoaded.",
+      "why": "The wrapper carries the perspective and the sideways offset, and the resting state has to be the finished composition with no script at all. Building the DOM in JS would mean the section reads differently with the bundle pruned, which is the failure the resting-state gate exists to catch.",
+      "kind": "seam"
+    },
+    {
+      "what": "Everything is scoped to the mounted section: the items, the wrappers and the marquee are found through el.querySelectorAll rather than document-wide, and the whole build runs inside an anime createScope rooted on the section.",
+      "why": "Upstream is a whole demo page with one gallery. A page may carry this section twice, and a document-wide gsap.utils.toArray('.gallery__item') would have the second mount driving the first one's cards. The scope also owns the observers and every inline transform, so destroy() puts the column back flat rather than freezing it wherever the scrollbar was.",
+      "kind": "seam"
+    },
+    {
+      "what": "The section is overflow-x: clip rather than overflow: hidden.",
+      "why": "A card at rotateX 200deg and z -750px bleeds well past the column and has to be cropped, but overflow: hidden makes an element a scroll container -- and a scroll-driven animation on a descendant then resolves against a box that never scrolls, which pins every card silently while the build stays green. clip crops without creating a scroll container.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns immediately, leaving every card flat, unrotated and at full brightness.",
+      "why": "Effect contract: stillness at rest. That composition is not a compromise here -- it is precisely the hold frame this variant's own holdAtMiddle produces in the middle of the range, so a reader who asked for stillness gets the frame the effect was built to present.",
+      "kind": "seam"
+    },
+    {
+      "what": "No photograph ships. Each cell paints a gradient built from its own --fx-hue, with --fx-img layered over it when a site supplies one, instead of upstream's background-image per .gallery__item.",
+      "why": "Upstream carries 40 .webp files totalling 3.2 MB, licensed separately from its MIT code. Keeping the gradient underneath the slot means a missing file is a coloured card rather than a hole.",
+      "kind": "ours"
+    }
+  ]
+}

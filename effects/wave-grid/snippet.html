@@ -1,0 +1,48 @@
+<!-- wave-grid section. Finished at rest with CSS alone: with no script, a pruned
+     bundle, a refused or lost WebGL context or prefers-reduced-motion, the stage
+     paints the cube field itself out of two crossed repeating gradients on a
+     tipped plane, and the copy below sits over it at full opacity exactly where
+     it sits live. index.js replaces the drawn field with the real one and fades
+     the copy in.
+
+     THE COPY BLOCKS CARRY THEIR OWN SCRIM on purpose. Live, the field is close to
+     white and the crests flood blue, so the luminance under the text moves a long
+     way during a ripple; the plates are what keep body text legible across it.
+
+     NO IMAGE AND NO FONT SHIP. This effect needs neither -- the field is
+     geometry. Change the wave colour with the --fx-crest custom property or the
+     colorHigh option.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/wave-grid/style.css">
+<section class="fx-wave" data-fx="wave-grid">
+  <div class="fx-wave__stage">
+    <div class="fx-wave__field" aria-hidden="true"></div>
+
+    <div class="fx-wave__nav">
+      <span class="fx-wave__plate fx-wave__fade"><a class="fx-wave__logo" href="#">Arkon</a></span>
+      <span class="fx-wave__plate fx-wave__fade fx-wave__links">
+        <a href="#work">Work</a>
+        <a href="#studio">Studio</a>
+        <a href="#contact">Contact</a>
+      </span>
+      <span class="fx-wave__plate fx-wave__fade fx-wave__socials">
+        <a href="#">Ig</a>
+        <a href="#">Li</a>
+      </span>
+      <span class="fx-wave__plate fx-wave__fade fx-wave__time"><p>09:41 AM HKT</p></span>
+    </div>
+
+    <div class="fx-wave__hero fx-wave__fade">
+      <h1>Sixteen hundred solids, one travelling wave.</h1>
+      <p>Move the pointer across the field. Every place it passes drops a point into a trail, and each of those sends a ripple outward that lifts the cubes it crosses and floods their crests blue.</p>
+    </div>
+
+    <div class="fx-wave__bar">
+      <p class="fx-wave__fade">Hong Kong &mdash; 22.3&deg;N</p>
+      <span class="fx-wave__plate fx-wave__fade"><a href="#work">Selected projects</a></span>
+      <span class="fx-wave__plate fx-wave__fade"><a href="#contact">Available for 2026</a></span>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,193 @@
+/* wave-grid: a field of tall white cubes seen from near overhead, where the
+   pointer drags a travelling ripple through them that lifts the crests and tints
+   them blue, under a camera that leans toward the cursor.
+
+   THE RESTING STATE IS A DRAWN FIELD, NOT A GREY BOX. With the script blocked,
+   the bundle pruned, WebGL refused or reduced motion on there is no canvas, so
+   the stage paints the cube field itself: two crossed repeating gradients on a
+   plane tipped away from the reader give the same grid of lit tops and shaded
+   sides, and the hero copy sits over it exactly where it sits live. The section
+   reads as a finished hero either way.
+
+   THE COPY IS ON ITS OWN PLATE. Live, the field is close to white and the crests
+   flood blue, so the frame's luminance moves a long way during a ripple; body
+   text laid straight on that cannot hold a ratio. Each copy block carries a dark
+   scrim and light ink, which is stable against both the white tops and the blue.
+
+   NOTHING IS FETCHED. Upstream's page pulls Inter from Google Fonts; the stack
+   here is the reader's own system UI. Its public/arrow.svg is not needed. */
+.fx-wave {
+  --fx-ink: #f5f6f8;
+  --fx-muted: rgba(245, 246, 248, 0.8);
+  --fx-scrim: rgba(12, 14, 20, 0.72);
+  --fx-ground: #808080;
+  --fx-cube: #ffffff;
+  --fx-crest: #0055ff;
+  --fx-pad: clamp(1.1rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  min-height: 100svh;
+  background: var(--fx-ground);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-wave *,
+.fx-wave *::before,
+.fx-wave *::after { box-sizing: border-box; }
+
+.fx-wave__stage {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+/* The CSS cube field. Two repeating gradients crossed on a tipped plane: the
+   first draws the lit tops, the second the shaded sides, and the wash over them
+   is the crest colour bleeding through the middle of the frame the way a ripple
+   does. */
+.fx-wave__field {
+  position: absolute;
+  inset: -30% -20% -10%;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--fx-cube) 0 1.1%,
+      rgba(255, 255, 255, 0.62) 1.1% 1.5%,
+      rgba(28, 30, 38, 0.28) 1.5% 2%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.9) 0 1.1%,
+      rgba(255, 255, 255, 0.4) 1.1% 1.5%,
+      rgba(28, 30, 38, 0.34) 1.5% 2%
+    ),
+    radial-gradient(60% 42% at 46% 44%, rgba(0, 85, 255, 0.42), rgba(0, 85, 255, 0) 70%),
+    var(--fx-ground);
+  background-blend-mode: multiply, normal, screen, normal;
+  transform: perspective(900px) rotateX(64deg) scale(1.35);
+  transform-origin: 50% 42%;
+}
+.fx-wave__field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(128, 128, 128, 0.95) 0%, rgba(128, 128, 128, 0) 26%, rgba(30, 32, 40, 0.35) 100%);
+}
+/* Once the field is real geometry the drawn one steps aside. */
+.fx-wave[data-fx-live] .fx-wave__field { opacity: 0; }
+.fx-wave__field { transition: opacity 400ms ease; }
+
+.fx-wave__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Overlay chrome, mirroring upstream's eight animated selectors. */
+.fx-wave__nav {
+  position: absolute;
+  top: var(--fx-pad);
+  left: var(--fx-pad);
+  right: var(--fx-pad);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.fx-wave__plate {
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.45rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(6px);
+}
+.fx-wave__logo {
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--fx-ink);
+  text-decoration: none;
+}
+.fx-wave__links,
+.fx-wave__socials {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fx-wave__links a,
+.fx-wave__socials a {
+  color: var(--fx-muted);
+  text-decoration: none;
+}
+.fx-wave__links a:hover,
+.fx-wave__socials a:hover,
+.fx-wave__links a:focus-visible,
+.fx-wave__socials a:focus-visible { color: var(--fx-ink); }
+.fx-wave__time p {
+  margin: 0;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: var(--fx-muted);
+}
+
+.fx-wave__hero {
+  position: absolute;
+  left: var(--fx-pad);
+  top: 50%;
+  z-index: 2;
+  max-width: min(38rem, calc(100% - var(--fx-pad) * 2));
+  padding: 1.1rem 1.25rem;
+  border-radius: 0.8rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(6px);
+  transform: translateY(-50%);
+}
+.fx-wave__hero h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 5vw, 3.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  font-weight: 650;
+  color: var(--fx-ink);
+}
+.fx-wave__hero p {
+  margin: 0.7rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+.fx-wave__bar {
+  position: absolute;
+  left: var(--fx-pad);
+  right: var(--fx-pad);
+  bottom: var(--fx-pad);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fx-wave__bar p { margin: 0; color: var(--fx-muted); }
+.fx-wave__bar a { color: var(--fx-ink); text-decoration: none; }
+.fx-wave__bar a:hover, .fx-wave__bar a:focus-visible { color: var(--fx-crest); }
+.fx-wave a:focus-visible { outline: 2px solid var(--fx-crest); outline-offset: 3px; }
+
+@media (max-width: 44rem) {
+  .fx-wave, .fx-wave__stage { min-height: 80svh; }
+  .fx-wave__links, .fx-wave__time { display: none; }
+  .fx-wave__hero { top: auto; bottom: 5.5rem; transform: none; }
+}
