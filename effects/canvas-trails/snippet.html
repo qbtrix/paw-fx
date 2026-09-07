@@ -1,0 +1,20 @@
+<!-- canvas-trails section. Finished at rest with CSS alone: .fx-trails__rest is
+     a still field of the same four warm tones streaked across black, so with
+     no script the section is a lit composition rather than an empty box.
+     index.js fades it out once the canvas is drawing.
+     The canvas is deliberately opaque -- the trail comes from decaying the
+     previous frame under a 10% black fill, which needs a real black frame to
+     decay into -- so the resting field stands in for it rather than showing
+     through it.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/canvas-trails/style.css">
+<section class="fx-trails" data-fx="canvas-trails">
+  <div class="fx-trails__rest" aria-hidden="true"></div>
+  <canvas class="fx-trails__canvas" data-fx-canvas aria-hidden="true"></canvas>
+  <div class="fx-trails__inner">
+    <p class="fx-trails__eyebrow">Throughput</p>
+    <h1 class="fx-trails__title">Thousands of things moving, and none of them lost.</h1>
+    <p class="fx-trails__lede">Replace this copy with your own. The field scales itself down on a small section, so a phone gets the same picture without the same work.</p>
+  </div>
+</section>

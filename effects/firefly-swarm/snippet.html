@@ -1,0 +1,22 @@
+<!-- firefly-swarm section. Finished at rest with CSS alone: .fx-fly__rest is a
+     lit cluster of warm dots inside the same glow, so with no script the
+     section is still a swarm. index.js builds 225 real particles into
+     .fx-fly__field and only then fades the resting cluster out. A blocked
+     bundle or prefers-reduced-motion leaves it in place.
+     The swarm follows the pointer across the section and blooms outward while
+     the pointer is held down, so the listeners live on the section itself.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/firefly-swarm/style.css">
+<section class="fx-fly" data-fx="firefly-swarm">
+  <div class="fx-fly__rest" aria-hidden="true"></div>
+  <div class="fx-fly__field" data-fx-canvas aria-hidden="true">
+    <div class="fx-fly__circle"></div>
+  </div>
+  <div class="fx-fly__inner">
+    <p class="fx-fly__eyebrow">Night shift</p>
+    <h1 class="fx-fly__title">Warmth, gathered around wherever you are looking.</h1>
+    <p class="fx-fly__lede">Replace this copy with your own. The swarm is 225 real elements, so it can be recoloured from the stylesheet like anything else on the page.</p>
+    <p class="fx-fly__hint">Move your pointer across the section; press and hold to open the swarm.</p>
+  </div>
+</section>

@@ -1,0 +1,61 @@
+{
+  "name": "canvas-trails",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "canvas", "trails", "motion-blur", "anime", "warm", "dense", "hero"],
+  "summary": "A dense canvas field where every dot is re-targeted the moment it arrives and the frame decays under a 10% black fill instead of clearing, so each dot draws a fading trail behind it.",
+  "needs": ["anime"],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 4000,
+      "description": "Dots in the field at a full-size section. Upstream's maxParticules, which it reads off the query string."
+    },
+    "fade": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Alpha of the black rectangle laid over each frame. Upstream's ctx.globalAlpha before the fill; lower it for longer trails, raise it for shorter ones."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": [
+      "examples/canvas-2d/index.js",
+      "examples/canvas-2d/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The canvas is sized from the section's own box under a ResizeObserver, not from window.innerWidth / innerHeight on a window resize listener.",
+      "why": "Upstream is a full-window demo, so the window and the drawing surface are the same rectangle. A section can be any height, can sit beside other content, and can change size without the window doing so -- which only a ResizeObserver sees. The measurement is the same, taken off the right box.",
+      "kind": "seam"
+    },
+    {
+      "what": "maxParticules is an option instead of a query-string read, and the built count is scaled by the section's area against 1440x900, with a floor of 500.",
+      "why": "location.href.split('?')[1] is a demo's own knob and means nothing inside somebody else's page. The scaling is a real need rather than tidiness: the cost of this effect is one live tween per dot, so a phone runs the same 4000 tweens as a desktop unless something scales them, and it is the tween count and not the pixel count that decides whether the section is smooth.",
+      "kind": "ours"
+    },
+    {
+      "what": "Dots are seeded at random points across the section rather than all at its centre.",
+      "why": "A dot's duration is 20ms per pixel travelled, so seeded from a single point the field needs roughly half a minute to reach the edges. On a demo page that is the opening; in a section somebody scrolls to and reads in eight seconds it is a black box with a spot in the middle. Same field, entered at its steady state.",
+      "kind": "ours"
+    },
+    {
+      "what": "animateParticule() returns early once the mount is torn down, and destroy() cancels the draw timer, disconnects the observer and calls utils.remove() on the particle objects.",
+      "why": "Upstream's onComplete re-arms the tween chain forever, which is correct for a page that only unloads. Here a section can be removed on a page transition, and a chain that keeps re-arming plus a timer still drawing into a detached canvas is a leak that outlives the section. utils.remove() takes plain objects, which is what these dots are.",
+      "kind": "seam"
+    },
+    {
+      "what": "A static resting field (.fx-trails__rest) is added, and the copy sits on a --fx-scrim panel.",
+      "why": "Effect contract: the section has to look finished with no script, and the live canvas is opaque so it cannot itself be the fallback. The scrim is the contrast floor -- #F6FF56 dots are near-white and pass anywhere in the frame, so text measured against the busiest frame needs a plate under it.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion no particles are built and the canvas is never drawn into.",
+      "why": "Effect contract: mount() stays at rest. The resting field is the finished section, so not building is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

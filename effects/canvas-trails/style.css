@@ -1,0 +1,110 @@
+/* canvas-trails: thousands of warm dots crossing the section, each leaving a
+   fading trail because the frame decays under a 10% black rectangle instead of
+   being cleared. Upstream's index.html is the black canvas filling the box;
+   everything else here is the section this port ships as.
+
+   The live canvas is opaque -- upstream asks for a 2d context with alpha
+   false, and the decay only works over a real black frame -- so the resting
+   state is not something the canvas blends with, it is what stands in for it:
+   a still field of the same four colours streaked across the same darkness. */
+.fx-trails {
+  --fx-bg: #000000;
+  --fx-t1: #ff4b4b;
+  --fx-t2: #ff8f42;
+  --fx-t3: #ffc730;
+  --fx-t4: #f6ff56;
+  --fx-ink: #fffaf0;
+  --fx-muted: #ddd2bd;
+  --fx-accent: #ffc730;
+  --fx-scrim: color-mix(in oklab, #000000 72%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-trails *,
+.fx-trails *::before,
+.fx-trails *::after { box-sizing: border-box; }
+
+/* The resting field: four warm bloom centres plus a set of soft streaks laid
+   across them, which is the shape the live trails take. */
+.fx-trails__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(102deg, transparent 30%, color-mix(in oklab, var(--fx-t4) 55%, transparent) 50%, transparent 70%),
+    linear-gradient(78deg, transparent 36%, color-mix(in oklab, var(--fx-t1) 45%, transparent) 50%, transparent 64%),
+    linear-gradient(120deg, transparent 42%, color-mix(in oklab, var(--fx-t3) 40%, transparent) 50%, transparent 58%),
+    radial-gradient(30rem 22rem at 32% 40%, color-mix(in oklab, var(--fx-t1) 40%, transparent), transparent 72%),
+    radial-gradient(26rem 20rem at 68% 62%, color-mix(in oklab, var(--fx-t2) 36%, transparent), transparent 72%),
+    radial-gradient(20rem 16rem at 54% 26%, color-mix(in oklab, var(--fx-t3) 30%, transparent), transparent 72%),
+    radial-gradient(18rem 14rem at 22% 74%, color-mix(in oklab, var(--fx-t4) 26%, transparent), transparent 72%),
+    radial-gradient(3px 3px at 18% 30%, var(--fx-t4), transparent 60%),
+    radial-gradient(2px 2px at 76% 24%, var(--fx-t1), transparent 60%),
+    radial-gradient(4px 4px at 62% 78%, var(--fx-t3), transparent 60%),
+    radial-gradient(2.5px 2.5px at 36% 66%, var(--fx-t2), transparent 60%);
+  background-size:
+    100% 100%, 100% 100%, 100% 100%,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%,
+    260px 260px, 190px 190px, 320px 320px, 220px 220px;
+  background-repeat:
+    no-repeat, no-repeat, no-repeat,
+    no-repeat, no-repeat, no-repeat, no-repeat,
+    repeat, repeat, repeat, repeat;
+  opacity: 0.85;
+  transition: opacity 400ms ease;
+}
+.fx-trails[data-fx-live] .fx-trails__rest { opacity: 0; }
+
+/* upstream's canvas: absolute, filling the box, black behind the trails */
+.fx-trails__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.fx-trails__inner {
+  max-width: 50rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(4px);
+}
+.fx-trails__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-trails__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 5.8vw, 4.4rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-trails__lede {
+  margin: 1.5rem auto 0;
+  max-width: 33rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

@@ -1,0 +1,27 @@
+<!-- confetti-burst section. Finished at rest with CSS alone: the card, the
+     button and a scatter of static pieces in the same five colours. There is
+     nothing behind a curtain here -- with the script blocked, or under
+     prefers-reduced-motion, the section is a working call to action and the
+     only thing missing is the throw.
+     The trigger is [data-fx-burst]. Put it on any control inside the section;
+     pass { trigger: "" } to mount() to make the whole section one.
+     The button sits OUTSIDE the card on purpose: the canvas is below the card,
+     so a burst fired from open section is fully visible while nothing ever
+     crosses the body copy. Move the button back inside and most of the burst
+     goes behind the card.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/confetti-burst/style.css">
+<section class="fx-confetti" data-fx="confetti-burst">
+  <div class="fx-confetti__rest" aria-hidden="true"></div>
+  <div class="fx-confetti__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-confetti__inner">
+    <p class="fx-confetti__eyebrow">You are on the list</p>
+    <h2 class="fx-confetti__title">That is the last thing we needed.</h2>
+    <p class="fx-confetti__lede">Replace this copy with your own. Anything a visitor finishes -- a signup, a plan choice, a copied key -- is a place this section belongs.</p>
+    <p class="fx-confetti__note">No card needed. Cancel whenever you like.</p>
+  </div>
+  <div class="fx-confetti__cta">
+    <button class="fx-confetti__button" type="button" data-fx-burst>Claim your seat</button>
+  </div>
+</section>

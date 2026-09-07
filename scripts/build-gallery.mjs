@@ -23,16 +23,24 @@
 // at the origin root needs and the gallery does not get to rewrite them. So the
 // gallery is served from its own directory root, not opened over file://.
 //
-// Previews ride inside index.html as data: URIs rather than as sibling .png
-// files, because an html Paw Site is created from a {path: contents} map whose
-// values must be STRINGS -- binary has no way in. sips re-encodes each 640x360
-// PNG to JPEG first: the PNGs total ~9MB, which is well past the platform's 4MB
-// deploy-input cap. QUALITY IS THE KNOB THAT KEEPS THE PAGE PUBLISHABLE, and it
-// is not set once and forgotten: base64 costs a third on top of whatever the
-// JPEGs weigh, so every effect added pushes the page up by ~45KB at q75. It was
-// 75 while the library held 73 effects and crossed the cap at 77 (4.18MB), which
-// is what moved it to 65 -- 3.63MB, about 370KB of headroom, and no visible
-// difference at the size a card actually paints. Measure before raising it.
+// Previews are SIBLING FILES under previews/, referenced by src, not data: URIs
+// inlined into index.html.
+//
+// They were inlined on the belief that an html Paw Site is created from a
+// {path: contents} map whose values must be strings, so binary had no way in.
+// That is wrong, and being wrong about it cost real work: the page grew with the
+// library, crossed the 4 MB publish cap four times, and each time an agent
+// bought headroom by lowering JPEG quality, from 75 to 65 to 56 to 52. Three
+// separate waves reached for the same knob and two of them collided on it in one
+// merge. Every one of those was postponement, because base64 costs a third on
+// top of the bytes and every effect added pushed the page back toward the cap.
+//
+// The html engine takes a SECOND map beside the source text: `assets`, of
+// {path: base64}, binary counterpart to the text-only source map, guarded the
+// same way and rejected on every other engine (paw-sites src/index.ts:122,
+// src/html-scaffold.ts:42). So a preview file publishes perfectly well. The
+// cap now applies to markup alone, which is about a megabyte at 98 effects and
+// does not grow with image weight.
 //
 // Card and dialog markup is rendered here rather than by the browser, so the
 // page is complete with scripting off and every effect is in the HTML for a
@@ -72,25 +80,27 @@ const esc = (s) =>
 
 // See the header note: this number is what keeps index.html under the 4MB
 // publish cap, so it moves down as the library grows rather than staying put.
-// 65 held to 82 effects (3.88 MB) and crossed at 90 (4.47 MB). Measured at 90:
-// q65 3.45 MB of base64 previews, q58 3.02, q52 2.70, q45 2.32, against about
-// 1.0 MB of page markup. 52 lands at 3.68 MB, which is roughly nine more
-// effects of room; the type in a preview is still crisp there.
-const JPEG_QUALITY = 52;
+// Quality still matters for weight, but it is no longer the thing standing
+// between the page and the publish cap: previews are sibling files now, so the
+// page carries markup only. 62 is chosen for how a card actually paints rather
+// than to buy headroom.
+const JPEG_QUALITY = 62;
 
 // ponytail: sips is macOS-only. Without it the PNG ships as-is -- the same page,
 // about five times the bytes, and past the 4MB cap an html Paw Site publish
 // captures. Swap in cwebp or sharp here if the gallery ever builds on Linux CI.
-function previewDataUri(png) {
-  const out = join(tmpdir(), `fxg-${basename(png, ".png")}-${process.pid}.jpg`);
+function writePreview(png, outDir, name) {
+  mkdirSync(outDir, { recursive: true });
+  const jpg = join(outDir, `${name}.jpg`);
   try {
-    execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", String(JPEG_QUALITY), png, "--out", out], { stdio: "ignore" });
-    const jpg = readFileSync(out);
-    rmSync(out, { force: true });
-    return `data:image/jpeg;base64,${jpg.toString("base64")}`;
+    execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", String(JPEG_QUALITY), png, "--out", jpg], { stdio: "ignore" });
+    return { src: `previews/${name}.jpg`, encoded: "jpeg" };
   } catch {
-    rmSync(out, { force: true });
-    return `data:image/png;base64,${readFileSync(png).toString("base64")}`;
+    // sips is macOS-only. Copying the PNG through keeps the page correct
+    // everywhere; it is heavier on disk, which no longer threatens the publish.
+    const dest = join(outDir, `${name}.png`);
+    copyFileSync(png, dest);
+    return { src: `previews/${name}.png`, encoded: "png" };
   }
 }
 
@@ -345,9 +355,10 @@ export function buildGallery(registryDir, out = join(registryDir, "gallery")) {
   const cards = items
     .map((i) => {
       const png = join(previewsDir, `${i.name}.png`);
-      const uri = existsSync(png) ? previewDataUri(png) : "";
-      if (uri) encoded = uri.startsWith("data:image/jpeg") ? "jpeg" : "png";
-      return card(i, uri);
+      if (!existsSync(png)) return card(i, "");
+      const w = writePreview(png, join(out, "previews"), i.name);
+      encoded = w.encoded;
+      return card(i, w.src);
     })
     .join("\n");
 

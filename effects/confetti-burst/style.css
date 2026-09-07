@@ -1,0 +1,144 @@
+/* confetti-burst: the one effect here that waits to be asked. The section is a
+   real call-to-action card; pressing the button throws a batch of pieces from
+   the pointer and gravity takes them down.
+
+   The resting state is the finished card plus a scatter of static pieces in
+   the same five colours, so with no script the section is a designed CTA and
+   the only thing missing is the throw. */
+.fx-confetti {
+  --fx-bg: #101322;
+  --fx-bg-far: #1b2140;
+  --fx-card: #191d31;
+  --fx-edge: #333b5e;
+  --fx-c1: #ffd166;
+  --fx-c2: #ef476f;
+  --fx-c3: #06d6a0;
+  --fx-c4: #118ab2;
+  --fx-c5: #f8f9fa;
+  --fx-ink: #f3f5fb;
+  --fx-muted: #c3c9de;
+  --fx-accent: #ffd166;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 55% at 50% 0%, var(--fx-bg-far), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-confetti *,
+.fx-confetti *::before,
+.fx-confetti *::after { box-sizing: border-box; }
+
+/* Static pieces: squares and circles in the five colours, the two shapes the
+   preset launches, scattered where a burst would leave them. */
+.fx-confetti__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(4px 4px at 14% 24%, var(--fx-c1), transparent 60%),
+    radial-gradient(4px 4px at 82% 30%, var(--fx-c3), transparent 60%),
+    radial-gradient(3px 3px at 30% 72%, var(--fx-c5), transparent 60%),
+    radial-gradient(4px 4px at 66% 80%, var(--fx-c2), transparent 60%),
+    linear-gradient(35deg, var(--fx-c2) 0 100%),
+    linear-gradient(-20deg, var(--fx-c4) 0 100%),
+    linear-gradient(70deg, var(--fx-c1) 0 100%),
+    linear-gradient(15deg, var(--fx-c3) 0 100%),
+    linear-gradient(-50deg, var(--fx-c5) 0 100%);
+  background-size:
+    260px 260px, 310px 310px, 220px 220px, 350px 350px,
+    7px 7px, 6px 6px, 8px 8px, 6px 6px, 7px 7px;
+  background-position:
+    0 0, 0 0, 0 0, 0 0,
+    12% 40%, 74% 18%, 46% 16%, 88% 66%, 22% 88%;
+  background-repeat:
+    repeat, repeat, repeat, repeat,
+    no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  opacity: 0.85;
+}
+
+/* tsParticles appends its canvas here. It sits above the section background
+   and BELOW the card and the button: a 4px piece crossing body copy takes its
+   contrast to 1:1, and this library measures contrast against the busiest live
+   frame. That is why the button is OUTSIDE the card -- the burst starts in
+   open section, where it is fully visible and crosses nothing but itself. No
+   pointer events, so the button still works. */
+.fx-confetti__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.fx-confetti__canvas canvas { display: block; }
+
+.fx-confetti__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 32rem;
+  text-align: center;
+  padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  border-radius: 1.5rem;
+  background: var(--fx-card);
+  border: 1px solid var(--fx-edge);
+  box-shadow: 0 2rem 4rem -1.5rem rgba(0, 0, 0, 0.7);
+}
+.fx-confetti__eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-confetti__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-confetti__lede {
+  margin: 1rem auto 0;
+  max-width: 26rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+/* Outside the card, so the burst it fires has open section to spread into. */
+.fx-confetti__cta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+}
+.fx-confetti__button {
+  display: inline-block;
+  padding: 0.85rem 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fx-c1);
+  color: #221a05;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.fx-confetti__button:hover { background: color-mix(in oklab, var(--fx-c1) 84%, #ffffff); }
+.fx-confetti__button:focus-visible { outline: 2px solid var(--fx-c5); outline-offset: 3px; }
+.fx-confetti__note {
+  margin: 1.1rem 0 0;
+  font-size: 0.82rem;
+  color: var(--fx-muted);
+}

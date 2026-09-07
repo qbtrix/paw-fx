@@ -1,0 +1,20 @@
+<!-- bokeh-drift section. Finished at rest with CSS alone: .fx-bokeh__rest draws
+     the same three tiers as static discs, fills and hairline rings, and
+     index.js only fades it out once a tsParticles container has actually
+     loaded into .fx-bokeh__canvas. A blocked bundle, a refused canvas or
+     prefers-reduced-motion all leave the CSS field in place.
+     The three tier colours are --fx-ring, --fx-mid and --fx-soft; pass the
+     matching options to mount() if you change them, so the live field and the
+     resting one agree.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/bokeh-drift/style.css">
+<section class="fx-bokeh" data-fx="bokeh-drift">
+  <div class="fx-bokeh__rest" aria-hidden="true"></div>
+  <div class="fx-bokeh__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-bokeh__inner">
+    <p class="fx-bokeh__eyebrow">Ambient monitoring</p>
+    <h1 class="fx-bokeh__title">Everything in range, nothing in the way.</h1>
+    <p class="fx-bokeh__lede">Replace this copy with your own. Three sizes of particle at three opacities give the field depth, and every one of them stays inside the section rather than drifting off it.</p>
+  </div>
+</section>

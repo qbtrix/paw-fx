@@ -1,0 +1,19 @@
+<!-- snow-fall section. Finished at rest with CSS alone: .fx-snow__rest is a
+     real flake field at four sizes, and index.js only fades it out once a
+     tsParticles container has actually loaded into .fx-snow__canvas. A blocked
+     bundle, a refused canvas or prefers-reduced-motion all leave the CSS field
+     in place.
+     The copy sits on a scrim because a 10px flake can pass under a letter mid
+     fall; --fx-scrim is the knob if a restyle brings the contrast down.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/snow-fall/style.css">
+<section class="fx-snow" data-fx="snow-fall">
+  <div class="fx-snow__rest" aria-hidden="true"></div>
+  <div class="fx-snow__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-snow__inner">
+    <p class="fx-snow__eyebrow">Winter season</p>
+    <h1 class="fx-snow__title">The quiet months are the ones that carry a year.</h1>
+    <p class="fx-snow__lede">Replace this copy with your own. The headline slot takes one line or three, and the fall keeps running behind it either way.</p>
+  </div>
+</section>
