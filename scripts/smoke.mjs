@@ -64,8 +64,8 @@
 // change the constant, do not delete the check.
 
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { join, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { effectDirs } from "./lint.mjs";
 import { buildItem } from "./build-registry.mjs";
@@ -94,6 +94,33 @@ async function ab(args) {
   // Drain both pipes before awaiting exit, or a chatty command deadlocks on a full pipe.
   const [out, err] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
   return { code: await proc.exited, out, err };
+}
+
+
+// A PNG ends with a fixed 12-byte IEND chunk, so a complete file is cheap to
+// recognise. The screenshot is written by a separate process and then fetched
+// back into the page to be decoded, and nothing between those two steps
+// guarantees the write has landed: a partial file reaches createImageBitmap and
+// throws "The source image could not be decoded". That surfaced as a smoke
+// failure on an effect with nothing wrong with it, twice, which is the worst
+// kind of gate because the fix looks like re-running until it passes. Waiting
+// for the trailer removes the race instead of the symptom.
+const PNG_END = Buffer.from([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
+
+async function awaitCompletePng(path, timeoutMs = 4000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      const buf = readFileSync(path);
+      if (buf.length > PNG_END.length && buf.subarray(-PNG_END.length).equals(PNG_END)) return;
+    } catch {
+      // Not written yet at all; the same wait covers it.
+    }
+    if (Date.now() > deadline) {
+      throw new Error(`smoke: ${basename(path)} never finished writing within ${timeoutMs}ms`);
+    }
+    await new Promise((r) => setTimeout(r, 25));
+  }
 }
 
 /** Evaluates an expression that returns (or resolves to) a JSON string. */
@@ -221,7 +248,16 @@ async function measureOne(item, base, root) {
   // already measured.
   if (m.found && m.w >= MIN_W && m.h >= MIN_H) {
     const file = `_shot-${name}.png`;
-    await ab(["--session", SESSION, "screenshot", join(root, file)]);
+    // The exit code of this one is checked, and the others are not, which is
+    // why a screenshot that never happened surfaced three separate ways before
+    // anyone saw the actual message: first as an undecodable image, then as a
+    // file that never appeared, then as a hang. An ignored subprocess failure
+    // does not stay quiet, it just reappears somewhere less honest.
+    const shot = await ab(["--session", SESSION, "screenshot", join(root, file)]);
+    if (shot.code !== 0) {
+      throw new Error(`smoke: screenshot failed for ${name} (exit ${shot.code}): ${(shot.err || shot.out).trim()}`);
+    }
+    await awaitCompletePng(join(root, file));
     Object.assign(m, await ev(pixelExpr(name, `/${file}?t=${Date.now()}`)));
   }
   await ab(["--session", SESSION, "set", "viewport", String(MOBILE[0]), String(MOBILE[1])]);

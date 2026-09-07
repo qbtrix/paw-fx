@@ -23,7 +23,7 @@
 //   - nothing on the page fetches off-site. The only absolute URLs allowed are
 //     github.com links a reader clicks.
 import { test, expect } from "bun:test";
-import { readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, mkdtempSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { build } from "../scripts/build-registry.mjs";
@@ -225,14 +225,22 @@ test("an effect with hand-written demo pages ships them, and its demo links to t
   expect(items.filter((i) => i.demo.length).map((i) => i.name)).toEqual(["page-fade"]);
 });
 
-test("the page publishes as an html Paw Site source map", () => {
-  // create_html_site takes {path: contents} with STRING values and requires
-  // index.html, which is why previews are data: URIs rather than sibling PNGs.
-  expect(html).toContain('src="data:image/');
-  // The cap is only claimed for the JPEG path. sips is macOS-only, and the PNG
-  // fallback is a working page that is too big to publish, so asserting the cap
-  // unconditionally would fail a Linux run for a reason that is not a defect.
+test("the page publishes as an html Paw Site, previews and all", () => {
+  // Previews are sibling files, referenced by src, not data: URIs. They were
+  // inlined on the belief that a site is created from one map of string values
+  // so binary had no way in. The html engine takes a second map beside it,
+  // `assets` of {path: base64}, so a preview file publishes fine.
+  expect(html).not.toContain('src="data:image/');
+  expect(html).toContain('src="previews/');
+  expect(existsSync(join(dir, "gallery", "previews"))).toBe(true);
+  expect(readdirSync(join(dir, "gallery", "previews")).length).toBe(reg.items.length);
+
+  // The cap this once guarded was driven by image weight, which is why it was
+  // met four times by lowering JPEG quality. It now applies to markup alone and
+  // does not move when an effect is added, so the assertion is deliberately
+  // tight: a regression to inlining would blow straight through it rather than
+  // creeping up on it one effect at a time.
   expect(["jpeg", "png"]).toContain(result.encoded);
-  if (result.encoded === "jpeg") expect(result.bytes).toBeLessThan(4_000_000);
+  expect(result.bytes).toBeLessThan(2_000_000);
   rmSync(dir, { recursive: true, force: true });
 });
