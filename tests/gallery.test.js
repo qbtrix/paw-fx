@@ -159,12 +159,11 @@ test("no effect loads until one is picked", () => {
   expect(html).toContain('<div class="fxg-poster" data-shot aria-hidden="true"></div>');
 });
 
-test("the stage holds every panel, hidden, with a way back and a live region", () => {
+test("the stage holds every panel, hidden, with a way back", () => {
   // Two views of one column, and the browse view is the one that paints first.
   expect(html).toContain('<div class="fxg-browse" id="fxg-browse">');
   expect(html).toContain('<section class="fxg-stage" id="fxg-stage" hidden>');
   expect(html).toContain('<a class="fxg-back" id="fxg-back"');
-  expect(html).toContain('<p class="fxg-sr" id="fxg-say" role="status"></p>');
 
   const hidden = html.match(/<section class="fxg-detail" id="[^"]+" hidden/g) || [];
   expect(hidden).toHaveLength(items.length);
@@ -172,6 +171,21 @@ test("the stage holds every panel, hidden, with a way back and a live region", (
   // The panels live INSIDE the stage, or hiding the stage would not hide them.
   const stage = html.slice(html.indexOf('id="fxg-stage"'));
   for (const item of items) expect(stage).toContain(`id="${item.name}" hidden`);
+});
+
+// A role="status" whose first text arrives while it is display:none enters the
+// accessibility tree already populated, and a screen reader reads that as a new
+// region rather than a change and says nothing. So the region that announces
+// the pick is empty in the markup and OUTSIDE the stage, which means it is in
+// the tree from the first paint and the FIRST pick is announced like the rest.
+// Asserted by position, because the bug it guards against is a move of one
+// line and looks harmless in a diff.
+test("the live region is outside the stage, so the first pick is announced too", () => {
+  const say = html.indexOf('id="fxg-say"');
+  const stage = html.indexOf('id="fxg-stage"');
+  expect(say).toBeGreaterThan(-1);
+  expect(html).toContain('<p class="fxg-sr" id="fxg-say" role="status"></p>');
+  expect(say).toBeLessThan(stage);
 });
 
 // The pane is a preview. A full-bleed hero deserves the whole viewport, and

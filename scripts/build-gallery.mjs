@@ -298,6 +298,8 @@ function detail(item) {
  * context is discarded with its browsing context rather than left to a
  * teardown routine. `data-shot` is the still preview slot the frame paints
  * over once it loads, so the box is never an empty rectangle.
+ *
+ * The live region that announces the pick is NOT in here; see `SAY`.
  */
 function stage(items) {
   return `      <section class="fxg-stage" id="fxg-stage" hidden>
@@ -308,10 +310,18 @@ function stage(items) {
         <div class="fxg-frame-box" id="fxg-frame-box">
           <div class="fxg-poster" data-shot aria-hidden="true"></div>
         </div>
-        <p class="fxg-sr" id="fxg-say" role="status"></p>
 ${items.map(detail).join("\n")}
       </section>`;
 }
+
+// Announces the pick. It sits OUTSIDE the stage, empty from the first paint,
+// because a role="status" region that is display:none when its text is first
+// written enters the accessibility tree already populated, and a screen reader
+// reads that as a new region rather than a change and says nothing. Inside the
+// stage it would be hidden for exactly the pick that most needs announcing, the
+// first one, and would then work for every pick after -- which is the shape of
+// bug that passes a DOM assertion and fails a person.
+const SAY = `      <p class="fxg-sr" id="fxg-say" role="status"></p>`;
 
 function card(item, uri) {
   const needs = item.needs || [];
@@ -505,6 +515,7 @@ ${topbar(reg)}
 ${sidebar(items, free)}
   <main class="fxg-main fx-spot" id="fxg-main">
     <div class="fxg-wrap">
+${SAY}
       <div class="fxg-browse" id="fxg-browse">
 ${banner(reg, free)}
 ${head(reg)}
