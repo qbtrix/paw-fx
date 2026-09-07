@@ -74,7 +74,7 @@ const esc = (s) =>
 // publish cap, so it moves down as the library grows rather than staying put.
 // 65 held to 82 effects (3.88 MB) and crossed at 90 (4.47 MB). Measured at 90:
 // q65 3.45 MB of base64 previews, q58 3.02, q52 2.70, q45 2.32, against about
-// 1.0 MB of page markup. 52 lands at 3.72 MB, which is roughly nine more
+// 1.0 MB of page markup. 52 lands at 3.68 MB, which is roughly nine more
 // effects of room; the type in a preview is still crisp there.
 const JPEG_QUALITY = 52;
 
