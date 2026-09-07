@@ -1,16 +1,16 @@
-// gallery.js: filtering, the sidebar, deep links, the search shortcut and the
-// copy button for the paw-fx gallery. Copied verbatim into
-// dist/registry/gallery/ by scripts/build-gallery.mjs.
+// gallery.js: the two views, the one live frame, filtering, the sidebar, deep
+// links, the search shortcut and the copy button for the paw-fx gallery. Copied
+// verbatim into dist/registry/gallery/ by scripts/build-gallery.mjs.
 //
 // It holds no effect data and does no templating. Every card, every nav row and
-// every dialog is already in index.html, generated from dist/registry/, so the
-// page is readable with scripting off and this file only hides, reorders,
-// opens and counts what is there. A classic script, not a module: the page is
-// plain vanilla JS like the rest of the repo.
+// every detail panel is already in index.html, generated from dist/registry/,
+// so the page is readable with scripting off and this file only hides,
+// reorders, counts and points one frame at one demo. A classic script, not a
+// module: the page is plain vanilla JS like the rest of the repo.
 //
 // THE HASH IS THE VIEW. One grammar covers both jobs the fragment has to do:
 //
-//   #<effect-name>        open that effect's panel (the MCP server's
+//   #<effect-name>        run that effect in the stage (the MCP server's
 //                         preview_url contract, so it cannot change)
 //   #cat=<category>       filter the grid to a category
 //   #free                 filter to the dependency-free effects
@@ -18,13 +18,24 @@
 //
 // A bare token is an effect id and a `k=v` token is a filter, so the only name
 // that could shadow a filter is an effect literally called "free"; the
-// generator throws on one rather than leaving it to be discovered. Filter links
-// are plain anchors that let the
-// browser navigate, and `hashchange` is the only place the view is read; the
-// panel is opened with replaceState instead, so opening one does not bury the
-// filter behind a history entry. Closing a panel puts the filter hash back
-// rather than the bare path, or a shared link would come back to a view the
-// sender was not looking at.
+// generator throws on one rather than leaving it to be discovered. Every link
+// is a plain anchor the browser navigates, and `hashchange` is the only place
+// the view is read, which is what makes the browser's Back button the way out
+// of the stage and costs no code at all. A fragment naming NEITHER an effect
+// nor a filter -- the skip link's #fxg-grid, anything a reader typed -- changes
+// nothing, so an in-page jump never silently clears the filters.
+//
+// A stage hash leaves the filters alone, so the way back is the filtered grid
+// the visitor was browsing rather than all 98. That is what #fxg-back's href is
+// rewritten to on every pick.
+//
+// ONE FRAME, REPLACED NOT RE-POINTED. The stage runs the effect inside an
+// <iframe> on demo/<name>.html, and switching effects removes the frame element
+// and appends a fresh one. Removing it discards the nested browsing context,
+// which releases the WebGL context with it -- a guarantee no destroy() call can
+// match -- and it keeps the parent's history clean, which re-pointing .src does
+// not. The frame is created on the first pick and never exists before it, so
+// opening the gallery starts no context nobody asked for.
 //
 // Ranking mirrors the MCP server's search_effects (name exact, then name or
 // tag, then summary or category), applied as CSS `order` so the grid predicts
@@ -53,11 +64,18 @@
   var burger = document.getElementById("fxg-burger");
   var scrim = document.getElementById("fxg-scrim");
   var main = document.getElementById("fxg-main");
+  var browse = document.getElementById("fxg-browse");
+  var stage = document.getElementById("fxg-stage");
+  var frameBox = document.getElementById("fxg-frame-box");
+  var back = document.getElementById("fxg-back");
+  var now = document.getElementById("fxg-stage-now");
+  var say = document.getElementById("fxg-say");
   var picks = [].slice.call(document.querySelectorAll(".fxg-pick"));
+  var navOpens = nav ? [].slice.call(nav.querySelectorAll(".fxg-open")) : [];
   var tallies = [].slice.call(document.querySelectorAll("[data-n]"));
 
   var view = { cat: "", free: false };
-  var lastFilter = "";
+  var running = "";
 
   // ---- filtering ----
 
@@ -134,11 +152,27 @@
       // sidebar shows what is in the category rather than only its name.
       if (on && role === "cat") expand(p, true);
     }
+
+    // The effect on the stage is marked in the list too, or a two-pane explorer
+    // has no selected row and a cold deep link arrives with its own name buried
+    // in a collapsed group.
+    for (var k = 0; k < navOpens.length; k++) {
+      var link = navOpens[k];
+      if (link.getAttribute("href") !== "#" + running) {
+        link.removeAttribute("aria-current");
+        continue;
+      }
+      link.setAttribute("aria-current", "true");
+      expand(link, true);
+      if (link.scrollIntoView) link.scrollIntoView({ block: "nearest" });
+    }
   }
 
-  function expand(pick, on) {
-    var row = pick.closest && pick.closest(".fxg-row");
-    var twist = row && row.querySelector(".fxg-twist");
+  // Takes any node inside a sidebar group -- the category link in the row, or
+  // one effect link in the list under it -- and opens that group.
+  function expand(node, on) {
+    var group = node.closest && node.closest(".fxg-group");
+    var twist = group && group.querySelector(".fxg-twist");
     if (!twist) return;
     var sub = document.getElementById(twist.getAttribute("aria-controls"));
     if (!sub) return;
@@ -170,50 +204,102 @@
     return parts.length ? "#" + parts.join("&") : "";
   }
 
-  // Puts the browsing view back in the address bar when a panel closes, so a
-  // link copied afterwards is the grid the visitor is looking at rather than
-  // the effect they just shut. Guarded on the hash still naming this panel,
-  // which makes it a no-op when the hash has ALREADY moved on -- that is what
-  // lets sync() close a stale panel without fighting the navigation that
-  // triggered it. The guard is a state check rather than a "closing on
-  // purpose" flag on purpose: a dialog's close event is a queued task, not a
-  // synchronous call, so a flag set and cleared around .close() is always back
-  // to false by the time the handler reads it.
-  function restore(id) {
-    if (location.hash.slice(1) !== id) return;
-    history.replaceState(null, "", lastFilter || location.pathname + location.search);
+  // ---- the stage ----
+
+  // Removing the element, not re-pointing .src. Removing discards the nested
+  // browsing context, so the demo's document, its timers and its WebGL context
+  // go with it; re-pointing .src leaves the teardown to the browser's
+  // navigation path AND writes a history entry into the parent for every
+  // switch. This is also the only teardown on the page, so leaving the stage
+  // calls it with no name.
+  function runFrame(name) {
+    var old = frameBox.querySelector("iframe");
+    if (old) old.remove();
+    if (!name) return;
+    var frame = document.createElement("iframe");
+    frame.className = "fxg-frame";
+    // Named, because a frame with no accessible name is announced as "frame"
+    // and there are 98 of those on this site.
+    frame.title = name + ", running";
+    frame.src = "demo/" + encodeURIComponent(name) + ".html";
+    frameBox.appendChild(frame);
   }
 
-  function openPanel(name) {
-    var dialog = document.getElementById(name);
-    if (!dialog || !dialog.classList.contains("fxg-dialog") || typeof dialog.showModal !== "function") return false;
-    // The dialog's shot is filled from the card's image: the same data: URI is
-    // already decoded, so a second copy in the markup would double the page for
-    // no picture.
-    var slot = dialog.querySelector("[data-shot]");
-    if (slot && !slot.firstChild) {
-      var img = grid.querySelector('.fxg-card[data-name="' + name + '"] .fxg-shot');
-      if (img) slot.appendChild(img.cloneNode());
+  // The still preview under the frame, cloned from the card rather than
+  // rendered a second time into the markup. It shows for the moment the demo
+  // takes to load and is covered by it after, which is the resting state the
+  // pane would otherwise spend that moment as a black rectangle.
+  function setPoster(name) {
+    var slot = frameBox.querySelector("[data-shot]");
+    if (!slot) return;
+    slot.textContent = "";
+    var img = grid.querySelector('.fxg-card[data-name="' + name + '"] .fxg-shot');
+    if (img) slot.appendChild(img.cloneNode());
+  }
+
+  function showStage(name, panel) {
+    running = name;
+
+    var panels = stage.querySelectorAll(".fxg-detail");
+    for (var i = 0; i < panels.length; i++) panels[i].hidden = panels[i] !== panel;
+
+    setPoster(name);
+    runFrame(name);
+    if (now) now.textContent = "Running " + name;
+    if (say) say.textContent = "Now running " + name;
+    if (back) back.setAttribute("href", filterHash() || "#");
+
+    browse.hidden = true;
+    stage.hidden = false;
+    markNav();
+
+    // Arriving from a card means the thing that had focus is now inside a
+    // hidden subtree, and focus falls to <body>. Arriving from the sidebar
+    // means the list still has it and the next pick should be one key away, so
+    // that focus is left exactly where it is. preventScroll because the heading
+    // sits under the frame and pulling it into view would push the running
+    // effect off the top of the pane.
+    var active = document.activeElement;
+    if (!nav || !nav.contains(active)) {
+      var title = panel.querySelector(".fxg-dtitle");
+      if (title) title.focus({ preventScroll: true });
     }
-    if (!dialog.open) dialog.showModal();
-    return true;
+    // The fragment jump already happened against a panel that was hidden at the
+    // time, so nothing scrolled and the page is still wherever it was: down the
+    // grid on the way in, or down the previous effect's options table on a
+    // switch. Either way the visitor asked to watch THIS effect, so the frame
+    // is what they get to see.
+    window.scrollTo(0, 0);
+  }
+
+  function showBrowse() {
+    running = "";
+    runFrame("");
+    stage.hidden = true;
+    browse.hidden = false;
   }
 
   function sync() {
     var h = parseHash();
-    var open = document.querySelectorAll(".fxg-dialog[open]");
-    for (var i = 0; i < open.length; i++) if (open[i].id !== h.open) open[i].close();
-    if (h.open) {
-      // A panel hash leaves the filters alone, so closing it comes back to the
-      // view the visitor was browsing.
-      openPanel(h.open);
-      return;
+    var panel = h.open ? document.getElementById(h.open) : null;
+    if (panel && !panel.classList.contains("fxg-detail")) panel = null;
+
+    // A fragment that names neither an effect nor a filter is an in-page jump
+    // (the skip link's #fxg-grid) or a typo. Either way it is not a view, so
+    // nothing here touches one.
+    if (h.open && !panel) return;
+
+    if (panel) {
+      // A stage hash leaves the filters alone, so the way back is the grid the
+      // visitor was browsing rather than all 98.
+      showStage(h.open, panel);
+    } else {
+      if (!stage.hidden) showBrowse();
+      view.cat = h.cat;
+      view.free = h.free;
+      markNav();
+      apply();
     }
-    view.cat = h.cat;
-    view.free = h.free;
-    lastFilter = filterHash();
-    markNav();
-    apply();
     if (nav && nav.classList.contains("is-open")) setDrawer(false);
   }
 
@@ -288,8 +374,22 @@
 
   // ---- search ----
 
+  // Typing is a browse action, so it leaves the stage: filtering a grid the
+  // visitor cannot see looks like a search box that does nothing. replaceState
+  // rather than a navigation, because the effect they just left is not a place
+  // Back should return them to mid-search, and it fires no hashchange, so
+  // sync() is called by hand.
+  function leaveStage() {
+    if (stage.hidden) return;
+    history.replaceState(null, "", filterHash() || location.pathname + location.search);
+    sync();
+  }
+
   if (q) {
-    q.addEventListener("input", apply);
+    q.addEventListener("input", function () {
+      leaveStage();
+      apply();
+    });
     q.addEventListener("keydown", function (e) {
       if (e.key !== "Escape") return;
       // Firefox does not clear a type=search on Escape, and the grid has to be
@@ -324,52 +424,12 @@
     });
   }
 
-  // ---- panels ----
-
-  document.addEventListener("click", function (e) {
-    var link = e.target.closest ? e.target.closest(".fxg-open") : null;
-    if (!link) return;
-    var name = link.getAttribute("href").slice(1);
-    if (!openPanel(name)) return;
-    e.preventDefault();
-    // Written, not navigated, so the deep link is shareable and the filter
-    // behind the panel is one replaceState away rather than one entry back.
-    history.replaceState(null, "", "#" + name);
-    if (nav && nav.classList.contains("is-open")) setDrawer(false, false);
-  });
-
-  // EVERY exit from a panel restores the hash, not only the `close` event.
-  // `close` is the tidy hook and stays here as the catch-all, but it is not
-  // dependable enough to be the only one: it needs a frame to arrive. In a
-  // headless browser whose animation timeline does not advance -- which is how
-  // this repo captures previews, and how the page was proven -- Escape closes
-  // the dialog and fires `cancel` while `close` never lands at all, so a page
-  // that hangs its cleanup on it hands out links to panels the visitor already
-  // shut. Each of the three exits this page owns therefore calls restore()
-  // itself, and because restore() no-ops once the hash has moved on, wiring all
-  // of them costs nothing and needs no agreement about which one ran.
-  var dialogs = document.querySelectorAll(".fxg-dialog");
-  for (var d = 0; d < dialogs.length; d++) {
-    (function (dialog) {
-      dialog.addEventListener("close", function () { restore(dialog.id); });
-      dialog.addEventListener("cancel", function () { restore(dialog.id); });
-      // Clicking the backdrop closes: the sheet fills the dialog, so a click
-      // that lands on the dialog itself landed outside the sheet.
-      dialog.addEventListener("click", function (e) {
-        if (e.target !== dialog) return;
-        dialog.close();
-        restore(dialog.id);
-      });
-    })(dialogs[d]);
-  }
-
-  // The panel's Close button submits a method="dialog" form, which closes with
-  // no cancel. The click bubbles here while the hash still names the panel.
-  document.addEventListener("click", function (e) {
-    var x = e.target.closest ? e.target.closest(".fxg-x") : null;
-    var panel = x && x.closest(".fxg-dialog");
-    if (panel) restore(panel.id);
-  });
+  // Nothing intercepts a click on an effect link. They are plain anchors to
+  // "#<name>", so the browser navigates, writes the history entry and fires
+  // `hashchange`, and sync() does the rest. That is what makes Back the way out
+  // of the stage without a line of code deciding so, and it is why picking an
+  // effect from the sidebar, from a card, or from a link somebody pasted all
+  // land in exactly the same place.
 
   // ---- groups ----
 

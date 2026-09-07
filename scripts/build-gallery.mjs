@@ -1,6 +1,6 @@
-// Builds dist/registry/gallery/, the public paw-fx gallery: a documentation
-// site showing every effect in the registry, what it costs, where it came from,
-// and the exact MCP call that fetches it.
+// Builds dist/registry/gallery/, the public paw-fx gallery: a two-pane explorer
+// showing every effect in the registry, running, alongside what it costs, where
+// it came from, and the exact MCP call that fetches it.
 //
 // The input is dist/registry/ and nothing else -- registry.json, items/*.json,
 // previews/*.png. Never the effects/ tree. The registry is what the MCP server
@@ -9,14 +9,18 @@
 // no edit here. The sidebar's groups, counts and per-effect links are all
 // derived from the items, so a tenth category would appear on its own.
 //
-// THE SHAPE IS A DOCUMENTATION SITE, not a landing page. A library of 77 is
-// something you browse, and one long scroll is not browsing:
+// THE SHAPE IS A TWO-PANE EXPLORER. A library of 98 is something you browse,
+// and one long scroll is not browsing:
 //
 //   top bar   the name, the count, and a search field with a "/" shortcut
 //   sidebar   nine collapsible category groups, each with a live count and the
 //             effects inside it, plus a group of cross-cutting filters. It is
 //             a drawer under 900px rather than nothing.
-//   main      a compact banner, then the card grid, four across on a laptop
+//   main      two views of one column, swapped by the fragment. With nothing
+//             picked it is the browse view: a compact banner, then the card
+//             grid, four across on a laptop. Pick an effect and it becomes the
+//             stage: that effect RUNNING in a frame, with its whole detail
+//             panel under it and one link back to the grid.
 //
 // The banner and the sources band are the same two chrome effects the old page
 // gave a full screen each; here they are a masthead and a strip, because the
@@ -62,20 +66,33 @@
 // before taking it. That check is what settled it: the trade it was worried
 // about does not exist.
 //
-// Card, sidebar and dialog markup is rendered here rather than by the browser,
+// Card, sidebar and detail markup is rendered here rather than by the browser,
 // so the page is complete with scripting off and every effect is in the HTML
-// for a test to count. gallery.js only filters, counts, opens and copies;
-// gallery.css and gallery.js are copied verbatim from scripts/gallery/ because
-// neither carries effect data.
+// for a test to count. gallery.js only filters, counts, swaps the two views and
+// points one frame at one demo; gallery.css and gallery.js are copied verbatim
+// from scripts/gallery/ because neither carries effect data.
 //
-// No live previews ON THIS PAGE. 29 WebGL contexts at once is past what a
-// browser keeps (roughly 8 to 16 before it evicts the oldest), and a grid of
-// dead canvases is worse than a grid of images. The banner is the one live
-// shader here. Every card and every panel instead links to demo/<name>.html,
-// one full-page live demo per effect, built by scripts/build-demos.mjs: one
-// page, one effect, one context, which is the only arrangement that scales.
-// Those demos are the point of the page now, so the link is a button and not
-// a footnote.
+// ONE LIVE EFFECT, IN AN IFRAME. 37 of these are WebGL and a browser keeps
+// roughly 8 to 16 contexts before it silently evicts the oldest, so mounting
+// the library into this document is not on the table at any count. Nor is
+// mounting a handful: 98 stylesheets written for pages they own would collide,
+// and every switch would depend on an effect's teardown being perfect.
+//
+// The stage therefore holds a single <iframe> pointed at demo/<name>.html, the
+// full-page demo build-demos.mjs already writes. That buys complete style and
+// script isolation, and switching effects tears the old one down by DISCARDING
+// THE BROWSING CONTEXT -- gallery.js removes the frame element and appends a
+// fresh one -- which is a stronger guarantee than calling destroy() and hoping.
+// It also reuses the one rendering path the smoke gate already covers, rather
+// than growing a second one that can drift from it.
+//
+// Nothing autoloads. There is no <iframe> in this file's output at all; the
+// frame is created on the first pick, so opening the gallery starts no WebGL
+// context that nobody asked for. The frame box carries the effect's own still
+// preview underneath, so the pane shows the resting state while the demo loads.
+//
+// The full-page demo link stays on every card and every detail panel. The pane
+// is a preview, and a full-bleed hero deserves a full page.
 //
 // build-demos.mjs also writes the shared _fx/ tree, every item's files at the
 // path the item declares. That covers the three chrome effects this page runs
@@ -141,10 +158,12 @@ const chip = (text, cls = "") => `<span class="fxg-chip ${cls}">${esc(text)}</sp
 // and this is the one link on the page that still resolves if that directory is
 // served from somewhere other than the origin root.
 const demoHref = (item) => `demo/${esc(item.name)}.html`;
-// The effect name rides along for a screen reader, because 77 links all called
-// "See it live" is a link list with no information in it.
-const liveLink = (item, cls) =>
-  `<a class="${cls}" href="${demoHref(item)}">See it live<span class="fxg-sr"> ${esc(item.name)}</span><span aria-hidden="true"> &rarr;</span></a>`;
+// The effect name rides along for a screen reader, because 98 links all called
+// "Full page" is a link list with no information in it. The wording changed
+// with the stage: picking the effect is what shows it live now, so this link
+// is the one that says "and bigger, with nothing else on screen".
+const liveLink = (item, cls, text = "Full page") =>
+  `<a class="${cls}" href="${demoHref(item)}">${esc(text)}<span class="fxg-sr"> demo of ${esc(item.name)}</span><span aria-hidden="true"> &rarr;</span></a>`;
 
 function engineBadges(needs) {
   // Mirrors fx.py's rule exactly: svelte and react take dependency-free effects
@@ -224,24 +243,30 @@ function deviationBlock(deviations = []) {
       </section>`;
 }
 
-function dialog(item) {
+/**
+ * One effect's detail panel: everything the old modal carried, rendered into
+ * the stage instead of a <dialog> so it sits WITH the running preview rather
+ * than covering the page. `hidden` on all 98 and off on one is the whole of the
+ * show/hide, so no markup is built in the browser and every panel is in the
+ * HTML for a test to count. The id stays the effect name, which is the MCP
+ * server's preview_url contract and the fragment the sidebar links to.
+ */
+function detail(item) {
   const needs = item.needs || [];
   const dep = needs.length
     ? `Ships <strong>${esc(needs.join(", "))}</strong> beside it. That is why svelte and react turn it down.`
     : "Nothing. It runs anywhere the registry does.";
   const call = `mcp__pocketpaw_fx__get_effect({"name": "${item.name}", "engine": "html"})`;
-  return `  <dialog id="${esc(item.name)}" class="fxg-dialog" aria-labelledby="t-${esc(item.name)}">
+  return `  <section class="fxg-detail" id="${esc(item.name)}" hidden aria-labelledby="t-${esc(item.name)}">
     <div class="fxg-sheet">
       <header class="fxg-dhead">
         <div>
-          <h2 class="fxg-dtitle" id="t-${esc(item.name)}">${esc(item.name)}</h2>
+          <h2 class="fxg-dtitle" id="t-${esc(item.name)}" tabindex="-1">${esc(item.name)}</h2>
           <p class="fxg-dmeta">${esc(item.category)} &middot; v${esc(item.version)} &middot; ${esc(item.license)}</p>
         </div>
-        <form method="dialog"><button class="fxg-x" aria-label="Close">Close</button></form>
+        <p class="fxg-dlive">${liveLink(item, "fxg-live fxg-live--wide", "Open full page")}<span class="fxg-dlive-note">Nothing else on screen, and a reduced-motion switch.</span></p>
       </header>
-      <div class="fxg-shot fxg-dshot" data-shot="${esc(item.name)}"></div>
       <p class="fxg-lede">${esc(item.summary)}</p>
-      <p class="fxg-dlive">${liveLink(item, "fxg-live fxg-live--wide")}<span class="fxg-dlive-note">Full page, running, with a reduced-motion switch.</span></p>
       <div class="fxg-tags">${(item.tags || []).map((t) => chip(t)).join("")}</div>
       <section class="fxg-block">
         <h3 class="fxg-h">Engines</h3>
@@ -260,7 +285,32 @@ function dialog(item) {
         </div>
       </section>
     </div>
-  </dialog>`;
+  </section>`;
+}
+
+/**
+ * The stage: the right pane once an effect is picked. A bar with the way back
+ * to the grid, one frame box, then all 98 detail panels with 97 of them hidden.
+ *
+ * The frame box ships EMPTY of any <iframe>. gallery.js creates one on the
+ * first pick and replaces the element on every switch, so a visitor who has
+ * picked nothing has started no WebGL context, and the previous effect's
+ * context is discarded with its browsing context rather than left to a
+ * teardown routine. `data-shot` is the still preview slot the frame paints
+ * over once it loads, so the box is never an empty rectangle.
+ */
+function stage(items) {
+  return `      <section class="fxg-stage" id="fxg-stage" hidden>
+        <div class="fxg-stage-bar">
+          <a class="fxg-back" id="fxg-back" href="#"><span aria-hidden="true">&larr;</span> All effects</a>
+          <p class="fxg-stage-now" id="fxg-stage-now"></p>
+        </div>
+        <div class="fxg-frame-box" id="fxg-frame-box">
+          <div class="fxg-poster" data-shot aria-hidden="true"></div>
+        </div>
+        <p class="fxg-sr" id="fxg-say" role="status"></p>
+${items.map(detail).join("\n")}
+      </section>`;
 }
 
 function card(item, uri) {
@@ -455,6 +505,7 @@ ${topbar(reg)}
 ${sidebar(items, free)}
   <main class="fxg-main fx-spot" id="fxg-main">
     <div class="fxg-wrap">
+      <div class="fxg-browse" id="fxg-browse">
 ${banner(reg, free)}
 ${head(reg)}
       <div class="fx-spot__grid fxg-grid" id="fxg-grid">
@@ -464,13 +515,14 @@ ${cards}
 ${band(items)}
       <footer class="fxg-foot-bar">
         <p>Registry ${esc(reg.version)}, built ${esc(reg.generatedAt.slice(0, 10))}. ${reg.items.length} effects, ${free} of them dependency-free.</p>
-        <p>This page is generated by <code>bun run gallery</code> from the same registry the MCP server reads, and its own banner, sources band and cards are three effects out of it. Every effect also gets a full-page live demo under <code>demo/</code>, generated the same way.</p>
+        <p>This page is generated by <code>bun run gallery</code> from the same registry the MCP server reads, and its own banner, sources band and cards are three effects out of it. Pick any effect and it runs in the pane, in a frame around the same full-page demo under <code>demo/</code> its own button opens.</p>
       </footer>
+      </div>
+${stage(items)}
     </div>
   </main>
 </div>
 <div class="fxg-scrim" id="fxg-scrim" hidden></div>
-${items.map(dialog).join("\n")}
 ${mounts.join("\n")}
 <script src="gallery.js"></script>
 </body>

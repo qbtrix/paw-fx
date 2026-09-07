@@ -7,6 +7,15 @@
 // otherwise empty page, its `usage` stylesheet link and mount script verbatim,
 // and nothing else competing for the viewport.
 //
+// THESE PAGES ARE ALSO THE GALLERY'S RIGHT PANE. build-gallery.mjs frames one
+// of them per pick rather than growing a second rendering path, so a demo is
+// now read in two places and only one of them owns the whole tab. The only
+// thing that changes between them is the bar's way out: `target="_top"` on the
+// back link, so "All effects" leaves the gallery in the tab it is in instead of
+// loading the whole gallery inside a 600px frame. Every other control in the
+// bar stays frame-local on purpose -- the reduced-motion switch belongs to the
+// preview, and reloading only the frame is the point of it.
+//
 // Input is the built items and nothing else, the same rule build-gallery.mjs
 // follows, so an effect added to effects/ gets a demo through `bun run gallery`
 // with no edit here.
@@ -119,7 +128,7 @@ function bar(item, rewired = false) {
     ? `\n  <span class="fxd-bar__note">Links point at the two-page demo, the section ships its own routes</span>`
     : "";
   return `<nav class="fxd-bar" aria-label="Demo controls">
-  <a class="fxd-bar__back" href="../index.html">All effects</a>
+  <a class="fxd-bar__back" href="../index.html" target="_top">All effects</a>
   <span class="fxd-bar__name">${esc(item.name)}</span>
   <span class="fxd-bar__cat">${esc(item.category)}</span>${two}${note}
   <a class="fxd-bar__rm fxd-bar__rm--go" href="?reduced=1">Reduced motion</a>

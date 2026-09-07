@@ -1,9 +1,10 @@
 // Gallery contract: dist/registry/gallery/ shows the WHOLE registry and shows
-// it truthfully, and every effect on it has a live demo page behind its button.
-// Built into a temp dir from a temp registry, so the assertions hold for
-// whatever effects/ contains rather than for a checked-in page.
+// it truthfully, every effect on it runs in the stage when it is picked, and
+// every effect still has a full page behind its button. Built into a temp dir
+// from a temp registry, so the assertions hold for whatever effects/ contains
+// rather than for a checked-in page.
 //
-// The demo assertions are in their own block at the bottom, with their own note
+// The stage block and the demo block are at the bottom, each with its own note
 // on what a string can and cannot prove about a running effect.
 //
 // Five things are worth a test on the grid page, and they are the five that rot
@@ -40,10 +41,10 @@ test("every effect in the registry is on the page, once", () => {
   expect(result.count).toBe(reg.items.length);
   for (const item of reg.items) {
     expect(html).toContain(`data-name="${item.name}"`);
-    expect(html).toContain(`<dialog id="${item.name}"`);
+    expect(html).toContain(`<section class="fxg-detail" id="${item.name}"`);
   }
   const cards = html.match(/class="fx-spot__card fxg-card"/g) || [];
-  const panels = html.match(/<dialog id="/g) || [];
+  const panels = html.match(/<section class="fxg-detail" id="/g) || [];
   expect(cards).toHaveLength(reg.items.length);
   expect(panels).toHaveLength(reg.items.length);
 });
@@ -89,7 +90,7 @@ test("each panel carries the summary, the needs and the get_effect call", () => 
 // fx.py refuses a non-empty `needs` on svelte and react, so a card that claims
 // otherwise sends a reader to a call that errors.
 test("engine badges follow the dependency rule", () => {
-  const panels = html.split("<dialog id=").slice(1);
+  const panels = html.split('<section class="fxg-detail" id=').slice(1);
   expect(panels).toHaveLength(items.length);
   for (const panel of panels) {
     const name = panel.slice(1, panel.indexOf('"', 1));
@@ -137,6 +138,53 @@ test("the chrome effects ship with the page", () => {
   }
 });
 
+// ---------- the stage ----------
+//
+// The right pane is one iframe pointed at one demo page. A string cannot prove
+// the effect moves in it -- that is a browser pass -- but it can prove the two
+// things that would silently undo the design:
+//
+//   - NOTHING AUTOLOADS. There is no <iframe> in the markup at all, so opening
+//     the gallery starts no WebGL context before a visitor picks something. A
+//     generator that ever emits one, even with an empty src, has given the
+//     first paint a browsing context it was not supposed to have.
+//   - the detail content survived the move off the modal. Every panel is still
+//     in the HTML, still hidden, still carrying its summary, its upstream
+//     links, its options and its get_effect call, which the tests above count.
+
+test("no effect loads until one is picked", () => {
+  expect(html).not.toContain("<iframe");
+  // The frame box ships with the still-preview slot and nothing else in it.
+  expect(html).toContain('<div class="fxg-frame-box" id="fxg-frame-box">');
+  expect(html).toContain('<div class="fxg-poster" data-shot aria-hidden="true"></div>');
+});
+
+test("the stage holds every panel, hidden, with a way back and a live region", () => {
+  // Two views of one column, and the browse view is the one that paints first.
+  expect(html).toContain('<div class="fxg-browse" id="fxg-browse">');
+  expect(html).toContain('<section class="fxg-stage" id="fxg-stage" hidden>');
+  expect(html).toContain('<a class="fxg-back" id="fxg-back"');
+  expect(html).toContain('<p class="fxg-sr" id="fxg-say" role="status"></p>');
+
+  const hidden = html.match(/<section class="fxg-detail" id="[^"]+" hidden/g) || [];
+  expect(hidden).toHaveLength(items.length);
+
+  // The panels live INSIDE the stage, or hiding the stage would not hide them.
+  const stage = html.slice(html.indexOf('id="fxg-stage"'));
+  for (const item of items) expect(stage).toContain(`id="${item.name}" hidden`);
+});
+
+// The pane is a preview. A full-bleed hero deserves the whole viewport, and
+// some of these only make sense at full width, so the link out is on every card
+// and every panel and it is the one filled button on the page.
+test("every card and every panel still links to the full page", () => {
+  for (const item of items) {
+    expect(html).toContain(`href="demo/${item.name}.html"`);
+  }
+  expect((html.match(/class="fxg-live"/g) || []).length).toBe(items.length);
+  expect((html.match(/class="fxg-live fxg-live--wide"/g) || []).length).toBe(items.length);
+});
+
 // ---------- live demos ----------
 //
 // The demos are the point of the gallery: a still preview says what colour an
@@ -155,17 +203,13 @@ test("every effect has a demo page carrying its snippet and its own mount line",
     const [link, , mount] = item.usage.split("\n");
     expect(page).toContain(mount);
     expect(page).toContain(link);
-    expect(page).toContain('href="../index.html"');
     expect(page).toContain("?reduced=1");
+    // target="_top" is what lets the same page serve both readers: on its own
+    // it changes nothing, and inside the gallery's stage it is the difference
+    // between leaving the gallery in the tab and loading the whole gallery
+    // inside a 600px frame.
+    expect(page).toContain('href="../index.html" target="_top"');
   }
-});
-
-test("every card and every panel links to its demo", () => {
-  for (const item of items) {
-    expect(html).toContain(`href="demo/${item.name}.html"`);
-  }
-  expect((html.match(/class="fxg-live"/g) || []).length).toBe(items.length);
-  expect((html.match(/class="fxg-live fxg-live--wide"/g) || []).length).toBe(items.length);
 });
 
 // Every file an item declares has to be on disk under the gallery root, because
