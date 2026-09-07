@@ -55,6 +55,10 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 | kinetic-type-transition | MIT | [codrops/KineticTypePageTransition](https://github.com/codrops/KineticTypePageTransition) `ebe926e`, `src/js/typeTransition.js` + `src/css/base.css` |
 | layout-formations | MIT | [codrops/OnScrollLayoutFormations](https://github.com/codrops/OnScrollLayoutFormations) `68910ec`, `js/index.js` + `css/base.css` |
 | scroll-3d-grid | MIT | [codrops/Scroll3DGrid](https://github.com/codrops/Scroll3DGrid) `69718a2`, `js/index.js` + `css/base.css` |
+| parallax-gallery-horizontal | MIT | [davidfaure/horizontal-parallax-gallery-codrops](https://github.com/davidfaure/horizontal-parallax-gallery-codrops) `49c3ead`, `src/main.ts` + `src/gallery/index.ts` + `src/gallery/gallery.css` + `src/utils/math.ts` + `index.html` |
+| dual-wave-text | MIT | [ValentinDBS/codrops-tutorial-text-animation](https://github.com/ValentinDBS/codrops-tutorial-text-animation) `90dfeb2`, `src/dual-wave/DualWaveAnimation.js` + `src/dual-wave/style.css` + `src/main.js` + `index.html` |
+| shader-ripple-tiles | MIT | [biazo/codrops-animate-shaders-with-gsap](https://github.com/biazo/codrops-animate-shaders-with-gsap) `bdd17aa`, `src/js/demo1/Effect.js` + `Stage.js` + `PlanesMaterial.js` + `base.vert` + `base.frag` + `src/js/utils.js` + `src/css/base.css` + `index.html` |
+| gradient-carousel | MIT | [clementgrellier/gradientslider](https://github.com/clementgrellier/gradientslider) `6773280`, `script.js` + `styles.css` + `index.html` |
 
 Six of the seven Codrops ports above replace GSAP with the vendored anime.js
 (`infinite-menu-loop` uses no animation library at all upstream). That
@@ -247,6 +251,30 @@ and declares a system stack. `loop-scroll-gallery` is the only one whose
 upstream carries photographs -- credited to a named photographer and licensed
 separately from the code -- so its cells paint CSS gradients behind a
 `--fx-img` custom property a site fills with its own picture.
+
+Four more ports land from a second survey, and three of the four repeat the
+pattern above. `parallax-gallery-horizontal` needed the least work of any port
+here: GSAP appears in it only as `utils.interpolate` and `utils.clamp` inside
+`src/utils/math.ts`, one line each, written out rather than replaced.
+`dual-wave-text` swaps `gsap.quickTo` for anime's `createAnimatable` and
+ScrollTrigger for `onScroll`, and drops ScrollSmoother rather than replacing it,
+because page-level smooth scrolling is `smooth-scroll`'s job.
+`shader-ripple-tiles` is the one that had to leave code behind: its upstream
+carousel shell is built on Draggable, ScrollTrigger and **InertiaPlugin**, which
+is Club GreenSock and paid, so `src/js/demo*/main.js` is deliberately outside
+`origin.path` and the tiles mount on a plain CSS grid instead. Its two shaders
+are carried byte for byte. `gradient-carousel` had two GSAP call sites in 971
+lines and both tween a plain object.
+
+Two obligations beyond the code are worth naming separately.
+`dual-wave-text`'s upstream ships **24 real company names and 24 company logo
+files**. An MIT grant covers the author's own code and cannot grant rights in a
+third party's trade marks, so none of them ship: both of its columns carry
+invented words and the logos are gone. And none of the four redistributes an
+image: `parallax-gallery-horizontal` paints CSS gradients behind `--fx-img`,
+while `shader-ripple-tiles` and `gradient-carousel` carry generated SVG plates
+in a real `<img src>` -- those two sample or texture from the picture's actual
+pixels, so unlike every other image slot here theirs cannot be a CSS background.
 
 GSAP does not ship in any of them. Its licence bars use in a tool that lets
 people build animations without writing code, which is what a site-building

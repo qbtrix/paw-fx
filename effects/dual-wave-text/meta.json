@@ -1,0 +1,78 @@
+{
+  "name": "dual-wave-text",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "text",
+    "scroll",
+    "wave",
+    "columns",
+    "focus",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Two columns of oversized type slide against each other on a sine as the section crosses the viewport, 12 radians of phase between one line and the next, and the line nearest the middle of the screen lights up and pulls its picture into the gutter.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "waveNumber": {
+      "type": "number",
+      "default": 12,
+      "description": "Radians of phase between one line and the next. Upstream's data-wave-number on the demo's wrapper."
+    },
+    "waveSpeed": {
+      "type": "number",
+      "default": 1,
+      "description": "Whole sine cycles the wave travels over one full crossing of the viewport. Upstream's data-wave-speed."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "ValentinDBS/codrops-tutorial-text-animation",
+    "commit": "90dfeb2eec89dd6879cabf2e76f4e7096e515a8a",
+    "path": [
+      "src/dual-wave/DualWaveAnimation.js",
+      "src/dual-wave/style.css",
+      "src/main.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "gsap.quickTo(el, \"x\", { duration: 0.6, ease: \"power4.out\" }) becomes anime's createAnimatable(el, { x: { duration: 600, ease: \"outQuint\" } }), and gsap.set(el, { x }) becomes that same setter called with a duration of 0. Timings are in milliseconds rather than seconds.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without writing code. createAnimatable is the same shape as quickTo, a smoothed per-property setter, so the substitution is one-for-one. The curve is not: GSAP's powerN is degree N+1, so power4 is a quintic and the anime name for it is outQuint, not outQuart. Routing the initial write through the animatable rather than a direct transform write keeps one owner of the element's x, so the first frame after mount cannot fight a tween already in flight.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "ScrollTrigger.create({ trigger, start: \"top bottom\", end: \"bottom top\", onUpdate }) becomes onScroll({ target, enter: \"bottom top\", leave: \"top bottom\", onUpdate }), with both threshold strings reversed rather than copied.",
+      "why": "Same GSAP ban, and the mapping is exact rather than approximate: the range is still the section's top meeting the viewport's bottom through to its bottom meeting the viewport's top. ScrollTrigger reads a threshold as '<target edge> <container edge>' and anime reads it as '<container edge> <target edge>'. Copied across unchanged, anime's offsetEnd lands before its offsetStart, the range clamps to zero and progress silently pins at 0 while everything else looks correct.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "ScrollSmoother.create({ smooth: 1.5, normalizeScroll: true }) from src/main.js is dropped rather than replaced, and preloadImages() with it.",
+      "why": "Page-level smooth scrolling is a page-level decision and paw-fx ships it as its own effect (smooth-scroll); a section that seizes the page's scrolling because it happens to be on the page is a bad neighbour, and two on one page would fight. The preload exists to hide a flash of unloaded logo files, and no image is bundled here to load.",
+      "kind": "seam"
+    },
+    {
+      "what": "All 24 company names in the right column and all 24 logo files the left column pairs with them are gone. Both columns are invented words, and the plate between them paints a CSS gradient carried in data-image as a CSS image value written to --fx-img.",
+      "why": "The repo's MIT grant covers the author's code. It cannot grant rights in third-party trade marks, and a bundled logo is exactly that, so none of them may ship regardless of the code licence. Nothing is lost: the wave moves text, and the plate is a slot the demo's own left column already showed working with invented names.",
+      "kind": "ours"
+    },
+    {
+      "what": "An unfocused line is --fx-dim (#7d7d85) rather than upstream's #4d4d4d, and the plate is a div with an explicit 3/4 box rather than an <img>, which also means upstream's max-height: 30vh on it is dropped.",
+      "why": "#4d4d4d on that black measures 2.5:1, under the 4.5:1 this library holds every text run to; #7d7d85 measures 4.8:1 on --fx-bg and the focused line is still white, so the contrast between the two states is unchanged. The plate needs a box of its own because there is no bundled image to give it an intrinsic one. The max-height goes with it: on a box whose width is definite and whose height comes from an aspect-ratio, a max-height clamp does not shrink the width to match, so it squares the plate off instead of bounding it.",
+      "kind": "ours"
+    },
+    {
+      "what": "A column's slack is clamped to a minimum of 0, and at 1023px and under the plate is hidden rather than widened to 50vw.",
+      "why": "Upstream computes slack as column width minus its widest line and lets it go negative, which drives every line the wrong way and out through the side of the section on any column narrower than its own longest word. Parked is the right answer there. The plate is the same problem from the other side: at 50vw it sits directly under both columns of type, and no single ink clears 4.5:1 against artwork a site chooses, so it is dropped at that width. The wave is the effect and the plate is the garnish.",
+      "kind": "ours"
+    },
+    {
+      "what": "The ranges are recalculated by a ResizeObserver on the wrapper rather than by a window resize listener, and destroy() clears the transforms and the focused class.",
+      "why": "A section is resized by things a window resize never reports, such as a sibling collapsing or a font landing. Upstream's destroy() leaves the last transforms in place because its page never tears the effect down; here a destroy mid-scroll would otherwise leave the columns frozen mid-wave instead of as the markup reads.",
+      "kind": "seam"
+    }
+  ]
+}

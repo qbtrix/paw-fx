@@ -1,0 +1,67 @@
+<!-- dual-wave-text section. Finished at rest with CSS alone: both columns read
+     exactly as they do here with the script blocked, the bundle pruned or
+     prefers-reduced-motion on. What the script adds is the counter-phase slide
+     and the focus, which is the effect and not the content.
+
+     NO REAL BRANDS. Every word below is invented. Upstream's right column is
+     24 actual companies and its left column pairs each with that company's
+     logo file; an MIT licence on the author's code grants nothing in anyone
+     else's trade marks, so none of them are here. The effect only ever moves
+     text, so nothing was lost.
+
+     THE IMAGE SLOT. data-image on a left-column line is a CSS image value that
+     index.js writes to --fx-img on the plate between the columns. The
+     gradients below are placeholders; put your own picture in the same place:
+       <li class="fx-dwave__item" data-image="url(/img/1.jpg)">Vandrell</li>
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/dual-wave-text/style.css">
+<section class="fx-dwave" data-fx="dual-wave-text">
+  <div class="fx-dwave__head">
+    <p class="fx-dwave__eyebrow">Index 2026</p>
+    <h2 class="fx-dwave__title">Every house we work with, and what they shipped.</h2>
+    <p class="fx-dwave__note">Scroll: the two columns slide against each other, and whichever line sits closest to the middle of the screen lights up and pulls its picture into the gutter.</p>
+  </div>
+  <div class="fx-dwave__wrapper" data-wave-number="12" data-wave-speed="1">
+    <ul class="fx-dwave__column fx-dwave__column--left">
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ff6a3d,#2b1a5e)">Vandrell 07</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#3ddc97,#0b3b32)">Okamora 11</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#8f7bff,#1b1440)">Brindlaw N&ordm;2</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ffd166,#5a3a06)">Serevin Pale</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#4cc9f0,#0a2540)">Halvern 14</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ff5d8f,#3a0a24)">Norvane 06</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#9ef01a,#1d3a04)">Tessaly Fold</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ff9f1c,#4a1f00)">Corvane 03</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#7fd8ff,#12314a)">Ildmar Ridge</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#c77dff,#2a0f4a)">Pellowe Nine</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#94a3b8,#1e293b)">Ashvir Slate</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#f4978e,#4c1d18)">Kestrane 21</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#2ec4b6,#08312d)">Mornvale 08</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ffe066,#4d3c00)">Selvane Arc</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#5f7cff,#0e1541)">Draymoor 05</li>
+      <li class="fx-dwave__item" data-image="linear-gradient(140deg,#ff7ad9,#3d0b34)">Quillane 19</li>
+    </ul>
+    <div class="fx-dwave__plate-wrap">
+      <div class="fx-dwave__plate"></div>
+    </div>
+    <ul class="fx-dwave__column fx-dwave__column--right">
+      <li class="fx-dwave__item">Vandrell</li>
+      <li class="fx-dwave__item">Okamora</li>
+      <li class="fx-dwave__item">Brindlaw</li>
+      <li class="fx-dwave__item">Serevin</li>
+      <li class="fx-dwave__item">Halvern</li>
+      <li class="fx-dwave__item">Norvane</li>
+      <li class="fx-dwave__item">Tessaly</li>
+      <li class="fx-dwave__item">Corvane</li>
+      <li class="fx-dwave__item">Ildmar</li>
+      <li class="fx-dwave__item">Pellowe</li>
+      <li class="fx-dwave__item">Ashvir</li>
+      <li class="fx-dwave__item">Kestrane</li>
+      <li class="fx-dwave__item">Mornvale</li>
+      <li class="fx-dwave__item">Selvane</li>
+      <li class="fx-dwave__item">Draymoor</li>
+      <li class="fx-dwave__item">Quillane</li>
+    </ul>
+  </div>
+</section>

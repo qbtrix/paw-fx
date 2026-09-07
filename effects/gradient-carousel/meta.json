@@ -1,0 +1,88 @@
+{
+  "name": "gradient-carousel",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "carousel",
+    "3d",
+    "drag",
+    "gradient",
+    "colour-sampling",
+    "codrops",
+    "anime"
+  ],
+  "summary": "An endless 3D card carousel over a blurred canvas wash painted from the two strongest colours of whichever card is in the middle, sampled live from its pixels through a 36x5 hue-by-saturation histogram and crossed over 0.45s each time the centre changes.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "friction": {
+      "type": "number",
+      "default": 0.9,
+      "description": "Velocity left after a sixtieth of a second. Upstream's FRICTION."
+    },
+    "wheelSensitivity": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How hard a wheel notch pushes the carousel. Upstream's WHEEL_SENS."
+    },
+    "maxRotation": {
+      "type": "number",
+      "default": 28,
+      "description": "Degrees a card at the edge of the stage is turned by. Upstream's MAX_ROTATION."
+    },
+    "maxDepth": {
+      "type": "number",
+      "default": 140,
+      "description": "Pixels the centred card is pushed toward the reader. Upstream's MAX_DEPTH."
+    },
+    "gap": {
+      "type": "number",
+      "default": 28,
+      "description": "Pixels between card centres, over the card's own width. Upstream's GAP."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "clementgrellier/gradientslider",
+    "commit": "6773280ae28e9902d9073f9e5e3ce7dfd4cdc2cd",
+    "path": [
+      "script.js",
+      "styles.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Both GSAP call sites move to anime. gsap.to(gradCurrent, { ...to, duration: 0.45, ease: 'power2.out' }) becomes animate(gradCurrent, { ...to, duration: 450, ease: 'outCubic' }), and the gsap.timeline() in animateEntry() becomes createTimeline() with each card's { p: 0 } to { p: 1 } tween at 600ms / 'outQuart', staggered by idx * 50ms. Upstream's `if (window.gsap) ... else Object.assign` fallback on the first one is dropped.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without writing code. Both sites tween a plain object, which anime does identically, so the substitution is exact apart from seconds becoming milliseconds. The curve names are not exact and cannot be copied by number: GSAP's powerN is degree N+1, so power2 is a cubic and power3 a quartic. The fallback branch goes because anime is always present, which also fixes the second call site -- it has no guard, so script.js as published throws without GSAP.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "createCards() and the IMAGES array are inverted: the ten cards are in snippet.html and mount() reads them, rather than being built from a hard-coded list of file paths. The loader overlay, the <link rel=preload> injection and warmupCompositing() are dropped. The card is min(22vw, 280px) wide rather than upstream's min(26vw, 360px).",
+      "why": "Effect contract: a section has to be finished with CSS alone before any script runs, so cards a script creates would leave nothing at rest. Upstream's own README already names IMAGES as the swap point; markup is the same slot in a form the resting state can use. The three dropped pieces all exist to hide work behind a full-screen spinner -- warmupCompositing scrolls the entire track to force the compositor, which is invisible under a loader and would be a visible spin without one -- and a section that covers itself with a spinner is exactly the resting state this library forbids. The card shrinks for the same reason: upstream's stage is the full viewport, and a card sized for that is taller than the box a section leaves once its own copy is above it -- at 26vw the perspective and the centred card's scale together push it past the stage and it clips.",
+      "kind": "seam"
+    },
+    {
+      "what": "Everything is per mount and scoped to the section: document.getElementById('bg' / 'cards' / 'loader') become queries inside el, VW_HALF and the entry animation's viewport width are the stage's width rather than window.innerWidth, the wheel / pointer / dragstart listeners sit on the stage, and the window resize listener becomes a ResizeObserver on it. destroy() clears every listener, both frame loops and the inline styles the run wrote.",
+      "why": "Upstream is a page with one carousel in it, so module-scope state and document ids are safe there; two of these on one page would collapse into one, and an empty id is not nullish so nothing would even complain. Measuring against the window rather than the stage would centre the cards on the viewport instead of on the section. A section is also resized by things a window resize never reports.",
+      "kind": "seam"
+    },
+    {
+      "what": "The wheel listener still calls preventDefault, and touch-action: none still applies, but both are scoped to .fx-gcar__stage rather than to the whole section.",
+      "why": "The carousel is infinite, so unlike a finite strip there is no end at which to hand the page back -- owning the wheel is the interaction, not an accident of it, and softening it would break the mechanism. Scoping it to the stage is what keeps it honest as a drop-in section: the copy above the cards scrolls the page normally, and the section can be scrolled past from anywhere outside the card area. A site agent placing this should know the card area captures the wheel and touch drag.",
+      "kind": "ours"
+    },
+    {
+      "what": "The ten bundled .webp photographs become generated SVG plates carried in the cards' src attributes, and the palette is sampled a second time once every picture has loaded.",
+      "why": "Upstream's imagery is licensed separately from its MIT code and is not ours to redistribute. The slot has to stay a real <img> here, unlike the other galleries in this library: the gradient is sampled from the picture's pixels through a canvas, and a CSS background cannot be sampled. The second pass replaces upstream's loader wait -- upstream samples once, behind its spinner, after every image has decoded; without the spinner the first pass can run against pictures that are still arriving, and a palette taken from nothing falls back to a hue derived from the card's index.",
+      "kind": "ours"
+    },
+    {
+      "what": "The five knobs are clamped to finite ranges, and an entry with no visible cards hands over to the carousel directly instead of waiting on an empty timeline.",
+      "why": "Upstream reads no configuration from outside, so neither guard has an upstream counterpart. A friction of 0 or a NaN gap would leave the carousel dead while the stylesheet had already been switched into absolute 3D mode, which puts nine of the ten cards on top of each other; and a stage too narrow to hold one card produces an empty visibleCards list, whose timeline would never fire the callback that releases isEntering.",
+      "kind": "ours"
+    }
+  ]
+}

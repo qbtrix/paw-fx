@@ -26,8 +26,13 @@
 // Previews ride inside index.html as data: URIs rather than as sibling .png
 // files, because an html Paw Site is created from a {path: contents} map whose
 // values must be STRINGS -- binary has no way in. sips re-encodes each 640x360
-// PNG to JPEG first: the PNGs total ~4MB, which is past the platform's 4MB
-// deploy-input cap, and the JPEGs total ~1MB.
+// PNG to JPEG first: the PNGs total ~9MB, which is well past the platform's 4MB
+// deploy-input cap. QUALITY IS THE KNOB THAT KEEPS THE PAGE PUBLISHABLE, and it
+// is not set once and forgotten: base64 costs a third on top of whatever the
+// JPEGs weigh, so every effect added pushes the page up by ~45KB at q75. It was
+// 75 while the library held 73 effects and crossed the cap at 77 (4.18MB), which
+// is what moved it to 65 -- 3.63MB, about 370KB of headroom, and no visible
+// difference at the size a card actually paints. Measure before raising it.
 //
 // Card and dialog markup is rendered here rather than by the browser, so the
 // page is complete with scripting off and every effect is in the HTML for a
@@ -65,13 +70,17 @@ const ENGINES = ["html", "svelte", "react"];
 const esc = (s) =>
   String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+// See the header note: this number is what keeps index.html under the 4MB
+// publish cap, so it moves down as the library grows rather than staying put.
+const JPEG_QUALITY = 65;
+
 // ponytail: sips is macOS-only. Without it the PNG ships as-is -- the same page,
 // about five times the bytes, and past the 4MB cap an html Paw Site publish
 // captures. Swap in cwebp or sharp here if the gallery ever builds on Linux CI.
 function previewDataUri(png) {
   const out = join(tmpdir(), `fxg-${basename(png, ".png")}-${process.pid}.jpg`);
   try {
-    execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", "75", png, "--out", out], { stdio: "ignore" });
+    execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", String(JPEG_QUALITY), png, "--out", out], { stdio: "ignore" });
     const jpg = readFileSync(out);
     rmSync(out, { force: true });
     return `data:image/jpeg;base64,${jpg.toString("base64")}`;

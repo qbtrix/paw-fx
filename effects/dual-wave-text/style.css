@@ -1,0 +1,150 @@
+/* dual-wave-text: two columns of oversized type sliding sideways in
+   counter-phase as the section crosses the viewport, with the line nearest the
+   middle of the screen picked out and a plate between the columns following it.
+
+   THE COLUMN IS THE TRACK. Upstream's layout is what bounds the motion: each
+   column is flex: 1 with a 25vw gutter between them, and index.js only ever
+   moves a line across (column width - widest line). That is why nothing can
+   escape its column and why the gutter stays clear for the plate. Changing
+   --fx-gutter changes how far the lines can travel, not just how they sit.
+
+   TWO COLOURS, NOT UPSTREAM'S. Upstream dims an unfocused line to #4d4d4d,
+   which is 2.5:1 on its black and unreadable; --fx-dim here is #7d7d85, 4.8:1
+   on --fx-bg, and the focused line stays white. Nothing else about the
+   treatment changes.
+
+   THE IMAGE SLOT. The plate paints a CSS gradient per line: no logo, photo or
+   font of anyone else's ships with this. Each line carries the image it wants
+   as a CSS image value in data-image, which index.js writes to --fx-img, so a
+   site swaps in its own pictures without touching anything else:
+
+     <li class="fx-dwave__item" data-image="url(/img/1.jpg)">Vandrell</li>
+
+   THE RESTING STATE is the two columns exactly as the markup reads them:
+   nothing is hidden, nothing waits on the script, and prefers-reduced-motion
+   leaves them here. */
+.fx-dwave {
+  --fx-bg: #08080a;
+  --fx-ink: #ffffff;
+  --fx-dim: #7d7d85;
+  --fx-muted: #9c98a6;
+  --fx-accent: #b9ff5e;
+  --fx-gutter: 25vw;
+  --fx-plate-w: 15vw;
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  gap: clamp(3rem, 9vw, 7rem);
+  padding: clamp(4rem, 12vh, 9rem) 0;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-dwave *,
+.fx-dwave *::before,
+.fx-dwave *::after { box-sizing: border-box; }
+
+.fx-dwave__head {
+  display: grid;
+  gap: 0.7rem;
+  max-width: 42rem;
+  padding: 0 clamp(1.25rem, 5vw, 4rem);
+}
+.fx-dwave__eyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-dwave__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+.fx-dwave__note {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+/* style.css .dual-wave-wrapper */
+.fx-dwave__wrapper {
+  display: flex;
+  width: 100%;
+  position: relative;
+  gap: var(--fx-gutter);
+}
+
+/* style.css .wave-column */
+.fx-dwave__column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(2rem, 10vw, 3rem);
+  font-weight: 400;
+  line-height: 0.7;
+  position: relative;
+  z-index: 100;
+}
+.fx-dwave__column--left { align-items: flex-start; }
+.fx-dwave__column--right { align-items: flex-end; }
+
+/* style.css .animated-text */
+.fx-dwave__item {
+  width: max-content;
+  color: var(--fx-dim);
+  text-transform: uppercase;
+  transition: color 300ms ease-out;
+  will-change: transform;
+}
+.fx-dwave__item.is-focused {
+  color: var(--fx-ink);
+  z-index: 2;
+}
+
+/* style.css .image-thumbnail-wrapper */
+.fx-dwave__plate-wrap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: var(--fx-plate-w);
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+/* style.css .image-thumbnail, as a div rather than an img: nothing is bundled,
+   so the plate needs a box of its own instead of an intrinsic one. */
+.fx-dwave__plate {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.25rem;
+  background-image: var(--fx-img, linear-gradient(140deg, #4b4b57, #1a1a20));
+  background-size: cover;
+  background-position: center;
+  transition: background-image 200ms linear;
+}
+
+/* style.css @media (max-width: 1023px), minus the plate. Upstream widens it to
+   50vw there, which puts it directly under both columns of type -- and no
+   single ink clears 4.5:1 against arbitrary artwork behind it, so the plate is
+   dropped at this width instead. The wave is the effect; the plate is the
+   garnish, and a garnish that makes the type unreadable is worse than none. */
+@media (max-width: 1023px) {
+  .fx-dwave { --fx-gutter: 10vw; }
+  .fx-dwave__column { gap: 2.5rem; font-size: 5vw; }
+  .fx-dwave__plate-wrap { display: none; }
+}

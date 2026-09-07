@@ -1,0 +1,146 @@
+/* shader-ripple-tiles: a row of picture tiles, each with a WebGL plane parked
+   exactly over it, all rendered greyscale until touched. Click one and the
+   colour floods out from the click point while a sine ripple runs through the
+   same tile; click it again and it drains back to grey.
+
+   THE ALIGNMENT IS THE EFFECT. The camera is orthographic in pixel units, so
+   index.js can scale a plane to the image's box and place it at the image's
+   centre and have it land on the pixel. That only holds while the images
+   really are laid out, which is why data-fx-live fades them to opacity 0
+   rather than display: none -- the boxes are what the planes are measured
+   from. It is also why the canvas is pointer-events: none: the click has to
+   reach the stage under it, which is where the listener lives.
+
+   THE IMAGE SLOT IS A REAL <img>, and it has to be. The plate is the texture
+   the shader samples, so it cannot be a CSS background. Upstream's 6.5 MB of
+   generated imagery is licensed separately from its code and none of it ships;
+   the tiles here carry generated SVG plates instead, with enough structure in
+   them that both the greyscale wipe and the ripple are legible. Swap one for
+   your own picture by changing its src and nothing else:
+
+     <img class="fx-tiles__img" src="/img/1.jpg" alt="">
+
+   THE RESTING STATE is the grid of real images at full opacity: with the
+   script blocked, the bundle pruned, WebGL refused or reduced motion on, the
+   section is a picture grid and nothing is hidden behind a canvas that never
+   arrived. */
+.fx-tiles {
+  --fx-bg: #f2f0eb;
+  --fx-ink: #121114;
+  --fx-muted: #55525c;
+  --fx-accent: #b4310f;
+  --fx-gap: 3rem;
+  --fx-pad: 3vw;
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  gap: clamp(1.1rem, 2.4vw, 1.75rem);
+  align-content: center;
+  min-height: 100svh;
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-tiles *,
+.fx-tiles *::before,
+.fx-tiles *::after { box-sizing: border-box; }
+
+.fx-tiles__head {
+  display: grid;
+  gap: 0.7rem;
+  max-width: 44rem;
+  padding: 0 var(--fx-pad);
+}
+.fx-tiles__eyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-tiles__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.fx-tiles__note {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+/* base.css .content__carousel: the box the canvas covers and the box the
+   click listener sits on. */
+.fx-tiles__stage {
+  position: relative;
+  width: 100%;
+}
+
+/* base.css .content__carousel-inner-static */
+.fx-tiles__grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--fx-gap);
+  padding-left: var(--fx-pad);
+  padding-right: var(--fx-pad);
+}
+
+.fx-tiles__cell { margin: 0; }
+
+/* base.css .content__carousel img, with opacity held back until the canvas is
+   actually drawing. */
+.fx-tiles__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: opacity 200ms linear;
+}
+.fx-tiles[data-fx-live] .fx-tiles__img { opacity: 0; }
+
+/* base.css .content__carousel span */
+.fx-tiles__label {
+  display: block;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+/* base.css .content__canvas. No width or height here: three.js writes both as
+   inline pixel values on every setSize, and a class rule fighting that would
+   stretch the drawing buffer. */
+.fx-tiles__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.fx-tiles__hint {
+  margin: 0;
+  padding: 0 var(--fx-pad);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+/* base.css @media (max-width: 767px) */
+@media (max-width: 767px) {
+  .fx-tiles { --fx-gap: 1.25rem; }
+  .fx-tiles__grid {
+    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

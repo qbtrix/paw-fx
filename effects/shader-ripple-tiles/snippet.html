@@ -1,0 +1,44 @@
+<!-- shader-ripple-tiles section. Finished at rest with CSS alone: the grid
+     below is four real images at full opacity, and index.js only fades them
+     out once a WebGL context exists and the planes are placed over them. A
+     blocked script, a pruned bundle, a refused context or
+     prefers-reduced-motion all leave the picture grid exactly as it reads
+     here.
+
+     THE IMAGE SLOT IS THE src. The plate is the texture the shader samples,
+     so unlike the other galleries here it cannot be a CSS background. These
+     four are generated SVG plates -- none of upstream's 6.5 MB of imagery
+     ships. Swap in your own picture by changing one attribute:
+       <img class="fx-tiles__img" alt="" src="/img/1.jpg">
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/shader-ripple-tiles/style.css">
+<section class="fx-tiles" data-fx="shader-ripple-tiles">
+  <div class="fx-tiles__head">
+    <p class="fx-tiles__eyebrow">Casting</p>
+    <h2 class="fx-tiles__title">Grey until you touch it.</h2>
+    <p class="fx-tiles__note">Each tile carries its own shader. A click sets the centre the colour floods out from, and starts a ripple through the same frame.</p>
+  </div>
+  <div class="fx-tiles__stage">
+    <div class="fx-tiles__grid">
+      <figure class="fx-tiles__cell">
+        <img class="fx-tiles__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%221200%22%20viewBox%3D%220%200%20900%201200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ff6a2c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237c1f5e%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22900%22%20height%3D%221200%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffdcb8%22%20stroke-width%3D%2230%22%20opacity%3D%220.7%22%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22310%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22200%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%2292%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M0%20980%20L900%20320%22%20stroke%3D%22%23ffdcb8%22%20stroke-width%3D%2222%22%20opacity%3D%220.55%22%2F%3E%3Cpath%20d%3D%22M0%20250%20L900%20880%22%20stroke%3D%22%23ff6a2c%22%20stroke-width%3D%2222%22%20opacity%3D%220.75%22%2F%3E%3C%2Fsvg%3E">
+        <figcaption class="fx-tiles__label">Pose &mdash; 001</figcaption>
+      </figure>
+      <figure class="fx-tiles__cell">
+        <img class="fx-tiles__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%221200%22%20viewBox%3D%220%200%20900%201200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2316c493%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2312607f%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22900%22%20height%3D%221200%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23dcffee%22%20stroke-width%3D%2230%22%20opacity%3D%220.7%22%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22310%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22200%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%2292%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M0%20980%20L900%20320%22%20stroke%3D%22%23dcffee%22%20stroke-width%3D%2222%22%20opacity%3D%220.55%22%2F%3E%3Cpath%20d%3D%22M0%20250%20L900%20880%22%20stroke%3D%22%2316c493%22%20stroke-width%3D%2222%22%20opacity%3D%220.75%22%2F%3E%3C%2Fsvg%3E">
+        <figcaption class="fx-tiles__label">Stand &mdash; 002</figcaption>
+      </figure>
+      <figure class="fx-tiles__cell">
+        <img class="fx-tiles__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%221200%22%20viewBox%3D%220%200%20900%201200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f7cb2a%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a8480f%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22900%22%20height%3D%221200%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23fff6cc%22%20stroke-width%3D%2230%22%20opacity%3D%220.7%22%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22310%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22200%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%2292%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M0%20980%20L900%20320%22%20stroke%3D%22%23fff6cc%22%20stroke-width%3D%2222%22%20opacity%3D%220.55%22%2F%3E%3Cpath%20d%3D%22M0%20250%20L900%20880%22%20stroke%3D%22%23f7cb2a%22%20stroke-width%3D%2222%22%20opacity%3D%220.75%22%2F%3E%3C%2Fsvg%3E">
+        <figcaption class="fx-tiles__label">Dance &mdash; 003</figcaption>
+      </figure>
+      <figure class="fx-tiles__cell">
+        <img class="fx-tiles__img" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22900%22%20height%3D%221200%22%20viewBox%3D%220%200%20900%201200%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%236b78ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%234a2196%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22900%22%20height%3D%221200%22%20fill%3D%22url(%23g)%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e2e6ff%22%20stroke-width%3D%2230%22%20opacity%3D%220.7%22%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22310%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%22200%22%2F%3E%3Ccircle%20cx%3D%22450%22%20cy%3D%22620%22%20r%3D%2292%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M0%20980%20L900%20320%22%20stroke%3D%22%23e2e6ff%22%20stroke-width%3D%2222%22%20opacity%3D%220.55%22%2F%3E%3Cpath%20d%3D%22M0%20250%20L900%20880%22%20stroke%3D%22%236b78ff%22%20stroke-width%3D%2222%22%20opacity%3D%220.75%22%2F%3E%3C%2Fsvg%3E">
+        <figcaption class="fx-tiles__label">Attitude &mdash; 004</figcaption>
+      </figure>
+    </div>
+  </div>
+  <p class="fx-tiles__hint">Click any frame</p>
+</section>

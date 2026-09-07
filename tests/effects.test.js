@@ -167,6 +167,14 @@ test.each([
   ["sticky-sections", { brightness: 60, contrast: 135, lift: -15, imageLift: -40, imageRotate: -20 }],
   // js/index.js config @ 354c584
   ["image-repeat-reveal", { steps: 6, stepDuration: 0.35, stepInterval: 0.05, moverPauseBeforeExit: 0.14, clipPathDirection: "top-bottom", pathMotion: "linear", rotationRange: 0 }],
+  // src/main.ts scroll.ease + src/gallery/index.ts maxShift @ 49c3ead
+  ["parallax-gallery-horizontal", { ease: 0.07, shift: 10 }],
+  // index.html data-wave-number / data-wave-speed on .dual-wave-wrapper @ 90dfeb2
+  ["dual-wave-text", { waveNumber: 12, waveSpeed: 1 }],
+  // src/js/demo1/Effect.js animate() 1.5s / resetMaterial() 1s / uTime += 0.1 @ bdd17aa
+  ["shader-ripple-tiles", { duration: 1500, resetDuration: 1000, timeStep: 0.1 }],
+  // script.js CONFIGURATION: FRICTION / WHEEL_SENS / MAX_ROTATION / MAX_DEPTH / GAP @ 6773280
+  ["gradient-carousel", { friction: 0.9, wheelSensitivity: 0.6, maxRotation: 28, maxDepth: 140, gap: 28 }],
 ])("%s carries upstream's values", async (name, upstream) => {
   const { meta } = await import(join(EFFECTS, name, "index.js"));
   expect(Object.fromEntries(Object.entries(meta.options).map(([k, v]) => [k, v.default]))).toEqual(upstream);

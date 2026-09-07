@@ -1,0 +1,83 @@
+{
+  "name": "shader-ripple-tiles",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": [
+    "webgl",
+    "shader",
+    "three",
+    "ripple",
+    "grayscale",
+    "click",
+    "codrops"
+  ],
+  "summary": "Four picture tiles with a WebGL plane parked over each, rendered greyscale until touched: click one and the colour floods out from the click point over 1.5s while a decaying sine ripple runs through the same tile; click again and it drains back to grey.",
+  "needs": [
+    "three",
+    "anime"
+  ],
+  "options": {
+    "duration": {
+      "type": "number",
+      "default": 1500,
+      "description": "Milliseconds the wipe and the ripple take. Upstream's 1.5s timeline default in Effect.js animate()."
+    },
+    "resetDuration": {
+      "type": "number",
+      "default": 1000,
+      "description": "Milliseconds the previous tile takes to fall back to colour when another is clicked. Upstream's 1s in Effect.js resetMaterial()."
+    },
+    "timeStep": {
+      "type": "number",
+      "default": 0.1,
+      "description": "How much uTime advances each frame of a run, which is what makes the ripple travel. Upstream's uTime.value += 0.1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "biazo/codrops-animate-shaders-with-gsap",
+    "commit": "bdd17aa4cf4b1464f4bcf526a863ed8dd46d394d",
+    "path": [
+      "src/js/demo1/Effect.js",
+      "src/js/demo1/Stage.js",
+      "src/js/demo1/PlanesMaterial.js",
+      "src/js/demo1/base.vert",
+      "src/js/demo1/base.frag",
+      "src/js/utils.js",
+      "src/css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "src/js/demo1/main.js is deliberately outside origin.path and is not ported. Its gsap.registerPlugin(Draggable, InertiaPlugin, ScrollTrigger) carousel shell and its gsap.ticker render loop are replaced by a plain CSS grid and a requestAnimationFrame loop the mount owns.",
+      "why": "InertiaPlugin is Club GreenSock and paid, so the shell could never ship whatever the code licence said. It is also not the effect: demo 1's own index.html mounts the tiles on .content__carousel-inner-static, a four-column CSS grid, so the drag shell is already inert on the page this port is taken from. Naming main.js in origin.path would point the fidelity gate at code that is deliberately absent.",
+      "kind": "ours"
+    },
+    {
+      "what": "gsap.timeline({ defaults: { duration: 1.5, ease: 'power3.inOut' } }) becomes anime's createTimeline at 1500ms with ease 'inOutQuart', and the reset timeline's 1s / 'power2.out' becomes 1000ms / 'outCubic'. .fromTo(u, {value:0}, {value:1}) becomes .add(u, { value: [0, 1] }), and .to(u, { keyframes: { value: [0, 1, 0] } }) becomes .add(u, { value: [{ to: 1 }, { to: 0 }] }).",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without writing code. Two of these translations are easy to get silently wrong. GSAP's powerN is degree N+1, so power3 is a quartic and power2 a cubic -- copied across by number they would be one curve too soft. And a plain array in anime is a from-to pair, not a keyframe list, so [0, 1, 0] would animate 0 to 1 and stop, leaving the ripple permanently displaced; the keyframe list has to be written as objects.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The three .set(uniform, { value }, 0) calls at position 0 of each timeline are direct assignments made before the timeline starts, and uRippleProgress is written to 0 with them.",
+      "why": "uMouse holds a Vector2 and is reset to a plain {x, y}; neither is a tween target, and anime's set on one would try to decompose it. Upstream puts them at position 0 precisely because they are instantaneous, so a write immediately before the timeline is the same instant. Zeroing uRippleProgress with them is what makes the keyframe list start from 0 rather than from wherever a cancelled run left it.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's Observer.create({ target, type: 'touch,pointer', onClick }) becomes a pointerdown listener on the section's stage, and the camera, the renderer, getWorldPositionFromDOM and the pointer's normalised coordinates are all measured against that stage's box rather than window.innerWidth / innerHeight.",
+      "why": "Observer is a free plugin but it is still GSAP, and here it is only a pointer abstraction. The window measurements are the bigger change: upstream's stage is the whole page, so the two agree there, but a section that is not the page would put every plane in the wrong place and every raycast off by the section's offset. Two of these on one page would also fight over a window-level listener.",
+      "kind": "seam"
+    },
+    {
+      "what": "The renderer asks for failIfMajorPerformanceCaveat, every construction path is wrapped so a refused context falls back to the resting state, and data-fx-live -- which is what fades the DOM images out -- is set only after the planes are placed.",
+      "why": "Effect contract. A software rasteriser would paint this at a few frames a second, and the CSS grid of real images is the better answer; the ordering matters because fading the images out before the canvas exists would leave an empty box on any machine that refuses the context. destroy() also disposes the geometries, materials, textures and renderer, which upstream never needs to do because its page never tears the effect down.",
+      "kind": "seam"
+    },
+    {
+      "what": "The 79 bundled .webp images become four generated SVG plates carried in the tiles' src attributes, and the resize handler is a ResizeObserver on the stage rather than a debounced window resize listener.",
+      "why": "Upstream's imagery is licensed separately from its MIT code and is not ours to redistribute. Unlike the other galleries here the slot has to stay a real <img>, because the plate is the texture the shader samples and a CSS background cannot be sampled; the plates carry rings and diagonals so both the greyscale wipe and the ripple displacement are legible on them. A section is resized by things a window resize never reports, which is what the observer covers.",
+      "kind": "ours"
+    }
+  ]
+}
