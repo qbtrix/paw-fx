@@ -6,11 +6,15 @@
 // The demo assertions are in their own block at the bottom, with their own note
 // on what a string can and cannot prove about a running effect.
 //
-// Four things are worth a test on the grid page, and they are the four that rot
+// Five things are worth a test on the grid page, and they are the five that rot
 // silently:
 //   - every effect in registry.json reaches the page, counted rather than
 //     eyeballed, as both a card and a panel. A generator that quietly drops one
 //     is a gallery that lies about what the registry serves.
+//   - the sidebar covers the same registry: every category is a group with its
+//     own count, and every effect is a link inside its group. The sidebar is
+//     the second full listing of the library, so it can fall behind the grid
+//     without a single card going missing.
 //   - the engine badges match fx.py's rule (svelte and react take dependency-
 //     free effects only). This page is where a reader learns that, so it has to
 //     agree with the server that enforces it.
@@ -42,6 +46,36 @@ test("every effect in the registry is on the page, once", () => {
   const panels = html.match(/<dialog id="/g) || [];
   expect(cards).toHaveLength(reg.items.length);
   expect(panels).toHaveLength(reg.items.length);
+});
+
+// The sidebar is generated from the same items, so the point of this is that it
+// STAYS generated: a category hard-coded into the nav, or a count typed in by
+// hand, would pass every other test on this page and be wrong the day an effect
+// lands.
+test("the sidebar lists every category with its count, and every effect under it", () => {
+  const counts = {};
+  for (const item of items) counts[item.category] = (counts[item.category] || 0) + 1;
+
+  const groups = html.match(/class="fxg-pick" href="#cat=/g) || [];
+  expect(groups).toHaveLength(Object.keys(counts).length);
+
+  for (const [cat, n] of Object.entries(counts)) {
+    expect(html).toContain(`href="#cat=${encodeURIComponent(cat)}" data-role="cat" data-cat="${cat}"`);
+    expect(html).toContain(`<span class="fxg-n" data-n="${cat}">${n}</span>`);
+    expect(html).toContain(`<ul class="fxg-sub" id="grp-${cat}" hidden>`);
+  }
+
+  for (const item of items) {
+    expect(html).toContain(`<a class="fxg-open" href="#${item.name}">${item.name}</a>`);
+  }
+  const subLinks = html.match(/<a class="fxg-open" href="#/g) || [];
+  expect(subLinks).toHaveLength(items.length);
+
+  // The two cross-cutting filters, with the dependency-free count the cards
+  // also claim one by one.
+  const free = items.filter((i) => !i.needs.length).length;
+  expect(html).toContain(`<span class="fxg-n" data-n="*">${items.length}</span>`);
+  expect(html).toContain(`<span class="fxg-n" data-n="+free">${free}</span>`);
 });
 
 test("each panel carries the summary, the needs and the get_effect call", () => {
