@@ -19,7 +19,7 @@
 .fx-dither {
   --fx-ground: #f9c939;
   --fx-ink: #17150c;
-  --fx-muted: #5c5433;
+  --fx-muted: #4a4327;
   --fx-frame: #17150c;
   --fx-pad: clamp(1.25rem, 4vw, 3rem);
   box-sizing: border-box;

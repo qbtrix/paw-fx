@@ -2,9 +2,21 @@
   "name": "plane-morph",
   "version": "1.0.0",
   "category": "transition",
-  "tags": ["transition", "three", "webgl", "morph", "gallery", "codrops", "anime", "detail-view"],
+  "tags": [
+    "transition",
+    "three",
+    "webgl",
+    "morph",
+    "gallery",
+    "codrops",
+    "anime",
+    "detail-view"
+  ],
   "summary": "Five pictures that live on the GPU rather than in the DOM: every slot is an empty box with a real layout rect, and a textured plane tracks it. Clicking one in the band flies and rescales that plane into the hero slot of a detail view while the other four fade away and four satellites fade in around it, so the image travels between layouts instead of unloading and loading again.",
-  "needs": ["three", "anime"],
+  "needs": [
+    "three",
+    "anime"
+  ],
   "options": {
     "morphDuration": {
       "type": "number",
@@ -64,8 +76,8 @@
       "kind": "seam"
     },
     {
-      "what": "Under prefers-reduced-motion no renderer is built at all: the click still swaps the views, instantly, and the pictures stay in the DOM.",
-      "why": "Effect contract: mount() stays at rest. Stillness means no travel, not a detail view nobody can open, so the swap survives and only the flight is dropped. curtain-transition set the same precedent.",
+      "what": "Under prefers-reduced-motion no renderer is built at all: the click still swaps the views, instantly, and the pictures stay in the DOM. The detail view's five slots each carry an <img> of their own, and the reduced-motion click points all five at whichever picture was clicked.",
+      "why": "Effect contract: mount() stays at rest. Stillness means no travel, not a detail view nobody can open -- and that view carries copy of its own, so hiding it outright would trap content behind an animation the reader asked not to see. The five <img> elements are ours: with the GPU driving they are all at opacity 0 and the planes paint instead, but with no GPU they are the only thing that can, and every plane there reuses the clicked picture's texture anyway, which is why all five take the same src. curtain-transition set the precedent for keeping the swap and dropping only the sweep.",
       "kind": "seam"
     },
     {

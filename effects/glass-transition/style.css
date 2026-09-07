@@ -22,9 +22,9 @@
    still changes picture; it just changes instantly, with nothing on the GPU. */
 .fx-glass {
   --fx-ink: #ffffff;
-  --fx-muted: rgba(255, 255, 255, 0.78);
+  --fx-muted: rgba(255, 255, 255, 0.9);
   --fx-bg: #000000;
-  --fx-scrim: rgba(0, 0, 0, 0.55);
+  --fx-scrim: rgba(0, 0, 0, 0.76);
   --fx-pad: clamp(1.1rem, 3vw, 2.5rem);
   box-sizing: border-box;
   position: relative;

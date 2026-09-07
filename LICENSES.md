@@ -153,6 +153,11 @@ necessary departure from reading as invention.
 | letter-shuffle-menu | MIT | [codrops/LetterShuffleMenu](https://github.com/codrops/LetterShuffleMenu) `32cf371`, `src/js/{menuItem,menu,menuConfig}.js`, `src/css/base.css`, `src/index.html` |
 | sticky-sections | MIT | [codrops/StickySections](https://github.com/codrops/StickySections) `69c7888`, `js/demo1/index.js`, `css/base.css`, `index.html` |
 | image-repeat-reveal | MIT | [codrops/RepeatingImageTransition](https://github.com/codrops/RepeatingImageTransition) `354c584`, `js/index.js`, `css/base.css`, `index.html` |
+| plane-morph | MIT | [bnpne/page-transitions-with-webgpu-vanilla-js](https://github.com/bnpne/page-transitions-with-webgpu-vanilla-js) `70e5c0e`, `src/gpu.js`, `src/controller.js`, `src/transitions/*`, `src/pages/*`, `src/global.css` |
+| wave-grid | MIT | [franky-adl/3d-wave-grid](https://github.com/franky-adl/3d-wave-grid) `f1fe514`, `src/ThreeJS/{Stage,Camera,Renderer,Orchestrator}.js`, `src/ThreeJS/Effects/MouseTrail.js`, `src/script.js` |
+| rotate-scroll-gallery | MIT | [codrops/RotatingOnScrollAnimations](https://github.com/codrops/RotatingOnScrollAnimations) `ebbe2c9`, `js/index5.js` + `js/{index,index3,index4}.js`, `css/base.css`, `index.html` |
+| dither-relief | MIT | [codepen.io/damarberlari/pen/pvgKamj](https://codepen.io/damarberlari/pen/pvgKamj), snapshot `774ee937`, retrieved 2026-09-07 |
+| glass-transition | MIT | [codepen.io/filipz/pen/JoGNQzm](https://codepen.io/filipz/pen/JoGNQzm), snapshot `504e2901`, retrieved 2026-09-07 |
 
 ## The seven Codrops ports
 
@@ -285,3 +290,79 @@ to get silently wrong, so both are named in every affected `meta.json`:
 GSAP's `powerN` is degree N+1 (`power4` is a quintic, not a quartic), and
 ScrollTrigger's `start: 'target container'` is anime's
 `enter: 'container target'` -- the halves are the other way round.
+
+## The five ports of 2026-09-07, and the two sources with no commit
+
+Three of the five pin the ordinary way. `bnpne/page-transitions-with-webgpu-
+vanilla-js` and `codrops/RotatingOnScrollAnimations` both carry a real MIT
+`LICENSE` in the `codrops` house form; `franky-adl/3d-wave-grid` carries its
+own, opening `MIT License / Copyright (c) 2026 franky-adl`. All three are
+verified at the pinned commit by `bun run verify`'s licence rule, from the
+licence text itself rather than from GitHub's guess.
+
+**The other two are CodePens, and a pen has no commit.** `origin` therefore
+takes its second shape -- `url`, `retrieved`, `sha256` and `snapshot` -- and the
+gate hashes a committed copy of the source under
+`tests/fixtures/upstream-snapshots/` instead of re-fetching a revision. That is
+weaker than a commit in one specific way and it is worth being plain about it:
+it proves we still ship what we ported from, not that upstream still says the
+same thing. It is stronger in another, because the bytes cannot vanish -- one
+external script the dither pen loads had already 404'd inside ten months.
+
+**What is pinned is the author's three panels, not the host's page.** CodePen's
+`cdpn.io/<user>/fullpage/<slug>` wrapper carries content-hashed asset URLs, a
+referer warning, CodePen's own stylesheets and a `stopExecutionOnTimeout` guard,
+and its bytes move whenever CodePen redeploys -- measured, not assumed: the
+filipz wrapper hashed `8b7bfd1c` in a survey on 2026-09-07 at 05:34Z and
+`2e85b1ec` when it was fetched again half an hour later, 76 203 bytes against
+76 081. Hashing that would false-fail on CodePen's churn and diff against code
+the author never wrote. `scripts/extract-panels.py` instead pulls the HTML, CSS
+and JS panels out of the `srcdoc` document the wrapper embeds and concatenates
+them in that fixed order behind labelled delimiters, under a header carrying the
+MIT notice as CodePen prints it at `codepen.io/<user>/details/<slug>`, the
+retrieval date, and the wrapper's own bytes and hash as a receipt.
+
+Three transformations are applied, all mechanical and all declared in each
+snapshot's own header: CodePen's injected loop guards
+(`window.CP.shouldStopExecution` / `exitedLoop`) and its `window.console` shim
+are removed, because CodePen's compiler adds them and the author did not write
+them; base64 image data URIs are replaced by the token `PHOTOGRAPH-REMOVED`; and
+CodePen's own `<style>`/`<script>` tags are dropped. That second one is a
+licence obligation as much as a size one -- 114 758 of the dither pen's 126 092
+characters are an embedded portrait, which is content under separate rights, and
+committing it inside a fixture would be redistributing someone's photograph
+under a code licence.
+
+**No photograph and no typeface ships in any of the five.** `plane-morph`,
+`glass-transition` and `dither-relief` all sample the picture's actual pixels,
+so their slots have to stay real `<img>` elements rather than CSS backgrounds --
+the same call `shader-ripple-tiles` and `gradient-carousel` made -- and each
+carries a generated SVG plate a site swaps for its own picture in one attribute.
+`rotate-scroll-gallery` paints a gradient behind `--fx-img` like the rest of the
+gallery shelf. `glass-transition` additionally drops upstream's `@import` of PP
+Neue Montreal and its `@font-face` for PP Supply Mono off `assets.codepen.io`:
+both are commercially licensed, neither is ours to redistribute or to hotlink,
+and paw-fx fetches nothing off-site in any case.
+
+GSAP ships in none of them. It was the tween runner in four of the five and
+never the mechanism -- one `fromTo` in `glass-transition`'s 1 904 lines, one
+staggered fade in `wave-grid`, plain `bounds` and `opacity` tweens in
+`plane-morph`, and `ScrollTrigger.create` with the maths in `onUpdate` in
+`rotate-scroll-gallery`. `dither-relief`'s upstream was already on anime.js v4,
+which is the version vendored here, so its durations, easings and sync offsets
+are carried unchanged and only the import path moved.
+
+Two ports leave code behind on purpose. `plane-morph`'s upstream is a
+single-page app: the router, preloader, cursor, carousel and the whole `/index`
+page are outside `origin.path`, and its `src/gpu.js` imports `three/webgpu` and
+`three/tsl` -- a different three build from the classic one vendored here -- so
+the material layer is rewritten as a `ShaderMaterial` carrying the rounded-box
+SDF the TSL `opacityNode` built. That is an `api-migration`, not a redesign: no
+compute shader, no storage buffer and no indirect draw is involved, and the
+author writes in the Codrops article that the technique works the same on WebGL.
+`wave-grid` drops the post-processing pass entirely, because its `EffectComposer`,
+`RenderPass`, `ShaderPass` and `OutputPass` all come from `three/addons` and
+paw-fx vendors core three only. Hand-rolling a composer to recover an edge
+vignette would be forty lines of our own code standing in for a file we cannot
+import, which is the shape of invention this library's gate exists to catch;
+dropping it and saying so in `deviations` is the honest trade.

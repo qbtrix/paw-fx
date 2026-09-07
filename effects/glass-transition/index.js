@@ -396,13 +396,20 @@ export function mount(el, opts = {}) {
   // loadImageTexture, reading each slide off its own <img> rather than a URL
   // baked into this file. userData.size is what getCoverUV needs to cover-fit.
   const loader = new TextureLoader();
-  let ready = 0;
+  let started = false;
   slides.forEach((img, i) => {
     const tex = loader.load(img.currentSrc || img.src, (t) => {
       t.minFilter = t.magFilter = LinearFilter;
       t.userData = { size: new Vector2(t.image.width, t.image.height) };
-      ready++;
-      if (ready === 2 && !torn) start();
+      // Upstream awaits the whole list before enabling the slider. Here the
+      // first pair is enough, but it has to be that pair and not any two: the
+      // opening frame samples textures 0 and 1 by index, and counting arrivals
+      // would start on whichever two happened to land first and cover-fit the
+      // wrong sizes.
+      if (!started && !torn && textures[0]?.userData && textures[1]?.userData) {
+        started = true;
+        start();
+      }
     });
     textures[i] = tex;
   });

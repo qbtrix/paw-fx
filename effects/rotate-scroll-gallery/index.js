@@ -235,8 +235,14 @@ export function mount(el, opts = {}) {
       // animateMarquee(): x from 100vw to -100% across the whole gallery's
       // range, linear, scrubbed.
       if (settings.marquee && marqueeInner) {
+        // Upstream's two ends are in different units -- x from '100vw' to
+        // '-100%' -- so they are resolved to pixels here rather than handed to
+        // the tween as a mixed pair: the viewport's width at one end, the
+        // strip's own width at the other, which is what those two strings mean.
         const writeMarquee = (p) => {
-          utils.set(marqueeInner, { x: `${interpolate(100, -100, p)}%` });
+          const fromPx = window.innerWidth;
+          const toPx = -marqueeInner.offsetWidth;
+          utils.set(marqueeInner, { x: interpolate(fromPx, toPx, p) });
         };
         writeMarquee(0.5);
         observers.push(
@@ -258,10 +264,17 @@ export function mount(el, opts = {}) {
   const tear = () => {
     for (const o of observers) o.revert?.();
     observers.length = 0;
-    // The scope owns the observers, the sideways offsets and every inline
-    // transform, because each registered itself when it was constructed.
-    // revert() strips them, which puts the gallery back flat rather than
-    // freezing it wherever the scrollbar was.
+    // The scope owns the observers and the sideways offsets, because each
+    // registered itself with scope.current when it was constructed. It does NOT
+    // own what the onUpdate callbacks write: those run long after the scope
+    // callback has returned, so scope.current is null and utils.set registers
+    // nothing. Without this loop destroy() would leave every card frozen at
+    // whatever transform and filter the scrollbar last put it at, which looks
+    // exactly like the effect still running.
+    for (const node of [...items, ...wraps, marqueeInner]) {
+      node?.style.removeProperty("transform");
+      node?.style.removeProperty("filter");
+    }
     scope?.revert();
     scope = null;
   };

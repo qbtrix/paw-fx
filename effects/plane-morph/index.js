@@ -188,9 +188,19 @@ export function mount(el, opts = {}) {
   };
 
   // Reduced motion still swaps the views, instantly and with no GPU at all.
-  // Stillness means no travel, not a second view nobody can reach.
+  // Stillness means no travel, not a second view nobody can reach -- the detail
+  // view carries copy of its own, so hiding it outright would trap content
+  // behind an animation the reader has asked not to see.
   if (reducedMotion()) {
-    const openStill = (i) => setView("detail", i);
+    const detailImgs = detailSlots.map((s) => s.querySelector(".fx-morph__img")).filter(Boolean);
+    // Every plane in the detail view carries the clicked picture's texture when
+    // the GPU is driving it. With no GPU the DOM copies have to do the same, or
+    // the detail view is five empty boxes.
+    const openStill = (i) => {
+      const src = images[i].currentSrc || images[i].src;
+      for (const img of detailImgs) img.src = src;
+      setView("detail", i);
+    };
     const closeStill = () => setView("grid", null);
     const handlers = gridSlots.map((slot, i) => {
       const h = () => openStill(i);

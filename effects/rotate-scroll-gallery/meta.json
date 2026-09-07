@@ -2,9 +2,20 @@
   "name": "rotate-scroll-gallery",
   "version": "1.0.0",
   "category": "gallery",
-  "tags": ["gallery", "scroll", "3d", "rotate", "codrops", "anime", "marquee", "hold"],
+  "tags": [
+    "gallery",
+    "scroll",
+    "3d",
+    "rotate",
+    "codrops",
+    "anime",
+    "marquee",
+    "hold"
+  ],
   "summary": "A serpentining column of cards, each offset sideways by a sine of its own index. As a card rises through the viewport it flips in on the X axis, squashes and stretches its own box, brightens out of black, then HOLDS flat and legible through the middle quarter of its range before flipping away, while a marquee scrubs across the section behind it. Four upstream variants ship behind one option.",
-  "needs": ["anime"],
+  "needs": [
+    "anime"
+  ],
   "options": {
     "variant": {
       "type": "string",
@@ -49,6 +60,11 @@
     {
       "what": "Lenis is not a dependency. initSmoothScrolling, the gsap.ticker.add bridge and gsap.ticker.lagSmoothing(0) do not ship. imagesLoaded and the .loading body class do not ship either.",
       "why": "Upstream's Lenis exists to drive ScrollTrigger.update off its own raf; anime's onScroll listens to the real scroll container, so there is nothing to bridge. Smooth scrolling already ships separately as smooth-scroll and composes with this. imagesLoaded only gated the reveal on 3.2 MB of photographs that do not ship here, so there is nothing to wait for.",
+      "kind": "seam"
+    },
+    {
+      "what": "The marquee strip is position: sticky inside the section rather than position: fixed, and its two ends are resolved to pixels -- the viewport's width at one end, the strip's own offsetWidth at the other -- instead of being handed to the tween as the mixed pair x: '100vw' to x: '-100%'.",
+      "why": "A fixed marquee belongs to the viewport, so in a drop-in section it would float over every other section on the page for the whole document; sticky scrubs across while the section is passing and stops when it is not. The unit pair is upstream's own semantics written out: 100vw and -100% measure two different boxes, and a tween cannot interpolate between them, so each end is measured from the box its unit names.",
       "kind": "seam"
     },
     {

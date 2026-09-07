@@ -15,8 +15,12 @@
      upstream's Unsplash photographs do not ship. Swap one for your own picture by
      changing one attribute:
        <img class="fx-morph__img" alt="" src="/img/1.jpg">
-     The satellite slots carry no <img> on purpose -- all five satellites reuse the
-     clicked picture's texture, which is what upstream does too.
+     The detail view's five slots all carry the SAME plate, and that is not an
+     oversight: every plane there reuses the clicked picture's texture, which is
+     what upstream does too. When the GPU is driving, data-fx-live hides all of
+     them and the planes paint instead; under reduced motion index.js points
+     them at whichever picture was clicked, so the detail view is a real
+     composition rather than five empty boxes.
 
      The _fx path is root-absolute: a site always sits at the origin root, and
      "./_fx/..." would break on a nested page such as /blog/post.html. -->
@@ -53,11 +57,11 @@
     </div>
     <div class="fx-morph__view" data-view="detail">
       <div class="fx-morph__constellation">
-        <div class="fx-morph__slot fx-morph__slot--hero"></div>
-      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-1"></div>
-      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-2"></div>
-      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-3"></div>
-      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-4"></div>
+        <div class="fx-morph__slot fx-morph__slot--hero"><img class="fx-morph__img" alt="" src="/img/1.jpg"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-1"><img class="fx-morph__img" alt="" src="/img/1.jpg"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-2"><img class="fx-morph__img" alt="" src="/img/1.jpg"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-3"><img class="fx-morph__img" alt="" src="/img/1.jpg"></div>
+      <div class="fx-morph__slot fx-morph__slot--sat fx-morph__slot--sat-4"><img class="fx-morph__img" alt="" src="/img/1.jpg"></div>
         <p class="fx-morph__fact">The plane never leaves the GPU. Its bounds tween from the rect it held in the band to the rect it holds here, so the picture flies and rescales instead of unloading and loading again.</p>
       </div>
     </div>

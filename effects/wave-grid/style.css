@@ -88,6 +88,28 @@
   height: 100%;
 }
 
+/* A vignette in CSS, over the canvas rather than inside it. Upstream frames the
+   field with a post-processing pass -- an EffectComposer carrying a vignette and
+   an RGB fringe -- and that pass cannot ship here, because all four of its
+   imports come from three/addons and this library vendors core three only. The
+   fringe is gone and stays gone. The vignette is not the same thing rebuilt:
+   it is one radial gradient painted by the browser, doing what a vignette is
+   for, which is keeping a field of near-white cubes at tone-mapped exposure
+   1.95 from washing the whole frame out and taking the copy's contrast with it.
+   Radius and softness track upstream's 0.3 and 0.3. */
+.fx-wave__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    118% 88% at 50% 46%,
+    rgba(8, 9, 14, 0) 30%,
+    rgba(8, 9, 14, 0.34) 60%,
+    rgba(8, 9, 14, 0.78) 100%
+  );
+}
+
 /* Overlay chrome, mirroring upstream's eight animated selectors. */
 .fx-wave__nav {
   position: absolute;
@@ -131,8 +153,7 @@
 .fx-wave__socials a:hover,
 .fx-wave__links a:focus-visible,
 .fx-wave__socials a:focus-visible { color: var(--fx-ink); }
-.fx-wave__time p {
-  margin: 0;
+.fx-wave__time {
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.1em;
@@ -181,7 +202,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.fx-wave__bar p { margin: 0; color: var(--fx-muted); }
+.fx-wave__loc { color: var(--fx-muted); }
 .fx-wave__bar a { color: var(--fx-ink); text-decoration: none; }
 .fx-wave__bar a:hover, .fx-wave__bar a:focus-visible { color: var(--fx-crest); }
 .fx-wave a:focus-visible { outline: 2px solid var(--fx-crest); outline-offset: 3px; }

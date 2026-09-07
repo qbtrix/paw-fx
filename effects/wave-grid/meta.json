@@ -2,9 +2,22 @@
   "name": "wave-grid",
   "version": "1.0.0",
   "category": "3d-hero",
-  "tags": ["3d-hero", "three", "webgl", "instanced", "pointer", "wave", "shadows", "anime", "hero"],
+  "tags": [
+    "3d-hero",
+    "three",
+    "webgl",
+    "instanced",
+    "pointer",
+    "wave",
+    "shadows",
+    "anime",
+    "hero"
+  ],
   "summary": "A 40x40 field of tall white cubes seen from near overhead, lit and casting shadows. Every place the pointer travels drops a point into a 128-slot trail, and each of those sends a ripple expanding outward that lifts the cubes it crosses and floods their crests blue. Leave the pointer still and the field keeps rippling from points it places itself.",
-  "needs": ["three", "anime"],
+  "needs": [
+    "three",
+    "anime"
+  ],
   "options": {
     "gridSize": {
       "type": "number",
@@ -48,8 +61,8 @@
   },
   "deviations": [
     {
-      "what": "The post-processing pass does not ship, so there is no edge vignette and no RGB colour fringe. Upstream's Renderer.js builds an EffectComposer with a RenderPass, a ShaderPass carrying Effects/VignetteRGBShiftShader.js at shiftAmount 0.005 / vignetteRadius 0.3 / vignetteSoftness 0.3, and an OutputPass; this renders the scene straight to the screen instead. ACESFilmicToneMapping and the 1.95 exposure are kept.",
-      "why": "All four of those imports come from three/addons, and paw-fx vendors core three only -- three.module.js plus three.core.js, with no addons, and no effect in the library touching them. The alternative was hand-rolling a composer: a WebGLRenderTarget, a full-screen quad and the pass's fragment shader, roughly forty lines of our own code standing in for a file we cannot import, which is exactly the shape of invention this library's port gate exists to catch. The field, the trail, the shadows and the lighting are what make it look expensive; the fringe frames them. Tone mapping and exposure are renderer properties and still apply without an OutputPass when drawing to the screen.",
+      "what": "The post-processing pass does not ship, so there is no edge vignette and no RGB colour fringe. Upstream's Renderer.js builds an EffectComposer with a RenderPass, a ShaderPass carrying Effects/VignetteRGBShiftShader.js at shiftAmount 0.005 / vignetteRadius 0.3 / vignetteSoftness 0.3, and an OutputPass; this renders the scene straight to the screen instead. ACESFilmicToneMapping and the 1.95 exposure are kept. The vignette half is recovered as one CSS radial gradient over the canvas, at upstream's own 0.3 radius and 0.3 softness; the RGB fringe is gone and stays gone.",
+      "why": "All four of those imports come from three/addons, and paw-fx vendors core three only -- three.module.js plus three.core.js, with no addons, and no effect in the library touching them. The alternative was hand-rolling a composer: a WebGLRenderTarget, a full-screen quad and the pass's fragment shader, roughly forty lines of our own code standing in for a file we cannot import, which is exactly the shape of invention this library's port gate exists to catch. The field, the trail, the shadows and the lighting are what make it look expensive; the fringe frames them. The vignette is not that pass rebuilt -- it is one gradient the browser paints, and it earns its place for a measured reason rather than a cosmetic one: a field of near-white cubes at tone-mapped exposure 1.95 washes the whole frame out without it, which takes the overlay copy's contrast down with it. Tone mapping and exposure are renderer properties and still apply without an OutputPass when drawing to the screen.",
       "kind": "ours"
     },
     {
