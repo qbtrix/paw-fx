@@ -241,3 +241,30 @@ test("a deviation evidenced nowhere is still caught", () => {
   const r = verify("tests/fixtures/bad-deviation-phantom");
   expect(r.warns.join("\n")).toContain("declared deviation matches nothing");
 });
+
+// Not every usable source is a git repository. A public CodePen carries a real
+// MIT grant, but it has no commit: the author can edit it at any moment and
+// there is no history to fall back on. One pen dependency in the survey batch
+// 404'd inside ten months, which is the drift risk made concrete.
+//
+// So a snapshot origin pins the bytes instead of a revision: we commit the copy
+// we ported from and the gate checks its hash. It proves we still ship what we
+// ported from, not that upstream still agrees, and that difference is stated in
+// the schema rather than glossed.
+test("a snapshot pin whose hash matches passes", () => {
+  expect(verify("tests/fixtures/good-snapshot-pin").status).toBe("PASS");
+});
+
+test("a snapshot pin whose hash has drifted fails", () => {
+  const r = verify("tests/fixtures/bad-snapshot-hash");
+  expect(r.status).toBe("FAIL");
+  expect(r.fails.join("\n")).toContain("but origin.sha256 declares");
+});
+
+// The failure that would otherwise be silent: declaring a snapshot and never
+// committing the file. The pin would look present and reference nothing.
+test("a snapshot pin with no committed file fails", () => {
+  const r = verify("tests/fixtures/bad-snapshot-missing");
+  expect(r.status).toBe("FAIL");
+  expect(r.fails.join("\n")).toContain("pins nothing");
+});

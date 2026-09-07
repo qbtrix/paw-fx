@@ -1,0 +1,3 @@
+/* good-css-deviation: the deviation is evidenced here and nowhere else. */
+.fx-x a:hover,
+.fx-x a:focus-visible { text-decoration: underline; }

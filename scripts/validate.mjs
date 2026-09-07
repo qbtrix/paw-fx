@@ -36,10 +36,19 @@ export function validate(schema, value, path = "$") {
       errs.push(`${path}: needs at least ${schema.minItems} item(s), got ${value.length}`);
     }
   }
-  // oneOf carries origin.path, which is one upstream file or a list of them.
+  // oneOf carries origin.path (one file or a list) and origin itself (a git pin
+  // or a snapshot pin). When nothing matches, report the CLOSEST branch's own
+  // errors rather than "matched 0 of 2": the person fixing a meta.json needs to
+  // be told which field is missing, and a bare shape-mismatch sends them to read
+  // the schema instead.
   if (schema.oneOf) {
-    const passing = schema.oneOf.filter((sub) => validate(sub, value, path).length === 0).length;
-    if (passing !== 1) errs.push(`${path}: must match exactly one of the allowed shapes, matched ${passing}`);
+    const results = schema.oneOf.map((sub) => validate(sub, value, path));
+    const passing = results.filter((r) => r.length === 0).length;
+    if (passing > 1) errs.push(`${path}: matches ${passing} allowed shapes at once, which is ambiguous`);
+    else if (passing === 0) {
+      const closest = results.reduce((a, b) => (b.length < a.length ? b : a));
+      errs.push(...closest);
+    }
   }
   if (schema.not && validate(schema.not, value, path).length === 0) errs.push(`${path}: must not match "not" schema`);
   if (schema.if) {

@@ -59,6 +59,7 @@
 //     dataflow. It errs toward reporting: a wrongly reported line is one WARN
 //     to read, a wrongly excluded one is a hole.
 
+import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -87,7 +88,9 @@ function ghJson(endpoint) {
 // ever joined to a directory.
 const SAFE_COORD = (s) => typeof s === "string" && s.length > 0 && !s.split("/").includes("..") && !s.startsWith("/");
 export const safeOrigin = (o) =>
-  SAFE_COORD(o.repo) && SAFE_COORD(o.commit) && [o.path].flat().every(SAFE_COORD);
+  o.snapshot !== undefined
+    ? SAFE_COORD(o.snapshot) && SAFE_COORD(o.sha256)
+    : SAFE_COORD(o.repo) && SAFE_COORD(o.commit) && [o.path].flat().every(SAFE_COORD);
 
 const cachePath = (cacheDir, repo, commit, key) => join(cacheDir, repo, commit, key);
 
@@ -427,6 +430,45 @@ export const CHECK_NAMES = [...PIN_CHECKS, ...CHECKS.map((c) => c.name)];
  * because they are the two highest-value rules in the file and a rule nobody
  * has watched fail is a rule nobody knows works.
  */
+
+/**
+ * The snapshot half of check 1. Reads the committed copy of the upstream source,
+ * hashes it, and compares against what meta.json declares. Everything downstream
+ * then runs against those bytes exactly as it would against a fetched file.
+ */
+function verifySnapshotPin(dir, meta, out, skip, opts) {
+  const { snapshot, sha256, url } = meta.origin;
+  const abs = join(ROOT, snapshot);
+  if (!existsSync(abs)) {
+    return { ...out, status: "FAIL", fails: [`origin.snapshot "${snapshot}" is not committed; a snapshot pin with no file pins nothing`] };
+  }
+  const bytes = readFileSync(abs);
+  const got = createHash("sha256").update(bytes).digest("hex");
+  if (got !== sha256) {
+    return {
+      ...out,
+      status: "FAIL",
+      fails: [`snapshot ${snapshot} hashes ${got.slice(0, 12)} but origin.sha256 declares ${String(sha256).slice(0, 12)} (from ${url})`],
+    };
+  }
+  const ctx = {
+    meta, opts, dir,
+    upstream: { [snapshot]: bytes.toString("utf8") },
+    js: readFileSync(join(dir, "index.js"), "utf8"),
+    fails: out.fails, warns: out.warns, errors: out.errors,
+    diffLines: [], untraced: [],
+  };
+  // The licence check fetches a repo's LICENSE, which a snapshot source has no
+  // equivalent of. The grant travels with the code instead, so the notice has to
+  // be in the bytes we committed.
+  for (const c of CHECKS) if (c.name !== "licence" && !skip.has(c.name)) c.run(ctx);
+  if (!skip.has("licence") && !/\bMIT\b|\bLicen[cs]e\b/i.test(ctx.upstream[snapshot])) {
+    out.warns.push(`snapshot carries no licence notice; ${meta.license} is asserted but not evidenced in the pinned bytes`);
+  }
+  const status = out.fails.length ? "FAIL" : out.errors.length ? "ERROR" : out.warns.length ? "WARN" : "PASS";
+  return { ...out, status };
+}
+
 export function verifyEffect(dir, opts = {}) {
   const name = basename(dir);
   const meta = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8"));
@@ -438,6 +480,19 @@ export function verifyEffect(dir, opts = {}) {
   }
 
   const skip = new Set(opts.skip ?? []);
+
+  // A snapshot origin pins a source that has no commit: a CodePen the author can
+  // edit at any moment with no version history. There is nothing to re-fetch, so
+  // the pinned reference is a copy of the source committed beside the effect and
+  // the gate verifies its hash. That is weaker than a commit in one specific way,
+  // which is worth being honest about: it proves we still ship what we ported
+  // from, not that upstream still says the same thing. It is stronger in another,
+  // because the bytes cannot vanish. One pen dependency in this batch 404'd
+  // inside ten months.
+  if (meta.origin.snapshot) {
+    return verifySnapshotPin(dir, meta, out, skip, opts);
+  }
+
   const { repo, commit } = meta.origin;
   const paths = asPaths(meta.origin.path);
 
