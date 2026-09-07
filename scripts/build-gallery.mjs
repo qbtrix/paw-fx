@@ -32,7 +32,11 @@
 // JPEGs weigh, so every effect added pushes the page up by ~45KB at q75. It was
 // 75 while the library held 73 effects and crossed the cap at 77 (4.18MB), which
 // is what moved it to 65 -- 3.63MB, about 370KB of headroom, and no visible
-// difference at the size a card actually paints. Measure before raising it.
+// difference at the size a card actually paints. 65 then crossed the cap again
+// at 85 (4.04MB), which is what moved it to 56 -- 3.58MB, about 420KB back, or
+// room for roughly nine more effects. A dense particle field is the expensive
+// kind of preview: canvas-trails is close to noise and costs about three times
+// what a flat gradient does. Measure before raising it.
 //
 // Card and dialog markup is rendered here rather than by the browser, so the
 // page is complete with scripting off and every effect is in the HTML for a
@@ -72,7 +76,7 @@ const esc = (s) =>
 
 // See the header note: this number is what keeps index.html under the 4MB
 // publish cap, so it moves down as the library grows rather than staying put.
-const JPEG_QUALITY = 65;
+const JPEG_QUALITY = 56;
 
 // ponytail: sips is macOS-only. Without it the PNG ships as-is -- the same page,
 // about five times the bytes, and past the 4MB cap an html Paw Site publish
