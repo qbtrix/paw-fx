@@ -1,0 +1,120 @@
+/* ascii-matrix: glyph rain drawn in characters, with the copy on a solid card
+   overlapping the panel's lower-left corner.
+
+   THE GRID IS DECLARED, NOT MEASURED. --fx-cols and --fx-rows say how many
+   characters the picture is; the type is then scaled so exactly that many fit
+   the panel's width at any viewport. So the authored frame in the markup and
+   the frames index.js draws are the same grid, nothing reflows when the script
+   takes over, and the rain keeps its proportions from 375 up.
+
+   --fx-advance is the one measured constant: a monospace glyph's advance width
+   as a fraction of its font-size. ui-monospace, SF Mono, Menlo, Liberation
+   Mono and Courier New all sit at 0.6; Consolas is 0.55, which leaves the grid
+   a few per cent narrow inside the panel, and text-align: center splits that
+   as a hair of margin each side. Nothing here loads a font -- fonts are not
+   ours to redistribute -- so the stack is what the machine already has. The
+   full block U+2588 the rain heads are drawn with is present in every face on
+   that stack.
+
+   The copy card is opaque on purpose: the rain is dense and unpredictable, so
+   putting body text over it directly would make contrast a matter of luck. On
+   the card it is a fixed 18.4:1. */
+.fx-ascii-matrix {
+  --fx-cols: 80;
+  --fx-rows: 34;
+  --fx-advance: 0.6;
+  --fx-bg: #04100a;
+  --fx-panel: #061a10;
+  --fx-ink: #5cf08a;
+  --fx-text: #e8fff0;
+  --fx-muted: #86b39a;
+  --fx-accent: #5cf08a;
+  --fx-line: #143a26;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1rem, 5vw, 4.5rem) clamp(3rem, 7vw, 6rem);
+  background:
+    radial-gradient(65% 55% at 76% 6%, color-mix(in oklab, var(--fx-accent) 13%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.fx-ascii-matrix *,
+.fx-ascii-matrix *::before,
+.fx-ascii-matrix *::after { box-sizing: border-box; }
+
+.fx-ascii-matrix__inner {
+  position: relative;
+  max-width: 74rem;
+  margin-inline: auto;
+}
+
+/* The container query context. 100cqi inside it is the panel's own inline
+   size, so two panels of different widths on one page each size their own type
+   correctly -- the viewport is never consulted. */
+.fx-ascii-matrix__screen {
+  container-type: inline-size;
+  padding: clamp(0.5rem, 1.2vw, 0.9rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, var(--fx-panel), #030c07);
+  box-shadow: 0 2rem 5rem -2rem #000;
+}
+
+/* One character cell's font-size, and from it the grid's height. Height is set
+   rather than left to the line count so a frame arriving with a different
+   number of rows cannot resize the panel under the reader. */
+.fx-ascii-matrix__grid {
+  --fx-cell: calc(100cqi / (var(--fx-cols) * var(--fx-advance)));
+  margin: 0;
+  height: calc(var(--fx-rows) * var(--fx-cell));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: var(--fx-cell);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* Nothing in this section is scroll-driven, so making the <pre> a scroll
+     container costs nothing, and it keeps a wide frame from pushing the panel. */
+  overflow: hidden;
+  text-align: center;
+  color: var(--fx-ink);
+  text-shadow: 0 0 1.2rem color-mix(in oklab, var(--fx-accent) 40%, transparent);
+}
+
+.fx-ascii-matrix__card {
+  position: relative;
+  margin: -3.5rem 0 0;
+  width: min(30rem, 100%);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 0.9rem;
+  background: #061109;
+  box-shadow: 0 1.5rem 3rem -1.5rem #000;
+}
+@media (min-width: 48rem) {
+  .fx-ascii-matrix__card { margin-left: clamp(1rem, 4vw, 3rem); }
+}
+.fx-ascii-matrix__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.fx-ascii-matrix__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.35rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-ascii-matrix__lede {
+  margin: 0.9rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

@@ -1,0 +1,76 @@
+{
+  "name": "ascii-smoke",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "ascii",
+    "character-grid",
+    "smoke",
+    "fluid",
+    "plume",
+    "monospace",
+    "terminal",
+    "ascii-lab",
+    "css-only-rest"
+  ],
+  "summary": "Three smoke plumes rising through a character grid: a density field diffused into its neighbours each frame and advected sideways by a two-term wind, 84 across by 32 down.",
+  "needs": [],
+  "options": {
+    "cols": {
+      "type": "number",
+      "default": 84,
+      "description": "Characters across the panel. style.css scales the type so exactly this many fit its width, so this is the smoke's resolution rather than its size."
+    },
+    "rows": {
+      "type": "number",
+      "default": 32,
+      "description": "Character rows. Sets the panel's height, since the type is scaled to the width."
+    },
+    "decay": {
+      "type": "number",
+      "default": 0.98,
+      "description": "How much density survives each frame. Upstream's field[i] = next[i] * 0.98 in smoke.js; lower it and the plumes are shorter."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "metaory/ascii-lab",
+    "commit": "639584cb2eb48e71aae36a547a6565e942d1ff1a",
+    "path": [
+      "src/effects/smoke.js",
+      "src/main.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The effect object with start(pre, colsRows) / stop() becomes mount(el, opts) over ../_shared/ascii-grid.js. Upstream's start() body is make(w, h, settings), upstream's step() is the closure make returns, and `pre.textContent = out; requestAnimationFrame(step)` is `return out`.",
+      "why": "The effect contract is mount/update/destroy. The rewrite is mechanical and the spawn, diffusion and advection maths between those two lines is untouched.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream keeps its rAF id as this.loopId on the single exported effect object. Here it is a closure per mount inside ascii-grid.js.",
+      "why": "Two mounts of one effect would share that id, so the second stop() orphans the first loop. Several panels on one page have to be independent, which is a case a single full-screen demo never has.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "The grid is declared as cols and rows (--fx-cols / --fx-rows, 84 x 32) and style.css scales the type with a container query so exactly that many characters fit the panel. main.js's colsRows(), which measures the viewport against an 8x12 character guess and caps at makeDims(120, 60), is dropped.",
+      "why": "A section does not own the viewport, and a measured grid cannot match an authored resting frame -- the frame is written at fixed dimensions, so a live grid of other dimensions reflows the instant the script takes over. Declaring it also keeps the picture's proportions from 375 up instead of squashing it at narrow widths.",
+      "kind": "seam"
+    },
+    {
+      "what": "snippet.html carries an authored resting frame: a real frame of this effect at the same 84 x 32 grid, dumped from index.js. destroy() restores it.",
+      "why": "Upstream ships no static fallback at all -- its <pre> is empty until the script runs. The effect contract requires the section to look finished on CSS alone, and a destroy mid-run would otherwise freeze on whichever frame was in flight.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns without starting the loop, leaving the authored frame in place.",
+      "why": "Effect contract: mount() stays at rest. The frame is already the finished picture, so there is nothing to animate towards.",
+      "kind": "seam"
+    },
+    {
+      "what": "util.js's visibilityPause is dropped; an IntersectionObserver in ascii-grid.js idles the loop while the section is off screen instead.",
+      "why": "Upstream re-activates on tab focus because it re-measures the viewport, which a declared grid never needs, and rAF already stops in a hidden tab. What upstream cannot want is the off-screen case: its <pre> is always on screen, while a page can carry three of these panels and only one is being looked at.",
+      "kind": "ours"
+    }
+  ]
+}

@@ -199,6 +199,14 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
 | smoke-ring | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/smoke-ring.ts` |
 | warp | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/warp.ts` |
+| ascii-plasma | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/plasma.js` + `src/util.js` + `src/main.js` |
+| ascii-matrix | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/matrix.js` + `src/util.js` + `src/main.js` |
+| ascii-tunnel | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/tunnel.js` + `src/main.js` |
+| ascii-smoke | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/smoke.js` + `src/main.js` |
+| ascii-torus | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/torus.js` + `src/main.js` |
+| ascii-life | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/life.js` + `src/main.js` |
+| ascii-wave | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/wave.js` + `src/util.js` + `src/main.js` |
+| ascii-glitch | MIT | [metaory/ascii-lab](https://github.com/metaory/ascii-lab) `639584c`, `src/effects/glitch.js` + `src/main.js` |
 
 ## The two shader families carry their licences differently
 
@@ -366,3 +374,36 @@ paw-fx vendors core three only. Hand-rolling a composer to recover an edge
 vignette would be forty lines of our own code standing in for a file we cannot
 import, which is the shape of invention this library's gate exists to catch;
 dropping it and saying so in `deviations` is the honest trade.
+
+## The ascii-lab family
+
+The eight `ascii-*` effects are one upstream, `metaory/ascii-lab` at
+`639584cb2eb48e71aae36a547a6565e942d1ff1a`, MIT, "Copyright (c) 2025 metaory".
+They are the first character-grid effects on the shelf, and they share
+`effects/_shared/ascii-grid.js`, which carries three helpers from upstream's
+`src/util.js` verbatim plus the seam that replaces `src/main.js` -- so that file
+carries the upstream header comment too, even though lint only reads `index.js`.
+
+`src/main.js` is listed in every one of the eight `origin.path` lists rather
+than only where its code was copied, because the grid seam is derived from its
+`colsRows()` and leaving it out would make that derivation read as invention.
+
+Upstream ships **no static fallback**: its `<pre>` is empty until the script
+runs. Every one of the eight therefore carries an authored resting frame in
+`snippet.html` -- a real frame of that effect, dumped from its own `index.js` at
+the grid it declares, chosen rather than taken from frame one. `ascii-life`'s is
+a settled generation instead of the random seed, because a seed reads as static
+where a settled board reads as a paused automaton.
+
+Nine of the seventeen effects upstream exports were not taken. `vortex` and
+`ripple` are the same per-cell-field-onto-a-density-ramp mechanism as `plasma`
+and `tunnel`; `radar` is that too, with noise over it that swamps its sweep at
+section size; `snow`, `sparks` and `rain` set their particle counts from
+`w * h * 0.02` or less, which is a few dozen glyphs in a panel; `fractal` is a
+Julia set whose interior is empty at these dimensions; `lightning` draws its
+bolts as single cells with a glow, which reads as dotted vertical lines rather
+than as lightning; and `bubbles` is a third rising-particle effect next to
+`smoke` and a second circle-rasteriser next to `torus`. `galaxy.js` exists on
+disk upstream but is not exported from `src/effects/index.js`, and a `fire`
+effect was removed before this commit.
+

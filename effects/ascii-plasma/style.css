@@ -1,0 +1,136 @@
+/* ascii-plasma: a demoscene plasma field drawn in characters.
+
+   THE GRID IS DECLARED, NOT MEASURED, and this file is the half of that
+   decision that runs with no script. --fx-cols and --fx-rows say how many
+   characters the picture is; the type is then scaled so exactly that many fit
+   the panel's width, at any viewport. So the authored frame in the markup and
+   the frames index.js draws are the same grid, there is no reflow when the
+   script takes over, and the panel keeps its proportions from 375 up.
+
+   --fx-advance is the one measured constant: a monospace glyph's advance
+   width as a fraction of its font-size. ui-monospace, SF Mono, Menlo,
+   Liberation Mono and Courier New all sit at 0.6; Consolas is 0.55, which
+   leaves the grid ~8% narrow inside the panel, and text-align: center splits
+   that as a hair of margin on each side rather than a ragged right edge.
+   Nothing here loads a font -- fonts are not ours to redistribute -- so the
+   stack is entirely what the machine already has.
+
+   The panel is the resting state. It is not a placeholder for the animation:
+   it is a real frame of it, so a reader with the script blocked, the bundle
+   pruned, or reduced motion on gets the picture rather than an empty box. */
+.fx-ascii-plasma {
+  --fx-cols: 88;
+  --fx-rows: 30;
+  --fx-advance: 0.6;
+  --fx-bg: #0a0510;
+  --fx-panel: #120a1c;
+  --fx-ink: #ffb27d;
+  --fx-text: #f2e8ff;
+  --fx-muted: #b09cc4;
+  --fx-accent: #ff9d5c;
+  --fx-line: #2c1c3e;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 5vw, 4.5rem);
+  background:
+    radial-gradient(70% 60% at 88% 8%, color-mix(in oklab, var(--fx-accent) 16%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 4% 92%, color-mix(in oklab, #8f5cff 18%, transparent), transparent 68%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.fx-ascii-plasma *,
+.fx-ascii-plasma *::before,
+.fx-ascii-plasma *::after { box-sizing: border-box; }
+
+.fx-ascii-plasma__inner {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: center;
+  max-width: 78rem;
+  margin-inline: auto;
+}
+@media (min-width: 60rem) {
+  .fx-ascii-plasma__inner { grid-template-columns: minmax(0, 21rem) minmax(0, 1fr); }
+}
+
+.fx-ascii-plasma__eyebrow {
+  margin: 0 0 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-ascii-plasma__dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--fx-accent);
+}
+.fx-ascii-plasma__title {
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-ascii-plasma__lede {
+  margin: 1.25rem 0 0;
+  font-size: clamp(0.98rem, 1.4vw, 1.08rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* The container query context. 100cqi inside it is the panel's own inline
+   size, which is what the character grid is scaled against -- not the
+   viewport, so two panels of different widths on one page each size their own
+   type correctly. */
+.fx-ascii-plasma__screen {
+  container-type: inline-size;
+  position: relative;
+  padding: clamp(0.6rem, 1.5vw, 1.1rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 0.9rem;
+  background: linear-gradient(160deg, var(--fx-panel), #0d0616);
+  box-shadow: 0 1.5rem 4rem -1.5rem #000;
+}
+
+/* One character cell's font-size, and from it the grid's height. Height is
+   set rather than left to the line count so a frame that arrives with a
+   different number of rows cannot resize the panel under the reader. */
+.fx-ascii-plasma__grid {
+  --fx-cell: calc(100cqi / (var(--fx-cols) * var(--fx-advance)));
+  margin: 0;
+  height: calc(var(--fx-rows) * var(--fx-cell));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: var(--fx-cell);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* Clips a frame whose rows run wide. glitch shifts rows by a few characters
+     and does not re-pad them, which is upstream behaviour rather than a bug to
+     fix here, and every effect is safer for the clip. Nothing in this section
+     is scroll-driven, so making the <pre> a scroll container costs nothing. */
+  overflow: hidden;
+  text-align: center;
+  color: var(--fx-ink);
+  /* The ink is a warm mid-tone against a near-black panel: 10.9:1, well past
+     the 4.5:1 the contract asks of body text, which the grid is not. The
+     headroom is deliberate -- the live field spends most of its area on the
+     pale end of the ramp, and a dimmer ink would read as smudge. */
+  text-shadow: 0 0 1.5rem color-mix(in oklab, var(--fx-accent) 45%, transparent);
+}
+
+.fx-ascii-plasma__caption {
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--fx-muted);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}

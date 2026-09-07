@@ -1,0 +1,50 @@
+<!-- ascii-glitch section. Finished at rest with CSS alone: the block inside
+     <pre data-fx-grid> is a real frame of the effect, dumped from index.js at
+     the same 76x26 grid the script draws, so a blocked script, a pruned bundle
+     or prefers-reduced-motion leaves a corrupted field on the panel rather
+     than an empty box. destroy() puts this exact frame back.
+     This is the one section in the family that puts type OVER the art, so the
+     plate is opaque: the field is dense and unpredictable, and contrast over
+     it would be a matter of luck. The field is decorative and carries
+     aria-hidden; the eyebrow, headline and lede stay real text, so a screen
+     reader gets the section's meaning and none of the noise.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-glitch/style.css">
+<section class="fx-ascii-glitch" data-fx="ascii-glitch">
+  <div class="fx-ascii-glitch__inner">
+    <div class="fx-ascii-glitch__screen">
+      <pre class="fx-ascii-glitch__grid" data-fx-grid aria-hidden="true">▓]^{*]){▒^▒&gt;^▓█;░&gt;█&gt;&gt;_/░^}\]█\▓&lt;|)░▓-+&lt;&lt;)░=▒,|}|]░(+]()▓(.}{/.▒.[[;,]▓~}]]&lt;,
+█_\&gt;;▒])=;(.(.|+.;\█;{-|&lt;▒:*█▓-[]_+*]:*▒▒█*:|]&gt;~▒+█/},.-_()}^▒/|]&lt;&gt;█░,&lt;&gt;)░*}    
+,-:\&gt;&gt;/||(▒~*_*&gt;-█^,▒,;[+▒|\[▓▓|}[}|^[)-,;*+_|((▓:-{}▒[\,+░░*)+.=+▓█-}~^}▒&gt;~
+(}}({,█)}/{.~-,;{.█+^/]▒▒&gt;▓}█&lt;;█\^-;░]:|.▓==_}:▒;^/,[_^{_█_█-▒,:░&lt;[:~+)[{,/^
++}&gt;*\_^}){)*.{;;}.^_|&lt;&gt;/|^,{_==[])^&lt;=.\▓(.█:;▒{▓▓█-~{[█+{|&gt;*._▓&lt;~&lt;)&gt;].*&gt;=/_▓
+=*+++\▓&gt;:]*=||(_(\&lt;(/:+&lt;|[█*{=█▓\▓▓(~:(/_;=*]{=\&gt;[/|[-;&lt;=~{^&gt;█=]█.|,░(=|++);
+▓[█:}*;([{&lt;+&gt;-:.)|;&lt;+{{-\,^&gt;]▒]^_~=+/{^}--:~~+{_}+|&gt;:[~{[/&gt;▒&lt;[▓-=|-/[&lt;[{:-][
+{;&gt;_.-(/=█}{~]}|:~▓--[*░)[:-*+&lt;\{█░*:|)[}▓░[/|+}.[,-),,|:*{-,~▓(.^,{,░.]*./+
+▓:=;^.,*&gt;\&gt;,░/\▒&gt;^~}/)░~,&lt;░.,~{||_.&lt;^;&gt;;*;░*▒░[=~░~+\\]\|}~,~^&lt;/:;&lt;]█.░{▓]*[
+-▓||}&lt;_(&gt;|_/.}];:&gt;|&lt;&gt;▒_)(\_&gt;░(}}^;/&gt;▓+▒&gt;;|::.&gt;&gt;:-~&lt;▓|█*-=*;;+:&gt;,&gt;_(░,-_.^.|)
+;+[:+({;;]}^\░*[&gt;&lt;=;[)~(*^~~,]▒.++/~]=},=]░(:]:▒|~{{=▓__(//*|[}*}__\█]▒:]
++{-)=█/&lt;^+*&gt;}=░\&gt;:&lt;.{[+_/{/=:.:-[&gt;///&gt;({;|~█_{-+{█&lt;]\{(.░)\)&lt;)/^[]█-▓&lt;{:\&gt;░~
+.}|).}]-█;].▓(}[+:^.-{~:(()▒▒}{^=_(█_]&lt;,)),▓/=_\░\:+/]\+/*[.^&gt;░▓█&gt;\^▒-&gt;[+▓█-
+=}+&gt;-&lt;(▓:]~|+:█~&lt;)*}}*,*;:^_░▓\=|\],+-▓[]}++-▓]█|.░█;:&gt;+▓*▓▓▓-~^;=:;=\^)▒░,* 
+|[=}{]█}_*,\░_/)-&gt;^-[~\/~-,_▒\*({█^▓]_;*~[~_}&gt;-*]\=)|_▓░,█;&lt;[,&lt;^+)~,+(,^{~-{
+*;,=-\)[▓:}}__\_\&lt;,=|.]░~█].██\:▒;░*:█░~}\-░](▓|.█^{-^.[.}▓=░▓[\*}:.-&gt;+~)_|,
+{-+}/;.;&gt;;█&gt;;__+\&gt;].=^&gt;=.;-_*_(/*-&gt;~^)_/);(~}}]/&gt;}[^-]**=▓:\&gt;+▒.}]/;)]▓+_█[~
+]|{▒=[.=,▓{░▓;-\▒{{{(+}}▒=+&gt;:]\░=▒_^)]\})\-:[}&gt;_}░[^^]^░~-,=▓-,▓]~.░(\[~/)~(
+{;&gt;_.-(/=█}{~]}|:~▓--[*░)[:-*+&lt;\{█░*:|)[}▓░[/|+}.[,-),,|:*{-,~▓(.^,{,░.]*./+
+:,:;;(&lt;██*./░|);=~*░~./~:*]█-|&lt;▒[~.*/^/||▓(░-;.▒/+[;▒&gt;.*^:[{/:.&gt;-;;=.|*^;^^/
+▒▒/:]*,)=_:░/}]*:/~]|*▓░^{{█,^;)█::.:;{▒\.+&lt;:█(.:&gt;}{▓*]&gt;[:░]▓▓*){(|.,-)[▒|=/
+-,=\+\{\.;.,▓{.&lt;_:\-]:▓}&gt;░-=^&gt;[░&lt;*)+░░{█{),=~{._|[.{+█:{)(|-=]];(&lt;-)&gt;&lt;█-&lt;\(^  
+~&lt;;+[*]}\|*/},^▓;█&gt;.▒]█▓█^}[&gt;,^\]:)-,*&lt;[:&gt;▒,-]-▓~=_|)*}&gt;█.]:█*;*,\~▓,-\░=|__
+&lt;&gt;&lt;▓&lt;}(^░\(]~_;;)\.▓~)/&gt;=-+░&gt;[/;(█*_█[[._.|&gt;~/▓=}\\|)]:|*;-\+)::▓\,\-=||+\:*
+|█▒=|(~░=~_░;█./(_)▒_^}\{}]░,+▓+░~/▒░)^▓*}):]▓}:{:_=-^]{/~/)}▒.~.,),_/*{▓]░/
+^(▒|/(&lt;~:░/+~,;--+]&lt;}={~░~~;(▓░:}*-){^)](::█[;}{_█:█)█-:)_+{\░░.▒=\░:,//^^\.</pre>
+    </div>
+    <div class="fx-ascii-glitch__plate">
+      <p class="fx-ascii-glitch__eyebrow">signal lost</p>
+      <h2 class="fx-ascii-glitch__title">Something behind this is still running.</h2>
+      <p class="fx-ascii-glitch__lede">Replace this with your own words. Rows are rewritten, slid sideways, or drawn from the wrong end of the buffer — the tear is the point, so the ragged edge is kept and clipped rather than tidied.</p>
+    </div>
+  </div>
+</section>
