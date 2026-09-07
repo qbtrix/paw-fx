@@ -43,6 +43,11 @@
       "type": "string",
       "default": "#ffffff",
       "description": "Colour of a cube at rest. Upstream's colorBase; the scene background is half of it."
+    },
+    "distance": {
+      "type": "number",
+      "default": 12,
+      "description": "How far the camera sits above the field, in world units. Upstream's Camera radius, which its own panel exposes over 10 to 20; higher shows more of the field at once."
     }
   },
   "license": "MIT",

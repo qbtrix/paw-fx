@@ -63,8 +63,8 @@
       "kind": "seam"
     },
     {
-      "what": "The marquee strip is position: sticky inside the section rather than position: fixed, and its two ends are resolved to pixels -- the viewport's width at one end, the strip's own offsetWidth at the other -- instead of being handed to the tween as the mixed pair x: '100vw' to x: '-100%'.",
-      "why": "A fixed marquee belongs to the viewport, so in a drop-in section it would float over every other section on the page for the whole document; sticky scrubs across while the section is passing and stops when it is not. The unit pair is upstream's own semantics written out: 100vw and -100% measure two different boxes, and a tween cannot interpolate between them, so each end is measured from the box its unit names.",
+      "what": "The marquee strip is position: sticky inside the section rather than position: fixed, and its two ends are resolved to pixels -- the viewport's width at one end, the strip's own offsetWidth at the other -- instead of being handed to the tween as the mixed pair x: '100vw' to x: '-100%'. It keeps upstream's demo-5 mix-blend-mode of plus-lighter and its --color-marquee of rgb(56, 56, 56).",
+      "why": "A fixed marquee belongs to the viewport, so in a drop-in section it would float over every other section on the page for the whole document; sticky scrubs across while the section is passing and stops when it is not. The unit pair is upstream's own semantics written out: 100vw and -100% measure two different boxes, and a tween cannot interpolate between them, so each end is measured from the box its unit names. The blend mode and the colour are upstream's own and stay: the strip is decorative texture behind the cards, aria-hidden, and deliberately recessive rather than something to read. Every body-text run in the section clears 4.5:1; --fx-marquee is the knob if a site wants the strip louder.",
       "kind": "seam"
     },
     {

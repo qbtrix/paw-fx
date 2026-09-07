@@ -26,7 +26,7 @@
 .fx-rot {
   --fx-bg: #0b0b0c;
   --fx-ink: #cfcccb;
-  --fx-muted: #797979;
+  --fx-muted: #8f8f8f;
   --fx-marquee: rgb(56, 56, 56);
   --fx-item-width: 300px;
   --fx-item-ar: 4 / 5;
@@ -79,8 +79,13 @@
   color: var(--fx-ink);
 }
 
-/* The marquee sits behind the cards and scrubs across as the section passes. */
+/* The marquee sits behind the cards and scrubs across as the section passes. It
+   is decorative -- aria-hidden in the markup, upstream's own recessive
+   --color-marquee, and blended the way upstream's demo-5 blends it. It is
+   background texture, not text anyone is meant to read; --fx-marquee is the knob
+   if a site wants it louder. */
 .fx-rot__marquee {
+  mix-blend-mode: plus-lighter;
   position: sticky;
   top: 50%;
   z-index: 0;

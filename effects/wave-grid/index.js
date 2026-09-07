@@ -81,6 +81,7 @@ export const meta = {
     waveAmplitude: { type: "number", default: 0.4, description: "How far a crest lifts a cube before the clamp. Upstream's waveAmplitude." },
     colorHigh: { type: "string", default: "#0055ff", description: "Colour a cube reaches at full crest height. Upstream's colorHigh." },
     colorBase: { type: "string", default: "#ffffff", description: "Colour of a cube at rest. Upstream's colorBase; the scene background is half of it." },
+    distance: { type: "number", default: 12, description: "How far the camera sits above the field, in world units. Upstream's Camera radius, which its own panel exposes over 10 to 20; higher shows more of the field at once." },
   },
 };
 
@@ -225,6 +226,7 @@ export function mount(el, opts = {}) {
     waveAmplitude: num(opts.waveAmplitude, UPSTREAM.waveAmplitude, 0, 10),
     colorHigh: typeof opts.colorHigh === "string" ? opts.colorHigh : UPSTREAM.colorHigh,
     colorBase: typeof opts.colorBase === "string" ? opts.colorBase : UPSTREAM.colorBase,
+    distance: num(opts.distance, UPSTREAM.radius, 4, 60),
   };
 
   let renderer = null;
@@ -293,9 +295,9 @@ export function mount(el, opts = {}) {
     const alpha = my * UPSTREAM.alphaRange;
     const beta = mx * UPSTREAM.betaRange;
     camera.position.set(
-      -UPSTREAM.radius * Math.cos(alpha) * Math.sin(beta),
-      UPSTREAM.radius * Math.cos(alpha) * Math.cos(beta),
-      UPSTREAM.radius * Math.sin(alpha),
+      -settings.distance * Math.cos(alpha) * Math.sin(beta),
+      settings.distance * Math.cos(alpha) * Math.cos(beta),
+      settings.distance * Math.sin(alpha),
     );
     camera.up.set(0, 0, -1);
     camera.lookAt(0, 0, 0);
@@ -561,6 +563,7 @@ export function mount(el, opts = {}) {
         settings.colorHigh = next.colorHigh;
         if (shaderRef) shaderRef.uniforms.uColorHigh.value.set(settings.colorHigh);
       }
+      if ("distance" in next) settings.distance = num(next.distance, UPSTREAM.radius, 4, 60);
       if ("colorBase" in next && typeof next.colorBase === "string") {
         settings.colorBase = next.colorBase;
         if (shaderRef) shaderRef.uniforms.uColorBase.value.set(settings.colorBase);
