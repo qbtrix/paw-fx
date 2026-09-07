@@ -48,6 +48,11 @@
       "kind": "upstream-bug"
     },
     {
+      "what": "The grab / grabbing cursor from upstream's body rule only applies under prefers-reduced-motion: no-preference.",
+      "why": "A grab cursor tells a reader that pressing does something. Under the preference mount() builds no swarm, so there is nothing to open and the cursor would be promising a behaviour that has been switched off.",
+      "kind": "ours"
+    },
+    {
       "what": "A static resting cluster (.fx-fly__rest) is added under the same glow, and the copy sits on a --fx-scrim panel.",
       "why": "Effect contract: the section has to look finished with no script, and an empty dark field is not a section. The scrim is the contrast floor -- the live swarm is additive and crosses the copy, so text measured against the busiest frame needs a plate under it.",
       "kind": "ours"

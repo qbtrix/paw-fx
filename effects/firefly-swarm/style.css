@@ -35,10 +35,14 @@
     var(--fx-bg);
   color: var(--fx-ink);
   font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
-  cursor: grab;
   user-select: none;
 }
-.fx-fly:active { cursor: grabbing; }
+/* The grab cursor is a promise that pressing does something, and under
+   reduced motion mount() builds no swarm to open, so it would be a lie. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-fly { cursor: grab; }
+  .fx-fly:active { cursor: grabbing; }
+}
 .fx-fly *,
 .fx-fly *::before,
 .fx-fly *::after { box-sizing: border-box; }
