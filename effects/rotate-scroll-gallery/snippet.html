@@ -1,0 +1,69 @@
+<!-- rotate-scroll-gallery section. Finished at rest with CSS alone: the column
+     below sits flat, unrotated and at full brightness, which IS what the middle
+     of this effect's range looks like -- the hold frame. A blocked script, a
+     pruned bundle or prefers-reduced-motion leaves that composition, not a
+     half-animated one.
+
+     THE IMAGE SLOT IS --fx-img. Each cell paints a gradient built from its own
+     --fx-hue until a site points it at a picture:
+       <div class="fx-rot__item" style="--fx-img: url(/img/01.jpg)"></div>
+     The gradient stays underneath as the fallback, so a missing file is a
+     coloured card rather than a hole. Codrops' 40 demo images do not ship.
+
+     THE SECTION MUST BE ABLE TO SCROLL PAST. Every card is driven by its own
+     crossing of the viewport, so give it room: the column's own 25vh/35vh
+     margins do that on a page of normal length. Do not wrap it in a
+     fixed-height box with overflow:hidden -- that makes an element a scroll
+     container, and the animation would then resolve against a box that never
+     scrolls.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/rotate-scroll-gallery/style.css">
+<section class="fx-rot" data-fx="rotate-scroll-gallery">
+  <div class="fx-rot__head">
+    <p class="fx-rot__eyebrow">Index &mdash; 2026</p>
+    <h2 class="fx-rot__title">Each frame stops to be looked at.</h2>
+    <p class="fx-rot__note">The column is offset sideways by a sine of its own index, so it serpentines rather than running straight. Every card flips in on the X axis as it rises, squashes and stretches its box, brightens out of black, then holds flat through the middle quarter of its range before flipping away.</p>
+  </div>
+  <div class="fx-rot__marquee" aria-hidden="true">
+    <div class="fx-rot__marquee-inner"><span>Rotating on scroll</span> <span>Rotating on scroll</span> <span>Rotating on scroll</span> <span>Rotating on scroll</span> <span>Rotating on scroll</span> <span>Rotating on scroll</span></div>
+  </div>
+  <div class="fx-rot__gallery">
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 210" role="img" aria-label="Frame 01"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 24" role="img" aria-label="Frame 02"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 155" role="img" aria-label="Frame 03"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 285" role="img" aria-label="Frame 04"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 44" role="img" aria-label="Frame 05"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 340" role="img" aria-label="Frame 06"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 190" role="img" aria-label="Frame 07"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 60" role="img" aria-label="Frame 08"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 268" role="img" aria-label="Frame 09"></div>
+      </div>
+      <div class="fx-rot__wrap">
+        <div class="fx-rot__item" style="--fx-hue: 8" role="img" aria-label="Frame 10"></div>
+      </div>
+  </div>
+  <div class="fx-rot__foot">
+    <span>Ten frames</span>
+    <span>Held at the middle</span>
+    <span>Scrubbed, not timed</span>
+  </div>
+</section>

@@ -1,0 +1,72 @@
+{
+  "name": "parallax-gallery-horizontal",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "horizontal",
+    "parallax",
+    "wheel",
+    "lerp",
+    "codrops",
+    "vanilla"
+  ],
+  "summary": "A strip of ten frames the wheel drags sideways, closing 7% of the remaining distance each frame, while every picture counter-translates up to 10% of its own width inside its clipped frame.",
+  "needs": [],
+  "options": {
+    "ease": {
+      "type": "number",
+      "default": 0.07,
+      "description": "How much of the remaining distance the strip closes each frame. Upstream's scroll.ease in src/main.ts."
+    },
+    "shift": {
+      "type": "number",
+      "default": 10,
+      "description": "Percent of its own width an image counter-translates inside its frame at the edge of the viewport. Upstream's maxShift in src/gallery/index.ts."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "davidfaure/horizontal-parallax-gallery-codrops",
+    "commit": "49c3ead7b70bf9acfee9d73664c26971b2381a19",
+    "path": [
+      "src/main.ts",
+      "src/gallery/index.ts",
+      "src/gallery/gallery.css",
+      "src/utils/math.ts",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP.utils.interpolate and GSAP.utils.clamp, the only two things src/utils/math.ts imports gsap for, are written out as one-line lerp() and clamp() helpers. Nothing else in the port touched GSAP.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without writing code. Both helpers are a single expression each and the values are identical, so the motion is unchanged. Recorded because the source assessment reported no GSAP import anywhere under src/ -- there is one, in math.ts, and the file rather than package.json is what settled it.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The wheel listener is on the section instead of window, and it calls preventDefault only while the strip still has travel in the direction asked for, releasing at either end.",
+      "why": "Upstream's page cannot scroll at all -- css/base.css pins body to 100dvh with overflow: hidden -- so its passive window listener owns the wheel outright and never has to give it back. A section on a page that does scroll cannot own it outright, and two of these on one page listening on window would both answer the same wheel. Preventing only mid-travel is the same feel inside the gallery and hands the page back at the ends.",
+      "kind": "seam"
+    },
+    {
+      "what": "The parallax centre is the wrapper's own box rather than window.innerWidth, and the limit is recomputed by a ResizeObserver on the wrapper rather than by a window resize listener.",
+      "why": "Upstream's gallery is the whole page, so the two are the same number there. A section can sit in a narrower column, where measuring against the window would put the neutral point off to one side; and a section is resized by things a window resize never reports, such as a sibling collapsing or a font landing.",
+      "kind": "seam"
+    },
+    {
+      "what": "The ten bundled .webp images and the <picture>/<img> pair become a .fx-hpgal__image span painting a two-layer CSS gradient behind a --fx-img custom property, and the frames carry captions.",
+      "why": "The upstream demo's imagery is licensed separately from its MIT code and is not ours to redistribute. The picture is a slot the frame counter-translates whatever it is given, so the plate keeps the motion legible -- an off-centre bright lobe is what the eye tracks as the picture slides -- and a site overrides one custom property per frame.",
+      "kind": "ours"
+    },
+    {
+      "what": "The wrapper is overflow-x: auto until mount() sets data-fx-live, instead of overflow: hidden from the start, and the ease and shift options are clamped to finite ranges.",
+      "why": "Effect contract: the resting state has to be finished with CSS alone, and a clipped strip driven only by a transform would hide frames two to ten from a blocked script, a pruned bundle or a reader on prefers-reduced-motion. A native scroll box is the same content with the lerp and the parallax removed. The clamps exist for the same reason: an ease of 0 would park the strip at frame one after the stylesheet had already been switched to overflow: hidden.",
+      "kind": "seam"
+    },
+    {
+      "what": "Only the 2D/DOM variant is ported. index2.html's WebGL twin -- src/gallery/GL.ts, GLMedia.ts and the media shaders -- and the lil-gui debug panel are dropped.",
+      "why": "The two are the same gallery drawn twice, and the DOM version is the one index.html opens on and the one that needs no vendored library at all. The WebGL twin is worth its own port if it is ever wanted, not an option on this one.",
+      "kind": "ours"
+    }
+  ]
+}

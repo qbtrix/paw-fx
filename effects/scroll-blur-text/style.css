@@ -1,0 +1,72 @@
+/* scroll-blur-text: a paragraph-scale headline that arrives out of focus and
+   sharpens character by character as the section scrolls through.
+
+   The resting state is the finished copy at full brightness. index.js writes
+   `blur(10px) brightness(0%)` only when it links the tween to the scrollbar,
+   so with the script blocked, the bundle pruned or reduced motion on the
+   reader gets sharp type at the same size in the same place.
+
+   will-change: filter is upstream's, set on the characters as a from-value.
+   Here it is scoped to [data-fx-live] so it is only paid for while the effect
+   is actually running: a permanently promoted layer per character is a real
+   memory cost on a headline the reader may never scroll to.
+
+   The section reserves a full viewport with the copy centred. That is not
+   decoration -- the reveal is scroll-linked, and a section with no room above
+   or below it has no scroll range for the link to run over. */
+.fx-blurtext {
+  --fx-bg: #08080a;
+  --fx-ink: rgb(227 226 220 / 92%);
+  --fx-muted: #8b8a95;
+  --fx-accent: #d9d5c6;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(5rem, 14vw, 12rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(65% 60% at 78% 15%, color-mix(in oklab, #4a4638 34%, transparent), transparent 70%),
+    radial-gradient(55% 50% at 10% 88%, color-mix(in oklab, #2c3550 40%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-blurtext *,
+.fx-blurtext *::before,
+.fx-blurtext *::after { box-sizing: border-box; }
+
+.fx-blurtext__inner { width: 100%; max-width: 58rem; }
+.fx-blurtext__eyebrow {
+  margin: 0 0 2rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+/* The split target. */
+.fx-blurtext__copy {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  text-wrap: pretty;
+}
+.fx-blurtext__lede {
+  margin: 2.75rem 0 0;
+  max-width: 32rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* anime's splitter wraps each word and each character in a bare span carrying
+   data-word / data-char and no class. inline-block on both keeps a filtered
+   character from collapsing and keeps a word from breaking mid-glyph. */
+.fx-blurtext__copy [data-char] { display: inline-block; }
+.fx-blurtext__copy [data-word] { display: inline-block; }
+.fx-blurtext[data-fx-live] .fx-blurtext__copy [data-char] { will-change: filter; }

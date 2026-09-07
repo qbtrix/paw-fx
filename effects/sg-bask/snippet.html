@@ -1,0 +1,22 @@
+<!-- sg-bask section. Finished at rest with CSS alone: the four warm poles in
+     .fx-bask__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The three decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-bask/style.css">
+<section class="fx-bask" data-fx="sg-bask">
+  <div class="fx-bask__rest" aria-hidden="true"></div>
+  <div class="fx-bask__scrim" aria-hidden="true"></div>
+  <div class="fx-bask__grain" aria-hidden="true"></div>
+  <div class="fx-bask__inner">
+    <p class="fx-bask__eyebrow"><span class="fx-bask__dot" aria-hidden="true"></span>Open early</p>
+    <h1 class="fx-bask__title">Start the day already three steps in.</h1>
+    <p class="fx-bask__lede">Swap this for your own words. The headline takes one line or three, and the morning keeps drifting behind it either way.</p>
+    <div class="fx-bask__actions">
+      <a class="fx-bask__cta fx-bask__cta--primary" href="#">Take the tour</a>
+      <a class="fx-bask__cta fx-bask__cta--ghost" href="#">Read the notes</a>
+    </div>
+  </div>
+</section>

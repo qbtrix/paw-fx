@@ -1,0 +1,22 @@
+<!-- neuro-noise section. Finished at rest with CSS alone: the filament smears in
+     .fx-neuro__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has a context and a linked program. The
+     _fx paths are root-absolute because a site always sits at the origin root,
+     and "./_fx/..." would break on a nested page such as /blog/post.html. The
+     three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/neuro-noise/style.css">
+<section class="fx-neuro" data-fx="neuro-noise">
+  <div class="fx-neuro__rest" aria-hidden="true"></div>
+  <div class="fx-neuro__scrim" aria-hidden="true"></div>
+  <div class="fx-neuro__grain" aria-hidden="true"></div>
+  <div class="fx-neuro__inner">
+    <p class="fx-neuro__eyebrow"><span class="fx-neuro__dot" aria-hidden="true"></span>Running quiet</p>
+    <h1 class="fx-neuro__title">It thinks in the background so you do not have to.</h1>
+    <p class="fx-neuro__lede">Replace this with your own line. The headline takes one row or three, and the strands keep travelling behind it either way.</p>
+    <div class="fx-neuro__actions">
+      <a class="fx-neuro__cta fx-neuro__cta--primary" href="#">Connect a source</a>
+      <a class="fx-neuro__cta fx-neuro__cta--ghost" href="#">How it decides</a>
+    </div>
+  </div>
+</section>

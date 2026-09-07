@@ -1,0 +1,72 @@
+{
+  "name": "scroll-blur-text",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "scroll", "blur", "headline", "codrops", "anime", "scrub"],
+  "summary": "A paragraph-scale headline that arrives out of focus and unlit, each character sharpening and brightening in turn as the section scrolls through the viewport.",
+  "needs": ["anime"],
+  "options": {
+    "blur": {
+      "type": "number",
+      "default": 10,
+      "description": "Pixels of blur each character starts at. Upstream's filter: blur(10px)."
+    },
+    "stagger": {
+      "type": "number",
+      "default": 0.05,
+      "description": "Seconds between one character sharpening and the next. Upstream's stagger: 0.05."
+    },
+    "sync": {
+      "type": "number",
+      "default": 0,
+      "description": "How closely the reveal tracks the scrollbar. 0 keeps upstream's scrub: true; any positive number lags behind the scroll by that much."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ScrollBlurTypography",
+    "commit": "3e64d4bdae65b1f291e21a9a9c4b2ac6258c45c1",
+    "path": [
+      "js/effect-1/blurScrollEffect.js",
+      "js/textSplitter.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP and ScrollTrigger are replaced by anime.js v4's animate() and onScroll(). ease 'none' becomes 'linear', and GSAP's seconds become milliseconds, so upstream's 0.05 stagger and its 0.5 default fromTo duration are kept verbatim and multiplied by MS = 1000 at the call site.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. anime.js v4 is already vendored, its onScroll with sync is the same scrub mechanism, and it interpolates the two-function filter string numerically -- measured, half way through the tween the computed style is blur(5px) brightness(0.5) -- so the mechanism is upstream's rather than a re-implementation.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The scroll thresholds are upstream's start / end with the two halves swapped: 'top bottom-=15%' becomes enter 'bottom-=15% top', and 'bottom center+=15%' becomes leave 'center+=15% bottom'.",
+      "why": "ScrollTrigger reads 'target container' and anime's ScrollObserver reads 'container target'. Confirmed by reading ScrollObserver's refresh and then measuring offsetStart against both predictions in a browser, because getting it backwards silently mis-ranges the scrub rather than failing loudly.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only effect-1 is ported. Effects 2, 3 and 4, which are three more files of the same shape, are not carried, and neither is upstream's SplitType-backed TextSplitter wrapper or its debounce helper -- anime.js' splitText provides the characters and its own resize handling.",
+      "why": "The four upstream effects differ in the filter they animate rather than in mechanism, and shipping four near-identical ports would be a worse library than one. SplitType and the debounce are a second and third dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "will-change: filter is written in style.css scoped to [data-fx-live] rather than set on every character as a from-value.",
+      "why": "Upstream sets it once and leaves it. A permanently promoted compositor layer per character is a real memory cost on a headline the reader may never scroll to, and scoping it to the live attribute means it is paid for only while the effect is actually running.",
+      "kind": "ours"
+    },
+    {
+      "what": "The CSS resting state is the copy sharp and at full brightness, rather than upstream's page hiding everything behind a loading class until its fonts resolve.",
+      "why": "Effect contract: the section has to look finished on CSS alone. A scroll reveal whose observer never runs -- script blocked, bundle pruned -- must not leave the copy blurred out, so the stylesheet draws the finished paragraph and the blur is what plays on top of it.",
+      "kind": "seam"
+    },
+    {
+      "what": "Lenis is dropped, no smooth-scroll instance is created, and the Adobe Typekit variable faces are replaced by a system stack.",
+      "why": "Smooth scrolling is a property of the document, not of a section, and paw-fx ships it as its own smooth-scroll effect that a site composes when it wants it -- two Lenis instances on one document fight over the scroll position. Upstream's fonts are a hosted Typekit kit under separate terms, not ours to redistribute or to bill to someone else's kit id.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the copy is not split and no scroll observer is created.",
+      "why": "Effect contract: mount() stays at rest, and the resting paragraph is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

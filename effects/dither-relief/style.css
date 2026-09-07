@@ -1,0 +1,131 @@
+/* dither-relief: a photograph rebuilt as a field of small 3D boxes that stand
+   proud of the plane by their own brightness, then resolve into hard 4x4 Bayer
+   dither as the sweep runs through them.
+
+   THE IMAGE SLOT IS A REAL <img>, and it has to be. Its pixels are the shader's
+   input, so it cannot be a CSS background. Upstream embeds a ~115 KB base64
+   portrait that is not ours to redistribute; the snippet carries a generated SVG
+   plate instead, with enough tonal range in it that both the relief and the
+   dither read. Swap it for your own picture by changing one attribute:
+
+     <img class="fx-dither__img" src="/img/portrait.jpg" alt="">
+
+   THE RESTING STATE is that picture, framed on the flat ground, at full size and
+   full opacity. With the script blocked, the bundle pruned, WebGL refused or
+   reduced motion on, the section is a framed photograph and nothing is hidden
+   behind a canvas that never arrived. data-fx-live fades the <img> down rather
+   than removing it: the stage is what the canvas is measured against, and the
+   picture is what comes back if the context is lost mid-run. */
+.fx-dither {
+  --fx-ground: #f9c939;
+  --fx-ink: #17150c;
+  --fx-muted: #4a4327;
+  --fx-frame: #17150c;
+  --fx-pad: clamp(1.25rem, 4vw, 3rem);
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1rem, 2.2vw, 1.75rem);
+  min-height: 100svh;
+  padding: var(--fx-pad);
+  background: var(--fx-ground);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-dither *,
+.fx-dither *::before,
+.fx-dither *::after { box-sizing: border-box; }
+
+.fx-dither__head {
+  display: grid;
+  gap: 0.55rem;
+  max-width: 46rem;
+}
+.fx-dither__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-dither__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+}
+.fx-dither__note {
+  margin: 0;
+  max-width: 38rem;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+/* The stage is what index.js measures the orthographic frustum against, so it
+   has to hold a real box at every width. */
+.fx-dither__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 22rem;
+  overflow: hidden;
+}
+
+.fx-dither__frame {
+  position: relative;
+  display: block;
+  width: min(100%, 34rem);
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  border: 2px solid var(--fx-frame);
+  overflow: hidden;
+}
+.fx-dither__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 420ms ease;
+}
+
+/* The canvas sits over the stage once a context exists. It takes no pointer
+   events: this section has nothing to click, and a full-bleed canvas that ate
+   them would break text selection over the copy. */
+.fx-dither__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+.fx-dither[data-fx-live] .fx-dither__canvas { opacity: 1; }
+.fx-dither[data-fx-live] .fx-dither__frame { opacity: 0; }
+.fx-dither__frame { transition: opacity 420ms ease; }
+
+.fx-dither__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  align-items: baseline;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-dither__foot strong {
+  color: var(--fx-ink);
+  font-weight: 600;
+}
+
+@media (max-width: 40rem) {
+  .fx-dither { min-height: auto; }
+  .fx-dither__stage { min-height: 16rem; }
+}

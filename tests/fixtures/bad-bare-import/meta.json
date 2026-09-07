@@ -1,0 +1,13 @@
+{
+  "name": "bad-bare-import",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["aurora", "gradient", "hero", "css-only", "dark"],
+  "summary": "Full-bleed hero with a slow-drifting multi-stop radial aurora on off-black, pure CSS keyframes, headline slot.",
+  "needs": [],
+  "options": {
+    "speed": { "type": "number", "default": 1, "description": "Drift speed multiplier; 1 = 28s per cycle." }
+  },
+  "license": "MIT",
+  "origin": { "repo": "paw-fx" }
+}

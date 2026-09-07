@@ -1,0 +1,105 @@
+/* gooey-text: menu words that go liquid on hover. The letters swell, merge
+   into each other and separate again as a second word takes the first one's
+   place.
+
+   Ported from codrops/GooeyTextHoverEffect src/css/base.css @ 6db15b7 (demo
+   1). The .menu / .menu__item / .menu__text block and the
+   `text:nth-child(2) { opacity: 0 }` resting rule are upstream's; the prefixes
+   and the palette are ours.
+
+   RESTING STATE. Four words at full size on pale grey. The second word of each
+   pair is opacity 0 here, which is the same state upstream rests in, so a
+   blocked script, a pruned bundle or reduced motion leaves a legible menu
+   rather than an empty grid.
+
+   The gooey filter itself lives in snippet.html, inside each item's own svg.
+   It is applied to the <g> only while the animation runs -- index.js sets
+   `filter: url(#...)` on enter and drops it back to `none` at both ends -- so
+   four idle items cost nothing. */
+.fx-gooey {
+  /* base.css body / .demo-1: --color-bg #c2c6c9, --color-menu #000. */
+  --fx-bg: #c2c6c9;
+  --fx-ink: #000;
+  --fx-muted: #4a4f53;
+  --fx-menu: #000;
+  --fx-menu-size: 16px;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.fx-gooey *,
+.fx-gooey *::before,
+.fx-gooey *::after { box-sizing: border-box; }
+
+.fx-gooey__eyebrow {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+/* base.css .menu */
+.fx-gooey__menu {
+  width: 100%;
+  min-height: 400px;
+  display: grid;
+}
+
+/* base.css .menu__item */
+.fx-gooey__item {
+  border: none;
+  transition: none;
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+}
+.fx-gooey__item:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: -2px;
+}
+
+/* base.css .menu__text */
+.fx-gooey__text {
+  font-size: var(--fx-menu-size);
+  fill: var(--fx-menu);
+  display: block;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  font-weight: 700;
+  position: absolute;
+  height: 120%;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* base.css .menu__text text */
+.fx-gooey__text text {
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+}
+
+/* base.css .menu__text text:nth-child(2) -- the resting state. The second word
+   of each pair waits at zero opacity; the first one is the finished content. */
+.fx-gooey__text text:nth-child(2) { opacity: 0; }
+
+.fx-gooey__lede {
+  margin: clamp(1.5rem, 4vw, 2.5rem) 0 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* mount() returns before it binds anything under reduce, so the words never
+   swap. This only has to say that hover is not silently dead: the cursor stops
+   claiming there is something to trigger. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-gooey__item { cursor: default; }
+}

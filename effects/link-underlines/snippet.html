@@ -1,0 +1,23 @@
+<!-- link-underlines section. Finished at rest with CSS alone, and finished
+     without any script at all: upstream ships no JavaScript and neither does
+     this. The default variant is on the section already, so the list works
+     before index.js loads and after it is blocked; mount() only ever swaps
+     the variant.
+     Every link carries data-text and a <span> because the `swap` variant
+     draws its incoming label from data-text and slides the span out. The
+     other two variants ignore both.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/link-underlines/style.css">
+<section class="fx-links" data-fx="link-underlines" data-fx-variant="wipe">
+  <div class="fx-links__inner">
+    <p class="fx-links__eyebrow">Index</p>
+    <ul class="fx-links__list">
+      <li><a class="fx-links__link" href="#" data-text="Studio"><span>Studio</span></a></li>
+      <li><a class="fx-links__link" href="#" data-text="Selected work"><span>Selected work</span></a></li>
+      <li><a class="fx-links__link" href="#" data-text="Journal"><span>Journal</span></a></li>
+      <li><a class="fx-links__link" href="#" data-text="Contact"><span>Contact</span></a></li>
+    </ul>
+    <p class="fx-links__note">Replace these links with your own. The underline arrives on hover and on keyboard focus, and the whole treatment is CSS.</p>
+  </div>
+</section>

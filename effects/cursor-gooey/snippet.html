@@ -1,0 +1,42 @@
+<!-- cursor-gooey section. Finished at rest with CSS alone: the menu is the
+     content and the two rings are pointer decoration drawn over it. They are
+     display: none until a fine pointer is present, so a blocked script, a
+     pruned bundle, a touch screen or prefers-reduced-motion all leave the
+     visitor with a finished list of links and their own cursor.
+
+     The <filter> block is upstream's, verbatim: feTurbulence feeding
+     feDisplacementMap at scale 30 is what makes the ring shake apart when it
+     crosses a link. index.js rewrites the filter's id on mount so two copies
+     of this section on one page cannot warp each other, and points both rings
+     at the new one -- do not hard-code that id anywhere else.
+
+     The second <svg> asks for data-amt="0.1", which is upstream's: it makes
+     that ring lag behind the first.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/cursor-gooey/style.css">
+<section class="fx-gooey" data-fx="cursor-gooey">
+  <p class="fx-gooey__eyebrow">Studio</p>
+  <nav class="fx-gooey__menu" aria-label="Sections">
+    <a class="fx-gooey__link" href="#">Mandala</a>
+    <a class="fx-gooey__link" href="#">Nembutsu</a>
+    <a class="fx-gooey__link" href="#">Mudra</a>
+    <a class="fx-gooey__link" href="#">Sangha</a>
+  </nav>
+  <p class="fx-gooey__note">Move the pointer across the list. Two rings trail it at different rates, and crossing a link shakes them apart before they settle.</p>
+
+  <svg class="fx-gooey__cursor" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+    <defs>
+      <filter class="fx-gooey__filter" id="fx-gooey-filter" x="-50%" y="-50%" width="200%" height="200%"
+      filterUnits="objectBoundingBox">
+        <feTurbulence type="fractalNoise" baseFrequency="0" numOctaves="1" result="warp" />
+        <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="30" in="SourceGraphic" />
+      </filter>
+    </defs>
+    <circle class="fx-gooey__ring" cx="60" cy="60" r="20"/>
+  </svg>
+  <svg class="fx-gooey__cursor" width="120" height="120" viewBox="0 0 120 120" data-amt="0.1" aria-hidden="true" focusable="false">
+    <circle class="fx-gooey__ring" cx="60" cy="60" r="20"/>
+  </svg>
+</section>

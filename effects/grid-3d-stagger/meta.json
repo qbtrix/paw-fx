@@ -1,0 +1,77 @@
+{
+  "name": "grid-3d-stagger",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["gallery", "scroll", "3d", "grid", "perspective", "codrops", "anime"],
+  "summary": "A gallery whose cells tip in from their own side of the viewport, unblur out of a perspective box, and tip back out as they leave, each scrubbed to its own scroll range.",
+  "needs": ["anime"],
+  "options": {
+    "depth": {
+      "type": "number",
+      "default": 300,
+      "description": "How far each cell travels on z, in pixels. Upstream's z."
+    },
+    "tilt": {
+      "type": "number",
+      "default": 70,
+      "description": "Degrees a cell is tipped on x when it arrives. Upstream's rotateX."
+    },
+    "stretch": {
+      "type": "number",
+      "default": 1.8,
+      "description": "How far the inner layer is stretched on y at each end. Upstream's scaleY."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/Staggered3DGridAnimations",
+    "commit": "7c2703d41f55005c2758e1031b593d2493d392f8",
+    "path": [
+      "js/index.js",
+      "index.html",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The scroll driver is anime.js' onScroll with enter '110% top' and leave '-25% bottom', not ScrollTrigger's start 'top bottom+=10%' / end 'bottom top-=25%' with Lenis underneath.",
+      "why": "GSAP is not a dependency this library can take. The two thresholds are the same window written the other way round: anime puts the container position first, and an offset past an edge is a percentage of the container rather than an arithmetic suffix, so 10 percent below the bottom is 110 percent and 25 percent above the top is minus 25. Lenis is dropped because smooth scrolling is a page-level choice and paw-fx already ships smooth-scroll as its own effect.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Both halves of the timeline are given an explicit duration of 0.5 seconds, the GSAP default upstream relies on without writing, and gsap's sine / sine.in are written as anime's outSine / inSine.",
+      "why": "anime's default duration is one second, so leaving it implicit would make the arriving half twice as long as the leaving one. The timeline is scrubbed, so only the ratio between the two matters, and writing 0.5 out is what keeps them equal. GSAP defaults a bare ease name to .out where anime spells the direction.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The tweens are written as explicit from / to pairs rather than as GSAP .from() and .to() calls reading the element's current value, and the `startAt` that gives the filter a valid end value is folded into the pair.",
+      "why": "A .from() tween means 'animate from these values to whatever the element currently has', which depends on the element having a readable current value. filter has none here -- the computed value is `none`, which cannot interpolate with blur() -- which is exactly why upstream needs a startAt to supply one. Writing both ends removes the dependency on read order.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only the per-cell timeline is ported -- the one built around isLeftSide. animateMarquee(), animateTextElement() and animateGridFull() are dropped, along with the SplitText plugin and the imagesLoaded preloader they use.",
+      "why": "Those are three more sections of the demo page -- a scrolling word band, a split-character heading and a second full-bleed grid -- each with its own markup and its own scroll range. The cell animation is the one that is a section, and it is self-contained. SplitText is a Club GreenSock plugin in any case.",
+      "kind": "ours"
+    },
+    {
+      "what": "The cells paint a per-cell gradient chosen by --fx-cell-hue, written as the fallback inside the background shorthand, with --fx-cell-image as the override.",
+      "why": "Codrops ships the demo's photographs under separate terms and this library redistributes none of them. The default has to resolve per cell, and a var() nested inside a custom property is substituted where that property is declared -- a section-level --fx-image would give every cell one already-resolved hue and the grid would come out one colour.",
+      "kind": "ours"
+    },
+    {
+      "what": "The image wrap is overflow: clip rather than overflow: hidden.",
+      "why": "hidden makes an element a scroll container. Nothing scroll-linked sits inside this one today, but the wrap is the element the observer watches and the one a future variant would animate a child of, and a scroll-driven animation that resolves against a box which never scrolls reports as running at half progress with everything at the identity transform. clip does the same painting with none of that.",
+      "kind": "ours"
+    },
+    {
+      "what": "Every timeline and observer is reverted on destroy, and the cells are resolved inside the mounted section rather than from the document.",
+      "why": "Upstream queries the document at module scope and never tears the effect down. An effect is one section among several and a page may carry this one twice; a destroy mid-scroll would otherwise leave a cell tipped at 70 degrees under a blur.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no timeline and no scroll observer are created.",
+      "why": "Effect contract: mount() stays at rest, and the laid-out grid is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

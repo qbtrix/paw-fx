@@ -1,0 +1,36 @@
+{
+  "name": "scroll-parallax",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["parallax", "scroll", "depth", "scroll-driven", "css-only", "no-js"],
+  "summary": "Layered scene whose sky, stars, two ridges and copy move at five different rates as the section passes the viewport, built on native CSS scroll-driven animations with no scroll listener and no library.",
+  "needs": [],
+  "options": {
+    "travel": {
+      "type": "number",
+      "default": 1,
+      "description": "Scales how far every layer moves, all five together. 0 pins the section to its static composition; the stylesheet's own ranges run from 3% on the sky to 13% on the near ridge. Clamped to 0-3 because the keyframes multiply by it: a large value throws the layers out of the section and a negative one inverts the depth order."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "paw-fx"
+  },
+  "deviations": [
+    {
+      "kind": "ours",
+      "what": "This effect is not a port. It is built on native CSS scroll-driven animations -- `animation-timeline: view()` -- with no JavaScript in the animation path and no vendored dependency.",
+      "why": "There is no vanilla upstream to port. Every parallax in the Codrops corpus, all 345 repositories enumerated, is built on GSAP ScrollSmoother, Lenis or Locomotive Scroll; GSAP is the licence this library rejected and ScrollSmoother is a paid plugin on top of it. Naming one of them as an origin would put a claim in front of the port-fidelity gate that the code does not support. Native-first is also the better answer here: it costs no vendored bytes, runs off the compositor rather than a scroll handler, and degrades to a still layered composition where it is unsupported."
+    },
+    {
+      "kind": "ours",
+      "what": "Every animated declaration sits inside `@supports (animation-timeline: view())`, and `animation-timeline` is always written after the `animation` shorthand.",
+      "why": "Two silent failures, both load-bearing. The `animation` shorthand resets animation-timeline to `auto`, so the other order hands every layer back to the document timeline and the parallax simply never runs. And without the @supports guard, a browser that does not know animation-timeline drops that declaration but keeps the shorthand, running the keyframes as an ordinary time-based animation that parks every layer at its END position instead of the neutral midpoint the composition is designed around."
+    },
+    {
+      "kind": "ours",
+      "what": "All five keyframe sets are symmetric around translate3d(0, 0, 0) rather than running from a rest position to an offset one.",
+      "why": "The un-animated frame is what a reduced-motion visitor and a browser without scroll-driven animations both see, so it has to be a composition rather than an end state. Symmetric ranges make that frame the midpoint of the travel."
+    }
+  ]
+}

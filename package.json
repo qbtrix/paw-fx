@@ -1,0 +1,15 @@
+{
+  "name": "paw-fx",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "bun scripts/lint.mjs",
+    "build": "bun scripts/build-registry.mjs",
+    "gallery": "bun scripts/build-registry.mjs && bun scripts/build-gallery.mjs",
+    "smoke": "bun scripts/smoke.mjs",
+    "verify": "bun scripts/verify-ports.mjs",
+    "test": "bun test",
+    "check": "bun run lint && bun run build && bun run smoke && bun test"
+  }
+}

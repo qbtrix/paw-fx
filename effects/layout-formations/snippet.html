@@ -1,0 +1,75 @@
+<!-- layout-formations section. Finished at rest with CSS alone: the grid is
+     already flat, complete and at full opacity, because that is where the
+     scroll animation ENDS. index.js scatters the panels through depth and lets
+     the scrollbar bring them back; with the script blocked, the bundle pruned
+     or prefers-reduced-motion on, the reader gets the finished formation.
+
+     THE PIN IS CSS, not the script: __track is 300svh tall and __stage sticks
+     to the top of it for 100svh. Do not put overflow: hidden, a transform or a
+     filter on the section or the track -- any of them makes the sticky stop
+     sticking, and a scroll animation over a range that never scrolls resolves
+     at one constant progress and silently does nothing.
+
+     IMAGES ARE A SLOT. Nothing ships with this effect -- every panel paints a
+     gradient until you give it one:
+
+         <div class="fx-formations__panel" style="--fx-img:url(/img/01.jpg)"></div>
+
+     Thirty-six panels in a 9 by 4 grid, which is the shape the stagger reads;
+     keep the count if you want the formation to arrive from the centre
+     outwards evenly. Any aspect ratio works, the panel crops with
+     background-size: cover, and the gradient stays underneath as the fallback
+     while an image loads or if it fails. Below 53em the grid turns 4 by 9.
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/layout-formations/style.css">
+<section class="fx-formations" data-fx="layout-formations">
+  <div class="fx-formations__track">
+    <div class="fx-formations__stage">
+      <div class="fx-formations__grid" aria-hidden="true">
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      <div class="fx-formations__panel"></div>
+      </div>
+      <div class="fx-formations__content">
+        <p class="fx-formations__eyebrow">Archive</p>
+        <h2 class="fx-formations__title">Thirty-six frames, one formation</h2>
+        <p class="fx-formations__note">Scroll and the wall assembles itself out of depth, the middle barely moving while the corners arrive from a long way back.</p>
+      </div>
+    </div>
+  </div>
+</section>

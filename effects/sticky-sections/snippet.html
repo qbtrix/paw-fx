@@ -1,0 +1,45 @@
+<!-- sticky-sections section. Finished at rest with CSS alone: the panels pin
+     and stack because `position: sticky` does that on its own, and every one
+     of them sits at full brightness with its image square and its copy
+     readable. index.js only adds the dim-and-drift as each panel is covered,
+     so a blocked script, a pruned bundle or prefers-reduced-motion leaves the
+     same screens in the same order.
+     .fx-sticky__img is the image slot: it paints a gradient so nothing has to
+     ship a photograph. Override `background-image` on it, or replace the div
+     with an <img class="fx-sticky__img"> of your own.
+     The panels are the direct children of .fx-sticky__wrap, which is what the
+     :nth-child background rules count; add or remove panels there and add a
+     matching --fx-bg-N rule.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/sticky-sections/style.css">
+<section class="fx-sticky" data-fx="sticky-sections">
+  <div class="fx-sticky__rail fx-sticky__rail--intro">
+    <p>Four decisions separate a project that ships from one that keeps getting rewritten.</p>
+  </div>
+  <div class="fx-sticky__wrap">
+    <div class="fx-sticky__panel">
+      <div class="fx-sticky__img" role="img" aria-label="Placeholder artwork"></div>
+      <h2 class="fx-sticky__title"><i>The</i> Brief</h2>
+      <p class="fx-sticky__text">Everything downstream is a reading of this one page. Write it badly and the argument repeats in every review for a year.</p>
+    </div>
+    <div class="fx-sticky__panel">
+      <div class="fx-sticky__img" role="img" aria-label="Placeholder artwork"></div>
+      <h2 class="fx-sticky__title"><i>The</i> Cut</h2>
+      <p class="fx-sticky__text">What is not being built matters more than what is. A scope with no edge is a scope that grows to fill whatever time it is given.</p>
+    </div>
+    <div class="fx-sticky__panel">
+      <div class="fx-sticky__img" role="img" aria-label="Placeholder artwork"></div>
+      <h2 class="fx-sticky__title"><i>The</i> Proof</h2>
+      <p class="fx-sticky__text">One thin path all the way through, running, before anything is made broad. The first end-to-end slice is where the wrong assumptions surface.</p>
+    </div>
+    <div class="fx-sticky__panel">
+      <div class="fx-sticky__img" role="img" aria-label="Placeholder artwork"></div>
+      <h2 class="fx-sticky__title"><i>The</i> Handover</h2>
+      <p class="fx-sticky__text">A build nobody else can run is not finished. The last panel stays as it is: there is nothing arriving to cover it.</p>
+    </div>
+  </div>
+  <div class="fx-sticky__rail fx-sticky__rail--outro">
+    <p>Replace this copy with your own. Each panel holds the screen for exactly one viewport of scrolling.</p>
+  </div>
+</section>

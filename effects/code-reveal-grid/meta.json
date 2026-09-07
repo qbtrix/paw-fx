@@ -1,0 +1,72 @@
+{
+  "name": "code-reveal-grid",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "grid",
+    "hover",
+    "mask",
+    "code",
+    "interactive",
+    "codrops",
+    "anime"
+  ],
+  "summary": "A tile grid with 2000 random characters hidden under each tile; the pointer drags a 300px masked window across them on a 0.1 lerp and the characters reroll as it moves.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "amt": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Lerp amount for the mask position. The lower it is, the further the window lags behind the pointer. Upstream's renderedStyles amt."
+    },
+    "chars": {
+      "type": "number",
+      "default": 2000,
+      "description": "How many random characters each tile holds. Upstream's getRandomString(2000)."
+    },
+    "fade": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Seconds the character layer takes to fade in and out. Upstream's gsap.to duration."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/AnimatedCodeBackground",
+    "commit": "4aa37f6d011b3c36bb9c18f77ecd91de5a08f6d0",
+    "path": [
+      "js/item.js",
+      "js/utils.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The two gsap.to opacity fades become anime animate() calls with ease outQuart, and the gsap.set writing --x and --y becomes two style.setProperty calls that append px explicitly.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without code, which is what paw-fx is. GSAP's power scale is power1=Quad, power2=Cubic, power3=Quart and a bare name means the out variant, so power3 is outQuart rather than out(3). The set call only existed because GSAP infers the px unit from the declared --x: 0px; writing the unit is the same instruction with nothing inferred.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Durations are multiplied by a single MS constant of 1000 where upstream writes seconds.",
+      "why": "GSAP counts in seconds and anime.js counts in milliseconds. Converting at one named constant keeps every upstream number written the way upstream wrote it, so the port-fidelity gate can still trace them.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "mousepos and the window mousemove listener move from module scope into mount(), and every listener, the rAF id and the fade handle are kept so destroy() can unbind and cancel them.",
+      "why": "Upstream is a page that never tears anything down, so a module-level pointer position and a permanent listener cost it nothing. Here two sections on one page would share one position, and a destroyed section would leave a mousemove listener and a live frame behind.",
+      "kind": "seam"
+    },
+    {
+      "what": "The per-tile inline SVG client logos are replaced by a text monogram, and the page chrome -- .frame, its links, the page loader and the body palette block -- is dropped for a section eyebrow and title.",
+      "why": "The logos are third-party marks in a Codrops demo and not ours to redistribute; the mask reveals code under whatever sits on the plate, so the subject only has to be something. The rest is demo furniture.",
+      "kind": "ours"
+    },
+    {
+      "what": "The typekit stylesheets (neue-haas-grotesk-text, input-mono) are dropped for system stacks with a monospace fallback on the character layer.",
+      "why": "A hosted font stylesheet is a fetch a generated site cannot make offline, and no repo in this survey ships a font file to vendor instead. The character layer only needs a fixed advance width, which any monospace face gives.",
+      "kind": "seam"
+    }
+  ]
+}

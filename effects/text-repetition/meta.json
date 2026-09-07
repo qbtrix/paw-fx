@@ -1,0 +1,67 @@
+{
+  "name": "text-repetition",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "scroll", "repetition", "kinetic", "typography", "codrops", "anime"],
+  "summary": "A word stamped nine times into one grid cell so it reads as a single heading at rest, then fanned apart and back into register by the scrollbar.",
+  "needs": ["anime"],
+  "options": {
+    "totalWords": {
+      "type": "number",
+      "default": 9,
+      "description": "How many copies of the word are stacked. Upstream's totalWords."
+    },
+    "tyIncrement": {
+      "type": "number",
+      "default": 12,
+      "description": "Percent of the word's own height between one copy and the next when fanned. Upstream's tyIncrement."
+    },
+    "delayIncrement": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Seconds each copy waits behind the copy nearer the centre. Upstream's delayIncrement."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/TextRepetitionEffect",
+    "commit": "fabaafe0124e7bdf66906c6214f00800f5575c4c",
+    "path": [
+      "src/js/demo1/repeatTextScrollFx.js",
+      "src/js/utils.js",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Durations and delays are milliseconds: every upstream second value is multiplied by the SEC constant, 1000.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds. Keeping upstream's own numbers and scaling them in one named place is what makes the timing readable against the source rather than pre-multiplied.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's power1 ease is written as anime's outQuad, which is the same quadratic curve out.",
+      "why": "GSAP names its power curves by exponent minus one and defaults them to .out; anime names them after the polynomial. Same function, different spelling.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The scroll driver is anime's onScroll at its default enter and leave rather than upstream's IntersectionObserver plus gsap.ticker callback writing timeline.progress().",
+      "why": "Upstream computes progress as (scrollY + innerHeight - offsetTop) / (innerHeight + offsetHeight), which is exactly the range anime's defaults describe: enter 'end start' is the target's top meeting the container's bottom, leave 'start end' is its bottom leaving the top. A hand-rolled ticker would be more code for the same window, and it would keep running after destroy.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Selectors are ours: [data-fx-rep] for upstream's [data-text-rep], and the split class is fx-textrep--split rather than text-rep.",
+      "why": "An effect is one section among several and a page may carry this one twice, so the targets are resolved inside the mounted section rather than from the document.",
+      "kind": "seam"
+    },
+    {
+      "what": "Each word's original innerHTML is kept and restored on destroy, along with the reserved marginTop and paddingBottom.",
+      "why": "Upstream is a demo page that never tears the effect down. Here a destroy would otherwise leave nine stacked copies and half a stack of reserved space behind in the markup.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the word is never split and no scroll observer is created.",
+      "why": "Effect contract: mount() stays at rest, and the heading in the markup is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

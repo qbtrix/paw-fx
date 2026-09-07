@@ -1,0 +1,71 @@
+{
+  "name": "scroll-type-set",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["text", "scroll", "headline", "typography", "codrops", "anime", "scrub"],
+  "summary": "A display headline whose characters assemble themselves as the section scrolls through the viewport: rise from below on a back overshoot, converge from a random scatter, or flip in from behind a 2000 perspective.",
+  "needs": ["anime"],
+  "options": {
+    "variant": {
+      "type": "string",
+      "default": "rise",
+      "description": "Which of the three ported upstream reveals to run: rise (fx2, characters rise and un-squash from transform-origin 50% 0%), scatter (fx5, characters converge from a random offset) or flip (fx13, characters rotate in on Y through a 2000 perspective)."
+    },
+    "sync": {
+      "type": "number",
+      "default": 0,
+      "description": "How closely the reveal tracks the scrollbar. 0 keeps the variant's own upstream scrub value (true for rise, 0.9 for scatter and flip); any positive number overrides it."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/OnScrollTypographyAnimations",
+    "commit": "af28d61d1f8d3d117f5d1e9b09d5209e20a1a212",
+    "path": [
+      "src/js/index.js",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP and ScrollTrigger are replaced by anime.js v4's animate() and onScroll(). GSAP's powerN is degree N+1, so power1.inOut becomes inOutQuad, power4.inOut becomes inOutQuint and back.inOut(2) becomes inOutBack(2) at the same overshoot. GSAP counts seconds and anime milliseconds, so every upstream literal is kept verbatim and multiplied by MS = 1000 at the call site.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. anime.js v4 is already vendored and its onScroll with a sync value is the same scrub mechanism ScrollTrigger provides. The easing degrees are the one place a careless swap silently changes the curve, so they are named here.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The scroll thresholds are upstream's start / end pairs with the two halves swapped: ScrollTrigger reads 'target container' and anime's ScrollObserver reads 'container target'. fx2's start 'center bottom+=50%' becomes enter 'bottom+=50% center', end 'bottom top+=40%' becomes leave 'top+=40% bottom', and fx5 and fx13 the same way.",
+      "why": "The two libraries put the halves in opposite order. Confirmed by reading ScrollObserver's refresh (enterContainer = enter.split(' ')[0]) and then measuring offsetStart against both predictions in a browser, because getting it backwards silently mis-ranges every scrub rather than failing loudly.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "fx13's stagger { each: -0.03, from: 0 } is written as stagger(0.03 * MS, { from: 'last' }), and fx5's { each: 0.05, grid: 'auto', from: 'random' } drops the grid key.",
+      "why": "A negative each counted from index 0 is GSAP's spelling of last-character-leading, which anime spells from: 'last'; the order and the interval are identical. grid: 'auto' only matters when the stagger is two-dimensional, and with from: 'random' the grid never affects the draw.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Three of upstream's fifteen effects are ported (fx2, fx5, fx13) and exposed as one `variant` option rather than as fifteen effects or fifteen files. fx1, fx8, fx10, fx11, fx14 and fx15 are not carried.",
+      "why": "Fifteen near-identical character reveals would be a worse library than three that read differently. The three chosen are the ones with absolute thresholds on both ends, which port without reinterpreting anything: fx1 and fx14 end at a relative '+=50%' / '+=100%' whose ScrollTrigger semantics do not transcribe, fx8 and fx10 use toggleActions rather than a scrub, and fx11, fx12, fx14 and fx15 need wrapElements or a pinned parent.",
+      "kind": "ours"
+    },
+    {
+      "what": "Splitting.js is replaced by anime.js' splitText, and the two static values upstream sets in JS (fx2's transformOrigin '50% 0%' and fx13's perspective 2000 on each character's parent) are written in style.css keyed off a data-fx-variant attribute rather than through gsap.set.",
+      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists. The two values are set once and never tweened, and both are inert until a transform exists, so a stylesheet is the right home for them and destroy() has one less inline style to strip.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The CSS resting state is the headline finished, rather than the section starting from each effect's `from` values as upstream's page does behind its loading class.",
+      "why": "Effect contract: the section has to look finished on CSS alone. A scroll reveal whose observer never runs -- script blocked, bundle pruned -- must not leave the copy invisible, so the stylesheet draws the finished headline and the animation is what plays on top of it.",
+      "kind": "seam"
+    },
+    {
+      "what": "Lenis and preloadFonts are dropped: no smooth-scroll instance is created and no Adobe Typekit stylesheet is loaded. The type is set in a system stack.",
+      "why": "Smooth scrolling is a property of the document, not of a section, and paw-fx ships it as its own smooth-scroll effect that a site composes when it wants it -- two Lenis instances on one document fight over the scroll position. Upstream's fonts are a hosted Typekit kit under separate terms, not ours to redistribute or to bill to someone else's kit id.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the headline is not split and no scroll observer is created.",
+      "why": "Effect contract: mount() stays at rest, and the resting headline is already the finished content.",
+      "kind": "seam"
+    }
+  ]
+}

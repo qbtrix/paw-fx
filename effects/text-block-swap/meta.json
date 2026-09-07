@@ -1,0 +1,73 @@
+{
+  "name": "text-block-swap",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "text",
+    "words",
+    "swap",
+    "testimonial",
+    "rotator",
+    "codrops",
+    "anime"
+  ],
+  "summary": "One paragraph leaves as the next arrives, word by word: rise fans the incoming line open from its centre over 800ms, dissolve replaces the words in random order 9ms apart, and roll sends the old line up and out at -125% while the new one rolls in on a back curve.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "variant": {
+      "type": "string",
+      "default": "rise",
+      "description": "Which of the ported transitions to run: rise (upstream demo1), dissolve (demo2) or roll (demo6)."
+    },
+    "interval": {
+      "type": "number",
+      "default": 0,
+      "description": "Milliseconds between automatic swaps. 0, the default, means the block only changes when the control is used -- upstream has no timer."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/TextBlockTransitions",
+    "commit": "f26255f089e20df46a4844ab1205e3b07565889a",
+    "path": [
+      "js/demo1/index.js",
+      "js/demo2/index.js",
+      "js/demo6/index.js",
+      "css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Three of upstream's twelve demos are ported. Demos 3, 4, 5 and 7 through 12 are dropped, and with them the per-character splitting, the per-word sub-timelines and the Math.random() timeline offsets those use.",
+      "why": "The twelve are near-duplicates of each other: demos 1, 2 and 6 are the three genuinely different answers at word level -- one moves and rotates, one only fades, one clips and rolls. The character-level ones need a second split and a timeline per word, which is a different effect wearing the same markup, and would be a better port in its own right than a variant hidden behind an option. A library of near-duplicates is worse than a short one.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP is replaced by anime.js. Timelines become createTimeline, gsap.to/fromTo become add(), yPercent becomes a percentage y, rotation becomes rotate, stagger objects become anime's stagger(), and every duration is multiplied by 1000 because GSAP counts seconds and anime.js milliseconds. Eases map by GSAP's own naming: expo (out by default) to outExpo, power1.in to inQuad, back to outBack. The from-vars of a fromTo that are not animated -- transformOrigin in every variant -- become utils.set() calls, which is what GSAP does with them internally.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is. Every duration, easing, stagger, rotation and percentage is upstream's and unchanged; only the spelling moved.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Splitting.js is replaced by anime.js' splitText asked for a word split, and roll asks it for wrap: 'hidden' instead of calling upstream's wrapElements helper to insert a .word-wrap element.",
+      "why": "Splitting is a second dependency for a job the vendored anime.js already does, and the effect contract limits an effect to vendor keys the manifest lists. The wrap is the same clipping box by another route, and only demo6 needs one -- demo1's 30% rise and demo2's fade are not clipped upstream either.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The upcoming block is (currentTextPos + 1) % blocks.length rather than upstream's currentTextPos ? 0 : 1, so any number of blocks rotates.",
+      "why": "Upstream's ternary is hard-wired to exactly two texts. A section that rotates three statements is the same effect and the same code; the ternary is the only thing that stopped it.",
+      "kind": "ours"
+    },
+    {
+      "what": "The first block carries --current in the markup instead of the script adding it at load, the control is display: none until mount sets data-fx-live, and an optional `interval` runs the swap on a timer.",
+      "why": "Upstream hides every block behind a `.js` class and picks the current one from script, which means a section with the script blocked shows every paragraph stacked in one grid cell. Putting the class in the markup is the resting-state contract. A button that swaps nothing is worse than no button. The timer defaults to 0, so nothing runs on its own unless a site asks -- no invented timing.",
+      "kind": "seam"
+    },
+    {
+      "what": "The timeline is reverted on destroy along with every split, the timer is cleared, and the block that shipped as current is restored.",
+      "why": "Upstream is a demo page that never tears down. Here a destroy mid-swap would otherwise leave half the words at opacity 0 and a timer firing into detached nodes.",
+      "kind": "seam"
+    }
+  ]
+}

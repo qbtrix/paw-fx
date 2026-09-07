@@ -1,0 +1,160 @@
+/* letter-shuffle-menu: a big menu whose first letters are slot-machine
+   columns. One word is spelled down the left edge; the columns roll seven
+   letters to land each item's real initial, while the rest of the word swings
+   in from the right.
+
+   Ported from codrops/LetterShuffleMenu src/css/base.css @ 32cf371. The
+   .menu__item / .letter-wrap / .letter-wrap__inner block, the fixed 0.6666em
+   cell width and the 0.8833em window height are upstream's; the prefixes and
+   two palette values are ours.
+
+   RESTING STATE, AND WHY IT IS THE END OF THE ANIMATION. Upstream is an
+   overlay menu behind a hamburger, so its resting state is closed and, with no
+   script, permanently closed. A section cannot rest like that: a menu whose
+   items are unreadable until an animation runs is a broken menu. So this file
+   draws the finished menu -- plain, legible, uppercase links -- and index.js
+   builds the column structure, sets the closed state and runs the open once
+   when the section scrolls into view. Blocked script, pruned bundle and
+   reduced motion all land on the same readable list.
+
+   The cells are fixed-width on purpose (upstream's `width: calc(--size-menu *
+   0.6666)`): the letters inside them change, and a proportional advance would
+   make the word's width jump on every frame. */
+.fx-shuffle {
+  /* base.css body. --fx-char and --fx-menu-hover are lightened from
+     upstream's values; see the contrast deviation in meta.json. */
+  --fx-ink: #867a8b;
+  --fx-menu: #e3dce5;
+  --fx-menu-hover: #d67ac0;
+  --fx-menu-border: #4c2d4e;
+  --fx-char: #c9a9c2;
+  --fx-size-menu: 6vh;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 6vw, 5rem);
+  color: var(--fx-ink);
+  background-color: #1a191c;
+  background-image: linear-gradient(to bottom, #2b192c, #1a191c);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+.fx-shuffle *,
+.fx-shuffle *::before,
+.fx-shuffle *::after { box-sizing: border-box; }
+
+.fx-shuffle__eyebrow {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-menu-hover);
+}
+
+/* base.css .menu__items */
+.fx-shuffle__items {
+  justify-content: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+/* base.css .menu__item */
+.fx-shuffle__item {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: var(--fx-size-menu);
+  line-height: 0.9;
+  color: var(--fx-menu);
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+}
+.fx-shuffle__item span { pointer-events: none; }
+
+/* base.css .menu__item:hover colour transition */
+.fx-shuffle__item .fx-shuffle__inner span:first-child,
+.fx-shuffle__item .fx-shuffle__inner span,
+.fx-shuffle__item .fx-shuffle__letter span.fx-shuffle__char { transition: color 0.2s ease; }
+
+.fx-shuffle__item:hover,
+.fx-shuffle__item:focus-visible,
+.fx-shuffle__item:hover .fx-shuffle__inner span:first-child,
+.fx-shuffle__item:hover .fx-shuffle__inner span,
+.fx-shuffle__item:hover .fx-shuffle__letter span.fx-shuffle__char,
+.fx-shuffle__item:focus-visible .fx-shuffle__inner span:first-child,
+.fx-shuffle__item:focus-visible .fx-shuffle__inner span,
+.fx-shuffle__item:focus-visible .fx-shuffle__letter span.fx-shuffle__char {
+  color: var(--fx-menu-hover);
+}
+.fx-shuffle__item:focus-visible {
+  outline: 2px solid var(--fx-menu);
+  outline-offset: 0.15em;
+}
+
+/* base.css .menu__item.splitting .word -- the row the letters sit in. It only
+   exists once index.js has split the item; before that the <a> is plain text. */
+.fx-shuffle__chars { display: flex; }
+
+/* base.css .menu__item.splitting .char */
+.fx-shuffle__char {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  transform-origin: 50% 100%;
+  will-change: transform, color;
+  color: var(--fx-char);
+}
+
+/* base.css .letter-wrap, .letter-wrap__inner span, .char */
+.fx-shuffle__letter,
+.fx-shuffle__inner span,
+.fx-shuffle__char {
+  width: calc(var(--fx-size-menu) * 0.6666);
+  display: flex;
+  justify-content: center;
+  will-change: transform, color;
+}
+
+/* base.css .letter-wrap -- the one-letter-tall window the column slides in. */
+.fx-shuffle__letter {
+  flex: none;
+  height: calc(var(--fx-size-menu) * 0.8833);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* base.css .letter-wrap > span:not(.letter-wrap__inner) */
+.fx-shuffle__letter > span:not(.fx-shuffle__inner) { opacity: 0; }
+
+/* base.css .letter-wrap__inner */
+.fx-shuffle__inner {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+/* base.css .letter-wrap__inner span:first-child -- the item's own initial,
+   which the column rolls down to. The other seven are the vertical title's
+   letter and the random ones, at menu strength. */
+.fx-shuffle__inner span:first-child { color: var(--fx-char); }
+
+.fx-shuffle__lede {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-menu);
+  text-wrap: pretty;
+}
+
+/* base.css @media (min-width: 54em) */
+@media screen and (min-width: 54em) {
+  .fx-shuffle { --fx-size-menu: 15vh; }
+}

@@ -1,0 +1,56 @@
+{
+  "name": "image-trail",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": ["cursor", "trail", "pointer", "lerp", "gallery", "codrops", "no-dependency"],
+  "summary": "Five copies of one panel stacked in a single grid cell, each lerping toward the pointer at its own rate so the panel smears into a trail while you move and closes back up when you stop.",
+  "needs": [],
+  "options": {
+    "total": {
+      "type": "number",
+      "default": 5,
+      "description": "How many copies make up the trail. Upstream's totalTrailElements."
+    },
+    "travel": {
+      "type": "number",
+      "default": 90,
+      "description": "Pixels the trail swings either side of centre across the section. Upstream's valuesFromTo x/y bound."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/codrops-sketches",
+    "commit": "bbf47ca34766fd2ca5f97d8b376d2eca148bf48f",
+    "path": [
+      "005-image-motion-trail-opaque/js/index.js",
+      "005-image-motion-trail-opaque/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The trail copies are divs painted from the --fx-image custom property, not <img> tags whose src is parsed out of the host element's inline background-image.",
+      "why": "Codrops ships the demo's photographs under separate terms and this library redistributes none of them. The default is a layered gradient that makes the trail legible on its own, and a site author points --fx-image at their own picture with one declaration. Upstream's bgImage regex, the opacityChange option and the perspective branch go with it, since all three exist to configure that <img>.",
+      "kind": "ours"
+    },
+    {
+      "what": "The pointer is measured against the section's own box rather than against window.innerWidth / innerHeight, the listener is on the section rather than on window, and the cursor therefore starts at the normalised centre 0.5 where upstream starts at winsize.width/2.",
+      "why": "The sketch owns its whole page. An effect is one section among several and a page may carry this one twice, so window-relative tracking would have both trails answering to the other's half of the screen.",
+      "kind": "seam"
+    },
+    {
+      "what": "The rotation axes are dropped: valuesFromTo rx, ry and rz, the perspective option and the rotateX/rotateY/rotateZ terms of the transform string.",
+      "why": "All three ranges are [0, 0] in the sketch this port pins, so they contribute the identity rotation on every frame. Sketches 006 to 010 are where they carry values, and those are separate ports.",
+      "kind": "ours"
+    },
+    {
+      "what": "The render loop is cancelled on destroy and the stack's original markup is restored.",
+      "why": "Upstream recurses through requestAnimationFrame forever, because its page never tears the sketch down. Here a destroy would otherwise leave a loop writing transforms into detached nodes on every frame for the life of the tab.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no copies are built and no loop starts.",
+      "why": "Effect contract: mount() stays at rest. The stylesheet's resting panel is the finished content, and a stack that chases the pointer is the exact motion this visitor asked not to have.",
+      "kind": "seam"
+    }
+  ]
+}

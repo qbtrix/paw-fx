@@ -1,0 +1,89 @@
+{
+  "name": "glass-transition",
+  "version": "1.0.0",
+  "category": "transition",
+  "tags": ["transition", "three", "webgl", "shader", "slideshow", "refraction", "codepen", "anime", "gallery"],
+  "summary": "A full-bleed slideshow where one picture becomes the next through a lens of liquid glass swelling out of the centre. Inside the lens the incoming frame is refracted along the flow direction, rippled by three interfering sine waves, jittered by a noise surface, and sampled at three offsets so the rim separates into red, green and blue; the outgoing frame sits still underneath until the lens passes over it.",
+  "needs": ["three", "anime"],
+  "options": {
+    "transitionDuration": {
+      "type": "number",
+      "default": 2500,
+      "description": "Milliseconds the lens takes to cross the frame. Upstream's transitionDuration of 2.5s."
+    },
+    "autoSlideSpeed": {
+      "type": "number",
+      "default": 5000,
+      "description": "Milliseconds a slide holds before the next one starts. Upstream's autoSlideSpeed. Set 0 to advance only on click."
+    },
+    "refraction": {
+      "type": "number",
+      "default": 1,
+      "description": "uGlassRefractionStrength. How hard the lens bends the incoming image. Upstream's pane range is 0 to 3."
+    },
+    "chromatic": {
+      "type": "number",
+      "default": 1,
+      "description": "uGlassChromaticAberration. How far apart the red, green and blue samples sit at the rim. Upstream's pane range is 0 to 3."
+    },
+    "clarity": {
+      "type": "number",
+      "default": 1,
+      "description": "uGlassBubbleClarity. Size of the undistorted centre of the lens. Upstream's pane range is 0 to 3."
+    },
+    "edgeGlow": {
+      "type": "number",
+      "default": 1,
+      "description": "uGlassEdgeGlow. Brightness of the rim light and the glass edge. Upstream's pane range is 0 to 3."
+    },
+    "liquidFlow": {
+      "type": "number",
+      "default": 1,
+      "description": "uGlassLiquidFlow. How much the lens drifts as it travels. Upstream's pane range is 0 to 3."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "url": "https://codepen.io/filipz/pen/JoGNQzm",
+    "retrieved": "2026-09-07",
+    "sha256": "504e29010961918ffe5980e5fb57dccd043b1ff6ae6e0cdf39278ba4b0ea1e57",
+    "snapshot": "tests/fixtures/upstream-snapshots/filipz-JoGNQzm.snapshot.txt"
+  },
+  "deviations": [
+    {
+      "what": "One mode of five ships. Upstream's fragment shader branches on uEffectType across glass, frost, ripple, plasma and timeshift; only the glass branch is carried, hard-wired, with getCoverUV, noise and smoothNoise because glassEffect calls them. The rand() helper and the four other effect functions are gone, as are their uniforms, presets and the randomiser.",
+      "why": "43574 of the pen's 64015 characters are shader across five effects sharing one demo. Glass is what the pen is named for and it is the shelf's actual gap -- the library had no WebGL image transition of any kind. Shipping the branch table would be shipping four more effects behind one name, none of them separately previewable or documented.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP is replaced by anime.js v4's animate(). Upstream's single gsap.fromTo on the uProgress uniform keeps its 2.5s duration and its onComplete, which resets progress to 0 and promotes the incoming texture to uTexture1. GSAP's powerN is degree N+1, so power2.inOut is inOutCubic. Seconds become milliseconds against MS.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. It was one call in 1904 lines here and no plugin was involved: the whole library was loaded to tween one number.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Tweakpane does not ship. setupPane, setupEffectFolders, getPresetOptions, applyEffectPreset, updateEffectFolderVisibility, updateShaderUniforms, handleEffectChange, randomizeEffect and the H-key toggle are all gone. The five glass bindings become options on the same uniforms with upstream's own 0-to-3 ranges.",
+      "why": "The pane is debug furniture for exploring the shader, not part of the section. A generated site does not ship a control panel, and an option on the effect is the same knob through the interface a consumer actually has.",
+      "kind": "seam"
+    },
+    {
+      "what": "The dot-grid preloader class SliderLoadingManager does not ship, and the progress-bar interval that drove updateSlideProgress, fadeSlideProgress and quickResetProgress goes with it. The auto-advance is one setTimeout rather than a 50ms interval.",
+      "why": "The preloader exists because the pen loads six remote photographs and cannot paint until they arrive; a section paints its resting state from CSS immediately and swaps to the canvas only once two textures are ready, so there is nothing to cover. The interval only existed to animate a progress bar this section does not carry.",
+      "kind": "seam"
+    },
+    {
+      "what": "Everything is scoped to the section: the canvas is created by mount() and appended to the stage, uResolution and the resize come from the stage's own box rather than window.innerWidth/innerHeight, and the click and swipe listeners sit on the stage rather than on document. failIfMajorPerformanceCaveat is added, a webglcontextlost listener bails to the resting state, and resize() re-renders after setSize.",
+      "why": "Upstream is a whole page with one slideshow. A section is one of several on a page and may carry this one twice, so a document-wide click listener would have the second mount advancing the first one's slides. setSize clears the drawing buffer, so re-rendering after it is what keeps a resize from showing an empty frame.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no renderer is built: the nav and the click still change picture, instantly, and nothing advances on its own.",
+      "why": "Effect contract: mount() stays at rest. Stillness means no travel and no self-starting motion, not a slideshow stuck on its first frame -- every other picture would be unreachable.",
+      "kind": "seam"
+    },
+    {
+      "what": "No photograph ships. The textures are read from the section's own <img> elements and the snippet points those at generated SVG plates; upstream's six assets.codepen.io portraits and its slides array are gone. No font is fetched either: upstream's @import of PP Neue Montreal and its @font-face for PP Supply Mono off assets.codepen.io are dropped for a system stack.",
+      "why": "An MIT grant covers the author's code and cannot grant rights in the photographs or in a commercially licensed typeface. The shader takes whatever two textures it is handed, so the pictures are the consumer's to supply. paw-fx also fetches nothing off-site: a hotlinked font would be a network dependency a generated site cannot rely on.",
+      "kind": "ours"
+    }
+  ]
+}

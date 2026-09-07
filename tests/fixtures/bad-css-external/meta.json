@@ -1,0 +1,11 @@
+{
+  "name": "bad-css-external",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["fixture"],
+  "summary": "fixture: @import and url() references that leave the generated site",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": { "repo": "paw-fx" }
+}

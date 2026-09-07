@@ -1,0 +1,71 @@
+{
+  "name": "sg-lull",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "sea",
+    "minimal",
+    "ambient",
+    "slow",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's lull: a faint seascape of dark layered water riding at anchor, rocking in a slow sway and heave while a brightness tilt shifts across the frame like lamplight on a deck.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#3a63a8",
+        "#87c2e8",
+        "#1b3350",
+        "#a9dced"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "rockSpeed": {
+      "type": "number",
+      "default": 0.08,
+      "description": "Rate of the whole-field rock; slow even at maximum. Upstream default, range 0.02 to 0.5."
+    },
+    "sway": {
+      "type": "number",
+      "default": 18,
+      "description": "Amplitude of the coupled sway and heave, in CSS pixels. Upstream default, range 4 to 60."
+    },
+    "tiltDepth": {
+      "type": "number",
+      "default": 0.45,
+      "description": "Strength of the rocking brightness tilt across the frame. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "lull/shader.frag",
+      "lull/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `midnight` preset.",
+      "why": "lull/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a midnight set held cold and dim on purpose: the shader desaturates the bands 45% toward grey and floors them near black, so saturated colours would only be thrown away, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.4 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

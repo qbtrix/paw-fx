@@ -1,0 +1,25 @@
+<!-- vanta-waves section. Finished at rest with CSS alone: the layered swell in
+     .fx-waves__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL canvas once it holds a context and has rendered a frame.
+     That fallback is load-bearing here rather than decorative -- the context is
+     requested with failIfMajorPerformanceCaveat, so a machine with hardware
+     acceleration off never gets the canvas at all.
+     The _fx paths are root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html.
+     The three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/vanta-waves/style.css">
+<section class="fx-waves" data-fx="vanta-waves">
+  <div class="fx-waves__rest" aria-hidden="true"></div>
+  <div class="fx-waves__scrim" aria-hidden="true"></div>
+  <div class="fx-waves__grain" aria-hidden="true"></div>
+  <div class="fx-waves__inner">
+    <p class="fx-waves__eyebrow">Deep work, shallow setup</p>
+    <h1 class="fx-waves__title">Ship at the pace the tide sets.</h1>
+    <p class="fx-waves__lede">Replace this copy with your own. The headline slot takes one line or three, and the swell keeps rolling behind it either way.</p>
+    <div class="fx-waves__actions">
+      <a class="fx-waves__cta fx-waves__cta--primary" href="#">Start free</a>
+      <a class="fx-waves__cta fx-waves__cta--ghost" href="#">See how it works</a>
+    </div>
+  </div>
+</section>

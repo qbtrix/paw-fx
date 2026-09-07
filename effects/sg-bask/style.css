@@ -1,0 +1,229 @@
+/* sg-bask: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting morning together instead of leaving the two clashing at the
+   moment the canvas appears.
+
+   THE ONE THING THAT IS DIFFERENT HERE. Every other shader hero in this library
+   runs light copy over a dark field. bask is high-key: the shader ends on
+   `col * 0.95 + 0.05`, so its darkest pixel is still bright. The ink is
+   therefore near-black and the scrim is a WHITE wash, not the near-black one
+   sg-gloam uses. Raising --fx-scrim here makes the field lighter, not darker.
+
+   Pole placement follows the shader's own quadrants, y measured from the top:
+     --fx-c1  lower left    --fx-c2  lower right, and the dawn glow
+     --fx-c3  upper right   --fx-c4  upper left
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-bask__rest   the CSS morning, covered by the canvas once it paints
+     -1  <canvas>         inserted by glsl-mount.js (inline style)
+      0  .fx-bask__scrim  legibility wash, over whichever layer is showing
+      1  .fx-bask__inner  the copy */
+.fx-bask {
+  --fx-c1: #ffcf8a;
+  --fx-c2: #ff8a5c;
+  --fx-c3: #fff4e6;
+  --fx-c4: #f2b3c2;
+  --fx-bg: #fff3e6;
+  --fx-ink: #2a1408;
+  --fx-muted: #5c3a26;
+  --fx-speed: 1;
+  --fx-scrim: 0.46;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Four poles where the shader puts them on its first frames, plus the dawn
+   band the shader mixes into the lower third with c2. Nothing is pulled down:
+   the shader lifts its shadows, so the resting layer is lifted too and the swap
+   from CSS to canvas reads as the morning sharpening rather than as a cut. */
+.fx-bask__rest {
+  position: absolute;
+  inset: -18%;
+  z-index: -2;
+  background:
+    radial-gradient(48% 52% at 76% 82%, color-mix(in oklab, var(--fx-c2) 88%, transparent), transparent 74%),
+    radial-gradient(50% 54% at 22% 78%, color-mix(in oklab, var(--fx-c1) 86%, transparent), transparent 74%),
+    radial-gradient(52% 56% at 80% 20%, color-mix(in oklab, var(--fx-c3) 92%, transparent), transparent 76%),
+    radial-gradient(54% 58% at 18% 22%, color-mix(in oklab, var(--fx-c4) 84%, transparent), transparent 76%),
+    linear-gradient(2deg, color-mix(in oklab, var(--fx-c2) 46%, var(--fx-bg)) 0%, var(--fx-bg) 62%);
+  filter: blur(46px) saturate(1.06);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-bask[data-fx-live] .fx-bask__rest {
+  opacity: 0;
+}
+
+/* Wide blurred fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the grain
+   in upstream's poster post chain, which we do not have. Multiply, because on a
+   bright ground additive noise reads as haze rather than as grain. */
+.fx-bask__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* A white wash, not a dark one: the copy is near-black and the field is the
+   bright thing, so legibility comes from lifting the pixels under the text
+   rather than dropping them. Held flat across the inner 38% -- the whole
+   content column -- then eased out over four stops, because a flat core running
+   straight into one linear ramp draws a visible hard-edged ellipse. Measured
+   worst case across four animation frames with the copy hidden is recorded in
+   the PR; re-measure the same way before lowering --fx-scrim. */
+.fx-bask__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    102% 90% at 50% 50%,
+    color-mix(in oklab, #fffaf3 92%, transparent) 0%,
+    color-mix(in oklab, #fffaf3 92%, transparent) 38%,
+    color-mix(in oklab, #fffaf3 62%, transparent) 56%,
+    color-mix(in oklab, #fffaf3 32%, transparent) 72%,
+    color-mix(in oklab, #fffaf3 12%, transparent) 88%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-bask__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-bask__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 24%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, #ffffff 62%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-bask__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--fx-c2) 78%, var(--fx-ink));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c2) 34%, transparent);
+}
+
+.fx-bask__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-bask__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-bask__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-bask__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-bask__cta--primary {
+  background: var(--fx-ink);
+  color: #fff6ec;
+}
+
+.fx-bask__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, #ffffff 55%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-bask__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-bask__cta--ghost:hover {
+  background: color-mix(in oklab, #ffffff 80%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 48%, transparent);
+}
+
+.fx-bask__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer drifts, and only when motion is allowed. The shader
+   has its own reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-bask__rest {
+    animation: fx-bask-drift calc(44s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-bask-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-3%, 2%, 0) scale(1.07) rotate(2deg);
+    }
+    100% {
+      transform: translate3d(3%, -2%, 0) scale(1.04) rotate(-2deg);
+    }
+  }
+}

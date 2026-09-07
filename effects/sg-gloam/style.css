@@ -1,0 +1,222 @@
+/* sg-gloam: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting dusk together instead of leaving the two clashing at the
+   moment the canvas appears. --fx-c2 is the luminous pole in both states.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-gloam__rest   the CSS dusk, covered by the canvas once it paints
+     -1  <canvas>          inserted by glsl-mount.js (inline style)
+      0  .fx-gloam__scrim  legibility wash, over whichever layer is showing
+      1  .fx-gloam__inner  the copy */
+.fx-gloam {
+  --fx-c1: #232c6b;
+  --fx-c2: #7d6bff;
+  --fx-c3: #16404f;
+  --fx-c4: #2b1642;
+  --fx-bg: #05060f;
+  --fx-ink: #ffffff;
+  --fx-muted: #cfd2ee;
+  --fx-speed: 1;
+  --fx-scrim: 0.52;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Four poles roughly where the shader puts them on its first frames: the deep
+   ones low-left, right and upper-left, the luminous one biased into the upper
+   right third, which is the composition the shader's comment describes. The
+   base is pulled down hard, the way the shader multiplies its field by
+   0.40-0.70 before adding the bloom back, so the swap from CSS to canvas reads
+   as the same dusk sharpening rather than as a cut. */
+.fx-gloam__rest {
+  position: absolute;
+  inset: -18%;
+  z-index: -2;
+  background:
+    radial-gradient(38% 42% at 68% 26%, color-mix(in oklab, var(--fx-c2) 62%, transparent), transparent 72%),
+    radial-gradient(52% 56% at 20% 74%, color-mix(in oklab, var(--fx-c1) 70%, transparent), transparent 74%),
+    radial-gradient(46% 50% at 82% 78%, color-mix(in oklab, var(--fx-c3) 58%, transparent), transparent 72%),
+    radial-gradient(56% 60% at 12% 22%, color-mix(in oklab, var(--fx-c4) 72%, transparent), transparent 76%),
+    linear-gradient(168deg, color-mix(in oklab, var(--fx-c4) 55%, var(--fx-bg)), color-mix(in oklab, var(--fx-c1) 42%, var(--fx-bg)));
+  filter: blur(52px) saturate(1.15);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-gloam[data-fx-live] .fx-gloam__rest {
+  opacity: 0;
+}
+
+/* Wide blurred fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the grain
+   in upstream's poster post chain, which we do not have. */
+.fx-gloam__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than relying on where the bloom happens
+   to sit, because in the live state it does not sit still: the luminous pole
+   sweeps a 0.36-unit circle, and it is bright enough on its own to take white
+   12px uppercase under 3:1. The wash is held flat across the inner 36% of the
+   ray -- the whole content column -- and only then eased out over four stops,
+   because a flat core running straight into one linear ramp draws a visible
+   hard-edged ellipse across the hero. Measured worst case across four
+   animation frames with the copy hidden is recorded in the PR; re-measure the
+   same way before lowering --fx-scrim. */
+.fx-gloam__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #03040c 80%, transparent) 0%,
+    color-mix(in oklab, #03040c 80%, transparent) 36%,
+    color-mix(in oklab, #03040c 54%, transparent) 54%,
+    color-mix(in oklab, #03040c 28%, transparent) 70%,
+    color-mix(in oklab, #03040c 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-gloam__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-gloam__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-gloam__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c2);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c2) 22%, transparent);
+}
+
+.fx-gloam__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #03040c 60%, transparent);
+}
+
+.fx-gloam__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-gloam__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-gloam__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-gloam__cta--primary {
+  background: var(--fx-ink);
+  color: #0a0a18;
+}
+
+.fx-gloam__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-gloam__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-gloam__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-gloam__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer drifts, and only when motion is allowed. The shader
+   has its own reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-gloam__rest {
+    animation: fx-gloam-drift calc(38s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-gloam-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(3%, -2%, 0) scale(1.08) rotate(-3deg);
+    }
+    100% {
+      transform: translate3d(-3%, 3%, 0) scale(1.04) rotate(3deg);
+    }
+  }
+}

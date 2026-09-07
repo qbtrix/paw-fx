@@ -1,0 +1,54 @@
+{
+  "name": "warp",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["liquid", "marble", "swirl", "violet", "dark", "webgl", "shader", "hero", "paper-shaders"],
+  "summary": "Full-bleed hero running Paper Shaders' warp on WebGL2: a checked pattern swirled ten times into itself until it reads as lit ridges turning through a dark violet liquid.",
+  "needs": ["paper"],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#121212", "#9470ff", "#121212", "#8838ff"],
+      "description": "Up to ten stops. The upstream preset alternates near-black with violet, which is what makes the output read as lit ridges in a dark liquid rather than as a four-way blend. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Rate the liquid turns over. 0 renders a single static frame. Forced to 0 under prefers-reduced-motion."
+    },
+    "distortion": {
+      "type": "number",
+      "default": 0.25,
+      "description": "How far the underlying pattern is pushed out of shape before the swirl."
+    },
+    "swirl": {
+      "type": "number",
+      "default": 0.8,
+      "description": "How hard the field is twisted around itself. 0 leaves the pattern legible as a grid."
+    },
+    "softness": {
+      "type": "number",
+      "default": 1,
+      "description": "Edge softness between the stops. 0 gives hard-edged shapes instead of a liquid."
+    }
+  },
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "7002061d8389781a45e479584deeca0cf538474e",
+    "path": [
+      "packages/shaders/src/shaders/warp.ts",
+      "packages/shaders/src/shader-utils.ts",
+      "packages/shaders/src/shader-sizing.ts",
+      "packages/shaders/src/vertex-shader.ts",
+      "packages/shaders-react/src/shaders/warp.tsx"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The noise texture is decoded before ShaderMount is constructed, so the shader starts one microtask later than a React mount would.",
+      "why": "Seam. Upstream's React component hands getShaderNoiseTexture() straight to ShaderMount and re-renders when it loads; a vanilla mount has no re-render, and ShaderMount throws on an image that is not complete. The image is a data: URI, so nothing is fetched.",
+      "kind": "seam"
+    }
+  ]
+}

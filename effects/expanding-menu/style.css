@@ -1,0 +1,225 @@
+/* expanding-menu: a nav bar whose panel unrolls behind a two-layer cover.
+
+   The cover is upstream's trick and it is worth reading twice. `.cover` sits
+   at translateY(-100%) with `overflow: hidden`, and `.cover-inner` sits at
+   translateY(+100%) INSIDE it. Both animate to 0 together, so the outer moves
+   the window down while the inner moves the picture up through it: the image
+   stays put in the viewport while its window grows over the page. A single
+   sliding panel cannot do that.
+
+   THE IMAGE SLOT. Upstream ships photographs; this library ships none, so the
+   cover and the three content panels paint --fx-image (and --fx-cover-image),
+   which default to the gradients below. A site author swaps them in one line:
+
+       .fx-emenu { --fx-cover-image: url("/media/cover.jpg"); }
+
+   The resting state is the bar and the hero, with the cover parked off the top
+   and the panel clipped above its window -- a finished section on CSS alone.
+   The panel holds navigation, so index.js still opens it under reduced motion;
+   it just seeks the timeline instead of playing it. */
+.fx-emenu {
+  --fx-bg: #efeae2;
+  --fx-ink: #17150f;
+  --fx-muted: #5b564c;
+  --fx-menu-bg: #17150f;
+  --fx-menu-ink: #f6f2ea;
+  --fx-radius: 1.25rem;
+  --fx-pad: clamp(1rem, 3vw, 2.25rem);
+  --fx-image:
+    radial-gradient(65% 50% at 30% 25%, rgba(214, 122, 74, 0.75), transparent 70%),
+    linear-gradient(155deg, #cbbfae, #8c8175);
+  --fx-cover-image:
+    radial-gradient(60% 45% at 70% 20%, rgba(23, 21, 15, 0.55), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.06) 0 3px, transparent 3px 14px),
+    linear-gradient(160deg, #b9a78f, #6d6154);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-areas: "stack";
+  min-height: 100svh;
+  overflow: clip;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-emenu *,
+.fx-emenu *::before,
+.fx-emenu *::after { box-sizing: border-box; }
+
+/* The page content the cover comes down over. */
+.fx-emenu__content {
+  grid-area: stack;
+  width: 100%;
+  height: 100%;
+  overflow: clip;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding: 6rem var(--fx-pad) var(--fx-pad);
+  grid-template-columns: 1fr;
+}
+.fx-emenu__img {
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 4 / 5;
+  border-radius: 0.5rem;
+  background: var(--fx-image);
+  background-size: cover;
+  background-position: 50% 20%;
+  will-change: transform;
+}
+.fx-emenu__img--wide { aspect-ratio: 3 / 2; width: min(100%, 30rem); }
+.fx-emenu__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 9vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-weight: 500;
+  will-change: transform;
+}
+.fx-emenu__note {
+  margin: 0;
+  max-width: 26rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+}
+
+/* The two-layer cover. */
+.fx-emenu__cover-wrap {
+  display: grid;
+  grid-area: stack;
+  pointer-events: none;
+  z-index: 100;
+  will-change: transform;
+}
+.fx-emenu__cover {
+  display: grid;
+  grid-area: 1 / 1 / 2 / 2;
+  transform: translateY(-100%);
+  overflow: hidden;
+  will-change: transform;
+}
+.fx-emenu__cover-inner {
+  background: var(--fx-cover-image);
+  background-size: cover;
+  background-position: 50% 50%;
+  transform: translateY(100%);
+  will-change: transform;
+}
+
+/* The menu: a bar that is always there and a panel clipped above it. */
+.fx-emenu__menu {
+  position: absolute;
+  inset: 1rem;
+  z-index: 100;
+  display: grid;
+  grid-template-rows: 3.25rem 1fr;
+  grid-template-areas: "top" "content";
+  pointer-events: none;
+  color: var(--fx-menu-ink);
+}
+.fx-emenu__menu--open { pointer-events: auto; }
+
+.fx-emenu__top {
+  pointer-events: auto;
+  z-index: 100;
+  grid-area: top;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem clamp(0.75rem, 2vw, 1.75rem);
+  padding: 0 var(--fx-pad);
+  background: var(--fx-menu-bg);
+  border-radius: var(--fx-radius);
+}
+.fx-emenu__brand {
+  margin: 0;
+  margin-right: auto;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.fx-emenu__link {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  cursor: pointer;
+}
+.fx-emenu__link:hover,
+.fx-emenu__link:focus-visible { border-bottom-color: currentColor; }
+
+.fx-emenu__panel-wrap {
+  position: relative;
+  grid-area: content;
+  overflow: hidden;
+  margin-top: -1.35rem;
+}
+.fx-emenu__panel {
+  overflow: hidden;
+  transform: translateY(-100%);
+  height: 100%;
+  padding: 2.5rem var(--fx-pad) var(--fx-pad);
+  background: var(--fx-menu-bg);
+  border-radius: 0 0 var(--fx-radius) var(--fx-radius);
+  display: grid;
+  gap: 1.5rem clamp(1.5rem, 6vw, 5rem);
+  grid-template-columns: repeat(auto-fit, minmax(9rem, auto));
+  align-content: start;
+  will-change: transform;
+}
+.fx-emenu__column { display: grid; align-content: start; gap: 0.45rem; }
+.fx-emenu__column-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  font-weight: 500;
+}
+.fx-emenu__tagline {
+  margin: 0;
+  grid-column: 1 / -1;
+  font-size: clamp(1.75rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 400;
+  will-change: transform;
+}
+.fx-emenu__author {
+  grid-column: 1 / -1;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+  opacity: 0.75;
+  will-change: transform;
+}
+.fx-emenu__back {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+}
+
+@media (min-width: 52em) {
+  .fx-emenu__content {
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+  }
+  .fx-emenu__note { grid-column: 1 / -1; }
+}

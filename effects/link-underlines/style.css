@@ -1,0 +1,196 @@
+/* Line Hover Styles
+   MIT License
+   Copyright (c) 2009 - 2021 [Codrops](https://tympanus.net/codrops)
+   https://github.com/codrops/LineHoverStyles
+
+   link-underlines: a port of Codrops' LineHoverStyles, commit
+   5ff7fb48e2d415fb217dda5942e0cd08bc4ed768, css/base.css plus the markup shape
+   in index.html. Upstream ships twelve link treatments on one page; three are
+   carried here behind a `variant` option, and every transform, duration and
+   cubic-bezier below is upstream's, verbatim:
+
+     wipe  = upstream .link--metis  one rule, scale3d(0,1,1) from the right
+                                    edge on hover-in and out to the left on
+                                    hover-out, transform 0.3s
+     dual  = upstream .link--io     two rules 4px apart travelling in opposite
+                                    directions, cubic-bezier(0.7, 0, 0.2, 1)
+                                    out and cubic-bezier(0.4, 1, 0.8, 1) in
+     swap  = upstream .link--leda   the label slides out to the left while a
+                                    duplicate drawn from data-text slides in
+                                    from 150% right, over a 2px rule, all on
+                                    cubic-bezier(0.5, 0.5, 0.3, 1)
+
+   The resting state is a legible list of links. Every rule starts scaled to
+   nothing and the label sits where it always sits, so the section reads the
+   same with no script at all -- there is no script here to block. mount()
+   only writes the variant attribute.
+
+   Two things are ours and declared in meta.json: every :hover rule is repeated
+   on :focus-visible so a keyboard reaches the same state, and the transitions
+   sit behind prefers-reduced-motion: no-preference so a reader who asked for
+   stillness gets the end state with no travel. */
+.fx-links {
+  --fx-bg: #f4f2ed;
+  --fx-ink: #16151a;
+  --fx-muted: #5f5d68;
+  --fx-accent: #b03a20;
+  box-sizing: border-box;
+  position: relative;
+  min-height: 80svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(4rem, 10vw, 9rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-links *,
+.fx-links *::before,
+.fx-links *::after { box-sizing: border-box; }
+
+.fx-links__inner { width: 100%; max-width: 46rem; }
+.fx-links__eyebrow {
+  margin: 0 0 2.5rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-links__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: clamp(1.1rem, 3vw, 2.2rem);
+}
+.fx-links__note {
+  margin: 3rem 0 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* upstream .link */
+.fx-links__link {
+  cursor: pointer;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  position: relative;
+  white-space: nowrap;
+  display: inline-block;
+  text-decoration: none;
+  color: var(--fx-ink);
+}
+/* upstream .link::before, .link::after */
+.fx-links__link::before,
+.fx-links__link::after {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  top: 100%;
+  left: 0;
+  pointer-events: none;
+}
+.fx-links__link::before { content: ""; }
+
+/* ---- wipe: upstream .link--metis ---- */
+.fx-links[data-fx-variant="wipe"] .fx-links__link::before {
+  transform-origin: 100% 50%;
+  transform: scale3d(0, 1, 1);
+}
+.fx-links[data-fx-variant="wipe"] .fx-links__link:hover::before,
+.fx-links[data-fx-variant="wipe"] .fx-links__link:focus-visible::before {
+  transform-origin: 0% 50%;
+  transform: scale3d(1, 1, 1);
+}
+
+/* ---- dual: upstream .link--io ---- */
+.fx-links[data-fx-variant="dual"] .fx-links__link::before {
+  transform-origin: 100% 50%;
+  transform: scale3d(0, 1, 1);
+}
+.fx-links[data-fx-variant="dual"] .fx-links__link:hover::before,
+.fx-links[data-fx-variant="dual"] .fx-links__link:focus-visible::before {
+  transform-origin: 0% 50%;
+  transform: scale3d(1, 1, 1);
+}
+.fx-links[data-fx-variant="dual"] .fx-links__link::after {
+  content: "";
+  top: calc(100% + 4px);
+  transform-origin: 0% 50%;
+  transform: scale3d(0, 1, 1);
+}
+.fx-links[data-fx-variant="dual"] .fx-links__link:hover::after,
+.fx-links[data-fx-variant="dual"] .fx-links__link:focus-visible::after {
+  transform-origin: 100% 50%;
+  transform: scale3d(1, 1, 1);
+}
+
+/* ---- swap: upstream .link--leda ---- */
+.fx-links[data-fx-variant="swap"] .fx-links__link {
+  overflow: hidden;
+  line-height: 2;
+}
+.fx-links[data-fx-variant="swap"] .fx-links__link::before {
+  height: 2px;
+  top: calc(100% - 5px);
+  transform-origin: 100% 50%;
+  transform: scale3d(0, 1, 1);
+}
+.fx-links[data-fx-variant="swap"] .fx-links__link:hover::before,
+.fx-links[data-fx-variant="swap"] .fx-links__link:focus-visible::before {
+  transform-origin: 0% 50%;
+  transform: scale3d(1, 1, 1);
+}
+.fx-links[data-fx-variant="swap"] .fx-links__link::after {
+  content: attr(data-text);
+  height: 100%;
+  top: 0;
+  background: none;
+  transform-origin: 100% 50%;
+  transform: translate3d(150%, 0, 0);
+}
+.fx-links[data-fx-variant="swap"] .fx-links__link:hover::after,
+.fx-links[data-fx-variant="swap"] .fx-links__link:focus-visible::after {
+  transform: translate3d(0, 0, 0);
+}
+.fx-links[data-fx-variant="swap"] .fx-links__link:hover span,
+.fx-links[data-fx-variant="swap"] .fx-links__link:focus-visible span {
+  transform: translate3d(-150%, 0, 0);
+}
+.fx-links__link span { display: inline-block; }
+/* Upstream draws a 2px red ring for keyboard focus. Same job, in the section's
+   own accent and offset clear of the underline, which is the thing focus is
+   meant to be revealing. */
+.fx-links__link:focus-visible {
+  outline: 2px solid var(--fx-accent);
+  outline-offset: 0.45em;
+}
+
+/* The travel, and only the travel, is behind the motion query. Every rule
+   above describes a position, so a reader who asked for stillness still gets
+   the hover state -- it simply arrives with no transition. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-links[data-fx-variant="wipe"] .fx-links__link::before {
+    transition: transform 0.3s;
+  }
+  .fx-links[data-fx-variant="dual"] .fx-links__link::before,
+  .fx-links[data-fx-variant="dual"] .fx-links__link::after {
+    transition: transform 0.3s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .fx-links[data-fx-variant="dual"] .fx-links__link:hover::before,
+  .fx-links[data-fx-variant="dual"] .fx-links__link:hover::after,
+  .fx-links[data-fx-variant="dual"] .fx-links__link:focus-visible::before,
+  .fx-links[data-fx-variant="dual"] .fx-links__link:focus-visible::after {
+    transition-timing-function: cubic-bezier(0.4, 1, 0.8, 1);
+  }
+  .fx-links[data-fx-variant="swap"] .fx-links__link::before,
+  .fx-links[data-fx-variant="swap"] .fx-links__link::after,
+  .fx-links[data-fx-variant="swap"] .fx-links__link span {
+    transition: transform 0.3s cubic-bezier(0.5, 0.5, 0.3, 1);
+  }
+}

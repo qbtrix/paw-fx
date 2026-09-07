@@ -1,0 +1,118 @@
+/* ascii-wave: flowing glyph ribbons under centred copy, on a wide short panel.
+
+   THE GRID IS DECLARED, NOT MEASURED. --fx-cols and --fx-rows say how many
+   characters the picture is; the type is then scaled so exactly that many fit
+   the panel's width at any viewport. So the authored frame in the markup and
+   the frames index.js draws are the same grid, nothing reflows when the script
+   takes over, and the picture keeps its proportions from 375 up.
+
+   --fx-advance is the one measured constant: a monospace glyph's advance width
+   as a fraction of its font-size. ui-monospace, SF Mono, Menlo, Liberation
+   Mono and Courier New all sit at 0.6; Consolas is 0.55, which leaves the grid
+   a few per cent narrow inside the panel, and text-align: center splits that
+   as a hair of margin each side. Nothing here loads a font -- fonts are not
+   ours to redistribute -- so the stack is what the machine already has.
+
+   The panel is the resting state, not a placeholder for it: a real frame of
+   the effect, so a reader with the script blocked, the bundle pruned or
+   reduced motion on gets the picture rather than an empty box. */
+.fx-ascii-wave {
+  --fx-cols: 88;
+  --fx-rows: 28;
+  --fx-advance: 0.6;
+  --fx-bg: #04120f;
+  --fx-panel: #07201b;
+  --fx-panel-2: #03100d;
+  --fx-ink: #5ee8d0;
+  --fx-text: #e6fffb;
+  --fx-muted: #84ada6;
+  --fx-accent: #39d6bb;
+  --fx-line: #12403a;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 5vw, 4.5rem);
+  background:
+    radial-gradient(70% 45% at 50% 88%, color-mix(in oklab, var(--fx-accent) 15%, transparent), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.fx-ascii-wave *,
+.fx-ascii-wave *::before,
+.fx-ascii-wave *::after { box-sizing: border-box; }
+
+/* The container query context. 100cqi inside it is the panel's own inline
+   size, so two panels of different widths on one page each size their own type
+   correctly -- the viewport is never consulted. */
+.fx-ascii-wave__screen {
+  container-type: inline-size;
+  position: relative;
+  padding: clamp(0.5rem, 1.2vw, 0.9rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, var(--fx-panel-2), var(--fx-panel));
+  box-shadow: 0 2rem 5rem -2rem #000;
+}
+
+/* One character cell's font-size, and from it the grid's height. Height is set
+   rather than left to the line count so a frame arriving with a different
+   number of rows cannot resize the panel under the reader. */
+.fx-ascii-wave__grid {
+  --fx-cell: calc(100cqi / (var(--fx-cols) * var(--fx-advance)));
+  margin: 0;
+  height: calc(var(--fx-rows) * var(--fx-cell));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: var(--fx-cell);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* Nothing in this section is scroll-driven, so making the <pre> a scroll
+     container costs nothing, and it keeps a wide frame from pushing the panel. */
+  overflow: hidden;
+  text-align: center;
+  color: var(--fx-ink);
+  text-shadow: 0 0 1.2rem color-mix(in oklab, var(--fx-accent) 40%, transparent);
+}
+
+.fx-ascii-wave__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.fx-ascii-wave__title {
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-ascii-wave__lede {
+  margin: 1rem 0 0;
+  font-size: clamp(0.96rem, 1.4vw, 1.06rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-ascii-wave__inner {
+  max-width: 66rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.fx-ascii-wave__lede {
+  max-width: 36rem;
+  margin-inline: auto;
+}
+.fx-ascii-wave__screen { margin-top: clamp(2rem, 4vw, 3.25rem); }
+.fx-ascii-wave__legend {
+  margin: 1.1rem 0 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  color: var(--fx-muted);
+}

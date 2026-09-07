@@ -1,0 +1,22 @@
+<!-- sg-haze section. Finished at rest with CSS alone: the posterised bands in
+     .fx-haze__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The three decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-haze/style.css">
+<section class="fx-haze" data-fx="sg-haze">
+  <div class="fx-haze__rest" aria-hidden="true"></div>
+  <div class="fx-haze__scrim" aria-hidden="true"></div>
+  <div class="fx-haze__grain" aria-hidden="true"></div>
+  <div class="fx-haze__inner">
+    <p class="fx-haze__eyebrow"><span class="fx-haze__dot" aria-hidden="true"></span>Seven bands</p>
+    <h1 class="fx-haze__title">Fewer colours. Better decisions.</h1>
+    <p class="fx-haze__lede">Drop your own copy in. The headline takes one line or three, and the bands keep stepping past behind it either way.</p>
+    <div class="fx-haze__actions">
+      <a class="fx-haze__cta fx-haze__cta--primary" href="#">See the palette</a>
+      <a class="fx-haze__cta fx-haze__cta--ghost" href="#">How it renders</a>
+    </div>
+  </div>
+</section>

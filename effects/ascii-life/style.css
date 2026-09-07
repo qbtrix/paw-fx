@@ -1,0 +1,140 @@
+/* ascii-life: Conway's Game of Life on a wrapping character board, full width,
+   with the rule spelled out beneath it.
+
+   THE GRID IS DECLARED, NOT MEASURED. --fx-cols and --fx-rows say how many
+   characters the picture is; the type is then scaled so exactly that many fit
+   the panel's width at any viewport. So the authored frame in the markup and
+   the frames index.js draws are the same grid, nothing reflows when the script
+   takes over, and the picture keeps its proportions from 375 up.
+
+   --fx-advance is the one measured constant: a monospace glyph's advance width
+   as a fraction of its font-size. ui-monospace, SF Mono, Menlo, Liberation
+   Mono and Courier New all sit at 0.6; Consolas is 0.55, which leaves the grid
+   a few per cent narrow inside the panel, and text-align: center splits that
+   as a hair of margin each side. Nothing here loads a font -- fonts are not
+   ours to redistribute -- so the stack is what the machine already has.
+   The board is drawn in the full block U+2588, which is present in every face
+   on that stack; a face without it would substitute and break a column.
+
+   The panel is the resting state, not a placeholder for it: a real frame of
+   the effect, so a reader with the script blocked, the bundle pruned or
+   reduced motion on gets the picture rather than an empty box. */
+.fx-ascii-life {
+  --fx-cols: 96;
+  --fx-rows: 34;
+  --fx-advance: 0.6;
+  --fx-bg: #0b1210;
+  --fx-panel: #0f1a16;
+  --fx-panel-2: #070d0b;
+  --fx-ink: #c8ff5e;
+  --fx-text: #e9f2ec;
+  --fx-muted: #8ea398;
+  --fx-accent: #a8e84a;
+  --fx-line: #1f342a;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3.5rem, 8vw, 6.5rem) clamp(1.25rem, 5vw, 4.5rem);
+  background:
+    radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--fx-accent) 12%, transparent), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.fx-ascii-life *,
+.fx-ascii-life *::before,
+.fx-ascii-life *::after { box-sizing: border-box; }
+
+/* The container query context. 100cqi inside it is the panel's own inline
+   size, so two panels of different widths on one page each size their own type
+   correctly -- the viewport is never consulted. */
+.fx-ascii-life__screen {
+  container-type: inline-size;
+  position: relative;
+  padding: clamp(0.5rem, 1.1vw, 0.85rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, var(--fx-panel), var(--fx-panel-2));
+  box-shadow: 0 2rem 5rem -2rem #000;
+}
+
+/* One character cell's font-size, and from it the grid's height. Height is set
+   rather than left to the line count so a frame arriving with a different
+   number of rows cannot resize the panel under the reader. */
+.fx-ascii-life__grid {
+  --fx-cell: calc(100cqi / (var(--fx-cols) * var(--fx-advance)));
+  margin: 0;
+  height: calc(var(--fx-rows) * var(--fx-cell));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: var(--fx-cell);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* Nothing in this section is scroll-driven, so making the <pre> a scroll
+     container costs nothing, and it keeps a wide frame from pushing the panel. */
+  overflow: hidden;
+  text-align: center;
+  color: var(--fx-ink);
+  text-shadow: 0 0 0.9rem color-mix(in oklab, var(--fx-accent) 35%, transparent);
+}
+
+.fx-ascii-life__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.fx-ascii-life__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-ascii-life__lede {
+  margin: 1rem 0 0;
+  font-size: clamp(0.96rem, 1.4vw, 1.06rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-ascii-life__inner {
+  max-width: 76rem;
+  margin-inline: auto;
+}
+.fx-ascii-life__copy {
+  max-width: 44rem;
+  margin-bottom: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+.fx-ascii-life__rules {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin-top: 1px;
+  background: var(--fx-line);
+  border: 1px solid var(--fx-line);
+  border-top: 0;
+  border-radius: 0 0 0.75rem 0.75rem;
+  overflow: hidden;
+}
+.fx-ascii-life__rule {
+  padding: 1rem clamp(0.9rem, 2vw, 1.4rem);
+  background: var(--fx-bg);
+}
+.fx-ascii-life__rule dt {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-ascii-life__rule dd {
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}

@@ -1,0 +1,166 @@
+/* glass-transition: a full-bleed slideshow where one picture becomes the next
+   through a lens of liquid glass swelling out of the centre -- the incoming
+   image refracted, rippled and split into red, green and blue at the rim, while
+   the outgoing one sits still underneath.
+
+   THE IMAGE SLOT IS A REAL <img>, and it has to be. Its pixels are the texture
+   the shader samples, so it cannot be a CSS background. Upstream's six portraits
+   do not ship; these are generated SVG plates. Swap one for your own picture by
+   changing one attribute:
+     <img class="fx-glass__img" alt="" src="/img/1.jpg">
+   Add or remove <img> elements and the matching nav buttons together -- the
+   slide count is read from the markup, not configured.
+
+   NO FONT IS FETCHED. Upstream's stylesheet @imports PP Neue Montreal from a CDN
+   and @font-faces PP Supply Mono off assets.codepen.io, both commercially
+   licensed and neither ours to redistribute or to hotlink. The stack here is the
+   reader's own system UI.
+
+   THE RESTING STATE is the first picture, full bleed, with the caption block and
+   the slide nav over it -- what a blocked script, a pruned bundle, a refused or
+   lost WebGL context leaves on screen. Under prefers-reduced-motion the nav
+   still changes picture; it just changes instantly, with nothing on the GPU. */
+.fx-glass {
+  --fx-ink: #ffffff;
+  --fx-muted: rgba(255, 255, 255, 0.9);
+  --fx-bg: #000000;
+  --fx-scrim: rgba(0, 0, 0, 0.76);
+  --fx-pad: clamp(1.1rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  min-height: 100svh;
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-glass *,
+.fx-glass *::before,
+.fx-glass *::after { box-sizing: border-box; }
+
+/* The stage is the scene's box: uResolution is set from it, and getCoverUV
+   cover-fits each texture against it. */
+.fx-glass__stage {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.fx-glass__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+/* Before any script runs there is no data-fx-slide, so the first picture is the
+   one on screen. Once something is driving the section, the active one is. */
+.fx-glass__stage:not([data-fx-slide]) .fx-glass__img:first-of-type { opacity: 1; }
+.fx-glass__stage[data-fx-slide] .fx-glass__img.is-active { opacity: 1; }
+/* Live, the canvas carries every picture, so the DOM copies step aside. */
+.fx-glass[data-fx-live] .fx-glass__img { opacity: 0; }
+
+.fx-glass__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Copy sits on its own scrim rather than straight on the picture: the shader
+   drives the frame through white rim light and hard chromatic edges mid
+   transition, and text without a plate cannot hold a ratio across that. */
+.fx-glass__copy {
+  position: absolute;
+  left: var(--fx-pad);
+  bottom: calc(var(--fx-pad) + 3.5rem);
+  z-index: 2;
+  max-width: min(34rem, calc(100% - var(--fx-pad) * 2));
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(6px);
+}
+.fx-glass__eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-glass__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--fx-ink);
+}
+.fx-glass__note {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+.fx-glass__index {
+  position: absolute;
+  top: var(--fx-pad);
+  left: var(--fx-pad);
+  z-index: 2;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.4rem;
+  background: var(--fx-scrim);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  color: var(--fx-ink);
+}
+
+.fx-glass__nav {
+  position: absolute;
+  left: var(--fx-pad);
+  right: var(--fx-pad);
+  bottom: var(--fx-pad);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.fx-glass__dot {
+  appearance: none;
+  flex: 1 1 0;
+  min-width: 3.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.4rem;
+  background: var(--fx-scrim);
+  color: var(--fx-muted);
+  font: inherit;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+.fx-glass__dot.is-active,
+.fx-glass__dot:hover,
+.fx-glass__dot:focus-visible {
+  border-color: rgba(255, 255, 255, 0.85);
+  color: var(--fx-ink);
+}
+.fx-glass__dot:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+@media (max-width: 40rem) {
+  .fx-glass, .fx-glass__stage { min-height: 78svh; }
+  .fx-glass__copy { bottom: calc(var(--fx-pad) + 5.5rem); }
+  .fx-glass__dot { min-width: 2.6rem; font-size: 0; padding: 0.55rem; }
+}

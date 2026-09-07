@@ -1,0 +1,26 @@
+<!-- letter-shuffle-menu section. Finished at rest with CSS alone: six plain,
+     legible, uppercase links. Upstream's resting state is a CLOSED overlay
+     menu, which with no script would never open -- so this port rests on the
+     END of the animation instead. index.js splits each item into per-letter
+     cells, builds the slot-machine column on the first one, parks the whole
+     thing in the closed state and runs the open once the section scrolls into
+     view. Blocked script, pruned bundle and prefers-reduced-motion all leave
+     the readable list below.
+     The vertical title is "HAPUKU", one letter per item, so keep the number of
+     items and the length of the title in step or pass { verticalTitle } when
+     you mount. A seventh item falls back to its own initial.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/letter-shuffle-menu/style.css">
+<section class="fx-shuffle" data-fx="letter-shuffle-menu">
+  <p class="fx-shuffle__eyebrow">Hapuku Press</p>
+  <nav class="fx-shuffle__items">
+    <a class="fx-shuffle__item" href="#about">About</a>
+    <a class="fx-shuffle__item" href="#novels">Novels</a>
+    <a class="fx-shuffle__item" href="#memoirs">Memoirs</a>
+    <a class="fx-shuffle__item" href="#legacy">Legacy</a>
+    <a class="fx-shuffle__item" href="#gallery">Gallery</a>
+    <a class="fx-shuffle__item" href="#contact">Contact</a>
+  </nav>
+  <p class="fx-shuffle__lede">Replace this copy with your own. The first letter of every entry starts as one character of the press's name, spelled down the edge, and rolls into place the first time the menu comes into view.</p>
+</section>

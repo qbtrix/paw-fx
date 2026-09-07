@@ -1,0 +1,11 @@
+{
+  "name": "bad-import-forms",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["fixture"],
+  "summary": "fixture: every static and dynamic module specifier form in index.js",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": { "repo": "paw-fx" }
+}

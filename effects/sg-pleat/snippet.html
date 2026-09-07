@@ -1,0 +1,21 @@
+<!-- sg-pleat section. Finished at rest with CSS alone: the folded panels in
+     .fx-pleat__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The two decorative layers carry aria-hidden; the copy is
+     the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-pleat/style.css">
+<section class="fx-pleat" data-fx="sg-pleat">
+  <div class="fx-pleat__rest" aria-hidden="true"></div>
+  <div class="fx-pleat__scrim" aria-hidden="true"></div>
+  <div class="fx-pleat__inner">
+    <p class="fx-pleat__eyebrow"><span class="fx-pleat__dot" aria-hidden="true"></span>Folded flat</p>
+    <h1 class="fx-pleat__title">Every layer holds its own shape.</h1>
+    <p class="fx-pleat__lede">Put your copy here. The headline sits on one line or three, and the light keeps travelling across the folds behind it.</p>
+    <div class="fx-pleat__actions">
+      <a class="fx-pleat__cta fx-pleat__cta--primary" href="#">See the stack</a>
+      <a class="fx-pleat__cta fx-pleat__cta--ghost" href="#">Read the spec</a>
+    </div>
+  </div>
+</section>

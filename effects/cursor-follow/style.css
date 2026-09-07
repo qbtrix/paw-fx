@@ -1,0 +1,123 @@
+/* cursor-follow: a filled circle that trails the pointer across the section,
+   swelling and fading when it crosses a link.
+
+   Ported from codrops/codrops-sketches 011-custom-cursor-filled-circle
+   css/base.css @ bbf47ca. The `.cursor` / `.cursor__inner` block and its
+   `@media (any-pointer: fine)` gate are upstream's.
+
+   RESTING STATE. A readable serif menu on grey. The circle is opacity 0 here
+   rather than in JavaScript -- upstream hides it with `el.style.opacity = 0`
+   in the constructor, which on a page with the script blocked would leave a
+   white dot parked in the top-left corner forever.
+
+   The section deliberately carries no transform, filter or perspective: any
+   of those would make it the containing block for the position:fixed circle
+   and the transform written in px against the viewport would land in the
+   wrong place. */
+.fx-cursor-follow {
+  /* base.css body: --color-text #fff, --color-link #e9c58f. --color-bg was
+     #5b5b5f; see the contrast deviation in meta.json. */
+  --fx-bg: #3d3d41;
+  --fx-ink: #fff;
+  --fx-muted: #d3d3d6;
+  --fx-link: #e9c58f;
+  --fx-link-hover: #fff;
+  --fx-cursor-inner: #fff;
+  --fx-cursor-size: 24px;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  min-height: 80svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 60% at 50% 40%, color-mix(in oklab, #ffffff 10%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+}
+.fx-cursor-follow *,
+.fx-cursor-follow *::before,
+.fx-cursor-follow *::after { box-sizing: border-box; }
+
+.fx-cursor-follow__eyebrow {
+  margin: 0 0 clamp(2rem, 6vw, 4rem);
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-link);
+}
+
+/* base.css .menu */
+.fx-cursor-follow__menu {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  align-self: center;
+  grid-gap: 7vw;
+  font-size: 2rem;
+  font-family: "Goudy Old Style", Garamond, "Big Caslon", "Times New Roman", serif;
+}
+
+.fx-cursor-follow__menu a {
+  text-decoration: none;
+  color: var(--fx-link);
+  outline: none;
+  transition: color 0.3s;
+}
+.fx-cursor-follow__menu a:hover { color: var(--fx-link-hover); }
+.fx-cursor-follow__menu a:focus-visible {
+  outline: 2px solid var(--fx-link-hover);
+  outline-offset: 0.35em;
+}
+
+.fx-cursor-follow__lede {
+  margin: clamp(2rem, 6vw, 4rem) 0 0;
+  max-width: 34rem;
+  align-self: center;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* base.css .cursor */
+.fx-cursor-follow__cursor { display: none; }
+
+/* base.css @media (any-pointer: fine) */
+@media (any-pointer: fine) {
+  .fx-cursor-follow__cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: block;
+    pointer-events: none;
+    z-index: 10000;
+    width: var(--fx-cursor-size);
+    height: var(--fx-cursor-size);
+    /* Upstream does this from the constructor. Doing it here is what keeps a
+       script-blocked page from parking the circle at 0,0 at full strength. */
+    opacity: 0;
+    mix-blend-mode: difference;
+  }
+  .fx-cursor-follow__cursor-inner { fill: var(--fx-cursor-inner); }
+}
+
+/* A reader who asked for stillness keeps the native pointer: mount() returns
+   before it registers anything, so this only has to make sure nothing paints. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-cursor-follow__cursor { display: none; }
+}
+
+@media screen and (min-width: 53em) {
+  .fx-cursor-follow__menu {
+    font-size: 4vw;
+    grid-auto-flow: column;
+    max-width: min-content;
+  }
+}

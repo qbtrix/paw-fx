@@ -1,0 +1,218 @@
+/* god-rays: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js runs, or after a WebGL failure sends
+   mount() back to rest, this is what a visitor sees.
+
+   The ray colours are declared once here as --fx-c1..--fx-c4 and index.js
+   reads them back off the section, so overriding them moves the shader's rays
+   and the resting fan together. Three of the four carry alpha, which is
+   upstream's own preset and is what keeps the shafts translucent rather than
+   painted-on.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-rays__rest   the CSS fan, covered by the canvas once it paints
+     -1  <canvas>         inserted by ShaderMount
+      0  .fx-rays__scrim  legibility wash, over whichever layer is showing
+      1  .fx-rays__inner  the copy */
+.fx-rays {
+  --fx-c1: #a600ff6e;
+  --fx-c2: #6200fff0;
+  --fx-c3: #ffffff;
+  --fx-c4: #33fff5;
+  --fx-bg: #000000;
+  --fx-ink: #ffffff;
+  --fx-muted: #d5d9ef;
+  --fx-speed: 1;
+  --fx-scrim: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows the viewport by exactly
+     its own padding. An effect drops into a site whose reset it does not
+     control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 7vw, 6rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The fan: a repeating conic gradient centred where the shader puts its ray
+   origin (offsetY -0.55 lifts it above the top edge), narrowed to a wedge and
+   faded out with a mask so the rays thin as they travel, which is what the
+   shader's own density falloff does. Two blooms sit under it, tinted with the
+   preset's colorBloom, so the origin glows rather than simply being where the
+   lines meet. */
+.fx-rays__rest {
+  position: absolute;
+  inset: -12% -12% -12%;
+  z-index: -2;
+  background:
+    repeating-conic-gradient(
+      from 200deg at 50% -12%,
+      transparent 0deg 2.4deg,
+      color-mix(in oklab, var(--fx-c1) 85%, transparent) 2.4deg 4deg,
+      transparent 4deg 7.2deg,
+      color-mix(in oklab, var(--fx-c2) 70%, transparent) 7.2deg 8.6deg,
+      transparent 8.6deg 12deg,
+      color-mix(in oklab, var(--fx-c3) 26%, transparent) 12deg 13deg,
+      transparent 13deg 17deg,
+      color-mix(in oklab, var(--fx-c4) 34%, transparent) 17deg 18.4deg,
+      transparent 18.4deg 23deg
+    ),
+    radial-gradient(58% 44% at 50% -6%, color-mix(in oklab, #2a12ff 62%, transparent), transparent 72%),
+    radial-gradient(90% 62% at 50% 0%, color-mix(in oklab, #12004d 55%, transparent), transparent 78%);
+  filter: blur(14px);
+  -webkit-mask-image: radial-gradient(120% 96% at 50% -4%, #000 0%, #000 34%, transparent 88%);
+  mask-image: radial-gradient(120% 96% at 50% -4%, #000 0%, #000 34%, transparent 88%);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset, and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-rays[data-fx-live] .fx-rays__rest {
+  opacity: 0;
+}
+
+/* Fine grain over everything: wide blurred fields band on 8-bit displays, and
+   conic gradients band worst of all. Inline SVG, so the section fetches
+   nothing. */
+.fx-rays__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy is left-aligned and the rays sweep, so the wash is an ellipse held
+   over the left two thirds rather than a centred one: a symmetric scrim would
+   spend most of its cover on empty canvas and still leave the headline under a
+   white shaft. Eased over four stops, because a flat core running into a
+   single linear ramp draws a visible hard edge across the hero. Re-measure
+   against the live shader before lowering --fx-scrim; the white ray is the
+   brightest thing in the section and it does not stay still. */
+.fx-rays__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    112% 96% at 30% 52%,
+    color-mix(in oklab, #01010a 92%, transparent) 0%,
+    color-mix(in oklab, #01010a 92%, transparent) 40%,
+    color-mix(in oklab, #01010a 64%, transparent) 56%,
+    color-mix(in oklab, #01010a 30%, transparent) 70%,
+    color-mix(in oklab, #01010a 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-rays__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+}
+
+.fx-rays__eyebrow {
+  margin: 0 0 1.5rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fx-c4) 42%, var(--fx-ink));
+}
+
+.fx-rays__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 6.6vw, 5rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, #01010a 62%, transparent);
+}
+
+.fx-rays__lede {
+  margin: 1.6rem 0 0;
+  max-width: 32rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-rays__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.4rem;
+}
+
+.fx-rays__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.7rem;
+  border-radius: 0.6rem;
+  background: var(--fx-ink);
+  color: #07060f;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.fx-rays__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 40px color-mix(in oklab, var(--fx-c4) 30%, transparent);
+}
+
+.fx-rays__cta:focus-visible {
+  outline: 2px solid var(--fx-c4);
+  outline-offset: 3px;
+}
+
+.fx-rays__note {
+  margin: 0;
+  font-size: 0.86rem;
+  color: color-mix(in oklab, var(--fx-muted) 82%, transparent);
+}
+
+.fx-rays__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2rem;
+  margin: 3.2rem 0 0;
+  padding: 1.4rem 0 0;
+  border-top: 1px solid color-mix(in oklab, var(--fx-ink) 14%, transparent);
+  list-style: none;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--fx-muted);
+}
+
+/* Only the resting fan sweeps, and only when motion is allowed. The shader has
+   its own reduced-motion path in index.js: speed 0, one static frame. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-rays__rest {
+    animation: fx-rays-sweep calc(26s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-rays-sweep {
+    0% {
+      transform: rotate(-1.6deg) scale(1.02);
+    }
+    100% {
+      transform: rotate(1.8deg) scale(1.06);
+    }
+  }
+}

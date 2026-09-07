@@ -1,0 +1,103 @@
+/* image-trail: a panel that smears into a trail behind the pointer.
+
+   THE IMAGE SLOT. Upstream ships photographs; this library ships none, so the
+   trail copies paint `--fx-image`, which defaults to the layered gradient
+   below. A site author drops their own picture in with one declaration:
+
+       .fx-trail { --fx-image: url("/media/studio.jpg"); }
+
+   The default is a deliberate composition, not a grey box, so the section
+   reads as finished either way.
+
+   The copies all sit in `grid-area: 1 / 1 / 2 / 2` (upstream's own trick), so
+   they stack exactly and the resting state is one panel. index.js only ever
+   moves them, so with the script blocked, the bundle pruned or reduced motion
+   on, the reader still gets the panel and the copy beside it. */
+.fx-trail {
+  --fx-bg: #10131a;
+  --fx-ink: #f2f4f8;
+  --fx-muted: #98a1b3;
+  --fx-accent: #6ee7c8;
+  --fx-panel-w: min(19rem, 42vw);
+  --fx-panel-h: min(27rem, 45vh);
+  --fx-image:
+    radial-gradient(55% 38% at 28% 18%, rgba(110, 231, 200, 0.85), transparent 68%),
+    radial-gradient(65% 48% at 82% 88%, rgba(122, 132, 255, 0.8), transparent 70%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0 3px, transparent 3px 11px),
+    linear-gradient(160deg, #262d40, #0b0d13);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 90svh;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(80% 60% at 15% 10%, color-mix(in oklab, var(--fx-accent) 12%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-trail *,
+.fx-trail *::before,
+.fx-trail *::after { box-sizing: border-box; }
+
+.fx-trail__copy { max-width: 30rem; }
+.fx-trail__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-trail__title {
+  margin: 0;
+  font-size: clamp(2rem, 5.5vw, 3.75rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+}
+.fx-trail__lede {
+  margin: 1.5rem 0 0;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* The stack. Upstream's .trail: a grid whose children share one cell. */
+.fx-trail__stack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: var(--fx-panel-w);
+  height: var(--fx-panel-h);
+}
+.fx-trail__img,
+.fx-trail__stack::after {
+  grid-area: 1 / 1 / 2 / 2;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.4rem;
+  background: var(--fx-image);
+  background-size: cover;
+  background-position: center;
+  /* The rim is what makes the lag legible: with five identical copies and no
+     edge, the trail blends into one soft-sided panel instead of reading as
+     layers sliding behind each other. */
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.5);
+  will-change: transform;
+}
+/* The resting panel, drawn by CSS so the section is never an empty box before
+   index.js builds the copies. The script hides it the moment it takes over. */
+.fx-trail__stack::after { content: ""; }
+.fx-trail[data-fx-live] .fx-trail__stack::after { content: none; }
+
+@media (min-width: 60em) {
+  .fx-trail { grid-template-columns: 1fr auto; }
+}

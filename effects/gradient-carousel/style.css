@@ -1,0 +1,185 @@
+/* gradient-carousel: an endless 3D card carousel over a background painted
+   from the colours of whichever card is in the middle.
+
+   THE BACKGROUND IS A CANVAS, not a CSS gradient, because the colours are
+   sampled from the pictures at runtime rather than written here. All this
+   stylesheet does for it is give it a box and upstream's blur(24px)
+   saturate(1.05), which is what turns two hard radial gradients into a wash.
+
+   THE RESTING STATE IS A NATIVE SCROLL ROW. The cards are laid out in a plain
+   overflow-x row until index.js sets data-fx-live and takes them over, so with
+   the script blocked, the bundle pruned or reduced motion on, all ten cards are
+   there and all ten are reachable. Live, the row becomes upstream's absolute
+   preserve-3d stage and every card's transform comes from the script.
+
+   THE STAGE OWNS THE WHEEL while the pointer is over it, because the carousel
+   is infinite and has no end to hand the page back at -- upstream's own
+   preventDefault and touch-action: none. That is scoped to .fx-gcar__stage on
+   purpose: the copy above it scrolls the page normally.
+
+   THE IMAGE SLOT is each card's <img src>. The pictures are what the gradient
+   is sampled from, so they cannot be CSS backgrounds; the ten here are
+   generated SVG plates because upstream's photography is licensed separately
+   from its code. Swap one for your own and the section's colour changes with
+   it:
+
+     <img class="fx-gcar__img" alt="" src="/img/1.jpg"> */
+.fx-gcar {
+  --fx-bg: #f0f0f0;
+  --fx-ink: #0b0b0b;
+  --fx-muted: #4b4b52;
+  --fx-accent: #7a2ff2;
+  --fx-perspective: 1800px;
+  --fx-card-w: min(22vw, 280px);
+  --fx-gap: 1.75rem;
+  --fx-radius: 15px;
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1rem, 2.4vw, 1.5rem);
+  min-height: 100svh;
+  padding: clamp(1.25rem, 3vw, 2.5rem) 0 clamp(1rem, 2vw, 1.5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  overflow: hidden;
+}
+.fx-gcar *,
+.fx-gcar *::before,
+.fx-gcar *::after { box-sizing: border-box; }
+
+.fx-gcar__head {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 44rem;
+  padding: 0 clamp(1.25rem, 5vw, 4rem);
+}
+.fx-gcar__eyebrow {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-gcar__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+.fx-gcar__note {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+}
+
+/* styles.css .stage */
+.fx-gcar__stage {
+  position: relative;
+  width: 100%;
+  min-height: 22rem;
+  overflow: hidden;
+  perspective: var(--fx-perspective);
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* styles.css .stage.carousel-mode */
+.fx-gcar[data-fx-live] .fx-gcar__stage {
+  touch-action: none;
+  cursor: grab;
+}
+.fx-gcar[data-fx-live] .fx-gcar__stage.is-dragging { cursor: grabbing; }
+
+/* styles.css #bg */
+.fx-gcar__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: blur(24px) saturate(1.05);
+  pointer-events: none;
+}
+
+/* Resting: a plain scroll row. Live: styles.css .cards. */
+.fx-gcar__cards {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--fx-gap);
+  height: 100%;
+  padding: 0 clamp(1.25rem, 5vw, 4rem);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fx-muted) transparent;
+}
+.fx-gcar[data-fx-live] .fx-gcar__cards {
+  display: block;
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  overflow: visible;
+  scrollbar-width: none;
+  transform-style: preserve-3d;
+}
+
+/* styles.css .card */
+.fx-gcar__card {
+  flex: 0 0 auto;
+  width: var(--fx-card-w);
+  aspect-ratio: 4/5;
+  isolation: isolate;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  transform-origin: 90% center;
+  contain: layout paint;
+}
+.fx-gcar[data-fx-live] .fx-gcar__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+/* styles.css .card__img */
+.fx-gcar__img {
+  border-radius: var(--fx-radius);
+  opacity: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: translateZ(0);
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.fx-gcar__hint {
+  margin: 0;
+  padding: 0 clamp(1.25rem, 5vw, 4rem);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+@media (max-width: 720px) {
+  .fx-gcar { --fx-card-w: min(62vw, 300px); }
+}
+
+/* styles.css @media (prefers-reduced-motion: reduce) */
+@media (prefers-reduced-motion: reduce) {
+  .fx-gcar__card {
+    transition: none !important;
+    animation: none !important;
+  }
+}

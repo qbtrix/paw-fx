@@ -1,0 +1,141 @@
+/* morph-nav: a segmented tab bar whose active pill is one shared element that
+   gets re-parented into whichever tab you click. The rules below are
+   upstream's index.html: nav / nav ul / nav button / .button-bg, plus the
+   display:none - display:block panel switch. Renamed to --fx-* and .fx-* and
+   given a section's chrome.
+
+   The resting state is the finished control: tab one carries the pill and its
+   panel is the visible one, drawn by CSS alone, so with no script the section
+   still reads as a tab bar with content under it. index.js only adds the
+   spring between states. */
+.fx-morphnav {
+  --fx-bg: #0b0d12;
+  --fx-card: #171a21;
+  --fx-bar: #1e222b;
+  --fx-pill: #303849;
+  --fx-pill-edge: #55617a;
+  --fx-ink: #eef1f7;
+  --fx-muted: #c2cadb;
+  --fx-tab: #b8c1d4;
+  --fx-accent: #93b4ff;
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1rem, 5vw, 4rem);
+  background:
+    radial-gradient(60% 45% at 50% 0%, color-mix(in oklab, var(--fx-accent) 12%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-morphnav *,
+.fx-morphnav *::before,
+.fx-morphnav *::after { box-sizing: border-box; }
+
+.fx-morphnav__inner {
+  width: 100%;
+  max-width: 46rem;
+}
+.fx-morphnav__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-morphnav__title {
+  margin: 0 0 2rem;
+  font-size: clamp(1.8rem, 4.2vw, 2.9rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* upstream .container */
+.fx-morphnav__card {
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--fx-card);
+  border: 1px solid color-mix(in oklab, var(--fx-pill-edge) 45%, transparent);
+}
+/* upstream nav */
+.fx-morphnav__bar {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  background-color: var(--fx-bar);
+}
+/* upstream nav ul */
+.fx-morphnav__list {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 1rem;
+  list-style: none;
+}
+/* upstream nav button */
+.fx-morphnav__tab {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--fx-tab);
+  font: inherit;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* upstream nav button:hover / :focus-visible / :has(.button-bg) */
+.fx-morphnav__tab:focus-visible,
+.fx-morphnav__tab:hover,
+.fx-morphnav__tab:has(.fx-morphnav__pill) {
+  z-index: 0;
+  color: var(--fx-ink);
+  background: transparent;
+}
+.fx-morphnav__tab:focus-visible { outline: 2px solid var(--fx-accent); outline-offset: 2px; }
+/* upstream .button-bg -- the ONE pill, re-parented on click */
+.fx-morphnav__pill {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 0.25rem;
+  background-color: var(--fx-pill);
+  border: 1px solid var(--fx-pill-edge);
+}
+/* upstream .button-txt */
+.fx-morphnav__label {
+  position: relative;
+  z-index: 1;
+}
+
+/* upstream .content */
+.fx-morphnav__content {
+  width: 100%;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.fx-morphnav__panel { display: none; }
+.fx-morphnav__panel.is-active { display: block; }
+.fx-morphnav__panel h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--fx-accent);
+}
+.fx-morphnav__panel p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

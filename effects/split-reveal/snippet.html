@@ -1,0 +1,16 @@
+<!-- split-reveal section. Finished at rest with CSS alone, and here that is not
+     a fallback: upstream's animation plays over copy that is already visible,
+     so the resting state is the paragraph at display size and nothing more.
+     index.js splits it into line and word wrappers and runs the wave on top; a
+     blocked script, a pruned bundle or prefers-reduced-motion leaves the same
+     words, at the same size, as one selectable block.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/split-reveal/style.css">
+<section class="fx-split" data-fx="split-reveal">
+  <div class="fx-split__inner">
+    <p class="fx-split__eyebrow">Why we started</p>
+    <p class="fx-split__copy">We spent four years watching good teams lose whole afternoons to tools that were supposed to save them one. So we built the boring version instead.</p>
+    <p class="fx-split__cite">Ada Okonjo, co-founder</p>
+  </div>
+</section>

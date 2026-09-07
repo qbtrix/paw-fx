@@ -1,0 +1,55 @@
+<!-- ascii-smoke section. Finished at rest with CSS alone: the block inside
+     <pre data-fx-grid> is a real frame of the effect, dumped from index.js at
+     the same 84x32 grid the script draws, so a blocked script, a pruned bundle
+     or prefers-reduced-motion leaves plumes on the panel rather than an empty
+     box. destroy() puts this exact frame back.
+     The grid is decorative and carries aria-hidden; the eyebrow, headline,
+     lede and caption stay real text, so a screen reader gets the section's
+     meaning and none of the art.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-smoke/style.css">
+<section class="fx-ascii-smoke" data-fx="ascii-smoke">
+  <div class="fx-ascii-smoke__inner">
+    <div class="fx-ascii-smoke__copy">
+      <p class="fx-ascii-smoke__eyebrow">density field</p>
+      <h2 class="fx-ascii-smoke__title">It holds together because it is a fluid, not a spray.</h2>
+      <p class="fx-ascii-smoke__lede">Swap this for your own words. Three sources along the bottom edge feed a field that diffuses into its neighbours, drifts on a two-term wind, and rises one row a frame.</p>
+    </div>
+    <div class="fx-ascii-smoke__screen">
+      <pre class="fx-ascii-smoke__grid" data-fx-grid aria-hidden="true">                   :;;:                ,;==;                ,;;:                    
+                  ,;~~:                ,: ;;,                :;:                    
+                   ;~~;,                ::;:                 :;:                    
+                    ;~;                ,;~~;,                :~;,                   
+                  ,:~~;                 , ;;                  , ,.                  
+                   ;==~:                ::~;,                    .                  
+                   , ;;                 ;~=~;               .,,,.                   
+                    :~~:               :~++=;               :;~;:                   
+                  ,:;; ,                : ~~                ;===;                   
+                  ;~;                  ,;;~;                 ~++~                   
+                   ~~:                 ;=+=~                 ;~                     
+                  :==;                 ~== :                 ;; ..                  
+                   =+=:                 ==~~:                ;~~;:                  
+                  ;+*+=:               :=~                   : ;;                   
+                  ~+= :                ;~ ,,                 ;~==;                  
+                  ~*+~;                ;~ ;~:                ~++=                   
+                  =*= ;:                ~~~ :                 =*+;                  
+                   ++=~                 =**=~               :~**=                   
+                  ;*#*=                ~*##+                 =**=                   
+                  ; ++ ,                +#%*~                 ++                    
+                  ~~ ==~                +%%#+                ~*+ ,                  
+                    : ++                *%%#+                +#+                    
+                  =+**#+               =#%%*                 *%#=                   
+                   *%%*                *%%%*                 *%%*                   
+                  +* + ;               + #%#                =* =                    
+                   *+ +*               ##@@%*                ##*                    
+                   ## ##               * #@@#                #@%*=                  
+                  #@@%%                # %@@%               *@%@%*                  
+                  # # @%               %%@%                   #@@#                  
+                  % @@%                @@@@%                #% @@                   
+                   % @@@               @@ @@@               %%@ #                   
+                                                                                    </pre>
+    </div>
+    <p class="fx-ascii-smoke__caption"><span>84 &times; 32 cells</span><span>3 sources</span><span>diffuse 0.82 &middot; decay 0.98</span></p>
+  </div>
+</section>

@@ -1,0 +1,164 @@
+<!-- links-network section. Finished at rest with CSS and markup alone: the
+     inline SVG is a real constellation -- 64 nodes and every edge shorter than
+     the preset's 150px link distance -- and index.js only fades it out once a
+     tsParticles container has actually loaded into .fx-links__canvas. A
+     blocked bundle, a refused canvas or prefers-reduced-motion all leave the
+     SVG graph in place. The node positions are a fixed seeded layout because
+     this is a committed file, not something rendered per page load.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/links-network/style.css">
+<section class="fx-links" data-fx="links-network">
+  <svg class="fx-links__rest" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g class="fx-links__edges">
+      <line x1="1253" y1="656" x2="1337" y2="582"/>
+      <line x1="1253" y1="656" x2="1228" y2="604"/>
+      <line x1="1253" y1="656" x2="1157" y2="757"/>
+      <line x1="220" y1="85" x2="106" y2="73"/>
+      <line x1="891" y1="37" x2="828" y2="81"/>
+      <line x1="891" y1="37" x2="857" y2="182"/>
+      <line x1="433" y1="528" x2="331" y2="573"/>
+      <line x1="433" y1="528" x2="513" y2="481"/>
+      <line x1="433" y1="528" x2="461" y2="657"/>
+      <line x1="151" y1="514" x2="257" y2="587"/>
+      <line x1="1412" y1="221" x2="1281" y2="255"/>
+      <line x1="1412" y1="221" x2="1370" y2="111"/>
+      <line x1="1412" y1="221" x2="1413" y2="157"/>
+      <line x1="72" y1="246" x2="182" y2="339"/>
+      <line x1="72" y1="246" x2="55" y2="394"/>
+      <line x1="828" y1="81" x2="857" y2="182"/>
+      <line x1="828" y1="81" x2="723" y2="32"/>
+      <line x1="828" y1="81" x2="749" y2="95"/>
+      <line x1="605" y1="326" x2="519" y2="379"/>
+      <line x1="605" y1="326" x2="600" y2="415"/>
+      <line x1="605" y1="326" x2="653" y2="246"/>
+      <line x1="605" y1="326" x2="730" y2="329"/>
+      <line x1="589" y1="493" x2="519" y2="379"/>
+      <line x1="589" y1="493" x2="600" y2="415"/>
+      <line x1="589" y1="493" x2="576" y2="616"/>
+      <line x1="589" y1="493" x2="513" y2="481"/>
+      <line x1="1039" y1="128" x2="977" y2="170"/>
+      <line x1="1039" y1="128" x2="1056" y2="26"/>
+      <line x1="1337" y1="582" x2="1228" y2="604"/>
+      <line x1="1337" y1="582" x2="1373" y2="439"/>
+      <line x1="1337" y1="582" x2="1376" y2="499"/>
+      <line x1="977" y1="170" x2="857" y2="182"/>
+      <line x1="519" y1="379" x2="600" y2="415"/>
+      <line x1="519" y1="379" x2="513" y2="481"/>
+      <line x1="519" y1="379" x2="428" y2="325"/>
+      <line x1="182" y1="339" x2="221" y2="379"/>
+      <line x1="182" y1="339" x2="55" y2="394"/>
+      <line x1="600" y1="415" x2="513" y2="481"/>
+      <line x1="544" y1="826" x2="632" y2="791"/>
+      <line x1="989" y1="421" x2="946" y2="538"/>
+      <line x1="989" y1="421" x2="848" y2="454"/>
+      <line x1="857" y1="182" x2="749" y2="95"/>
+      <line x1="901" y1="835" x2="1013" y2="863"/>
+      <line x1="901" y1="835" x2="873" y2="726"/>
+      <line x1="901" y1="835" x2="845" y2="829"/>
+      <line x1="946" y1="538" x2="848" y2="454"/>
+      <line x1="418" y1="240" x2="494" y2="220"/>
+      <line x1="418" y1="240" x2="428" y2="325"/>
+      <line x1="576" y1="616" x2="652" y2="687"/>
+      <line x1="576" y1="616" x2="513" y2="481"/>
+      <line x1="576" y1="616" x2="461" y2="657"/>
+      <line x1="653" y1="246" x2="730" y2="329"/>
+      <line x1="1373" y1="439" x2="1376" y2="499"/>
+      <line x1="1079" y1="285" x2="1213" y2="269"/>
+      <line x1="652" y1="687" x2="632" y2="791"/>
+      <line x1="652" y1="687" x2="797" y2="656"/>
+      <line x1="1281" y1="255" x2="1213" y2="269"/>
+      <line x1="331" y1="573" x2="299" y2="705"/>
+      <line x1="331" y1="573" x2="257" y2="587"/>
+      <line x1="654" y1="93" x2="723" y2="32"/>
+      <line x1="654" y1="93" x2="749" y2="95"/>
+      <line x1="873" y1="726" x2="797" y2="656"/>
+      <line x1="873" y1="726" x2="845" y2="829"/>
+      <line x1="388" y1="826" x2="329" y2="791"/>
+      <line x1="797" y1="656" x2="785" y2="598"/>
+      <line x1="1370" y1="111" x2="1413" y2="157"/>
+      <line x1="730" y1="329" x2="795" y2="407"/>
+      <line x1="730" y1="329" x2="843" y2="380"/>
+      <line x1="494" y1="220" x2="428" y2="325"/>
+      <line x1="723" y1="32" x2="749" y2="95"/>
+      <line x1="795" y1="407" x2="848" y2="454"/>
+      <line x1="795" y1="407" x2="843" y2="380"/>
+      <line x1="329" y1="791" x2="299" y2="705"/>
+      <line x1="848" y1="454" x2="843" y2="380"/>
+      <line x1="299" y1="705" x2="257" y2="587"/>
+    </g>
+    <g class="fx-links__nodes">
+      <circle cx="1253" cy="656" r="1.5"/>
+      <circle cx="220" cy="85" r="1.5"/>
+      <circle cx="891" cy="37" r="1.5"/>
+      <circle cx="433" cy="528" r="1.5"/>
+      <circle cx="1207" cy="47" r="1.5"/>
+      <circle cx="151" cy="514" r="1.5"/>
+      <circle cx="1412" cy="221" r="1.5"/>
+      <circle cx="72" cy="246" r="1.5"/>
+      <circle cx="828" cy="81" r="1.5"/>
+      <circle cx="605" cy="326" r="1.5"/>
+      <circle cx="589" cy="493" r="1.5"/>
+      <circle cx="1039" cy="128" r="1.5"/>
+      <circle cx="1337" cy="582" r="1.5"/>
+      <circle cx="977" cy="170" r="1.5"/>
+      <circle cx="519" cy="379" r="1.5"/>
+      <circle cx="106" cy="73" r="1.5"/>
+      <circle cx="182" cy="339" r="1.5"/>
+      <circle cx="600" cy="415" r="1.5"/>
+      <circle cx="544" cy="826" r="1.5"/>
+      <circle cx="989" cy="421" r="1.5"/>
+      <circle cx="857" cy="182" r="1.5"/>
+      <circle cx="901" cy="835" r="1.5"/>
+      <circle cx="1228" cy="604" r="1.5"/>
+      <circle cx="946" cy="538" r="1.5"/>
+      <circle cx="418" cy="240" r="1.5"/>
+      <circle cx="576" cy="616" r="1.5"/>
+      <circle cx="1013" cy="863" r="1.5"/>
+      <circle cx="653" cy="246" r="1.5"/>
+      <circle cx="1373" cy="439" r="1.5"/>
+      <circle cx="1079" cy="285" r="1.5"/>
+      <circle cx="221" cy="379" r="1.5"/>
+      <circle cx="652" cy="687" r="1.5"/>
+      <circle cx="1281" cy="255" r="1.5"/>
+      <circle cx="55" cy="394" r="1.5"/>
+      <circle cx="632" cy="791" r="1.5"/>
+      <circle cx="331" cy="573" r="1.5"/>
+      <circle cx="654" cy="93" r="1.5"/>
+      <circle cx="873" cy="726" r="1.5"/>
+      <circle cx="388" cy="826" r="1.5"/>
+      <circle cx="432" cy="68" r="1.5"/>
+      <circle cx="797" cy="656" r="1.5"/>
+      <circle cx="845" cy="829" r="1.5"/>
+      <circle cx="1370" cy="111" r="1.5"/>
+      <circle cx="1157" cy="757" r="1.5"/>
+      <circle cx="1056" cy="26" r="1.5"/>
+      <circle cx="730" cy="329" r="1.5"/>
+      <circle cx="513" cy="481" r="1.5"/>
+      <circle cx="1413" cy="157" r="1.5"/>
+      <circle cx="1138" cy="446" r="1.5"/>
+      <circle cx="1376" cy="499" r="1.5"/>
+      <circle cx="494" cy="220" r="1.5"/>
+      <circle cx="1213" cy="269" r="1.5"/>
+      <circle cx="1297" cy="823" r="1.5"/>
+      <circle cx="461" cy="657" r="1.5"/>
+      <circle cx="723" cy="32" r="1.5"/>
+      <circle cx="795" cy="407" r="1.5"/>
+      <circle cx="329" cy="791" r="1.5"/>
+      <circle cx="428" cy="325" r="1.5"/>
+      <circle cx="848" cy="454" r="1.5"/>
+      <circle cx="785" cy="598" r="1.5"/>
+      <circle cx="299" cy="705" r="1.5"/>
+      <circle cx="843" cy="380" r="1.5"/>
+      <circle cx="749" cy="95" r="1.5"/>
+      <circle cx="257" cy="587" r="1.5"/>
+    </g>
+  </svg>
+  <div class="fx-links__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-links__scrim" aria-hidden="true"></div>
+  <div class="fx-links__inner">
+    <p class="fx-links__eyebrow">One graph, every system</p>
+    <h1 class="fx-links__title">Your stack already talks. Now you can watch it.</h1>
+    <p class="fx-links__lede">Replace this copy with your own. The headline slot takes one line or three, and the network keeps rewiring behind it either way.</p>
+  </div>
+</section>

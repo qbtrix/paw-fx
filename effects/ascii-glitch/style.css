@@ -1,0 +1,134 @@
+/* ascii-glitch: a corrupted character field with the copy stacked on top of it on
+   an opaque plate.
+
+   THE GRID IS DECLARED, NOT MEASURED. --fx-cols and --fx-rows say how many
+   characters the picture is; the type is then scaled so exactly that many fit
+   the panel's width at any viewport. So the authored frame in the markup and
+   the frames index.js draws are the same grid, nothing reflows when the script
+   takes over, and the picture keeps its proportions from 375 up.
+
+   --fx-advance is the one measured constant: a monospace glyph's advance width
+   as a fraction of its font-size. ui-monospace, SF Mono, Menlo, Liberation
+   Mono and Courier New all sit at 0.6; Consolas is 0.55, which leaves the grid
+   a few per cent narrow inside the panel, and text-align: center splits that
+   as a hair of margin each side. Nothing here loads a font -- fonts are not
+   ours to redistribute -- so the stack is what the machine already has.
+   The alphabet mixes the four block shades U+2588 U+2593 U+2592 U+2591 with
+   ASCII punctuation; all four are present in every face on that stack.
+
+   The panel is the resting state, not a placeholder for it: a real frame of
+   the effect, so a reader with the script blocked, the bundle pruned or
+   reduced motion on gets the picture rather than an empty box. */
+.fx-ascii-glitch {
+  --fx-cols: 76;
+  --fx-rows: 26;
+  --fx-advance: 0.6;
+  --fx-bg: #0b0410;
+  --fx-panel: #150720;
+  --fx-panel-2: #07030c;
+  --fx-ink: #ff5cc8;
+  --fx-text: #f6ecff;
+  --fx-muted: #a892b8;
+  --fx-accent: #ff5cc8;
+  --fx-line: #33144a;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4.5rem);
+  background:
+    radial-gradient(60% 60% at 50% 50%, color-mix(in oklab, var(--fx-accent) 14%, transparent), transparent 72%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.fx-ascii-glitch *,
+.fx-ascii-glitch *::before,
+.fx-ascii-glitch *::after { box-sizing: border-box; }
+
+/* The container query context. 100cqi inside it is the panel's own inline
+   size, so two panels of different widths on one page each size their own type
+   correctly -- the viewport is never consulted. */
+.fx-ascii-glitch__screen {
+  container-type: inline-size;
+  position: relative;
+  padding: 0;
+  border: 1px solid var(--fx-line);
+  border-radius: 0.6rem;
+  background: var(--fx-panel-2);
+  box-shadow: 0 2rem 5rem -2rem #000;
+}
+
+/* One character cell's font-size, and from it the grid's height. Height is set
+   rather than left to the line count so a frame arriving with a different
+   number of rows cannot resize the panel under the reader. */
+.fx-ascii-glitch__grid {
+  --fx-cell: calc(100cqi / (var(--fx-cols) * var(--fx-advance)));
+  margin: 0;
+  height: calc(var(--fx-rows) * var(--fx-cell));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: var(--fx-cell);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* Nothing in this section is scroll-driven, so making the <pre> a scroll
+     container costs nothing. It also holds the panel's
+     width against upstream's row slide, which leaves rows both shorter and
+     longer than the grid on purpose -- that ragged edge is what makes a slid
+     row read as a torn scanline, so it is clipped rather than corrected. */
+  overflow: hidden;
+  text-align: center;
+  color: var(--fx-ink);
+  text-shadow: 0 0 0.8rem color-mix(in oklab, var(--fx-accent) 30%, transparent);
+}
+
+.fx-ascii-glitch__eyebrow {
+  margin: 0 0 0.9rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+.fx-ascii-glitch__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-ascii-glitch__lede {
+  margin: 1rem 0 0;
+  font-size: clamp(0.96rem, 1.4vw, 1.06rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-ascii-glitch__inner {
+  /* The panel and the plate share one grid cell, so the copy sits ON the
+     field rather than beside it -- the one layout in this family that puts
+     type over the art. The plate is opaque for exactly that reason: the field
+     is dense and unpredictable, and contrast over it would be a matter of
+     luck. */
+  display: grid;
+  max-width: 68rem;
+  margin-inline: auto;
+}
+.fx-ascii-glitch__screen,
+.fx-ascii-glitch__plate { grid-area: 1 / 1; }
+.fx-ascii-glitch__plate {
+  /* Positioned on purpose. The panel it shares this grid cell with is
+     position: relative, and a positioned element paints above an unpositioned
+     one in the same stacking context no matter which comes later in the DOM --
+     so without this the plate renders BEHIND the field and the copy is simply
+     not there, on a page that still measures as a section with text in it. */
+  position: relative;
+  place-self: center;
+  width: min(32rem, calc(100% - 2rem));
+  padding: clamp(1.4rem, 3vw, 2.1rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 0.6rem;
+  background: #0c0512;
+  box-shadow: 0 1.5rem 3.5rem -1rem #000;
+}

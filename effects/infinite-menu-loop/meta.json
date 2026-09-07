@@ -1,0 +1,58 @@
+{
+  "name": "infinite-menu-loop",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": [
+    "menu",
+    "navigation",
+    "infinite",
+    "loop",
+    "scroll",
+    "codrops",
+    "no-dependency"
+  ],
+  "summary": "An oversized index that never reaches an end: a screenful of items is cloned onto the tail and the scroll position wraps at both edges, so the list reads as endless while every entry stays real markup.",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ScrollLoopMenu",
+    "commit": "38257822c0bf1579ded7a17e6800acfd808014d3",
+    "path": [
+      "src/js/infinitemenu.js",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The user-agent regex upstream opens with is replaced by a (pointer: coarse) media query, and a prefers-reduced-motion check is added beside it. Both return the resting state instead of adding a `mobile` class to document.body.",
+      "why": "The regex is a 2013-era device table that misses every phone released since, and the thing it protects against is not a device class: writing scrollTop in the middle of a touch fling fights the compositor. A media query states that directly. Touching document.body is also not something a section-scoped effect may do.",
+      "kind": "seam"
+    },
+    {
+      "what": "The clone count is measured against the menu's own clientHeight rather than window.innerHeight, and the module-scope winsize object is dropped.",
+      "why": "Upstream's menu IS the viewport, so the two are the same number there. Here the menu is a column inside a section, and measuring the window would clone far more items than the box can show. Reading a global at module scope is also refused by the effect contract, because it runs at import time.",
+      "kind": "seam"
+    },
+    {
+      "what": "The upward wrap lands on scrollHeight - clonesHeight - 1 rather than scrollHeight - clonesHeight.",
+      "why": "Upstream's two tests meet at exactly the same number. Its downward wrap fires at clonesHeight + scrollPos >= scrollHeight, which is scrollPos >= scrollHeight - clonesHeight -- the position its upward wrap jumps to. Because fitIn is a ceil the equality holds on every layout, not on unlucky ones, so scrolling up off the top bounces straight back to 1 and the menu only loops downwards. Measured in a browser at 8 clones, scrollHeight 2155 and clientHeight 772: the upward target and the downward trigger are both 1355. One pixel inside the boundary is upstream's own idiom -- initScroll parks at 1 rather than 0 for the same reason at the other end -- and with it the menu loops in both directions.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "Every clone carries aria-hidden=\"true\" and its links carry tabindex=\"-1\".",
+      "why": "A clone is the same link a second time: without this it is a duplicate announcement for a screen reader and a tab stop that leads to a copy of an item the reader already passed.",
+      "kind": "seam"
+    },
+    {
+      "what": "The requestAnimationFrame handle is kept and cancelled on destroy, the resize listener is removed, the clones are deleted and scrollTop is reset.",
+      "why": "Upstream's loop runs for the life of the page because its page never tears the menu down. Here a destroy would otherwise leave a frame loop writing scrollTop into a detached container forever, and a remount would clone the clones.",
+      "kind": "seam"
+    },
+    {
+      "what": "The menu is a column with a gutter beside it rather than a full-bleed takeover, and overflow-x on the section is clip rather than hidden.",
+      "why": "A container that never reaches its own scroll edge never chains wheel events to the page, so a full-bleed loop traps the wheel with no way out. The gutter is ordinary page scroll. `hidden` on the section would compute overflow-y to auto and nest a second scroll container inside the first.",
+      "kind": "ours"
+    }
+  ]
+}

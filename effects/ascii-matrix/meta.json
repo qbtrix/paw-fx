@@ -1,0 +1,72 @@
+{
+  "name": "ascii-matrix",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": ["ascii", "character-grid", "matrix", "rain", "glyphs", "monospace", "terminal", "ascii-lab", "css-only-rest"],
+  "summary": "Glyph rain in a character panel: 80 columns, each with a block head and a trail that grows and shrinks by a row a frame, with the copy on a card over the corner.",
+  "needs": [],
+  "options": {
+    "cols": {
+      "type": "number",
+      "default": 80,
+      "description": "Characters across the panel. style.css scales the type so exactly this many fit its width, so this is the rain's resolution rather than its size."
+    },
+    "rows": {
+      "type": "number",
+      "default": 34,
+      "description": "Character rows. Sets the panel's height, since the type is scaled to the width."
+    },
+    "resetChance": {
+      "type": "number",
+      "default": 0.985,
+      "description": "A column restarts at the top when Math.random() clears this. Upstream's 0.985 in matrix.js; lower it and the rain restarts more often."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "metaory/ascii-lab",
+    "commit": "639584cb2eb48e71aae36a547a6565e942d1ff1a",
+    "path": [
+      "src/effects/matrix.js",
+      "src/util.js",
+      "src/main.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The first character of the glyph alphabet is U+0020 SPACE. Upstream writes U+3000 IDEOGRAPHIC SPACE there.",
+      "why": "U+3000 is not in any face on a Latin monospace stack, so the browser substitutes a CJK font and renders it at double advance width. Every row that draws one shears out of alignment from that column on, which stops the grid being a grid. It is invisible upstream because the glyph is blank and only the columns give it away, and it is broken at the pinned commit rather than by anything the port does.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "The effect object with start(pre, colsRows) / stop() becomes mount(el, opts) over ../_shared/ascii-grid.js. Upstream's start() body is make(w, h, settings), upstream's step() is the closure make returns, and `pre.textContent = out; requestAnimationFrame(step)` is `return out`.",
+      "why": "The effect contract is mount/update/destroy. The rewrite is mechanical and the drop, trail and wrap logic between those two lines is untouched.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream keeps its rAF id as this.loopId on the single exported effect object. Here it is a closure per mount inside ascii-grid.js.",
+      "why": "Two mounts of one effect would share that id, so the second stop() orphans the first loop. Several panels on one page have to be independent, which is a case a single full-screen demo never has.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "The grid is declared as cols and rows (--fx-cols / --fx-rows, 80 x 34) and style.css scales the type with a container query so exactly that many characters fit the panel. main.js's colsRows(), which measures the viewport against an 8x12 character guess and caps at makeDims(120, 60), is dropped.",
+      "why": "A section does not own the viewport, and a measured grid cannot match an authored resting frame -- the frame is written at fixed dimensions, so a live grid of other dimensions reflows the instant the script takes over. Declaring it also keeps the rain's proportions from 375 up.",
+      "kind": "seam"
+    },
+    {
+      "what": "snippet.html carries an authored resting frame: a real frame of this effect at the same 80 x 34 grid, dumped from index.js. destroy() restores it.",
+      "why": "Upstream ships no static fallback at all -- its <pre> is empty until the script runs. The effect contract requires the section to look finished on CSS alone, and a destroy mid-run would otherwise freeze on whichever frame was in flight.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns without starting the loop, leaving the authored frame in place.",
+      "why": "Effect contract: mount() stays at rest. The frame is already the finished picture.",
+      "kind": "seam"
+    },
+    {
+      "what": "util.js's visibilityPause is dropped; an IntersectionObserver in ascii-grid.js idles the loop while the section is off screen instead.",
+      "why": "Upstream re-activates on tab focus because it re-measures the viewport, which a declared grid never needs, and rAF already stops in a hidden tab. The off-screen case is the one a full-screen demo cannot have and a page with three panels does.",
+      "kind": "ours"
+    }
+  ]
+}

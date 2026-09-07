@@ -1,0 +1,15 @@
+<!-- scroll-blur-text section. Finished at rest with CSS alone: the copy is
+     sharp and at full brightness. index.js writes the blur only when it links
+     the tween to the scrollbar, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves this paragraph exactly as it reads here --
+     and a destroy part-way through the scroll range hands it back sharp.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/scroll-blur-text/style.css">
+<section class="fx-blurtext" data-fx="scroll-blur-text">
+  <div class="fx-blurtext__inner">
+    <p class="fx-blurtext__eyebrow">What we do</p>
+    <p class="fx-blurtext__copy">We build the thing you meant, not the thing you asked for, and we show you the difference before anyone else sees either.</p>
+    <p class="fx-blurtext__lede">Replace this copy with your own. Each character sharpens and brightens as the section passes through the viewport, and stays legible once it has.</p>
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<!-- sg-weft section. Finished at rest with CSS alone: the thread grid in
+     .fx-weft__rest is the hero with JavaScript off, and index.js only covers it
+     with a WebGL canvas once it has the shader, a context and a linked program.
+     The _fx paths are root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html.
+     The three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-weft/style.css">
+<section class="fx-weft" data-fx="sg-weft">
+  <div class="fx-weft__rest" aria-hidden="true"></div>
+  <div class="fx-weft__scrim" aria-hidden="true"></div>
+  <div class="fx-weft__grain" aria-hidden="true"></div>
+  <div class="fx-weft__inner">
+    <p class="fx-weft__eyebrow"><span class="fx-weft__dot" aria-hidden="true"></span>Made to last</p>
+    <h1 class="fx-weft__title">Nothing here is glued together.</h1>
+    <p class="fx-weft__lede">This is placeholder copy. The headline holds one line or three, and the light keeps crossing the cloth behind it either way.</p>
+    <div class="fx-weft__actions">
+      <a class="fx-weft__cta fx-weft__cta--primary" href="#">See the materials</a>
+      <a class="fx-weft__cta fx-weft__cta--ghost" href="#">Our guarantee</a>
+    </div>
+  </div>
+</section>

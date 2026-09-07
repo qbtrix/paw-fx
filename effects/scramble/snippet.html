@@ -1,0 +1,16 @@
+<!-- scramble section. Finished at rest with CSS alone: the headline is the
+     headline. index.js splits it into per-character spans and blanks them only
+     at the moment the run starts, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves the sentence exactly as it reads here -- and
+     a destroy mid-run puts the original markup back rather than leaving the
+     blanked cells the run begins from.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/scramble/style.css">
+<section class="fx-scramble" data-fx="scramble">
+  <div class="fx-scramble__inner">
+    <p class="fx-scramble__eyebrow">Status: shipping</p>
+    <h2 class="fx-scramble__copy">Every deploy, every rollback, every decision, written down as it happens.</h2>
+    <p class="fx-scramble__lede">Replace this copy with your own. The line above resolves out of noise the first time it scrolls into view, once per page load.</p>
+  </div>
+</section>

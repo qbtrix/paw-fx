@@ -1,0 +1,73 @@
+{
+  "name": "confetti-burst",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "confetti", "burst", "click", "cta", "celebration", "tsparticles", "interactive"],
+  "summary": "A click-triggered confetti burst on a call-to-action card: 50 squares and circles thrown from the pointer at speed 15-25, pulled down at 9.81, spinning at 60 and fading out of existence as they fall.",
+  "needs": ["tsparticles"],
+  "options": {
+    "quantity": {
+      "type": "number",
+      "default": 50,
+      "description": "Pieces per burst. Upstream's emitters.rate.quantity, which is what the push replaces."
+    },
+    "colors": {
+      "type": "string",
+      "default": "#ffd166,#ef476f,#06d6a0,#118ab2,#f8f9fa",
+      "description": "Comma-separated piece colours. Stands in for the preset's palette key. Set --fx-c1 to --fx-c5 to match so the static pieces agree."
+    },
+    "trigger": {
+      "type": "string",
+      "default": "[data-fx-burst]",
+      "description": "Selector for the elements inside the section whose click fires a burst. Pass an empty string to make the whole section a trigger."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "tsparticles/presets",
+    "commit": "ae866a538fa40b4b06f8a2b8d4b168d134bf6ba7",
+    "path": "presets/confettiExplosions/src/options.ts"
+  },
+  "deviations": [
+    {
+      "what": "The emitters block -- name \"confetti\", rate quantity 50 with delay 0, life count 0 / duration 0.1 / delay 0.4 -- is dropped, and the burst comes from container.particles.push(quantity, position) on a click instead.",
+      "why": "The emitters plugin is not registered in the vendored @tsparticles/slim 4.3.2 bundle, so the preset as written loads and paints nothing. Pushing a batch in on an event is the same shape of burst -- the count comes straight from rate.quantity -- and the per-piece lifetime the emitter's life gave comes from the opacity animation the preset already carries: it starts at max, runs to min at speed 3, and destroy: \"min\" removes the piece there. What is genuinely not reachable is continuous or timed emission, which is a vendor change rather than an effect change.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "particles.tilt, particles.roll and particles.wobble are all dropped.",
+      "why": "None of the three updaters is in the vendored slim bundle. They are what gives real confetti its paper flutter and the light and dark faces of a spinning piece, so this is a good burst rather than a photoreal confetti cannon -- say so before shipping it as one. What survives is rotate, which is registered, so the pieces spin in plane but do not flip.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "motion: { disable: true } is dropped, and under prefers-reduced-motion no container is created at all.",
+      "why": "That flag forces the animation to run whatever the reader has asked for, which is the exact inverse of this library's contract. Nothing is lost by honouring the preference here: the section is a card with a working button, and the burst is decoration on top of it.",
+      "kind": "seam"
+    },
+    {
+      "what": "fullScreen goes from { enable: true, zIndex: 100 } to { enable: false }, and the background block is dropped.",
+      "why": "fullScreen puts the canvas in a fixed layer over the whole page, which is right for a demo and wrong for a section that has to sit in a page beside other sections -- two of these on one page would stack two full-page canvases. The background is the same seam starfield's meta.json records: the section's CSS owns it.",
+      "kind": "seam"
+    },
+    {
+      "what": "palette: \"confetti\" is dropped and the piece colours become an explicit paint.fill.color list.",
+      "why": "A palette name is resolved by the presets package's own theme registry, which a vendored engine bundle does not carry, so loading the key would leave the colour unset. The five defaults are a confetti set and they are an option, so a section can match its own brand.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The canvas is layered under the copy card, and the trigger button sits outside the card in open section rather than inside it.",
+      "why": "Upstream's fullScreen canvas paints over everything, and measured mid-burst that takes the body copy under it from 10:1 to 1.01:1 -- this library holds text to 4.5:1 against the busiest live frame, so pieces cannot cross it. Putting the canvas under the card fixes the ratio but hides the burst behind it when the trigger is inside; moving the trigger out is what gives the throw open section to spread into. Both halves are one decision, which is why the section is built the way it is.",
+      "kind": "ours"
+    },
+    {
+      "what": "A keyboard activation of the trigger (a click event with detail 0) bursts from the control's own centre rather than from the pointer coordinates.",
+      "why": "A button reached by Tab and pressed with Enter fires a click whose clientX and clientY are 0, which would throw every burst from the section's top left corner. Upstream never meets this case because an emitter has a fixed position and no trigger at all.",
+      "kind": "ours"
+    },
+    {
+      "what": "Upstream is a preset registered on the engine and applied by name; here the options object is passed straight to engine.load().",
+      "why": "A preset only exists to be looked up by name, which a single-effect module has no use for. The options object it registers is what actually configures the container, and that is what travels.",
+      "kind": "seam"
+    }
+  ]
+}

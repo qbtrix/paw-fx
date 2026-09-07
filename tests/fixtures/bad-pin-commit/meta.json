@@ -1,0 +1,19 @@
+{
+  "name": "bad-pin-commit",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "Fixture for the port-fidelity gate. Not a shipped effect.",
+  "needs": [
+    "paper"
+  ],
+  "options": {},
+  "license": "Apache-2.0",
+  "origin": {
+    "repo": "paper-design/shaders",
+    "commit": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+    "path": "packages/shaders/src/shaders/mesh-gradient.ts"
+  }
+}

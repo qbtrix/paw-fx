@@ -1,0 +1,71 @@
+{
+  "name": "bad-frag-sibling-altered",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "gradient",
+    "mesh",
+    "twilight",
+    "dark",
+    "glow",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's gloam: four twilight poles drifting through near-black while one blooms off-centre like the last light in the sky, with a matched CSS dusk as the resting state.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#232c6b",
+        "#7d6bff",
+        "#16404f",
+        "#2b1642"
+      ],
+      "description": "Four poles; index 1 is the luminous one that blooms. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "driftSpeed": {
+      "type": "number",
+      "default": 0.14,
+      "description": "How fast the twilight poles drift; 0 holds the dusk almost still. Upstream default, range 0 to 0.7."
+    },
+    "glow": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Brightness of the luminous pole blooming through the dark; 0 leaves an even twilight. Upstream default, range 0 to 1.4."
+    },
+    "warp": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Organic distortion of the colour edges; low is smooth, high adds folds. Upstream default, range 0 to 1.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "gloam/shader.frag",
+      "gloam/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `nocturne` preset.",
+      "why": "gloam/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a dark-site nocturne chosen to match the CSS resting state, which reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs duotone, grain 0.055 and vignette 0.40 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

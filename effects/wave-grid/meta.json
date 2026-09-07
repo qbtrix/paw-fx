@@ -1,0 +1,104 @@
+{
+  "name": "wave-grid",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": [
+    "3d-hero",
+    "three",
+    "webgl",
+    "instanced",
+    "pointer",
+    "wave",
+    "shadows",
+    "anime",
+    "hero"
+  ],
+  "summary": "A 40x40 field of tall white cubes seen from near overhead, lit and casting shadows. Every place the pointer travels drops a point into a 128-slot trail, and each of those sends a ripple expanding outward that lifts the cubes it crosses and floods their crests blue. Leave the pointer still and the field keeps rippling from points it places itself.",
+  "needs": [
+    "three",
+    "anime"
+  ],
+  "options": {
+    "gridSize": {
+      "type": "number",
+      "default": 40,
+      "description": "Cubes per side. Upstream's gridSize, which is 1600 instances at 40."
+    },
+    "waveSpeed": {
+      "type": "number",
+      "default": 6,
+      "description": "How fast a wavefront travels outward, in world units per second. Upstream's waveSpeed."
+    },
+    "waveAmplitude": {
+      "type": "number",
+      "default": 0.4,
+      "description": "How far a crest lifts a cube before the clamp. Upstream's waveAmplitude."
+    },
+    "colorHigh": {
+      "type": "string",
+      "default": "#0055ff",
+      "description": "Colour a cube reaches at full crest height. Upstream's colorHigh."
+    },
+    "colorBase": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Colour of a cube at rest. Upstream's colorBase; the scene background is half of it."
+    },
+    "distance": {
+      "type": "number",
+      "default": 12,
+      "description": "How far the camera sits above the field, in world units. Upstream's Camera radius, which its own panel exposes over 10 to 20; higher shows more of the field at once."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "franky-adl/3d-wave-grid",
+    "commit": "f1fe51434c294008b7e40d51579711b522f1e27f",
+    "path": [
+      "src/ThreeJS/Stage.js",
+      "src/ThreeJS/Effects/MouseTrail.js",
+      "src/ThreeJS/Camera.js",
+      "src/ThreeJS/Renderer.js",
+      "src/ThreeJS/Orchestrator.js",
+      "src/ThreeJS/Utils/Sizes.js",
+      "src/script.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The post-processing pass does not ship, so there is no edge vignette and no RGB colour fringe. Upstream's Renderer.js builds an EffectComposer with a RenderPass, a ShaderPass carrying Effects/VignetteRGBShiftShader.js at shiftAmount 0.005 / vignetteRadius 0.3 / vignetteSoftness 0.3, and an OutputPass; this renders the scene straight to the screen instead. ACESFilmicToneMapping and the 1.95 exposure are kept. The vignette half is recovered as one CSS radial gradient over the canvas, at upstream's own 0.3 radius and 0.3 softness; the RGB fringe is gone and stays gone.",
+      "why": "All four of those imports come from three/addons, and paw-fx vendors core three only -- three.module.js plus three.core.js, with no addons, and no effect in the library touching them. The alternative was hand-rolling a composer: a WebGLRenderTarget, a full-screen quad and the pass's fragment shader, roughly forty lines of our own code standing in for a file we cannot import, which is exactly the shape of invention this library's port gate exists to catch. The field, the trail, the shadows and the lighting are what make it look expensive; the fringe frames them. The vignette is not that pass rebuilt -- it is one gradient the browser paints, and it earns its place for a measured reason rather than a cosmetic one: a field of near-white cubes at tone-mapped exposure 1.95 washes the whole frame out without it, which takes the overlay copy's contrast down with it. Tone mapping and exposure are renderer properties and still apply without an OutputPass when drawing to the screen.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP is replaced by anime.js v4's animate() with stagger(). Upstream's single gsap.fromTo across eight copy selectors keeps its 1s duration, 0.1s stagger, 0.5s delay and its opacity 0-to-1 and y 20-to-0 pair. GSAP's powerN is degree N+1, so power3.out is outQuart. Seconds become milliseconds against MS.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. It was a single staggered fade here and no plugin was involved.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "lil-gui, stats.js and mitt do not ship. The whole GUI surface -- Camera.setGUI, Renderer.setGUI, Stage.setGUI and its trail and lighting folders -- is gone, as is the FPS panel and the CameraHelper drawing the shadow camera frustum. Sizes' mitt emitter is a ResizeObserver on the section. The Orchestrator singleton is gone with them and its clock, resize and animation loop live inside mount().",
+      "why": "The panel, the stats meter and the shadow-frustum gizmo are debug surfaces, not part of the section; upstream gates them on this.debug.active and its own deployed build still shows them. The Orchestrator existed to be a singleton every class could reach, which is the opposite of what a section needs -- a page may carry two of these, and a singleton would have the second mount driving the first one's camera. Every tunable the GUI exposed that a consumer would actually change is a meta.json option instead.",
+      "kind": "seam"
+    },
+    {
+      "what": "Everything is measured against the section's own stage box rather than window.innerWidth/innerHeight: the renderer size, the camera aspect, the pointer normalisation for both the camera lean and the trail raycast. The canvas is created by mount() rather than read out of the page as canvas.webgl, and the pointer listeners sit on the stage rather than on window. failIfMajorPerformanceCaveat is added and a webglcontextlost listener bails to the resting state.",
+      "why": "Upstream is a whole page with one canvas. A section is one of several on a page and may carry this one twice, so a window-measured scene and a window-level pointer listener would have both mounts rippling from the same cursor in the wrong places.",
+      "kind": "seam"
+    },
+    {
+      "what": "The local-time clock in script.js, which sets an Asia/Hong_Kong time string on #local-time every 60 seconds, does not ship; the snippet carries a static time instead.",
+      "why": "A live clock pinned to one time zone is the demo author's own detail, not a section behaviour, and it would leave an interval running for the life of the page in a library whose contract is that destroy() genuinely stops everything.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns without building anything, so the section stays the CSS-drawn cube field with the copy already at full opacity.",
+      "why": "Effect contract: stillness at rest. The whole effect is motion driven by the pointer, so there is no residue to keep, and the copy has to be readable rather than stuck at the fade's opacity 0 start.",
+      "kind": "seam"
+    },
+    {
+      "what": "The resting state is a cube field drawn in CSS from two crossed repeating gradients on a perspective-tipped plane, and every copy block carries a dark scrim.",
+      "why": "Upstream's page has nothing behind its canvas, so with the script blocked it is an empty grey rectangle -- which is exactly what the resting-state gate here fails on. The scrims are ours too: live, the field is close to white and the crests flood blue, so the luminance under the copy travels a long way during a ripple and text laid straight on it cannot hold 4.5:1 across the animation.",
+      "kind": "ours"
+    }
+  ]
+}

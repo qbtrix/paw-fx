@@ -1,0 +1,59 @@
+{
+  "name": "dither-relief",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["gallery", "image", "dither", "bayer", "three", "instanced", "codepen", "relief", "anime"],
+  "summary": "A photograph rebuilt as a 256x256 field of small 3D boxes, each standing proud of the plane by its own brightness, seen in orthographic perspective over a flat yellow ground. A sweep runs cell by cell through the grid and every box resolves from continuous tone into hard black-or-white against a 4x4 Bayer threshold, while the camera pans back and zooms out.",
+  "needs": ["three", "anime"],
+  "options": {
+    "resolution": {
+      "type": "number",
+      "default": 256,
+      "description": "Cells per side. Upstream's rows/columns of 256, which is 65536 instanced boxes. Drop it to 128 on a page carrying several heavy sections."
+    },
+    "ground": {
+      "type": "string",
+      "default": "#F9C939",
+      "description": "Scene background behind the relief. Upstream's flat yellow #F9C939."
+    },
+    "relief": {
+      "type": "number",
+      "default": 16,
+      "description": "How far a cell stands proud of the plane at the start, in scene units. Upstream's uGridOffsetStart 16, sweeping to its negation."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "url": "https://codepen.io/damarberlari/pen/pvgKamj",
+    "retrieved": "2026-09-07",
+    "sha256": "774ee9371cc8c51791e77fbd1895c0677207f9fd8b2d4e278a2b9a8bca584263",
+    "snapshot": "tests/fixtures/upstream-snapshots/damarberlari-pvgKamj.snapshot.txt"
+  },
+  "deviations": [
+    {
+      "what": "The pen's second panel, the bare Bayer threshold map rendered as its own grid at gridType 2, does not ship. With it go GRID_TYPE 0 and 2 from the vertex shader and the second uAnimationProgress sweep synced at \"<<+=660\". GRID_TYPE 1, Image Mode, is hard-wired and carried verbatim.",
+      "why": "The pen's own description says it is \"an animation sequence from Dithering (Part 1) article, illustrating how each pixel on an image is run through a threshold map\" -- as shipped it is a two-panel teaching diagram, and the lower panel is the explainer, not the effect. A drop-in section is not a diagram. MIT permits the adaptation; declaring it is how it stays a port rather than a quiet edit.",
+      "kind": "ours"
+    },
+    {
+      "what": "No photograph ships. Upstream embeds a portrait as a 114758-character base64 JPEG data URI; the texture here is read from the section's own <img> element and the snippet carries a generated SVG plate. The committed snapshot replaces that data URI with the token PHOTOGRAPH-REMOVED.",
+      "why": "The picture is content under separate rights, not mechanism -- the shader samples whatever texture it is handed, the way grid-motion and scroll-3d-grid already take theirs. Redistributing the JPEG inside a fixture would be shipping someone's photograph under a code licence.",
+      "kind": "ours"
+    },
+    {
+      "what": "The renderer, camera frustum and resize all measure the section's own stage box rather than window.innerWidth/innerHeight, and the canvas is created by mount() instead of read out of the page as canvas.webgl. failIfMajorPerformanceCaveat is added, a webglcontextlost listener bails to the resting state, and resize() re-renders after setSize.",
+      "why": "Upstream is a whole page with one canvas; a section is one of several on a page and may carry this one twice. The re-render after setSize is not cosmetic: setSize clears the drawing buffer and this effect paints only on a timeline tick, so a resize between ticks would leave an empty canvas over the hidden picture.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns without building anything, so the section stays the framed photograph the stylesheet drew.",
+      "why": "Effect contract: stillness at rest, and the picture is the content. There is nothing here a reader would be locked out of by skipping the sweep.",
+      "kind": "seam"
+    },
+    {
+      "what": "Pinned by snapshot, not by commit: origin carries url, retrieved, sha256 and snapshot instead of repo, commit and path.",
+      "why": "A CodePen has no revision history and the author can edit it at any moment, so there is no sha to fetch. The pinned reference is the copy of the author's three panels committed under tests/fixtures/upstream-snapshots/, and the gate hashes that file. Its header records the wrapper's own bytes and hash as a retrieval receipt, and names the three mechanical transformations applied.",
+      "kind": "seam"
+    }
+  ]
+}

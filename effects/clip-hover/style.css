@@ -1,0 +1,157 @@
+/* clip-hover: cards whose panel arrives in five clipped bands.
+
+   THE IMAGE SLOT. Upstream ships photographs; this library ships none, so the
+   panel and its slices paint `--fx-image`, which defaults to the layered
+   gradient below. A site author drops a picture into one card with one
+   declaration:
+
+       .fx-clip__card:nth-child(2) { --fx-image: url("/media/case-2.jpg"); }
+
+   The resting state is the card WITH its panel showing. That is upstream's own
+   ordering -- its `.js` class hides the panel only once the script is there to
+   bring it back -- so with the script blocked, the bundle pruned or reduced
+   motion on, the reader gets a finished card rather than an empty frame
+   waiting for a hover that will never arrive. `[data-fx-live]` is the switch. */
+.fx-clip {
+  --fx-bg: #0a0a0c;
+  --fx-ink: #f1efe9;
+  --fx-muted: #8e8a84;
+  --fx-accent: #ff6a3d;
+  --fx-rule: rgba(241, 239, 233, 0.14);
+  --fx-image:
+    radial-gradient(70% 55% at 25% 15%, rgba(255, 106, 61, 0.55), transparent 70%),
+    radial-gradient(60% 60% at 85% 85%, rgba(90, 130, 255, 0.45), transparent 72%),
+    linear-gradient(150deg, #23222a, #0d0d11);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 7vw, 6rem) clamp(1.25rem, 5vw, 4rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-clip *,
+.fx-clip *::before,
+.fx-clip *::after { box-sizing: border-box; }
+
+.fx-clip__head {
+  max-width: 76rem;
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+}
+.fx-clip__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-clip__intro {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+}
+
+.fx-clip__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 76rem;
+  margin: 0 auto;
+  border-top: 1px solid var(--fx-rule);
+}
+
+.fx-clip__card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1.5rem;
+  min-height: 26rem;
+  padding: clamp(1.75rem, 3vw, 2.75rem);
+  cursor: pointer;
+  overflow: clip;
+  border-bottom: 1px solid var(--fx-rule);
+}
+
+.fx-clip__img,
+.fx-clip__img-wrap,
+.fx-clip__img-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.fx-clip__img,
+.fx-clip__img-inner {
+  background: var(--fx-image);
+  background-size: cover;
+  background-position: 50% 50%;
+}
+.fx-clip__img,
+.fx-clip__img-wrap { overflow: hidden; }
+.fx-clip__img {
+  z-index: -1;
+  pointer-events: none;
+  --fx-columns: 0;
+  filter: brightness(0.6);
+}
+/* Upstream's `.js .card__img` rule: once the script is mounted the panel
+   starts hidden and the hover is what brings it in. */
+.fx-clip[data-fx-live] .fx-clip__img {
+  opacity: 0;
+  background-image: none;
+  filter: none;
+}
+.fx-clip__img-inner {
+  filter: brightness(0.6);
+  width: calc(100% + (var(--fx-columns) - 1) * 1px);
+}
+
+.fx-clip__date {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--fx-accent);
+}
+.fx-clip__date::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  border: 1px solid currentColor;
+  margin: 0 10px 4px 0;
+}
+.fx-clip__title {
+  margin: 0;
+  align-self: end;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-clip__link {
+  justify-self: start;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fx-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fx-accent);
+  padding-bottom: 0.15rem;
+}
+/* The shuffle swaps letters for glyphs of a different width; a fixed advance
+   keeps the three text runs from twitching while it runs. */
+.fx-clip__date,
+.fx-clip__link,
+.fx-clip__title [data-char] {
+  font-variant-numeric: tabular-nums;
+}
+.fx-clip__card [data-char] { display: inline-block; }
+
+@media (min-width: 46em) {
+  .fx-clip__grid { grid-template-columns: repeat(3, 1fr); }
+  .fx-clip__card + .fx-clip__card { border-left: 1px solid var(--fx-rule); }
+}

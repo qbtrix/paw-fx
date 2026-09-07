@@ -1,0 +1,144 @@
+/* card-stack-scroll: a deck of cards flying through the camera on scroll.
+
+   The composition is upstream's: `.wrap__inner` carries `perspective: 1000px`,
+   `.content` carries `transform-style: preserve-3d` and the three-axis tip
+   that gives the deck its angle, and every `.card` sits in the same grid cell
+   so they stack exactly. index.js only writes z and rotation onto the cards.
+
+   THE IMAGE SLOT. Upstream ships photographs on the card faces; this library
+   ships none, so each card paints --fx-card-image, which defaults to a
+   gradient tinted per card by --fx-card-hue. A site author drops pictures in
+   per card:
+
+       .fx-stack__card:nth-child(2) { --fx-card-image: url("/media/2.jpg"); }
+
+   `overflow: clip` on the section, never `hidden`: hidden would make the
+   section a scroll container, and the scroll-linked animation inside it would
+   then resolve against a box that never scrolls -- it would report as running
+   and leave every card at the identity transform.
+
+   The deck is pinned while it flies. Upstream lets the whole wrap scroll away
+   mid-range and hides the deck with an opacity callback when it leaves; here
+   the inner is sticky, so the deck stays on screen for the range that drives
+   it and never needs hiding. */
+.fx-stack {
+  --fx-bg: #0a0910;
+  --fx-ink: #f3f1fa;
+  --fx-muted: #8b86a3;
+  --fx-accent: #a78bfa;
+  --fx-card-hue: 265;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  background:
+    radial-gradient(70% 40% at 50% 12%, color-mix(in oklab, var(--fx-accent) 14%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-stack *,
+.fx-stack *::before,
+.fx-stack *::after { box-sizing: border-box; }
+
+.fx-stack__head {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: clamp(4rem, 10vw, 8rem) clamp(1.25rem, 5vw, 4rem) 0;
+  text-align: center;
+}
+.fx-stack__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-stack__title {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+.fx-stack__lede {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+/* The scroll track. The deck pins for its whole length, and the length is set
+   so the flight ends exactly as the pin releases: the range opens when the
+   track's top reaches the middle of the viewport and runs a further one and a
+   half screens, so the track needs two screens of travel behind the pinned
+   one. */
+.fx-stack__wrap {
+  position: relative;
+  min-height: 200svh;
+}
+.fx-stack__inner {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  perspective: 1000px;
+}
+.fx-stack__content {
+  width: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  display: grid;
+  grid-template-areas: "card";
+  grid-template-columns: 100%;
+  place-items: center;
+  transform: rotate3d(1, 0, 0, -25deg) rotate3d(0, 1, 0, 50deg) rotate3d(0, 0, 1, 25deg);
+}
+
+.fx-stack__card {
+  grid-area: card;
+  width: 30vw;
+  max-width: 255px;
+  min-width: 150px;
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+  position: relative;
+  padding: 5px;
+  outline: 1px solid color-mix(in oklab, var(--fx-ink) 35%, transparent);
+  /* The default face is written here rather than as a --fx-card-image on the
+     section, because a var() nested inside a custom property is substituted
+     where that property is DECLARED: every card would inherit one already
+     resolved hue and the deck would come out one colour. As a fallback inside
+     the background shorthand it resolves per card, and a site author can still
+     set --fx-card-image on the section or on one card to override it. */
+  background: var(--fx-card-image,
+    radial-gradient(75% 55% at 30% 20%, hsl(var(--fx-card-hue) 85% 68% / 0.85), transparent 72%),
+    linear-gradient(155deg, hsl(var(--fx-card-hue) 45% 26%), hsl(var(--fx-card-hue) 60% 10%)));
+  background-size: cover;
+  background-position: 50% 50%;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.55);
+  will-change: transform;
+}
+.fx-stack__card:nth-child(1) { --fx-card-hue: 265; }
+.fx-stack__card:nth-child(2) { --fx-card-hue: 200; }
+.fx-stack__card:nth-child(3) { --fx-card-hue: 330; }
+.fx-stack__card:nth-child(4) { --fx-card-hue: 160; }
+.fx-stack__card:nth-child(5) { --fx-card-hue: 30; }
+.fx-stack__card:nth-child(6) { --fx-card-hue: 240; }
+
+.fx-stack__card-label {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.7rem;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}

@@ -1,0 +1,21 @@
+{
+  "name": "good-snapshot-pin",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "Fixture for the port-fidelity gate. Not a shipped effect.",
+  "needs": [
+    "paper"
+  ],
+  "options": {},
+  "license": "Apache-2.0",
+  "origin": {
+    "url": "https://cdpn.io/someauthor/fullpage/abc123",
+    "retrieved": "2026-09-07",
+    "sha256": "6ab98ee60e7041e864d4ed082a0a4b64dfb38c90445e6f3a31958ec9bfff6a89",
+    "snapshot": "tests/fixtures/upstream-snapshots/probe-pen.js"
+  },
+  "deviations": []
+}

@@ -1,0 +1,74 @@
+{
+  "name": "cursor-follow",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": [
+    "cursor",
+    "pointer",
+    "menu",
+    "lerp",
+    "codrops",
+    "no-dependency"
+  ],
+  "summary": "A filled circle trails the pointer across the section on a 0.2 lerp, growing to 2x and fading to 0.8 opacity whenever it crosses a link.",
+  "needs": [],
+  "options": {
+    "scaleOnEnter": {
+      "type": "number",
+      "default": 2,
+      "description": "Scale the circle grows to over a link. Upstream's data-scale-enter on the demo's .cursor svg."
+    },
+    "opacityOnEnter": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Opacity the circle fades to over a link. Upstream's data-opacity-enter."
+    },
+    "amt": {
+      "type": "number",
+      "default": 0.2,
+      "description": "Lerp amount for all four channels. The lower it is, the slower the circle follows. Upstream's renderedStyles amt."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/codrops-sketches",
+    "commit": "bbf47ca34766fd2ca5f97d8b376d2eca148bf48f",
+    "path": [
+      "011-custom-cursor-filled-circle/js/index.js",
+      "011-custom-cursor-filled-circle/css/base.css",
+      "011-custom-cursor-filled-circle/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The cursor is scoped to its section instead of the page: the pointer listener is on the section rather than window, the enter/leave triggers are the section's own links rather than every <a> in the document, and the rAF loop starts on pointermove into the section and stops on pointerleave.",
+      "why": "Upstream is a whole page with one cursor and a loop that runs for the life of the tab. A paw-fx effect is a section that may appear twice on one page, and a page-global cursor would give two mounts two circles fighting over the same pointer. Scoping is also what makes destroy() able to cancel the frame -- upstream never tears anything down.",
+      "kind": "seam"
+    },
+    {
+      "what": "The initial hide moved from the constructor's `this.DOM.el.style.opacity = 0` into style.css, and pointerout with no relatedTarget plus window blur also stop the loop.",
+      "why": "With the script blocked, a JavaScript-only hide leaves a white circle parked at 0,0 forever, which fails the resting-state contract. The two extra stops cover the pointer leaving the window entirely, which fires neither pointerleave on the section nor anything else.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream writes `this.renderedStyles.ty.previous = this.renderedStyles.ty.previous = ...` where the first line for tx writes `previous = current = ...`; the port assigns current as well.",
+      "why": "A typo at the pinned commit: it leaves ty.current at 0 for the first frame, so the circle jumps down from the top edge on its first appearance instead of arriving under the pointer. Both channels are meant to be seeded together, as the tx line shows.",
+      "kind": "upstream-bug"
+    },
+    {
+      "what": "scaleOnEnter, opacityOnEnter and amt are mount() options rather than data attributes read off the element, and mix-blend-mode: difference is added to the circle.",
+      "why": "The effect contract publishes tuning through options{}, and reading a dataset string would leak `\"2\"` into a numeric lerp. The demo's data attributes stay on the svg in snippet.html so the two agree by eye. The blend mode is what keeps a white circle visible over both the pale links and the grey ground.",
+      "kind": "seam"
+    },
+    {
+      "what": "The page chrome -- .frame, its title and archive links, and the body-level palette variables -- is dropped, and a section eyebrow and lede are added.",
+      "why": "That markup is Codrops' demo furniture, not the effect, and a section needs copy of its own to be worth placing.",
+      "kind": "ours"
+    },
+    {
+      "what": "The ground taken from upstream's --color-bg (#5b5b5f) is darkened to #3d3d41.",
+      "why": "On upstream's grey the menu links (#e9c58f) measure 4.1:1 and the lede 4.35:1, both under the 4.5:1 floor this library holds text to. Darkening the ground rather than lightening the type keeps upstream's two ink colours exactly as they are, and lifts them to 6.8:1 and 7.1:1 on the flat ground, 5.4:1 and 5.6:1 under the centre of the radial wash.",
+      "kind": "ours"
+    }
+  ]
+}

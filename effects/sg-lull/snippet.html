@@ -1,0 +1,22 @@
+<!-- sg-lull section. Finished at rest with CSS alone: .fx-lull__rest is the
+     hero with JavaScript off, and index.js only covers it with a canvas once it
+     has a context and a linked program. The _fx paths are root-absolute because
+     a site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-lull/style.css">
+<section class="fx-lull" data-fx="sg-lull">
+  <div class="fx-lull__rest" aria-hidden="true"></div>
+  <div class="fx-lull__glints" aria-hidden="true"></div>
+  <div class="fx-lull__scrim" aria-hidden="true"></div>
+  <div class="fx-lull__grain" aria-hidden="true"></div>
+  <div class="fx-lull__inner">
+    <p class="fx-lull__eyebrow">Ambient by design</p>
+    <h1 class="fx-lull__title">It runs whether or not you are watching.</h1>
+    <p class="fx-lull__lede">Replace this copy with your own. The headline holds one line or three, and the water keeps rocking behind it either way.</p>
+    <div class="fx-lull__actions">
+      <a class="fx-lull__cta fx-lull__cta--primary" href="#">Set it up</a>
+      <a class="fx-lull__cta fx-lull__cta--ghost" href="#">See what it costs</a>
+    </div>
+  </div>
+</section>

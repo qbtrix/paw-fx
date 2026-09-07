@@ -1,0 +1,64 @@
+<!-- ascii-life section. Finished at rest with CSS alone: the block inside
+     <pre data-fx-grid> is a real frame of the effect, dumped from index.js at
+     the same 96x34 grid the script draws, and taken from a settled generation
+     rather than the random seed -- a seed reads as static, a settled board
+     reads as a paused automaton. So a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves a real board on the panel. destroy() puts
+     this exact frame back.
+     The board is decorative and carries aria-hidden; the eyebrow, headline,
+     lede and the rule list stay real text, so a screen reader gets the
+     section's meaning and none of the art.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-life/style.css">
+<section class="fx-ascii-life" data-fx="ascii-life">
+  <div class="fx-ascii-life__inner">
+    <div class="fx-ascii-life__copy">
+      <p class="fx-ascii-life__eyebrow">b3 / s23</p>
+      <h2 class="fx-ascii-life__title">Four rules, no randomness after the first frame.</h2>
+      <p class="fx-ascii-life__lede">Swap this for your own words. Everything below the headline follows from counting neighbours, and the board wraps at every edge, so a glider that leaves on the right comes back on the left.</p>
+    </div>
+    <div class="fx-ascii-life__screen">
+      <pre class="fx-ascii-life__grid" data-fx-grid aria-hidden="true">                                                         ███        █ █                    ██   
+             █                                           █ █   ██     █    █                    
+             █                                              █ █████        █                    
+             █                                           ██ █ █████ █      █                    
+                █                                          █        ███ █                       
+               █ █                                                    █                         
+               █ █                                                    █                         
+                █                                               █      █ █                      
+                                                              ██ ██                             
+          █                                                      ██                             
+         █ █                                                       █                            
+  ██     █ █                                                  █  ██                             
+  ██      █                                                    ██ █                             
+                                                                   █                            
+     ██       ██                          █                       █ █                           
+    █  █     █  █                        █ █                                                 █  
+     ██       ██     ██                 █  █                       █                       █   █
+█                   █ █                  ██                     ██  █                      █    
+█         █          █        ██                                ███ ██                    █     
+██       █ █                 █ █                                    ██                    █ ██ █
+█ █      █ █                  █                                   █ ███                    ██   
+██        █                          ██                             ███                         
+██                                   █ █     ██                    █ ██                         
+                                      █      ██                     ███                         
+                                                                  ██   █                        
+                                                                 █ ██  █                        
+                                                                 █  █ █ █                       
+                                                 █                  █  █                        
+                                                █ █               █ ███    █ █    █ █           
+                               ██               █ █       ███     █████    █  █  █  █           
+        ██                     ██                █      █  █ ████    ██    █ █    █ █           
+         ██                                           █  █ █ ████    █                          
+        █                                             █ ███ ██  ██ ███                          
+                                                       █ █          █                      ██   </pre>
+    </div>
+    <dl class="fx-ascii-life__rules">
+      <div class="fx-ascii-life__rule"><dt>Survive</dt><dd>A live cell with two or three live neighbours stays alive.</dd></div>
+      <div class="fx-ascii-life__rule"><dt>Born</dt><dd>A dead cell with exactly three live neighbours comes alive.</dd></div>
+      <div class="fx-ascii-life__rule"><dt>Otherwise</dt><dd>The cell is empty on the next generation.</dd></div>
+      <div class="fx-ascii-life__rule"><dt>Edges</dt><dd>The board is a torus: both axes wrap.</dd></div>
+    </dl>
+  </div>
+</section>

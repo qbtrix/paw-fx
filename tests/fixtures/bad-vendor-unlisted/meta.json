@@ -1,0 +1,11 @@
+{
+  "name": "bad-vendor-unlisted",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["fixture"],
+  "summary": "fixture: index.js imports a vendor file that needs does not list",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": { "repo": "paw-fx" }
+}

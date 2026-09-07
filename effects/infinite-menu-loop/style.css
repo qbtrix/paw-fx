@@ -1,0 +1,152 @@
+/* infinite-menu-loop: an oversized index that never reaches an end.
+
+   The resting state is the finished menu. Every item is in the markup, in
+   order, inside a scrollable box -- with the script blocked, the bundle pruned
+   or reduced motion on, a reader gets the whole list and can scroll it. The
+   script only clones a screenful onto the tail and wraps the scroll position,
+   so the seam is invisible.
+
+   Two layout choices are load-bearing:
+
+   1. The menu is deliberately NOT the whole section. A container that never
+      reaches its own scroll edge never chains its wheel events to the page, so
+      a full-bleed version would trap the wheel. The left gutter is ordinary
+      page scroll, and a coarse pointer never mounts the loop at all, so touch
+      is never trapped.
+   2. overflow-y is auto on the MENU and clip-x on the section. `hidden` on the
+      section would compute overflow-y to auto and make the section a second
+      scroll container nested in the first.
+   3. the section's height is FIXED, not a min-height. A min-height lets the
+      grid grow to fit its content, the 1fr row grows with it, and the menu
+      ends up exactly as tall as its own list -- scrollHeight equals
+      clientHeight, there is nothing to scroll, and the wrap never fires. That
+      failure is invisible: the effect mounts, reports itself live, and does
+      nothing. Measured, not assumed. */
+.fx-loopmenu {
+  --fx-bg: #0b0b0d;
+  --fx-ink: #f4f2ee;
+  --fx-muted: #8a8578;
+  --fx-accent: #c0092b;
+  --fx-rule: color-mix(in oklab, var(--fx-ink) 14%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: clip;
+  height: 100svh;
+  min-height: 34rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 5vw, 4rem);
+  background:
+    radial-gradient(70% 60% at 100% 0%, color-mix(in oklab, var(--fx-accent) 22%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-loopmenu *,
+.fx-loopmenu *::before,
+.fx-loopmenu *::after { box-sizing: border-box; }
+
+.fx-loopmenu__eyebrow {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+
+/* Upstream's .menu: a flex column, right-aligned, scrolling itself, with the
+   scrollbar hidden so the loop reads as motion rather than as a control. */
+.fx-loopmenu__menu {
+  position: relative;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  /* The list fades into the section at both ends, which is what hides the
+     wrap point without needing the script to be running. */
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+.fx-loopmenu__menu::-webkit-scrollbar { display: none; }
+
+/* Upstream's .menu__item / .menu__item-inner, with the 7vw / 9.5vh type ramp
+   and the 0.2s hover shift kept. */
+.fx-loopmenu__item {
+  flex: none;
+  padding: 0 0.5rem 0 0;
+}
+.fx-loopmenu__link {
+  white-space: nowrap;
+  position: relative;
+  display: block;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 7vw;
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  color: var(--fx-ink);
+  transition: transform 0.2s, color 0.2s;
+}
+.fx-loopmenu__link:hover,
+.fx-loopmenu__link:focus-visible {
+  font-style: italic;
+  transform: translate3d(2rem, 0, 0);
+  color: var(--fx-accent);
+  outline: none;
+}
+/* Upstream's ::before rule: a 3.5rem lead-in dash that appears on hover. */
+.fx-loopmenu__link::before {
+  content: '';
+  top: 55%;
+  width: 3.5rem;
+  height: 1px;
+  background: currentColor;
+  position: absolute;
+  right: calc(100% + 1rem);
+  opacity: 0;
+  pointer-events: none;
+}
+.fx-loopmenu__link:hover::before,
+.fx-loopmenu__link:focus-visible::before { opacity: 1; }
+
+.fx-loopmenu__note {
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fx-rule);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--fx-muted);
+  max-width: 34rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-loopmenu__link { transition: none; }
+}
+
+@media (min-width: 53em) {
+  .fx-loopmenu {
+    grid-template-columns: minmax(14rem, 22vw) 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'eyebrow menu'
+      'note    menu';
+    align-content: start;
+    column-gap: clamp(2rem, 6vw, 6rem);
+  }
+  .fx-loopmenu__eyebrow { grid-area: eyebrow; }
+  .fx-loopmenu__note { grid-area: note; align-self: end; }
+  .fx-loopmenu__menu { grid-area: menu; }
+  .fx-loopmenu__link {
+    padding: 1vh 0.5rem;
+    font-size: 9.5vh;
+  }
+}

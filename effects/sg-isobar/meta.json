@@ -1,0 +1,71 @@
+{
+  "name": "sg-isobar",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "storm",
+    "spiral",
+    "chart",
+    "dark",
+    "glow",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's isobar: a night satellite pass over three spiral storm systems, each a pinwheel of luminous rain bands winding into a dark eye, drifting and breathing across a near-black chart.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#3f7bff",
+        "#9a6cff",
+        "#48e6d2",
+        "#ff7a97"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "spin": {
+      "type": "number",
+      "default": 0.25,
+      "description": "Rate each pinwheel revolves about its own eye. Upstream default, range 0 to 0.8."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Rate the systems drift bodily across the chart. Upstream default, range 0 to 1."
+    },
+    "winding": {
+      "type": "number",
+      "default": 5,
+      "description": "How tightly the rain bands wind in. Upstream default, range 2 to 10."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "isobar/shader.frag",
+      "isobar/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `midnight` preset.",
+      "why": "isobar/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a midnight set: the hue blends by radius, so these run cold at the eye and warm at the outer arms, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

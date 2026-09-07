@@ -1,0 +1,252 @@
+/* vanta-net: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has run, or after a refused
+   WebGL context sends mount() back to rest, this is what a visitor sees. A 3D
+   hero needs that more than a CSS one does, not less: index.js asks for its
+   context with failIfMajorPerformanceCaveat, so on a machine with hardware
+   acceleration off the canvas genuinely never appears.
+
+   The palette is declared once here, as --fx-color and --fx-bg, and index.js
+   reads it back off the section, so overriding the custom properties moves the
+   WebGL mesh and the CSS lattice together instead of leaving the two states
+   clashing at the moment the canvas paints.
+
+   Stacking order, and the one thing to preserve when editing:
+     -3  .fx-net::before    the two colour blooms
+     -2  .fx-net__rest      the perspective lattice, covered once WebGL paints
+     -1  .fx-net__canvas    inserted by index.js
+      0  .fx-net__scrim     legibility wash, over whichever layer is showing
+      0  .fx-net__grain     film grain
+      1  .fx-net__inner     the copy
+   The scrim sits above both background layers so headline contrast does not
+   change when the mesh mounts. */
+.fx-net {
+  --fx-color: #ff3f81;
+  --fx-bg: #23153c;
+  --fx-glow: #7b3fe4;
+  --fx-ink: #ffffff;
+  --fx-muted: #e7ddf5;
+  --fx-scrim: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Without this, min-height sizes the content box and the padding is added
+     outside it, so a full-bleed hero overflows the viewport by exactly its own
+     padding. An effect drops into a site whose reset it does not control. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Two blooms roughly where the live mesh is brightest -- the spot light sits
+   directly above the field, so the middle of the section carries most of the
+   light and the corners fall to background. Untransformed, so they stay put
+   while the lattice below them is in perspective. */
+.fx-net::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: -3;
+  background:
+    radial-gradient(42% 40% at 50% 62%, color-mix(in oklab, var(--fx-color) 34%, transparent), transparent 72%),
+    radial-gradient(52% 46% at 22% 30%, color-mix(in oklab, var(--fx-glow) 42%, transparent), transparent 74%),
+    radial-gradient(46% 44% at 84% 26%, color-mix(in oklab, var(--fx-glow) 30%, transparent), transparent 72%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+/* The lattice. Two rulings plus a dot grid, all on one perspective transform,
+   which is what turns a flat grid into the raked field the WebGL effect
+   draws: a plane of nodes seen from above and in front, thinning toward the
+   horizon. The mask is the horizon -- without it the ruling runs to a hard
+   edge where the transform stops, which no 3D mesh ever does. */
+.fx-net__rest {
+  position: absolute;
+  inset: -40% -30% -20%;
+  z-index: -2;
+  background-image:
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--fx-color) 92%, transparent) 0 1.7px, transparent 2.2px),
+    repeating-linear-gradient(90deg, color-mix(in oklab, var(--fx-color) 46%, transparent) 0 1px, transparent 1px 84px),
+    repeating-linear-gradient(0deg, color-mix(in oklab, var(--fx-color) 30%, transparent) 0 1px, transparent 1px 84px);
+  background-size: 84px 84px, auto, auto;
+  background-position: 42px 42px, 0 0, 0 0;
+  transform: perspective(760px) rotateX(66deg) scale(1.35);
+  transform-origin: 50% 38%;
+  -webkit-mask-image: radial-gradient(64% 58% at 50% 46%, #000 0%, rgba(0, 0, 0, 0.55) 58%, transparent 84%);
+  mask-image: radial-gradient(64% 58% at 50% 46%, #000 0%, rgba(0, 0, 0, 0.55) 58%, transparent 84%);
+  opacity: 0.9;
+  transition: opacity 420ms ease;
+  will-change: transform;
+}
+
+/* index.js sets data-fx-live only once it holds a context, has rendered a
+   frame and has confirmed the context is not already lost. Every failure path
+   leaves it unset and destroy() removes it, so this rule is also the proof
+   that teardown worked. */
+.fx-net[data-fx-live] .fx-net__rest,
+.fx-net[data-fx-live]::before {
+  opacity: 0;
+}
+
+/* The renderer's own canvas, styled here rather than by the inline styles
+   upstream's applyCanvasStyles writes. */
+.fx-net__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fine grain over everything. Wide blurred gradients band on 8-bit displays;
+   a little noise is what hides it. Inline SVG, so the section fetches
+   nothing off-site. */
+.fx-net__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than trusting where the mesh happens to
+   be dark, because in the live state it does not stay still. Held flat across
+   the inner third of the ray -- the whole content column -- and only then
+   eased out, so the eyebrow and the button row at the ends of the column get
+   the same cover as the headline. Measured worst case across four live frames
+   with the copy hidden is recorded at the bottom of this file; re-measure the
+   same way before lowering --fx-scrim. */
+.fx-net__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    100% 86% at 50% 50%,
+    color-mix(in oklab, #150b22 84%, transparent) 0%,
+    color-mix(in oklab, #150b22 84%, transparent) 33%,
+    color-mix(in oklab, #150b22 58%, transparent) 51%,
+    color-mix(in oklab, #150b22 31%, transparent) 68%,
+    color-mix(in oklab, #150b22 11%, transparent) 84%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-net__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  text-align: center;
+}
+
+.fx-net__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid color-mix(in oklab, var(--fx-color) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-color) 12%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-net__title {
+  margin: 0;
+  font-size: clamp(2.6rem, 7.5vw, 5.75rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, #150b22 60%, transparent);
+}
+
+.fx-net__lede {
+  margin: 1.75rem auto 0;
+  max-width: 36rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.28rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-net__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-net__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-net__cta--primary {
+  background: var(--fx-ink);
+  color: #1b0f2e;
+}
+
+.fx-net__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-net__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-net__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 44%, transparent);
+}
+
+.fx-net__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting lattice drifts, and only where motion is allowed. The mesh
+   has its own reduced-motion path in index.js: one frame, then no loop and no
+   pointer parallax. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-net__rest {
+    animation: fx-net-drift 42s linear infinite;
+  }
+  @keyframes fx-net-drift {
+    to {
+      background-position: 42px 126px, 0 84px, 0 84px;
+    }
+  }
+}
+
+/* Contrast, measured against the LIVE mesh rather than against this resting
+   state, with .fx-net__inner hidden so the sample reads the background the
+   text actually sits on, worst case over four frames at 1440x900:
+
+     eyebrow    6.13:1     headline   6.88:1     lede       6.10:1
+     ghost CTA  7.75:1     primary CTA 18.19:1 (its own opaque white pill)
+
+   The mesh is brighter in motion than any still of it suggests, so re-measure
+   the same way before lowering --fx-scrim: sample with the copy hidden across
+   several frames, not one. */

@@ -1,0 +1,73 @@
+/* scramble: a headline that types itself in out of noise.
+
+   The resting state is the finished headline, full stop. index.js splits it
+   into per-character spans and blanks them only at the moment it starts the
+   run, so with the script blocked, the bundle pruned, or reduced motion on,
+   the reader gets the same sentence at the same size.
+
+   The copy is set in a monospace stack on purpose. The effect swaps every
+   character for a random glyph 45 times, and in a proportional face each swap
+   changes the line's width -- the words jump and the line breaks the splitter
+   computed once stop matching. A fixed advance width makes the scramble sit
+   still while the letters change under it. */
+.fx-scramble {
+  --fx-bg: #05070a;
+  --fx-ink: #e6fff4;
+  --fx-muted: #7f9aa0;
+  --fx-accent: #61dca3;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 80svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(4rem, 9vw, 8rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(60% 55% at 22% 18%, color-mix(in oklab, var(--fx-accent) 20%, transparent), transparent 68%),
+    radial-gradient(55% 50% at 80% 82%, color-mix(in oklab, #61b3dc 20%, transparent), transparent 66%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-scramble *,
+.fx-scramble *::before,
+.fx-scramble *::after { box-sizing: border-box; }
+
+.fx-scramble__inner {
+  max-width: 56rem;
+  width: 100%;
+}
+.fx-scramble__eyebrow {
+  margin: 0 0 1.5rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+/* The split target. */
+.fx-scramble__copy {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: clamp(1.35rem, 3.6vw, 2.75rem);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+/* anime's splitter wraps each word and character in a bare span carrying
+   data-word / data-char and no class, and stamps data-line on the words as it
+   measures which visual line each one landed on. There is no rule for
+   data-line here on purpose: with a character split the words ARE the direct
+   children, so a [data-line] display rule would stack every word vertically.
+   The characters need inline-block so swapping their content cannot collapse
+   them. */
+.fx-scramble__copy [data-char] { display: inline-block; }
+.fx-scramble__lede {
+  margin: 2.25rem 0 0;
+  max-width: 38rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

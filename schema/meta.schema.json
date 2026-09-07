@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/qbtrix/paw-fx/schema/meta.schema.json",
+  "title": "paw-fx effect meta",
+  "description": "meta.json for one effect under effects/<name>/. Validated by scripts/lint.mjs. origin is always required; repo, commit and path inside it are required only for a ported effect, which is why they live in the else branch and not in properties.origin -- listing them there made the paw-fx carve-out dead and forced originals to ship an empty commit.",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "category",
+    "tags",
+    "summary",
+    "needs",
+    "options",
+    "license",
+    "origin"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "backgrounds",
+        "particles",
+        "3d-hero",
+        "scroll",
+        "text",
+        "cursor",
+        "transition",
+        "menu",
+        "gallery"
+      ],
+      "description": "Which shelf the effect sits on. `menu` covers navigation reveals and hover treatments on nav items; `gallery` covers image grids, sliders and looping galleries. Both were added when the Codrops survey found its two strongest families had nowhere to go."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "string"
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "anime",
+          "three",
+          "paper",
+          "tsparticles",
+          "lenis"
+        ]
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "type",
+          "default",
+          "description"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "license": {
+      "enum": [
+        "MIT",
+        "Apache-2.0",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "Unlicense",
+        "CC0-1.0"
+      ]
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "A real resolved commit sha, never a branch or tag name. The gate fetches this exact commit."
+        },
+        "path": {
+          "description": "The upstream file this effect is ported from. A LIST when the port genuinely spans several upstream files: a paper-design shader splices in shader-utils.ts and shader-sizing.ts, every vanta effect extends src/_base.js, and the marquee needs its component plus the globals.css that defines its keyframes. Listing them all is what stops the port-fidelity gate reading shared upstream code as invention.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          ]
+        },
+        "url": {
+          "type": "string",
+          "description": "The source page the code was taken from. Used with the snapshot shape."
+        },
+        "retrieved": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "The date the snapshot was taken, ISO. A snapshot source can change under us, so when we looked is part of the record."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Hash of the committed snapshot file, which is what the gate verifies against."
+        },
+        "snapshot": {
+          "type": "string",
+          "description": "Repo-relative path to the committed copy of the upstream source. Pin the extracted author panels, not a wrapper page: a host's wrapper carries content-hashed asset URLs and injected runtime guards, so hashing it false-fails on the host's own churn and diffs against code the author never wrote."
+        }
+      },
+      "description": "Where the effect was ported from. Two shapes are allowed, because not every usable source is a git repository. A git origin is repo + commit + path, and the gate re-fetches that exact commit. A snapshot origin is url + retrieved + sha256 + snapshot, for a source with no commit to pin, such as a CodePen the author can edit at any time with no version history. There the pinned reference is a copy of the source committed alongside the effect, and the gate compares its hash. Both are real provenance; they are anchored differently."
+    },
+    "deviations": {
+      "description": "Deliberate, declared departures from upstream. The port-fidelity gate treats an undeclared change to shader source, easing curves or timing constants as invention and fails it; declaring it here with a reason is how a necessary change passes. Use `kind` to say which sort it is.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "what",
+          "why",
+          "kind"
+        ],
+        "properties": {
+          "what": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "seam",
+              "upstream-bug",
+              "api-migration",
+              "ours"
+            ],
+            "description": "seam = plumbing we always change. upstream-bug = broken at the pinned commit itself, so fixing it is not a migration. api-migration = a dependency version forced it. ours = a deliberate product choice, which must be justified."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "origin": {
+        "required": [
+          "repo"
+        ],
+        "properties": {
+          "repo": {
+            "const": "paw-fx"
+          }
+        }
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "origin": {
+        "oneOf": [
+          {
+            "required": [
+              "repo",
+              "commit",
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "url",
+              "retrieved",
+              "sha256",
+              "snapshot"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

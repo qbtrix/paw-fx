@@ -1,0 +1,87 @@
+{
+  "name": "sticky-sections",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": [
+    "scroll",
+    "sticky",
+    "pin",
+    "stack",
+    "scrub",
+    "codrops",
+    "anime"
+  ],
+  "summary": "Full-height panels that pin in turn: as the next one scrolls over it, a panel dims to brightness(60%) contrast(135%) and drifts up 15%, while the image inside it slides 40% and tips -20deg.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "brightness": {
+      "type": "number",
+      "default": 60,
+      "description": "Percent brightness a panel dims to as the next one covers it. Upstream's brightness(60%)."
+    },
+    "contrast": {
+      "type": "number",
+      "default": 135,
+      "description": "Percent contrast a panel is pushed to as it dims. Upstream's contrast(135%)."
+    },
+    "lift": {
+      "type": "number",
+      "default": -15,
+      "description": "Percent of its own height a panel drifts up by. Upstream's yPercent: -15."
+    },
+    "imageLift": {
+      "type": "number",
+      "default": -40,
+      "description": "Percent of its own height the image inside a panel drifts up by. Upstream's yPercent: -40."
+    },
+    "imageRotate": {
+      "type": "number",
+      "default": -20,
+      "description": "Degrees the image tips over by. Upstream's rotation: -20."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/StickySections",
+    "commit": "69c788898216d94a796a21c87adc475f3a3f73f5",
+    "path": [
+      "js/demo1/index.js",
+      "css/base.css",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The gsap.timeline with scrollTrigger { start: 'top top', end: '+=100%', scrub: true } becomes an anime createTimeline with autoplay: onScroll({ enter: 'top top', leave: 'top bottom', sync: true }), and ease 'none' becomes 'linear' while 'power1.in' becomes 'inQuad'.",
+      "why": "GSAP is banned here: its licence forbids use in tools that let people build animations without code. The mapping is exact rather than approximate. A panel is one viewport tall, so its bottom reaching the container's top is one viewport of scroll after its top did, which is what '+=100%' means; anime's sync of 1 applies no smoothing lerp, which is what scrub: true means; and GSAP's power scale is power1=Quad, so power1.in is inQuad. anime's threshold strings read '<container edge> <target edge>', the reverse of how they scan, so the leave is written 'top bottom' -- with the tokens the other way round offsetEnd lands before offsetStart, the distance clamps to zero and the panel silently never moves.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "A scrubbed timeline is given a nominal SCRUB_DURATION of 100 that both tweens share.",
+      "why": "GSAP's scrub maps the scroll range onto the timeline without the timeline needing a length of its own, and there is no upstream number to carry over. anime seeks a timeline by progress, so the two tweens only have to be the same length and start together; the value itself is never played.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Lenis and its raf loop are dropped, along with the ScrollTrigger.update call driven off its scroll event and the imagesloaded preload.",
+      "why": "Smooth scrolling is a page-level decision and paw-fx ships it as its own effect (smooth-scroll); a section that hijacks the page's scrolling because it happens to be on the page is a bad neighbour, and two sections doing it would fight. anime's onScroll reads native scroll directly. The preload exists to hide a flash of unloaded images and there are no bundled images here to load.",
+      "kind": "seam"
+    },
+    {
+      "what": "The last panel gets no tween at all, where upstream tweens it to filter 'none' and yPercent 0.",
+      "why": "Same outcome, minus an interpolation anime cannot perform. Upstream writes both values as ternaries inside a shared call, and for the last panel they resolve to filter 'none' and yPercent 0: 'none' is not a filter list, so there is nothing between brightness(100%) contrast(100%) and it to interpolate. GSAP quietly sets a value it cannot tween; anime would try to decompose the keyword. Not tweening the last panel says exactly what upstream means.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "Only demo 1 is ported. The other fourteen exit treatments, their per-demo palettes and the .content--card / .content--half / .content--perspective layouts are dropped, and .content--sticky's width goes from 100vw to 100%.",
+      "why": "Fifteen variants of one structural pattern would be fifteen near-duplicate effects in a registry a site agent queries by name. Demo 1 is the one the repo opens on and the one the article leads with; the rest are worth their own ports if they are ever wanted. 100vw is wider than the section whenever a scrollbar is showing, which pushes the whole page sideways.",
+      "kind": "ours"
+    },
+    {
+      "what": "The twelve bundled PNGs become a .fx-sticky__img div painting a gradient, and the typekit stylesheet (area-variable) and its font-variation-settings are dropped for a system sans stack.",
+      "why": "Codrops' demo artwork is licensed separately from the code and is not ours to redistribute; the image is a slot the panel animates whatever it is given, so a gradient keeps the treatment legible and a site author overrides background-image. The variable font is a hosted stylesheet a generated site cannot fetch offline, and its axis settings do nothing without it.",
+      "kind": "ours"
+    }
+  ]
+}

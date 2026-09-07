@@ -1,0 +1,94 @@
+{
+  "name": "plane-morph",
+  "version": "1.0.0",
+  "category": "transition",
+  "tags": [
+    "transition",
+    "three",
+    "webgl",
+    "morph",
+    "gallery",
+    "codrops",
+    "anime",
+    "detail-view"
+  ],
+  "summary": "Five pictures that live on the GPU rather than in the DOM: every slot is an empty box with a real layout rect, and a textured plane tracks it. Clicking one in the band flies and rescales that plane into the hero slot of a detail view while the other four fade away and four satellites fade in around it, so the image travels between layouts instead of unloading and loading again.",
+  "needs": [
+    "three",
+    "anime"
+  ],
+  "options": {
+    "morphDuration": {
+      "type": "number",
+      "default": 900,
+      "description": "Milliseconds a plane takes to fly and rescale between layouts. Upstream's DUR_MORPH of 0.9s."
+    },
+    "fadeDuration": {
+      "type": "number",
+      "default": 500,
+      "description": "Milliseconds an opacity tween takes. Upstream's DUR_FADE of 0.5s."
+    },
+    "cornerRadius": {
+      "type": "number",
+      "default": 8,
+      "description": "Corner radius of the rounded-box mask, in CSS pixels. Upstream's CORNER_RADIUS."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "bnpne/page-transitions-with-webgpu-vanilla-js",
+    "commit": "70e5c0eafb14cd1fdf02aef0799ba486dead46dc",
+    "path": [
+      "src/gpu.js",
+      "src/controller.js",
+      "src/transitions/constants.js",
+      "src/transitions/mainToInner.js",
+      "src/transitions/innerToMain.js",
+      "src/pages/home.js",
+      "src/pages/inner.js",
+      "src/global.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "WebGPURenderer becomes WebGLRenderer, and MeshBasicNodeMaterial with a TSL opacityNode becomes a ShaderMaterial whose fragment stage multiplies alpha by the same rounded-box SDF written as GLSL. The half/r/p/q/dist arithmetic and the smoothstep(-1.0, 1.0) feather are the node graph line for line; TSL's dist.smoothstep(-1,1).oneMinus() is 1.0 - smoothstep(-1.0, 1.0, dist).",
+      "why": "paw-fx vendors the classic three.module.js, which has no WebGPURenderer, no NodeMaterial and no TSL, so upstream's src/gpu.js cannot run here unchanged. Nothing in the effect needs WebGPU as a capability -- no compute shader, no storage buffer, no indirect draw -- and the author says so directly in the Codrops article: \"this works the same with WebGL, I have been using WebGPU as a modern alternative.\" three.js documents WebGPURenderer falling back to a WebGL 2 backend of its own accord, so upstream is not WebGPU-only at runtime either.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP is replaced by anime.js v4's animate(). tweenBounds and tweenOpacity keep upstream's fields, durations and delays exactly -- DUR_MORPH 0.9s, DUR_FADE 0.5s, the 0.25s + 0.08s satellite stagger in, the reversed 0.05s stagger and 0.7 duration scale out -- with seconds multiplied by MS. Easings are translated by degree, because GSAP's powerN is degree N+1: power3.inOut is inOutQuart, power2.out is outCubic, power2.in is inCubic.",
+      "why": "GSAP's licence bars use in a tool that lets people build animations without writing code, which is exactly what a site-building agent is, so it cannot ship. It was never the mechanism here: every transition tweens plain fields on ordinary JS objects, which anime does natively. No paid plugin is involved.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The SPA is gone. src/index.js, the history router in src/controller.js, src/preloader.js, src/cursor.js and src/carousel.js are not ported, and neither is the /index page with its float constellation, so IndexToInner, InnerToIndex, MainToIndex and IndexToMain do not ship. What is ported from controller.js is the plane tracking attach and detach, the layout snap and the view swap. SplitText drove decorative heading reveals and is dropped with it.",
+      "why": "A drop-in section is one part of a page a site already routes, not a whole single-page app, and it cannot own the URL. Two views is what the morph needs to be legible; the third adds a second choreography without adding a technique. SplitText is a Club GreenSock plugin and the text shelf already carries splitters.",
+      "kind": "seam"
+    },
+    {
+      "what": "The detail view is a constellation inside the section -- the hero slot centred with four satellites placed around it at upstream's own INNER_X_OFFSETS_VW of -14, 10, -6 and 16 -- instead of upstream's full-height vertical stack scrolled by Lenis. Lenis is not a dependency of this effect.",
+      "why": "Upstream's inner page sets document.body.style.height to the stack's height and scrolls it; a section cannot resize the document it sits in, and a nested scroller inside one section is worse than no scroller. The satellite rects are what the transition needs, and their horizontal offsets are upstream's. Smooth scrolling already ships separately as smooth-scroll.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every rect is measured against the section's stage box rather than the viewport, the canvas is created by mount() and appended inside the section instead of being a fixed full-window #gpu-canvas, and the camera FOV and aspect are recomputed from that box. failIfMajorPerformanceCaveat is added and a webglcontextlost listener bails to the resting state.",
+      "why": "Upstream is a whole page with one canvas over the viewport. A section is one of several on a page and may carry this one twice, so a window-measured scene would put the second mount's planes over the first one's boxes. The camera math is unchanged -- it is still the FOV matched to CAMERA_DISTANCE so the z=0 plane maps 1:1 to CSS pixels; only what supplies the width and height changes.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no renderer is built at all: the click still swaps the views, instantly, and the pictures stay in the DOM. The detail view's five slots each carry an <img> of their own, and the reduced-motion click points all five at whichever picture was clicked.",
+      "why": "Effect contract: mount() stays at rest. Stillness means no travel, not a detail view nobody can open -- and that view carries copy of its own, so hiding it outright would trap content behind an animation the reader asked not to see. The five <img> elements are ours: with the GPU driving they are all at opacity 0 and the planes paint instead, but with no GPU they are the only thing that can, and every plane there reuses the clicked picture's texture anyway, which is why all five take the same src. curtain-transition set the precedent for keeping the swap and dropping only the sweep.",
+      "kind": "seam"
+    },
+    {
+      "what": "No photograph ships. The plane textures are read from each slot's own <img> and the snippet points those at generated SVG plates. Upstream's IMAGES array of six Unsplash .webp paths is gone with them, as are the per-image aspect ratios in global.css that were those photographs' own dimensions.",
+      "why": "An MIT grant covers the author's code and cannot grant rights in the photographs. The technique takes whatever texture it is handed, so the picture is the consumer's to supply. The slot has to stay a real <img>: its pixels are the texture, so unlike most image slots here it cannot be a CSS background.",
+      "kind": "ours"
+    },
+    {
+      "what": "Neither view is display:none. Both are absolutely positioned over the stage and always laid out; the one not showing is opacity 0, pointer-events none and carries the inert attribute.",
+      "why": "The transition tweens a plane to the rect it will have in the incoming view, so that rect has to exist before the tween starts -- a display:none view would measure zero and every plane would fly to the top-left corner. inert is ours: opacity alone leaves a keyboard able to reach a view nobody can see.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+/* sg-contour: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The elevation ramp is declared here as --fx-c1..--fx-c4 and index.js reads it
+   back off the section, so overriding the custom properties moves the shader
+   and the resting map together.
+
+   Drawing real isolines in CSS is not possible, so the resting state draws the
+   thing they are lines OF: three overlapping elliptical level sets on the same
+   ring pitch, one per landform, each tinted by its own height. Every fifth ring
+   is an index contour at twice the width, which is the shader's own rule and
+   the detail that makes the fallback read as a survey rather than as a ripple.
+
+   Stacking:
+     -2  .fx-contour__rest    the CSS map, covered by the canvas once it paints
+     -1  <canvas>             inserted by glsl-mount.js (inline style)
+      0  .fx-contour__scrim   legibility wash, over whichever layer is showing
+      1  .fx-contour__inner   the copy */
+.fx-contour {
+  --fx-c1: #2f4bd8;
+  --fx-c2: #16b8c8;
+  --fx-c3: #4ade9b;
+  --fx-c4: #ffd166;
+  --fx-bg: #08080d;
+  --fx-ink: #ffffff;
+  --fx-muted: #c6d3d8;
+  --fx-ring: 26px;
+  --fx-speed: 1;
+  --fx-scrim: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Two landforms and their index contours. The ordinary rings sit on --fx-ring;
+   the index rings on five times that, at twice the stroke, exactly as the
+   shader does it. The faint elevation tint under each is the shader's
+   `bg + fragHue * (0.010 + 0.020 * eF)` term: plateaus read as deep water
+   rather than as dead pixels. */
+.fx-contour__rest {
+  position: absolute;
+  inset: -20%;
+  z-index: -2;
+  background:
+    repeating-radial-gradient(
+      68% 54% at 24% 34%,
+      transparent 0 calc(var(--fx-ring) * 5 - 2px),
+      color-mix(in oklab, var(--fx-c2) 88%, transparent) calc(var(--fx-ring) * 5 - 2px) calc(var(--fx-ring) * 5)
+    ),
+    repeating-radial-gradient(
+      68% 54% at 24% 34%,
+      transparent 0 calc(var(--fx-ring) - 1px),
+      color-mix(in oklab, var(--fx-c2) 46%, transparent) calc(var(--fx-ring) - 1px) var(--fx-ring)
+    ),
+    repeating-radial-gradient(
+      58% 74% at 79% 71%,
+      transparent 0 calc(var(--fx-ring) * 5 - 2px),
+      color-mix(in oklab, var(--fx-c4) 82%, transparent) calc(var(--fx-ring) * 5 - 2px) calc(var(--fx-ring) * 5)
+    ),
+    repeating-radial-gradient(
+      58% 74% at 79% 71%,
+      transparent 0 calc(var(--fx-ring) - 1px),
+      color-mix(in oklab, var(--fx-c3) 44%, transparent) calc(var(--fx-ring) - 1px) var(--fx-ring)
+    ),
+    radial-gradient(52% 46% at 24% 34%, color-mix(in oklab, var(--fx-c1) 26%, transparent), transparent 76%),
+    radial-gradient(46% 54% at 79% 71%, color-mix(in oklab, var(--fx-c3) 16%, transparent), transparent 74%),
+    var(--fx-bg);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* The shader holds its corners down with a vignette; so does the fallback, and
+   for the same reason: the line field is uniform, so without it the hero has no
+   centre. */
+.fx-contour__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(72% 66% at 50% 50%, transparent 40%, var(--fx-bg) 100%);
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-contour[data-fx-live] .fx-contour__rest {
+  opacity: 0;
+}
+
+/* A dark wash over the copy column. Held flat across the inner 36% then eased
+   out over four stops, because a flat core running straight into one linear
+   ramp draws a visible hard-edged ellipse. The worst case for this effect is
+   the amber index contours drifting under the lede, not the near-black base.
+   Measured worst case across four animation frames with the copy hidden is
+   recorded in the PR; re-measure the same way before lowering --fx-scrim. */
+.fx-contour__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    102% 90% at 50% 50%,
+    color-mix(in oklab, #04040a 93%, transparent) 0%,
+    color-mix(in oklab, #04040a 93%, transparent) 36%,
+    color-mix(in oklab, #04040a 66%, transparent) 55%,
+    color-mix(in oklab, #04040a 30%, transparent) 72%,
+    color-mix(in oklab, #04040a 10%, transparent) 88%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-contour__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-contour__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-contour__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c3);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c3) 20%, transparent);
+}
+
+.fx-contour__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #04040a 70%, transparent);
+}
+
+.fx-contour__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-contour__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-contour__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-contour__cta--primary {
+  background: var(--fx-ink);
+  color: #06060c;
+}
+
+.fx-contour__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-contour__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-contour__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-contour__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed. A slow scale
+   is the right analogue here: the shader's levels creep uphill, which on a
+   nested ring field looks like the rings breathing outward. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-contour__rest {
+    animation: fx-contour-creep calc(46s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-contour-creep {
+    0% {
+      transform: scale(1) translate3d(0, 0, 0);
+    }
+    100% {
+      transform: scale(1.1) translate3d(-2%, 1%, 0);
+    }
+  }
+}

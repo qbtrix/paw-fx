@@ -1,0 +1,66 @@
+{
+  "name": "morph-nav",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": ["menu", "navigation", "tabs", "segmented", "pill", "flip", "anime", "state"],
+  "summary": "A segmented tab bar whose active pill is one shared element re-parented into the tab you click, springing across at bounce 0.2 over 350ms while the panel below crossfades and tweens its height to the new content.",
+  "needs": ["anime"],
+  "options": {
+    "bounce": {
+      "type": "number",
+      "default": 0.2,
+      "description": "Overshoot on the pill's spring. Upstream's spring({ bounce })."
+    },
+    "duration": {
+      "type": "number",
+      "default": 350,
+      "description": "Milliseconds the pill takes to reach the new tab. Upstream's spring({ duration })."
+    },
+    "fade": {
+      "type": "number",
+      "default": 500,
+      "description": "Milliseconds of the panel crossfade. Upstream's enterFrom/leaveTo duration."
+    },
+    "enterDelay": {
+      "type": "number",
+      "default": 200,
+      "description": "Milliseconds the incoming panel waits before fading up. Upstream's enterFrom delay."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "juliangarnier/anime",
+    "commit": "01b81be1df6843ccfe0a71c0699a746bf740dd77",
+    "path": [
+      "examples/auto-layout/nav/index.js",
+      "examples/auto-layout/nav/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Both createLayout calls take this mount's own elements instead of the selectors 'nav ul' and '.content', and the click handler is an element listener instead of document.onclick.",
+      "why": "A selector finds the first match in the whole document, so two of these sections on one page would both drive the first one's bar, and document.onclick is a single slot that the second mount would overwrite. The listener also re-checks that the tab closest() found belongs to this section, because closest() walks out past the section boundary.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the click handler still runs and still swaps the pill and the panel; only the two createLayout instances are skipped.",
+      "why": "Effect contract: mount() stays at rest -- but a tab bar's switching is its function, not its decoration. Returning early the way a particle field does would leave a control that looks interactive and does nothing. Skipping the layouts removes the spring and the crossfade and leaves the swap instant, which is what the preference asks for.",
+      "kind": "seam"
+    },
+    {
+      "what": "The eight planet buttons and their data-color keys become four data-panel keys, and the buttons carry role=tab / aria-selected / aria-controls inside a role=tablist with role=tabpanel on the panels.",
+      "why": "The planets are the example's content, not its effect. The roles are what make the control announce itself: upstream's markup is a plain button list, so a screen reader gets no signal about which entry is current or what it controls, and this library ships sections into real sites.",
+      "kind": "ours"
+    },
+    {
+      "what": "Upstream's demo chrome and its var(--bg-2) / var(--color-1) palette are replaced with a dark section, an eyebrow, a heading and --fx-* custom properties.",
+      "why": "The palette variables come from the examples' shared assets/css/styles.css, which is not part of this port, and the effect ships as a section rather than a centred demo page. Every structural rule -- the nav bar, the relative list, the absolutely-inset pill, the z-index swap on the active button, display:none / display:block on the panels -- is upstream's and carries the effect.",
+      "kind": "ours"
+    },
+    {
+      "what": "Inactive tab labels are #b8c1d4 rather than upstream's var(--fg-2), and panel body copy is #c2cadb.",
+      "why": "Upstream's foreground token is defined in a stylesheet this port does not carry, so the values had to be chosen here; both clear the 4.5:1 floor this library holds text to against the bar and card behind them.",
+      "kind": "ours"
+    }
+  ]
+}

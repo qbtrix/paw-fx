@@ -1,0 +1,38 @@
+<!-- parallax-gallery-horizontal section. Finished at rest with CSS alone: the
+     strip below is a real native scroll box until index.js takes it over, so
+     with the script blocked, the bundle pruned or prefers-reduced-motion on,
+     the reader still gets all ten frames and can still reach the last one.
+     What the script adds is the lerped wheel and the counter-motion inside
+     each frame -- the effect, not the content.
+
+     THE IMAGE SLOT. Each frame paints a CSS gradient, because the upstream
+     demo's photography is licensed separately from its code. Drop your own
+     picture into any frame with one inline custom property and change nothing
+     else:
+       <div class="fx-hpgal__frame" style="--fx-img:url(/img/1.jpg)"> ... </div>
+
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/parallax-gallery-horizontal/style.css">
+<section class="fx-hpgal" data-fx="parallax-gallery-horizontal">
+  <div class="fx-hpgal__head">
+    <p class="fx-hpgal__eyebrow">Field record</p>
+    <h2 class="fx-hpgal__title">Ten rooms, one long look sideways.</h2>
+    <p class="fx-hpgal__note">Replace these frames with your own pictures. Put the pointer on the strip and roll the wheel: the row slides, and each picture drifts the other way inside its frame.</p>
+  </div>
+  <div class="fx-hpgal__wrapper">
+    <div class="fx-hpgal__strip">
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">01 &mdash; Long room</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">02 &mdash; Low water</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">03 &mdash; Night stair</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">04 &mdash; Cold arch</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">05 &mdash; Green hall</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">06 &mdash; Warm floor</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">07 &mdash; Red corridor</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">08 &mdash; Violet bay</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">09 &mdash; Deep blue</p></div>
+      <div class="fx-hpgal__frame"><span class="fx-hpgal__image"></span><p class="fx-hpgal__caption">10 &mdash; Last light</p></div>
+    </div>
+  </div>
+  <p class="fx-hpgal__hint">Wheel over the strip to travel</p>
+</section>

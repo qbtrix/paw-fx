@@ -1,0 +1,56 @@
+{
+  "name": "smooth-scroll",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["smooth-scroll", "inertia", "lenis", "page", "editorial"],
+  "summary": "Attaches Lenis to the document so the whole page scrolls on inertia instead of in jumps, carried by an ordinary editorial section that reads the same with or without it.",
+  "needs": ["lenis"],
+  "options": {
+    "lerp": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Linear interpolation applied per frame. Lower is heavier. Upstream constructor default."
+    },
+    "wheelMultiplier": {
+      "type": "number",
+      "default": 1,
+      "description": "Scale applied to wheel deltas. Upstream constructor default."
+    },
+    "touchMultiplier": {
+      "type": "number",
+      "default": 1,
+      "description": "Scale applied to touch deltas. Upstream constructor default."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "darkroomengineering/lenis",
+    "commit": "eea71595f5ae595f49b21ed87520822d3624098a",
+    "path": [
+      "packages/core/src/lenis.ts",
+      "packages/core/lenis.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The document-wide Lenis instance is refcounted across mounts: a second section shares the first's instance and destroy() only tears it down when the last handle releases.",
+      "why": "Smooth scroll is a property of the document, not of a section, but the effect contract's unit is a section and the scroll category routinely appears more than once on a page. Two Lenis instances on one document fight over the same scroll position.",
+      "kind": "seam"
+    },
+    {
+      "what": "Constructed with autoRaf: true rather than driving lenis.raf(time) from our own requestAnimationFrame loop.",
+      "why": "Upstream added autoRaf so the loop lives inside Lenis, where destroy() already cancels it. Hand-writing the loop would be a second copy of upstream's to keep in step, and a leak the moment destroy() forgets to cancel it.",
+      "kind": "seam"
+    },
+    {
+      "what": "packages/core/lenis.css travels inside the effect's style.css instead of shipping as its own stylesheet.",
+      "why": "Lenis sets its lenis-* classes on <html> and those rules are what keep a smoothed page from locking its height or letting a nested scroller steal the wheel. A registry item emits one stylesheet per effect, so they ride in it; every selector is scoped to .lenis, which nothing else sets.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion Lenis is never constructed, rather than relying on its respectReducedMotion option.",
+      "why": "respectReducedMotion stops the smoothing but leaves the wheel, touch and resize listeners installed. The contract says stay at rest, and native scrolling untouched is what that means here.",
+      "kind": "seam"
+    }
+  ]
+}

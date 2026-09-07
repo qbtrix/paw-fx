@@ -1,0 +1,71 @@
+{
+  "name": "sg-laminar",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "flow",
+    "streamlines",
+    "glacier",
+    "technical",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's laminar: the real flow-past-a-cylinder streamfunction drawn as luminous streamlines that part around an invisible body and rejoin downstream, over a matched CSS flow field.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#8ceaff",
+        "#4f8cff",
+        "#c2f7ea",
+        "#3348b8"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "flow": {
+      "type": "number",
+      "default": 0.5,
+      "description": "Speed of the packets riding the lines downstream. Upstream default, range 0 to 2."
+    },
+    "density": {
+      "type": "number",
+      "default": 22,
+      "description": "Number of streamlines across the field. Upstream default, range 6 to 60."
+    },
+    "radius": {
+      "type": "number",
+      "default": 0.22,
+      "description": "Size of the invisible body the flow parts around. Upstream default, range 0.04 to 0.45."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "laminar/shader.frag",
+      "laminar/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `glacier` preset.",
+      "why": "laminar/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a glacier set: cold blues with one near-white crest, which is what makes the crowding over the shoulders read as speed, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 at radius 3.5, vignette 0.30, saturation 1.06 and dither over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

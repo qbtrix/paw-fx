@@ -1,0 +1,9 @@
+/* bad-blank-section: the failure scripts/smoke.mjs exists to catch. The
+   section reserves a full-height box, so every box-only check passes it, and
+   paints nothing into that box, so with the script off it is a blank
+   rectangle. All the visual work lives in a JS-only path that never runs.
+   Kept deliberately blank -- adding any paint here disarms the gate's test. */
+.fx-blank {
+  min-height: 100svh;
+  display: block;
+}

@@ -1,0 +1,36 @@
+<!-- pixel-tooltip section. Finished at rest with CSS alone: a paragraph with
+     its terms marked. Every tooltip is already in the markup at opacity 0 with
+     pointer-events off, so a blocked script, a pruned bundle or
+     prefers-reduced-motion leaves a readable paragraph and no stray panels.
+     Triggers and tooltips are paired by DOM order -- the first trigger owns
+     the first tooltip -- so the section can be dropped on a page twice without
+     the two instances sharing anything.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/pixel-tooltip/style.css">
+<section class="fx-tip" data-fx="pixel-tooltip">
+  <p class="fx-tip__eyebrow">Glossary</p>
+  <p class="fx-tip__prose">In the year of our <span class="fx-tip__trigger">Sync 2085</span>, the air we breathe feels borrowed and the sunlight is a flux of LED warmth. We commune not through touch but through <span class="fx-tip__trigger">LinkLaces</span>, every feeling filtered through the interface before it lands.</p>
+  <p class="fx-tip__prose">In the hush of the night some of us still hear the weeping of <span class="fx-tip__trigger">Gaia-Prime</span> — a name kept by those who go on reading the forbidden archives.</p>
+  <span class="fx-tip__tip" data-rows="12" data-cols="10">
+    <span class="fx-tip__bg"></span>
+    <span class="fx-tip__content">
+      <span class="fx-tip__title">Sync 2085</span>
+      <span class="fx-tip__desc">The standard protocol for holding a human consciousness in step with the network. Everything after it is measured from here.</span>
+    </span>
+  </span>
+  <span class="fx-tip__tip fx-tip__tip--alt" data-rows="9" data-cols="3">
+    <span class="fx-tip__bg"></span>
+    <span class="fx-tip__content">
+      <span class="fx-tip__title">LinkLaces</span>
+      <span class="fx-tip__desc">Two-way conduits carrying thought, feeling and sensation between people who never share a room.</span>
+    </span>
+  </span>
+  <span class="fx-tip__tip" data-rows="8" data-cols="6">
+    <span class="fx-tip__bg"></span>
+    <span class="fx-tip__content">
+      <span class="fx-tip__title">Gaia-Prime</span>
+      <span class="fx-tip__desc">The unaltered state of the old ecosystem, kept now only in preservation zones and in very good simulations.</span>
+    </span>
+  </span>
+</section>

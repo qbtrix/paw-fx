@@ -1,0 +1,20 @@
+{
+  "name": "good-shared-frag",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "fixture: shader.frag beside index.js plus a shared runtime import",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "fixture/shader.frag",
+      "fixture/meta.json"
+    ]
+  }
+}

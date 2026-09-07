@@ -1,0 +1,16 @@
+<!-- text-repetition section. Finished at rest with CSS alone: the two headings
+     are ordinary headings. index.js replaces each one's contents with nine
+     stacked copies of the same text and lets the scrollbar fan them apart, so
+     a blocked script, a pruned bundle or prefers-reduced-motion leaves the
+     words exactly as they read here.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/text-repetition/style.css">
+<section class="fx-textrep" data-fx="text-repetition">
+  <div class="fx-textrep__inner">
+    <p class="fx-textrep__eyebrow">Volume 04</p>
+    <h2 class="fx-textrep__word" data-fx-rep>Momentum</h2>
+    <p class="fx-textrep__lede">Scrolling pulls the stack apart and lets it fall back into register. Replace the words and this copy with your own.</p>
+    <h2 class="fx-textrep__word fx-textrep__word--sm" data-fx-rep>Carried over</h2>
+  </div>
+</section>

@@ -1,0 +1,4 @@
+/* fixture: local-only CSS, so index.js is the only thing failing lint here. */
+.fx-fixture {
+  background: #07070b;
+}

@@ -1,0 +1,67 @@
+{
+  "name": "expanding-menu",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": ["menu", "navigation", "transition", "cover", "timeline", "codrops", "anime"],
+  "summary": "A nav bar whose panel drops in behind a two-layer cover that unrolls from the top while the content behind it splits and parallaxes, reversing on close.",
+  "needs": ["anime"],
+  "options": {
+    "duration": {
+      "type": "number",
+      "default": 1.2,
+      "description": "Seconds the open takes. Upstream's timeline defaults.duration."
+    },
+    "coverDuration": {
+      "type": "number",
+      "default": 1.6,
+      "description": "Seconds the cover wrap takes to settle from 1.1 to 1. Upstream's cover.wrap duration."
+    },
+    "parallax": {
+      "type": "number",
+      "default": 20,
+      "description": "Percent the content behind the cover splits by. Upstream's content img / title offsets."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ExpandingRoundedMenu",
+    "commit": "9f8174aaca176a0e4b31e1330f9049b45fd02758",
+    "path": [
+      "src/js/index.js",
+      "src/index.html",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The cover and the three content panels paint the --fx-image and --fx-cover-image custom properties instead of the demo's inline background-image URLs.",
+      "why": "Codrops ships the demo's photographs under separate terms and this library redistributes none of them. The defaults are layered gradients, so the two-layer cover still reads as a picture sliding through its own window, and a site author points the properties at real pictures with one declaration.",
+      "kind": "ours"
+    },
+    {
+      "what": "Durations and label offsets are milliseconds: every upstream second value is multiplied by the SEC constant, 1000, and GSAP's 'menu+=0.6' label arithmetic is written out as MENU + 0.6 * SEC.",
+      "why": "GSAP counts in seconds and anime.js in milliseconds, and anime positions a timeline child by time rather than by a label expression. Keeping upstream's own numbers and doing the arithmetic in one place is what makes the schedule readable against the source.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "GSAP's power4.inOut and power3.inOut easings are written as anime's inOutQuint and inOutQuart, and power4 as outQuint.",
+      "why": "GSAP names its power curves by exponent minus one and defaults a bare name to .out; anime names them after the polynomial and spells the direction. Same curves.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The isAnimating latch is dropped: a click during the open or the close reverses the timeline from where it is rather than being ignored.",
+      "why": "Upstream's latch exists because its timeline is played and reversed from a paused state and a second call mid-flight would fight the first. anime's play() and reverse() seek from the current playhead, so the flip is continuous, and a control that ignores a click for 1.2 seconds reads as broken.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion the menu still opens and closes; the timeline is seeked to its end or its start instead of being played.",
+      "why": "Effect contract: mount() stays at rest and must never trap content behind an animation. This panel is navigation, so hiding it from a visitor who asked for stillness would take the links away rather than take the motion away. Seeking gives the same end state with no travel.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every element is resolved inside the mounted section rather than from the document, class names are ours, and the timeline is reverted and both listeners removed on destroy.",
+      "why": "Upstream queries the document at module scope and never tears the effect down. An effect is one section among several and a page may carry this one twice, so two mounts would otherwise drive each other's cover; and a destroy mid-open would leave the section frozen under a half-unrolled panel.",
+      "kind": "seam"
+    }
+  ]
+}

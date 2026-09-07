@@ -1,0 +1,36 @@
+<!-- clip-hover section. Finished at rest with CSS alone: every card shows its
+     panel, its date, its title and its link. index.js hides the panel only
+     once it has mounted -- upstream does the same through its `.js` class --
+     and brings it back in five clipped bands on hover, so a blocked script, a
+     pruned bundle or prefers-reduced-motion leaves three finished cards.
+     Drop your own pictures in per card:
+       .fx-clip__card:nth-child(2) { --fx-image: url("/media/case-2.jpg"); }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/clip-hover/style.css">
+<section class="fx-clip" data-fx="clip-hover">
+  <div class="fx-clip__head">
+    <p class="fx-clip__eyebrow">Field notes</p>
+    <p class="fx-clip__intro">Three write-ups from the last quarter. Hover a card and the picture arrives in five clipped bands while the type reshuffles.</p>
+  </div>
+  <div class="fx-clip__grid">
+    <article class="fx-clip__card">
+      <div class="fx-clip__img"></div>
+      <span class="fx-clip__date">02/18/2074</span>
+      <h3 class="fx-clip__title">Anomaly detection across a cold array</h3>
+      <a class="fx-clip__link" href="#">Read the note</a>
+    </article>
+    <article class="fx-clip__card">
+      <div class="fx-clip__img"></div>
+      <span class="fx-clip__date">02/20/2074</span>
+      <h3 class="fx-clip__title">Malfunction analysis of the drone fleet</h3>
+      <a class="fx-clip__link" href="#">Read the note</a>
+    </article>
+    <article class="fx-clip__card">
+      <div class="fx-clip__img"></div>
+      <span class="fx-clip__date">03/17/2074</span>
+      <h3 class="fx-clip__title">Flow optimisation for long transmission</h3>
+      <a class="fx-clip__link" href="#">Read the note</a>
+    </article>
+  </div>
+</section>

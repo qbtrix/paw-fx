@@ -1,0 +1,122 @@
+/* smooth-scroll: the section is an ordinary editorial column, finished with
+   CSS alone -- the effect is what the page does while you scroll past it, not
+   something the section draws. index.js only attaches Lenis to the document.
+
+   The first block is packages/core/lenis.css at the pinned tag, verbatim.
+   Lenis sets the lenis-* classes on <html> itself, and without these rules a
+   smoothed page can end up with a locked height or a nested scroller stealing
+   the wheel. It ships as a stylesheet upstream and paw-fx has no way to emit a
+   second one, so it travels here. Every selector is scoped to .lenis, which
+   nothing but Lenis ever sets. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
+}
+
+/* The section itself. */
+.fx-smooth {
+  --fx-bg: #0a0a0f;
+  --fx-ink: #f4f4f5;
+  --fx-muted: #a1a1aa;
+  --fx-card: #14141c;
+  --fx-edge: #26263a;
+  --fx-accent: #38bdf8;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(4rem, 9vw, 8rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--fx-accent) 12%, transparent), transparent 45%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-smooth *,
+.fx-smooth *::before,
+.fx-smooth *::after { box-sizing: border-box; }
+
+.fx-smooth__inner {
+  max-width: 60rem;
+  margin: 0 auto;
+}
+.fx-smooth__eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-smooth__title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.2rem, 5.5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-smooth__lede {
+  margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+  max-width: 40rem;
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+.fx-smooth__list {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: fx-smooth;
+}
+.fx-smooth__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: start;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--fx-edge);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--fx-card) 90%, transparent);
+}
+.fx-smooth__item::before {
+  counter-increment: fx-smooth;
+  content: counter(fx-smooth, decimal-leading-zero);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  color: var(--fx-accent);
+  padding-top: 0.35rem;
+}
+.fx-smooth__h {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.fx-smooth__p {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}

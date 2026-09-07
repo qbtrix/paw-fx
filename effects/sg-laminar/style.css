@@ -1,0 +1,210 @@
+/* sg-laminar: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has a shader, or after a WebGL
+   failure sends mount() back to rest, this is what a visitor sees, so it is
+   designed as a finished section rather than a placeholder.
+
+   The palette is declared once here as --fx-c*, and index.js reads it back off
+   the section. That is deliberate: restyling a site by overriding the custom
+   properties moves the shader's colours and the resting state's together
+   instead of leaving the two clashing at the moment the canvas appears.
+
+   Stacking order matters and is the one thing to preserve when editing:
+     -2  .fx-laminar__rest   the CSS state, covered by the canvas once it paints
+     -1  <canvas>         inserted by the mount
+      0  .fx-laminar__scrim  legibility wash, over whichever layer is showing
+      1  .fx-laminar__inner  the copy */
+.fx-laminar {
+  --fx-c1: #8ceaff;
+  --fx-c2: #4f8cff;
+  --fx-c3: #c2f7ea;
+  --fx-c4: #3348b8;
+  --fx-bg: #050a16;
+  --fx-ink: #ffffff;
+  --fx-muted: #bdd3e6;
+  --fx-speed: 1;
+  --fx-scrim: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Without this, min-height sizes the content box and the vertical padding is
+     added outside it, so a full-bleed hero overflows the viewport by exactly
+     its own padding and the page scrolls. An effect drops into a site whose
+     reset it does not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Streamlines as a repeating linear gradient, tinted across the palette the
+   way the shader spreads hue over the sheet, plus the dark disc of the body
+   they part around. The lines here are straight where the shader's bend; that
+   is the honest limit of a gradient, and the disc is what carries the idea in
+   the meantime. */
+.fx-laminar__rest {
+  position: absolute;
+  inset: -16%;
+  z-index: -2;
+  background:
+    radial-gradient(19% 34% at 50% 50%, color-mix(in oklab, #02060f 92%, transparent) 0%, color-mix(in oklab, #02060f 88%, transparent) 62%, transparent 78%),
+    repeating-linear-gradient(
+      178deg,
+      transparent 0 22px,
+      color-mix(in oklab, var(--fx-c2) 52%, transparent) 22px 23px,
+      transparent 23px 46px,
+      color-mix(in oklab, var(--fx-c1) 44%, transparent) 46px 47px,
+      transparent 47px 70px,
+      color-mix(in oklab, var(--fx-c3) 30%, transparent) 70px 71px,
+      transparent 71px 96px
+    ),
+    linear-gradient(178deg, color-mix(in oklab, var(--fx-c4) 34%, var(--fx-bg)), var(--fx-bg));
+  filter: blur(1.2px);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset, and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-laminar[data-fx-live] .fx-laminar__rest {
+  opacity: 0;
+}
+
+/* Fine grain over everything: wide blurred fields band on 8-bit displays, and
+   a little noise is what hides it. Inline SVG, so the section fetches nothing. */
+.fx-laminar__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than relying on where the bright part of
+   the shader happens to sit, because in the live state it does not sit still.
+   The wash is held flat across the inner third of the ray -- the whole content
+   column -- and only then eased out over several stops, because a flat core
+   running straight into one linear ramp draws a visible hard-edged ellipse
+   across the hero. Measured worst-case contrast across four animation frames,
+   with the copy hidden, is recorded in the PR; re-measure the same way before
+   lowering --fx-scrim. */
+.fx-laminar__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    88% 74% at 50% 50%,
+    color-mix(in oklab, #02060f 92%, transparent) 0%,
+    color-mix(in oklab, #02060f 92%, transparent) 34%,
+    color-mix(in oklab, #02060f 62%, transparent) 54%,
+    color-mix(in oklab, #02060f 28%, transparent) 74%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-laminar__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-laminar__eyebrow {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-laminar__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, #02060f 55%, transparent);
+}
+
+.fx-laminar__lede {
+  margin: 1.7rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.55vw, 1.24rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-laminar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.4rem;
+}
+
+.fx-laminar__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-laminar__cta--primary {
+  background: var(--fx-ink);
+  color: #04101f;
+}
+
+.fx-laminar__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 28%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-laminar__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-laminar__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 42%, transparent);
+}
+
+.fx-laminar__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed. The shader has
+   its own reduced-motion path: one static frame, no animation loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-laminar__rest {
+    animation: fx-sg-laminar-drift calc(18s / var(--fx-speed)) linear infinite;
+  }
+  @keyframes fx-sg-laminar-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -96px, 0); }
+  }
+}

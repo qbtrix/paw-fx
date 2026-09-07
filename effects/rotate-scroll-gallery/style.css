@@ -1,0 +1,163 @@
+/* rotate-scroll-gallery: a serpentining column of cards that flip in on the X
+   axis as they rise through the viewport, squash and stretch their own box,
+   brighten out of black, HOLD flat and legible for the middle quarter of their
+   range, then flip away -- with a marquee scrubbing across the whole section
+   behind them.
+
+   THE HOLD IS WHAT MAKES IT DIFFERENT from the two scroll-driven 3D galleries
+   already here. Both of those run their transform straight off scroll progress,
+   so a picture is never still; upstream's holdAtMiddle remaps the middle 25% of
+   the range to a constant 0.5, so this one stops and presents itself.
+
+   overflow: clip, NOT hidden. A card at rotateX 200deg and z -750px bleeds well
+   past the column, and it has to be clipped -- but `overflow: hidden` makes the
+   element a scroll container, and a scroll-driven animation on a descendant then
+   resolves against a box that never scrolls, which pins every card silently.
+   `clip` crops without creating one.
+
+   THE RESTING STATE IS THE HOLD FRAME. With no script, a pruned bundle or
+   prefers-reduced-motion, every card sits flat, unrotated and at full
+   brightness -- which is exactly what the middle of the range looks like, so the
+   section reads finished rather than half-animated.
+
+   NO PHOTOGRAPH SHIPS. Codrops' 40 demo images are theirs. Each cell paints a
+   gradient built from its own --fx-hue until a site sets --fx-img on it:
+     <div class="fx-rot__item" style="--fx-img:url(/img/1.jpg)"></div> */
+.fx-rot {
+  --fx-bg: #0b0b0c;
+  --fx-ink: #cfcccb;
+  --fx-muted: #8f8f8f;
+  --fx-marquee: rgb(56, 56, 56);
+  --fx-item-width: 300px;
+  --fx-item-ar: 4 / 5;
+  --fx-item-br: 7px;
+  --fx-overlap: -10rem;
+  --fx-hue: 210;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  /* clip, never hidden -- see the note above. */
+  overflow-x: clip;
+}
+.fx-rot *,
+.fx-rot *::before,
+.fx-rot *::after { box-sizing: border-box; }
+
+.fx-rot__head {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0.6rem;
+  max-width: 42rem;
+  padding: clamp(3rem, 12vh, 7rem) 0 0;
+}
+.fx-rot__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+.fx-rot__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  color: #f2f0ef;
+}
+.fx-rot__note {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--fx-ink);
+}
+
+/* The marquee sits behind the cards and scrubs across as the section passes. It
+   is decorative -- aria-hidden in the markup, upstream's own recessive
+   --color-marquee, and blended the way upstream's demo-5 blends it. It is
+   background texture, not text anyone is meant to read; --fx-marquee is the knob
+   if a site wants it louder. */
+.fx-rot__marquee {
+  mix-blend-mode: plus-lighter;
+  position: sticky;
+  top: 50%;
+  z-index: 0;
+  width: 100%;
+  overflow-x: clip;
+  pointer-events: none;
+  user-select: none;
+}
+.fx-rot__marquee-inner {
+  display: flex;
+  gap: 3rem;
+  width: max-content;
+  will-change: transform;
+}
+.fx-rot__marquee-inner span {
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--fx-marquee);
+  font-size: clamp(2rem, 16vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.fx-rot__gallery {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 25vh;
+  margin-bottom: 35vh;
+}
+.fx-rot__wrap {
+  width: 100%;
+  max-width: var(--fx-item-width);
+  perspective: 900px;
+  margin-bottom: var(--fx-overlap);
+  will-change: transform;
+}
+.fx-rot__wrap:last-child { margin-bottom: 0; }
+
+.fx-rot__item {
+  width: 100%;
+  aspect-ratio: var(--fx-item-ar);
+  border-radius: var(--fx-item-br);
+  transform-style: preserve-3d;
+  will-change: transform, filter;
+  background-color: hsl(var(--fx-hue) 42% 26%);
+  background-image:
+    var(--fx-img, none),
+    linear-gradient(150deg, hsl(var(--fx-hue) 62% 62%) 0%, hsl(var(--fx-hue) 48% 34%) 46%, hsl(var(--fx-hue) 58% 12%) 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.8);
+}
+
+.fx-rot__foot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: clamp(2rem, 8vh, 5rem);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+@media (max-width: 40rem) {
+  .fx-rot { --fx-item-width: 220px; --fx-overlap: -5rem; }
+  .fx-rot__gallery { margin-top: 12vh; margin-bottom: 18vh; }
+}

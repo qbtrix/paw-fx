@@ -1,0 +1,903 @@
+/* gallery.css: the paw-fx gallery's own chrome, copied verbatim into
+   dist/registry/gallery/ by scripts/build-gallery.mjs. It carries no effect
+   data -- every name, summary, tag and licence on the page is generated from
+   dist/registry/ into index.html.
+
+   THE SHAPE IS A TWO-PANE EXPLORER: a slim sticky top bar (name, count,
+   search), a persistent left sidebar of collapsible category groups, and a main
+   column holding one of two views. With nothing picked it is the browse view,
+   a dense card grid. Pick an effect and it becomes the stage: that effect
+   running in a frame, with its detail panel under it.
+
+   UNDER 900PX THERE IS ONE PANE, and that is a decision rather than a
+   leftover. A 390px screen split in two gives each half about 190px, which is
+   too little to read a list in and far too little to watch an effect in. So the
+   sidebar keeps being the drawer it already was, sliding over the content;
+   picking an effect closes it and the stage takes the full width. The frame
+   swaps its 16:9 ratio for a height there too, because 16:9 at that width is
+   about 210px tall and the demo's own bottom bar would eat a fifth of it.
+
+   The previews are the product, so the chrome is deliberately quiet: near-black
+   ground, one accent used only for the active nav row and focus rings, and no
+   large colour field anywhere near a card. The one filled button on the page is
+   the panel's link to the FULL PAGE demo, because that is the next step for
+   someone the running pane has already caught; the card's own copy of that link
+   is outlined, since 98 filled buttons would out-shout 98 previews.
+
+   Two rules keep it out of the effects' way:
+     - custom properties here are --g-, because effects read --fx-* off their
+       own section and a name collision would restyle the effect;
+     - it only ever overrides LAYOUT on the classes it borrows from the three
+       chrome effects: the grid width and card padding on .fx-spot, the
+       viewport-height and centring on .fx-nebula (the hero is a banner at the
+       top of the content column here, not a full screen), and the vertical
+       padding on .fx-marquee (a slim sources band above the footer). The
+       border ring, the wash, the gradients and the type scale stay upstream's,
+       because those cards and that hero ARE the effects. */
+
+:root {
+  --g-bg: #08080d;
+  --g-panel: #0c0c12;
+  --g-raised: #101017;
+  --g-line: #1f1f29;
+  --g-line-soft: #16161e;
+  --g-ink: #f3f3f6;
+  --g-muted: #9c9caa;
+  --g-dim: #6d6d7b;
+  --g-accent: #8b4cff;
+  --g-accent-2: #fe8bbb;
+  --g-good: #86efac;
+  --g-top: 3.5rem;
+  --g-rail: 16rem;
+  --g-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  --g-sans: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+  color-scheme: dark;
+}
+
+body.fxg {
+  margin: 0;
+  background: var(--g-bg);
+  color: var(--g-ink);
+  font-family: var(--g-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The three chrome effects each set this on their own tree, because an effect
+   drops into a site whose reset it does not control. The shell is the part of
+   the page no effect owns, so it does the same for itself: without it the rail
+   is its own padding taller than the slot it is given, and a search input is
+   its own padding wider than the box it sits in on any browser whose UA sheet
+   does not already special-case type=search. */
+.fxg-top,
+.fxg-top *,
+.fxg-shell,
+.fxg-nav,
+.fxg-nav * {
+  box-sizing: border-box;
+}
+
+.fxg-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* One ring for the whole page. Every control below inherits it rather than
+   inventing its own, which is what stops a focus state going missing on the
+   one control nobody tabbed to during review. */
+.fxg :focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 2px;
+  border-radius: 0.35rem;
+}
+
+.fxg-skip {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  z-index: 60;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.5rem;
+  background: var(--g-accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 140ms ease;
+}
+
+.fxg-skip:focus { top: 0.75rem; }
+
+/* ---------- top bar ---------- */
+
+.fxg-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: var(--g-top);
+  padding-inline: clamp(0.75rem, 2vw, 1.25rem);
+  background: color-mix(in oklab, var(--g-panel) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--g-line);
+}
+
+.fxg-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  color: var(--g-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fxg-brand b {
+  font-family: var(--g-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fxg-brand span {
+  font-size: 0.75rem;
+  color: var(--g-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.fxg-find {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 34rem;
+  margin-left: auto;
+}
+
+.fxg-find input {
+  width: 100%;
+  padding: 0.45rem 2.4rem 0.45rem 0.85rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.55rem;
+  background: var(--g-raised);
+  color: var(--g-ink);
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.fxg-find input::placeholder { color: var(--g-dim); }
+.fxg-find input:hover { border-color: color-mix(in oklab, var(--g-accent) 35%, var(--g-line)); }
+
+/* The hint is a promise about a key, so it goes away the moment the field is
+   in use and the promise is spent. */
+.fxg-kbd {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 1.35rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.3rem;
+  background: var(--g-panel);
+  color: var(--g-dim);
+  font-family: var(--g-mono);
+  font-size: 0.72rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.fxg-find input:focus + .fxg-kbd,
+.fxg-find input:not(:placeholder-shown) + .fxg-kbd { opacity: 0; }
+
+.fxg-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 1px solid var(--g-line);
+  border-radius: 0.5rem;
+  background: var(--g-raised);
+  color: var(--g-muted);
+  cursor: pointer;
+}
+
+.fxg-burger:hover { color: var(--g-ink); border-color: color-mix(in oklab, var(--g-accent) 45%, var(--g-line)); }
+.fxg-burger svg { width: 1rem; height: 1rem; }
+
+/* ---------- shell ---------- */
+
+.fxg-shell {
+  display: grid;
+  grid-template-columns: var(--g-rail) minmax(0, 1fr);
+  align-items: start;
+}
+
+.fxg-nav {
+  position: sticky;
+  top: var(--g-top);
+  /* A rail, not a card: the shell is align-items:start so the column would
+     otherwise stop at the last group and leave the border-right ending in mid
+     air halfway down the page. */
+  height: calc(100vh - var(--g-top));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.1rem 0.6rem 3rem;
+  border-right: 1px solid var(--g-line);
+  background: var(--g-panel);
+}
+
+.fxg-nav-close { display: none; }
+
+.fxg-nav-h {
+  margin: 1.4rem 0 0.45rem;
+  padding-inline: 0.65rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--g-dim);
+  font-weight: 600;
+}
+
+.fxg-nav-h:first-child { margin-top: 0; }
+
+.fxg-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A category row is two controls in one line: the name filters the grid, the
+   twist opens the list of effects under it. Splitting them is what lets the
+   whole row read as a link while the disclosure stays a real button with a
+   real aria-expanded. */
+.fxg-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+  border-radius: 0.5rem;
+}
+
+.fxg-row:hover { background: var(--g-line-soft); }
+
+.fxg-pick {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.42rem 0.3rem 0.42rem 0.65rem;
+  border-radius: 0.5rem;
+  color: var(--g-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.fxg-pick:hover { color: var(--g-ink); }
+
+.fxg-pick[aria-current] {
+  color: var(--g-ink);
+  font-weight: 600;
+  background: color-mix(in oklab, var(--g-accent) 16%, transparent);
+  box-shadow: inset 2px 0 0 var(--g-accent);
+}
+
+.fxg-n {
+  flex: none;
+  color: var(--g-dim);
+  font-family: var(--g-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fxg-pick[aria-current] .fxg-n { color: color-mix(in oklab, var(--g-ink) 70%, var(--g-accent)); }
+
+/* A category with nothing left after a search reads dim rather than vanishing:
+   the sidebar is a map of the library, and a map that loses roads while you
+   search is harder to trust than one that greys them. */
+.fxg-row.is-empty .fxg-pick { color: var(--g-dim); }
+
+.fxg-twist {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--g-dim);
+  cursor: pointer;
+}
+
+.fxg-twist:hover { color: var(--g-ink); background: var(--g-line); }
+.fxg-twist svg { width: 0.7rem; height: 0.7rem; transition: transform 140ms ease; }
+.fxg-twist[aria-expanded="true"] svg { transform: rotate(90deg); }
+
+.fxg-sub {
+  margin: 0.15rem 0 0.35rem 0.95rem;
+  padding: 0 0 0 0.6rem;
+  border-left: 1px solid var(--g-line);
+  list-style: none;
+}
+
+.fxg-sub a {
+  display: block;
+  padding: 0.28rem 0.5rem;
+  border-radius: 0.4rem;
+  color: var(--g-dim);
+  font-family: var(--g-mono);
+  font-size: 0.76rem;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fxg-sub a:hover { color: var(--g-ink); background: var(--g-line-soft); }
+
+.fxg-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(4, 4, 8, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+/* ---------- main column ---------- */
+
+.fxg-main {
+  /* .fx-spot is the cursor-spotlight section, which pads itself for a
+     three-card marketing block. A documentation column wants its own gutter. */
+  padding: 0 clamp(1rem, 2.5vw, 2rem) 0;
+  background: var(--g-bg);
+  min-width: 0;
+}
+
+.fxg-wrap {
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+/* ---------- banner ---------- */
+
+.fxg-hero {
+  /* sg-nebula-drift is a full-screen hero upstream. Here it is the masthead of
+     a documentation page, so it keeps its shader and loses its 100svh. */
+  min-height: clamp(11rem, 21vw, 14.5rem);
+  margin-top: 1.5rem;
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+  border-radius: 1rem;
+  border: 1px solid var(--g-line);
+  align-content: end;
+  justify-items: start;
+}
+
+.fxg-hero .fx-nebula__inner { text-align: left; max-width: 46rem; }
+.fxg-hero .fx-nebula__eyebrow { margin-bottom: 0.7rem; }
+.fxg-hero .fx-nebula__title { font-size: clamp(1.45rem, 3vw, 2.15rem); }
+.fxg-hero .fx-nebula__lede { margin: 0.7rem 0 0; max-width: 40rem; font-size: 0.92rem; }
+.fxg-hero .fx-nebula__actions { margin-top: 1.1rem; justify-content: flex-start; }
+.fxg-hero .fx-nebula__cta { font-size: 0.82rem; padding: 0.55rem 1.1rem; }
+
+/* ---------- results header ---------- */
+
+.fxg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.9rem;
+  margin: 2.2rem 0 0;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--g-line);
+}
+
+.fxg-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fxg-count {
+  margin: 0;
+  font-family: var(--g-mono);
+  font-size: 0.78rem;
+  color: var(--g-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fxg-clear {
+  margin-left: auto;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  color: var(--g-muted);
+  font-size: 0.76rem;
+  text-decoration: none;
+}
+
+.fxg-clear:hover { color: var(--g-ink); border-color: var(--g-accent); }
+.fxg-clear[hidden] { display: none; }
+
+/* ---------- grid ---------- */
+
+.fxg-grid {
+  /* cursor-spotlight sizes its grid for three marketing cards. A library of 77
+     wants four across on a laptop, two on a tablet and one on a phone, which is
+     what this min plus the column cap above produces. */
+  max-width: none;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  padding-top: 1.4rem;
+}
+
+.fxg-card {
+  min-height: 0;
+  padding: 0.5rem;
+  transition: transform 140ms ease;
+  /* Clears the sticky top bar. Without it a card scrolled into view by the
+     keyboard or by a deep link parks under the bar, where the top of it is
+     covered and a click lands on the bar instead. */
+  scroll-margin-top: 4.75rem;
+}
+
+.fxg-card:has(.fxg-link:hover) { transform: translateY(-2px); }
+.fxg-card[hidden] { display: none; }
+
+.fxg-card .fx-spot__body { gap: 0.45rem; }
+
+.fxg-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0.6rem;
+  background: #0d0d14;
+  border: 1px solid var(--g-line);
+}
+
+.fxg-name {
+  margin: 0.3rem 0 0;
+  font-family: var(--g-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.fxg-link {
+  color: var(--g-ink);
+  text-decoration: none;
+}
+
+/* The whole card is the hit area, which is why the ring lights under the
+   pointer anywhere on it and the anchor is still a real link for the keyboard.
+   Anything that must stay clickable inside the card (the demo link) is later in
+   the DOM and positioned, so it paints over this overlay. */
+.fxg-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.fxg-sum {
+  margin: 0;
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fxg-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: auto 0 0;
+  padding-top: 0.55rem;
+}
+
+.fxg-chip {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  color: var(--g-muted);
+  font-size: 0.67rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.fxg-cat { color: var(--g-ink); border-color: color-mix(in oklab, var(--g-accent) 45%, var(--g-line)); }
+.fxg-free { color: var(--g-good); border-color: color-mix(in oklab, var(--g-good) 35%, var(--g-line)); }
+.fxg-needs { color: var(--g-accent-2); border-color: color-mix(in oklab, var(--g-accent-2) 35%, var(--g-line)); }
+.fxg-kind { margin-left: 0.4rem; color: var(--g-muted); font-size: 0.65rem; text-transform: uppercase; }
+
+/* Outlined on a card, filled in the panel. Both open the same full page, which
+   is a different thing from the pane now that picking an effect runs it: it is
+   the one place a full-bleed hero gets the whole viewport. The card's is one of
+   98 in a grid whose job is to show previews, so it stays quiet; the panel's
+   belongs to someone already watching the effect and wanting it bigger. */
+.fxg-live {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 0.6rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 0.45rem;
+  border: 1px solid var(--g-line);
+  background: transparent;
+  color: var(--g-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.fxg-live:hover {
+  background: color-mix(in oklab, var(--g-accent) 18%, transparent);
+  border-color: color-mix(in oklab, var(--g-accent) 60%, var(--g-line));
+  color: var(--g-ink);
+}
+
+.fxg-live--wide {
+  padding: 0.7rem 1rem;
+  border-color: color-mix(in oklab, var(--g-accent) 55%, var(--g-line));
+  background: color-mix(in oklab, var(--g-accent) 24%, transparent);
+  color: var(--g-ink);
+  font-size: 0.9rem;
+}
+
+.fxg-live--wide:hover { background: color-mix(in oklab, var(--g-accent) 42%, transparent); border-color: var(--g-accent); }
+
+/* Sits in the panel header beside the name rather than under a hero shot: the
+   hero shot is the running frame above it now. */
+.fxg-dlive {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  justify-items: stretch;
+  max-width: 15rem;
+}
+
+.fxg-dlive-note {
+  color: var(--g-dim);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.fxg-empty {
+  margin: 4rem auto;
+  max-width: 32rem;
+  text-align: center;
+  color: var(--g-muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.fxg-empty b { color: var(--g-ink); font-family: var(--g-mono); font-weight: 600; }
+
+/* ---------- sources band ---------- */
+
+.fxg-band {
+  /* marquee-css pads itself like a standalone section; here it is a slim strip
+     between the grid and the footer, boxed so its own wash reads as a panel
+     rather than as the page changing colour. */
+  margin-top: 3.5rem;
+  padding: 1.5rem 0 1.4rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.9rem;
+}
+
+.fxg-band .fx-marquee__head { margin: 0 0 1rem; padding: 0 1.4rem; text-align: left; max-width: none; }
+.fxg-band .fx-marquee__title { font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
+.fxg-band .fx-marquee__eyebrow { margin-bottom: 0.35rem; font-size: 0.66rem; }
+.fxg-band .fx-marquee__item { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
+
+/* ---------- the stage ---------- */
+
+/* The right pane once an effect is picked: a bar back to the grid, the effect
+   running in one frame, and its detail panel under it. It replaces the browse
+   view rather than sitting beside it, because a column that has to hold a
+   16:9 preview AND a card grid gives too little to both.
+
+   Neither view sets `display`, so the plain `hidden` attribute is the whole of
+   the swap and no rule can outrank it by accident. */
+
+.fxg-stage {
+  padding-top: 1.25rem;
+  /* Room under the last block, so the options table does not end flush against
+     the viewport edge on a long panel. */
+  padding-bottom: 4rem;
+}
+
+.fxg-stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.fxg-back {
+  flex: none;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.5rem;
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.fxg-back:hover { color: var(--g-ink); border-color: var(--g-accent); }
+
+.fxg-stage-now {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--g-dim);
+  font-family: var(--g-mono);
+  font-size: 0.76rem;
+}
+
+/* The frame is positioned over the poster rather than replacing it, so the
+   still preview is what the box shows for the moment the demo takes to load
+   and nothing has to time the handover. 16:9 is the shape every preview and
+   every hero is already cut to; the cap stops a wide laptop turning the
+   preview into a page of its own that buries the detail panel below the
+   fold. */
+.fxg-frame-box {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: min(68vh, 620px);
+  overflow: hidden;
+  border: 1px solid var(--g-line);
+  border-radius: 0.8rem;
+  background: #05050a;
+}
+
+.fxg-poster { position: absolute; inset: 0; }
+.fxg-poster img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
+
+.fxg-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* ---------- detail panel ---------- */
+
+.fxg-sheet { padding: 1.4rem 0 0; }
+
+.fxg-dhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+
+.fxg-dtitle {
+  margin: 0;
+  font-family: var(--g-mono);
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.fxg-dmeta { margin: 0.3rem 0 0; color: var(--g-muted); font-size: 0.8rem; }
+
+.fxg-lede {
+  margin: 0 0 0.8rem;
+  max-width: 52rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #dcdce4;
+}
+
+.fxg-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.fxg-block {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--g-line);
+}
+
+.fxg-h {
+  margin: 0 0 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--g-muted);
+  font-weight: 600;
+}
+
+.fxg-p { margin: 0.4rem 0 0; font-size: 0.9rem; line-height: 1.6; color: #c9c9d4; }
+.fxg-p code, .fxg-srcs code { font-family: var(--g-mono); font-size: 0.82em; }
+
+.fxg-engines { display: flex; gap: 0.4rem; }
+
+.fxg-engine {
+  padding: 0.28rem 0.65rem;
+  border-radius: 0.45rem;
+  font-family: var(--g-mono);
+  font-size: 0.78rem;
+}
+
+.fxg-engine.is-on { background: color-mix(in oklab, var(--g-good) 18%, var(--g-raised)); color: #b7f5ce; border: 1px solid color-mix(in oklab, var(--g-good) 35%, transparent); }
+.fxg-engine.is-off { background: transparent; color: #6b6b78; border: 1px dashed var(--g-line); text-decoration: line-through; }
+
+.fxg-srcs { margin: 0.6rem 0 0; padding-left: 1.1rem; }
+.fxg-srcs li { margin: 0.25rem 0; }
+.fxg-src { color: var(--g-accent-2); text-underline-offset: 3px; }
+.fxg-src:hover { color: var(--g-ink); }
+
+.fxg-devs { margin: 0; padding: 0; list-style: none; }
+
+.fxg-dev {
+  margin: 0.7rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 2px solid color-mix(in oklab, var(--g-accent) 45%, var(--g-line));
+}
+
+.fxg-dev-what { margin: 0; font-size: 0.9rem; font-weight: 600; }
+.fxg-dev-why { margin: 0.3rem 0 0; font-size: 0.85rem; line-height: 1.6; color: var(--g-muted); }
+
+.fxg-opts { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.fxg-opts th, .fxg-opts td { padding: 0.5rem 0.6rem; text-align: left; vertical-align: top; border-top: 1px solid var(--g-line); }
+.fxg-opts thead th { border-top: 0; color: var(--g-muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.fxg-opts tbody th { font-weight: 600; white-space: nowrap; }
+.fxg-opts td { color: var(--g-muted); line-height: 1.55; }
+.fxg-type { font-family: var(--g-mono); color: var(--g-accent-2); }
+.fxg-default code { color: #dcdce4; }
+
+.fxg-optwrap { overflow-x: auto; }
+
+.fxg-call {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.6rem;
+  background: #0a0a10;
+  overflow-x: auto;
+}
+
+.fxg-call code { font-family: var(--g-mono); font-size: 0.8rem; color: #d8d4ff; white-space: pre; }
+
+.fxg-copy {
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--g-line);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--g-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  flex: none;
+}
+
+.fxg-copy:hover { color: var(--g-ink); border-color: var(--g-accent); }
+
+/* ---------- footer ---------- */
+
+.fxg-foot-bar {
+  padding: 2rem 0 3.5rem;
+  border-top: 1px solid var(--g-line);
+  color: var(--g-muted);
+  font-size: 0.8rem;
+  line-height: 1.7;
+}
+
+.fxg-foot-bar p { margin: 0 0 0.4rem; max-width: 52rem; }
+.fxg-foot-bar code { font-family: var(--g-mono); color: #d8d4ff; }
+
+/* ---------- drawer ---------- */
+
+@media (max-width: 900px) {
+  .fxg-shell { grid-template-columns: minmax(0, 1fr); }
+
+  .fxg-burger { display: inline-flex; }
+
+  .fxg-nav {
+    position: fixed;
+    top: var(--g-top);
+    left: 0;
+    bottom: 0;
+    z-index: 35;
+    width: min(20rem, 86vw);
+    height: auto;
+    padding-bottom: 4rem;
+    /* visibility, not just transform: an off-canvas panel that keeps its place
+       in the tab order is a keyboard trap of the worst kind, one you cannot
+       see. It is deliberately NOT in the transition list, because a transition
+       needs frames and this state has to be right without one. Both ways of
+       transitioning it were tried against a headless browser whose animation
+       timeline does not advance, and both broke:
+         - delayed to the end of the slide, the flip to hidden never lands and
+           the closed drawer stays tabbable, which is the whole thing this
+           declaration exists to prevent;
+         - transitioned at all, it is still hidden when the script moves focus
+           into the drawer, and focus() on a hidden element silently does
+           nothing.
+       Untransitioned it flips instantly both ways with no frame required:
+       focus lands, the closed drawer leaves the tab order, and the only cost
+       is that the slide-out goes unseen. The slide-IN is the one anybody
+       watches. */
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+  }
+
+  .fxg-nav.is-open {
+    visibility: visible;
+    transform: none;
+  }
+
+  .fxg-nav-close {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--g-line);
+    border-radius: 0.5rem;
+    background: var(--g-raised);
+    color: var(--g-muted);
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .fxg-nav-close:hover { color: var(--g-ink); }
+
+  body.fxg-locked { overflow: hidden; }
+
+  /* Height rather than ratio: 16:9 at phone width is about 210px tall, and the
+     demo page's own fixed bottom bar takes a fifth of that. The stage is the
+     only thing on screen here, so it can have the room. The plain vh line is
+     the fallback for a browser without svh; svh is what keeps the frame off
+     the mobile URL bar's toggling height. */
+  .fxg-frame-box {
+    aspect-ratio: auto;
+    height: 55vh;
+    height: 55svh;
+    min-height: 15rem;
+    max-height: none;
+  }
+
+  .fxg-dlive { max-width: none; }
+}
+
+/* On a phone the search field is the control that has to stay usable, and the
+   count is already the first thing the results header says. */
+@media (max-width: 480px) {
+  .fxg-brand span { display: none; }
+}
+
+@media (min-width: 901px) {
+  .fxg-scrim { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fxg-card,
+  .fxg-nav,
+  .fxg-skip,
+  .fxg-twist svg { transition: none; }
+}

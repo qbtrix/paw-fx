@@ -1,0 +1,98 @@
+/* points-waves: a 50x50 grid of point sprites undulating on two crossed sines.
+   The resting state is a receding dot plane drawn in CSS -- a repeating dot
+   grid laid back in perspective and faded toward the horizon -- so the section
+   is a field of points before index.js exists. The WebGL canvas covers it once
+   a renderer has a context, which is the only thing that sets data-fx-live.
+
+   The copy sits on --fx-scrim because the live field puts white dots up to
+   ~24px across anywhere in the frame, including under a letter. */
+.fx-pwaves {
+  --fx-bg: #06070a;
+  --fx-bg-far: #101623;
+  --fx-dot: #ffffff;
+  --fx-ink: #f5f7fb;
+  --fx-muted: #ccd5e4;
+  --fx-accent: #7fe3ff;
+  --fx-scrim: color-mix(in oklab, #04050a 84%, transparent);
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background:
+    radial-gradient(90% 55% at 50% 92%, var(--fx-bg-far), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-pwaves *,
+.fx-pwaves *::before,
+.fx-pwaves *::after { box-sizing: border-box; }
+
+/* The CSS dot plane. One repeating dot grid, laid back so rows recede, with a
+   mask that fades the far rows out the way the perspective divide does. */
+.fx-pwaves__rest {
+  position: absolute;
+  inset: -30% -20% -10%;
+  z-index: -1;
+  pointer-events: none;
+  transform: perspective(70rem) rotateX(62deg);
+  transform-origin: 50% 100%;
+  background-image: radial-gradient(circle at center, var(--fx-dot) 0 22%, transparent 24%);
+  background-size: 58px 58px;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 4%, #000 42%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 4%, #000 42%, #000 78%, transparent 100%);
+  transition: opacity 600ms ease;
+}
+/* Only a live renderer sets this, so a refused context keeps the plane. */
+.fx-pwaves[data-fx-live] .fx-pwaves__rest { opacity: 0; }
+
+/* three.js appends its canvas here and sizes it to the host. */
+.fx-pwaves__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.fx-pwaves__canvas canvas { display: block; }
+
+.fx-pwaves__inner {
+  max-width: 52rem;
+  text-align: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: var(--fx-scrim);
+  backdrop-filter: blur(3px);
+}
+.fx-pwaves__eyebrow {
+  margin: 0 0 1.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-accent);
+}
+.fx-pwaves__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+.fx-pwaves__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+.fx-pwaves__hint {
+  margin: 1.75rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--fx-muted);
+}

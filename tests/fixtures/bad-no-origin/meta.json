@@ -1,0 +1,22 @@
+{
+  "name": "bad-no-origin",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "aurora",
+    "gradient",
+    "hero",
+    "css-only",
+    "dark"
+  ],
+  "summary": "fixture: ported effect missing origin",
+  "needs": [],
+  "options": {
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Drift speed multiplier; 1 = 28s per cycle."
+    }
+  },
+  "license": "MIT"
+}

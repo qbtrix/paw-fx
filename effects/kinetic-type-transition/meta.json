@@ -1,0 +1,71 @@
+{
+  "name": "kinetic-type-transition",
+  "version": "1.0.0",
+  "category": "transition",
+  "tags": [
+    "transition",
+    "text",
+    "kinetic",
+    "typography",
+    "reveal",
+    "codrops",
+    "anime"
+  ],
+  "summary": "A wall of oversized repeated words behind the copy wakes as the section arrives: it turns 90 degrees anticlockwise while blowing up to 2.7x over 1.4s, every row slides right to 20% then hard left to -200% at full opacity 40ms apart, then the whole thing unwinds on a back curve and settles back to almost nothing.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "scale": {
+      "type": "number",
+      "default": 2.7,
+      "description": "How far the wall blows up at the peak of the sweep. Upstream's in() scale."
+    },
+    "rotate": {
+      "type": "number",
+      "default": -90,
+      "description": "Degrees the wall turns at the peak, anticlockwise. Upstream's in() rotate."
+    },
+    "stagger": {
+      "type": "number",
+      "default": 40,
+      "description": "Milliseconds each row waits behind the one above it. Upstream's 0.04 stagger, in ms."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/KineticTypePageTransition",
+    "commit": "ebe926e2f1de42950c36ff8a678321155280c1af",
+    "path": [
+      "src/js/typeTransition.js",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "GSAP is replaced by anime.js. Both paused timelines become createTimeline with autoplay false, gsap.to becomes add(), the keyframes arrays become anime property keyframes, and every duration is multiplied by 1000 because GSAP counts seconds and anime.js milliseconds. Eases map by GSAP's own naming: power2.inOut to inOutCubic, power1.inOut to inOutQuad, power1.in to inQuad, back to outBack. The negative stagger of -0.04 becomes the same spacing with from: 'last', which is what a negative GSAP stagger means.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is. Nothing custom needed transcribing: CANDIDATES.md warned that this repo imports gsap/CustomEase, a Club GreenSock plugin, and at this commit it does not -- typeTransition.js and src/js/index.js import `gsap` alone and package.json lists only gsap and imagesloaded. Every curve here is stock. All durations, offsets, scales, rotations and percentages are upstream's.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "--type-line-opacity is read from the section with getComputedStyle inside mount(), not from document.body at module scope.",
+      "why": "Upstream reads it at import time, which needs a document before the module has even been evaluated and makes the file unloadable anywhere else. Reading it off the section also means a site that restyles the wall moves the sweep's landing point with it.",
+      "kind": "seam"
+    },
+    {
+      "what": "in() and out() are chained into one round trip fired once by an IntersectionObserver the first time the section is on screen, instead of being played from a click on a grid item and a back button.",
+      "why": "Upstream is a page transition between a grid and an article; a paw-fx effect is a section with neither. The pair is a round trip -- out() ends exactly where the stylesheet starts -- so running both as a reveal keeps the composition honest and leaves nothing inline behind. Once per mount: a wall that re-sweeps on every scroll past is noise.",
+      "kind": "seam"
+    },
+    {
+      "what": ".type is positioned absolutely inside the section rather than fixed to the viewport, and the article, item grid, frame, back button and their sixteen images are not ported.",
+      "why": "A viewport-fixed wall would cover the whole page from inside one section. The wall is the whole effect; the rest is the demo's own page furniture, and its photographs are Codrops', licensed separately from the code. Nothing here needs an image -- the wall is type.",
+      "kind": "seam"
+    },
+    {
+      "what": "Both timelines are reverted on destroy and the observer disconnected.",
+      "why": "Upstream never tears the transition down. Here a destroy mid-sweep would otherwise leave the wall frozen at 2.7x and 90 degrees with the rows off screen, which is not a state any stylesheet describes.",
+      "kind": "seam"
+    }
+  ]
+}

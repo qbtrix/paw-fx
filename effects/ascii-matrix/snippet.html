@@ -1,0 +1,57 @@
+<!-- ascii-matrix section. Finished at rest with CSS alone: the block inside
+     <pre data-fx-grid> is a real frame of the effect, dumped from index.js at
+     the same 80x34 grid the script draws, so a blocked script, a pruned bundle
+     or prefers-reduced-motion leaves rain on the panel rather than an empty
+     box. destroy() puts this exact frame back.
+     The grid is decorative and carries aria-hidden; the eyebrow, headline and
+     lede stay real text, so a screen reader gets the section's meaning and
+     none of the art. They sit on an opaque card rather than over the rain,
+     because contrast over an unpredictable field is a matter of luck.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-matrix/style.css">
+<section class="fx-ascii-matrix" data-fx="ascii-matrix">
+  <div class="fx-ascii-matrix__inner">
+    <div class="fx-ascii-matrix__screen">
+      <pre class="fx-ascii-matrix__grid" data-fx-grid aria-hidden="true">  1       X         b  F█                  l     j   h   x           2   I      
+  u       z         u  5                   o     █   █   t  z        █   █      
+  █       G       L █  █                   █             █  c             9     
+          █       +       u v    l                 M        i   @ l8      7   U 
+         a     +  █       = 7    h           Q    Ws   x    z   m R&amp;    c j W $ 
+         7     y          █ 4   U█           t    y█   U    6   - █m    j * s F 
+         L     █            █   R       *    █    o    █    c   █  █    █ e █ █ 
+         %                      F       I         %         F             █     
+         █      c              e█       i         █         s                  D
+                X              w        █J                  I                  a
+        e     P █          6   q         c      W           █                  █
+        Y     c            Q   U         l      y                w           #  
+        █     █      E     █   █         f      █          M     @           7  
+                     7              Mu   █                 s   o █           F  
+DZ  v              * l               L                     █   Q             █  
+c3  7      W       C █              L█                  -      x                
+█s  6      V       █                █                   %      L                
+ &amp; Ei      P                                            i      █                
+ █ 3█      Kg    s                          V           N                       
+   █       █*    I    =                     B           █                       
+       H    C    a    5       K        K    █       -                      T    
+       K    █    █    █       g        c            G         7            n    
+     J 1                      █        +  Q         █ $       r            █    
+     H █                     y         █  M           l       █       0         
+     █                       n            $           a               p         
+             F               █        F   █           █               l         
+             1                        L       A                       e         
+             █                        █       B           y         Q 8         
+                                              D           v         G 5         
+                         K         9          █h          █         █ O         
+                         S        2l           O             #        █         
+      +                A J        4u           █             s         + c      
+      R                + █        █&amp;             O   =       █         E Q      
+      █                t           █             q   %               A █ i      </pre>
+    </div>
+    <div class="fx-ascii-matrix__card">
+      <p class="fx-ascii-matrix__eyebrow">stream / 80 x 34</p>
+      <h2 class="fx-ascii-matrix__title">Every column falls at its own speed.</h2>
+      <p class="fx-ascii-matrix__lede">Replace this with your own words. Eighty columns, each with a head and a trail that grows and shrinks by one row a frame, redrawn as text.</p>
+    </div>
+  </div>
+</section>

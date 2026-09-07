@@ -1,0 +1,15 @@
+<!-- sliced-text section. Finished at rest with CSS alone: the headings are
+     ordinary headings. index.js rebuilds each one as four overflow-hidden
+     columns holding whole copies of the same word, and slides them apart and
+     back into register as the section scrolls, so a blocked script, a pruned
+     bundle or prefers-reduced-motion leaves the words readable exactly as they
+     are written here.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/sliced-text/style.css">
+<section class="fx-sliced" data-fx="sliced-text">
+  <p class="fx-sliced__eyebrow">Cut and reassembled</p>
+  <h2 class="fx-sliced__word">Unfold</h2>
+  <h2 class="fx-sliced__word fx-sliced__word--alt">and settle</h2>
+  <p class="fx-sliced__lede">Each word is four windows onto four copies of itself. Scroll and the copies slide out of alignment, then land back on the letter they belong to.</p>
+</section>

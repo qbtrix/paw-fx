@@ -1,0 +1,42 @@
+<!-- smooth-scroll section. Finished at rest with CSS alone, and that is not a
+     fallback here: the section is ordinary content either way. Lenis smooths
+     the whole document, so what index.js changes is how the page moves past
+     this section, not how the section looks. With no script, or under
+     prefers-reduced-motion, the reader gets native scrolling and identical
+     markup.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/smooth-scroll/style.css">
+<section class="fx-smooth" data-fx="smooth-scroll">
+  <div class="fx-smooth__inner">
+    <p class="fx-smooth__eyebrow">How it works</p>
+    <h2 class="fx-smooth__title">Four steps, and the first one takes a minute.</h2>
+    <p class="fx-smooth__lede">Replace this copy with your own. Mount this section once anywhere on the page and the whole document scrolls on inertia instead of in jumps.</p>
+    <ol class="fx-smooth__list">
+      <li class="fx-smooth__item">
+        <div>
+          <h3 class="fx-smooth__h">Connect the source</h3>
+          <p class="fx-smooth__p">Point it at the repository, the warehouse or the bucket you already have. Nothing moves until you say so.</p>
+        </div>
+      </li>
+      <li class="fx-smooth__item">
+        <div>
+          <h3 class="fx-smooth__h">Pick what matters</h3>
+          <p class="fx-smooth__p">Choose the tables, the folders or the branches worth watching. The rest stays where it is.</p>
+        </div>
+      </li>
+      <li class="fx-smooth__item">
+        <div>
+          <h3 class="fx-smooth__h">Set the guardrails</h3>
+          <p class="fx-smooth__p">Decide who can approve, who gets paged and what never leaves the account. Written once, enforced everywhere.</p>
+        </div>
+      </li>
+      <li class="fx-smooth__item">
+        <div>
+          <h3 class="fx-smooth__h">Ship it</h3>
+          <p class="fx-smooth__p">Open the dashboard on Monday and the week is already laid out. Change anything without filing a ticket.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>

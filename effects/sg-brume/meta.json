@@ -1,0 +1,71 @@
+{
+  "name": "sg-brume",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "mist",
+    "fog",
+    "colonnade",
+    "silhouette",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's brume: moonlit mist streaming sideways through a dark colonnade, glowing brightest in the gaps, every window framing a slightly different drifting colour.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#9db6e8",
+        "#c3cdf0",
+        "#7f93c8",
+        "#25324f"
+      ],
+      "description": "Four palette colours. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "spacing": {
+      "type": "number",
+      "default": 200,
+      "description": "Spacing between column centres, in CSS pixels. Upstream default, range 100 to 400."
+    },
+    "flowSpeed": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Speed of the streaming fog. Upstream default, range 0 to 2."
+    },
+    "glow": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Brightness of the fog behind the columns. Upstream default, range 0.1 to 1.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": [
+      "brume/shader.frag",
+      "brume/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `nocturne` preset.",
+      "why": "brume/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a nocturne set: a tight cold moon set, deliberately narrow in hue: the shader blends the four across a wheel with no dither of its own, and a wide-gamut set posterises into green and magenta bands where the fog is thickest, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 at radius 4.0, saturation 1.12, contrast 1.05 and dither over the shader output.",
+      "why": "The post chain is also in @shader-gallery/runtime. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's dither and grain were there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+<!-- grain-gradient section. Finished at rest with CSS alone: the corner stops in
+     .fx-grain__rest are the hero with JavaScript off, and index.js only covers
+     them with a WebGL canvas once it has a context and a linked program. The
+     _fx paths are root-absolute because a site always sits at the origin root,
+     and "./_fx/..." would break on a nested page such as /blog/post.html. The
+     three decorative layers carry aria-hidden; the copy is the only thing a
+     screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/grain-gradient/style.css">
+<section class="fx-grain" data-fx="grain-gradient">
+  <div class="fx-grain__rest" aria-hidden="true"></div>
+  <div class="fx-grain__scrim" aria-hidden="true"></div>
+  <div class="fx-grain__grain" aria-hidden="true"></div>
+  <div class="fx-grain__inner">
+    <p class="fx-grain__eyebrow"><span class="fx-grain__dot" aria-hidden="true"></span>Now in private beta</p>
+    <h1 class="fx-grain__title">Rough edges on purpose. Nothing rough underneath.</h1>
+    <p class="fx-grain__lede">Put your own words here. The headline takes one line or three, and the grain keeps moving behind it either way.</p>
+    <div class="fx-grain__actions">
+      <a class="fx-grain__cta fx-grain__cta--primary" href="#">Request access</a>
+      <a class="fx-grain__cta fx-grain__cta--ghost" href="#">See a build</a>
+    </div>
+  </div>
+</section>

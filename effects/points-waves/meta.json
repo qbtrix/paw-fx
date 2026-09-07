@@ -1,0 +1,83 @@
+{
+  "name": "points-waves",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "points", "3d", "webgl", "wave", "grid", "three", "hero", "pointer"],
+  "summary": "A 2500-point grid undulating on two crossed sines that drive both height and dot size, with the camera easing toward the pointer -- the only structured, three-dimensional particle field in the library, and it ships no texture.",
+  "needs": ["three"],
+  "options": {
+    "amount": {
+      "type": "number",
+      "default": 50,
+      "description": "Points per axis; the field is amount squared. Upstream's AMOUNTX / AMOUNTY."
+    },
+    "separation": {
+      "type": "number",
+      "default": 100,
+      "description": "World units between neighbouring points. Upstream's SEPARATION."
+    },
+    "color": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Dot colour. Upstream's color uniform, 0xffffff. Set --fx-dot to match so the CSS resting plane agrees."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Phase added to the sines each frame. Upstream's count += 0.1."
+    },
+    "tilt": {
+      "type": "number",
+      "default": 700,
+      "description": "World units the camera sits above the plane at rest, so the field reads as a surface rather than a line seen edge-on. Upstream rests at 0; pass 0 for upstream's framing."
+    },
+    "cameraZ": {
+      "type": "number",
+      "default": 3200,
+      "description": "How far back the camera sits. Upstream's camera.position.z of 1000, raised past the grid's near edge so no row sits a few units in front of the lens."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "mrdoob/three.js",
+    "commit": "2431a09f46f34c560bc8e44b33be0e567723d5b9",
+    "path": "examples/webgl_points_waves.html"
+  },
+  "deviations": [
+    {
+      "what": "camera.position.z defaults to 3200 rather than upstream's 1000.",
+      "why": "The grid spans z from -2500 to +2500 and gl_PointSize is scale * (300 / -mvPosition.z), so at z 1000 the camera sits INSIDE the field and the rows a few units in front of it draw discs hundreds of pixels across -- measured at 1280x720, a single dot filled a quarter of the section. Upstream fills a whole browser window where that reads as flying through the field; a section is shorter and the near rows swallow it. 3200 puts the lens just past the near edge, which is the smallest change that leaves every number in the shaders and the wave maths untouched, and cameraZ is an option so 1000 is one argument away.",
+      "kind": "ours"
+    },
+    {
+      "what": "The camera's resting y is an option (tilt, default 700) rather than 0: the easing line reads ((tilt - mouseY) - camera.position.y) * 0.05 where upstream reads (-mouseY - camera.position.y) * 0.05.",
+      "why": "Upstream's camera sits level with the plane, so from outside the grid the whole field collapses to a band a few dots deep across the middle of the frame -- which is fine when you are inside it at z 1000 and wrong once the lens is behind it. Lifting the lens is what makes the grid read as a surface, which is the entire reason this effect is on the shelf. The 0.05 easing, the lookAt and the pointer term are untouched, and tilt 0 restores upstream's framing exactly.",
+      "kind": "ours"
+    },
+    {
+      "what": "Stats from three/addons/libs/stats.module.js is dropped, along with the container div it was appended to.",
+      "why": "It is a development FPS counter, not part of the effect, and this repo vendors classic three.module.js with no addons -- so no addon can survive into a port at all.",
+      "kind": "seam"
+    },
+    {
+      "what": "The pointer is read against the section's own centre instead of window.innerWidth / 2, and the resize handler is a ResizeObserver on the canvas host rather than a window resize listener.",
+      "why": "Upstream is a full-window demo, so the window and the drawing surface are the same box. A section is not: it can be any height, it can sit beside other content, and it can change size without the window doing so, which only a ResizeObserver sees. Both are the same measurement against a different rectangle.",
+      "kind": "seam"
+    },
+    {
+      "what": "The renderer is created with alpha: true and failIfMajorPerformanceCaveat: true, and a thrown context tears the mount back down to the CSS resting state.",
+      "why": "Effect contract. Transparency lets the CSS plane and the section gradient show through instead of the canvas painting its own opaque black, and refusing a software-rasterised context is better than running this at a few frames a second.",
+      "kind": "seam"
+    },
+    {
+      "what": "The two x-shader script blocks become template literals in index.js rather than being read out of the document with getElementById.",
+      "why": "The GLSL is carried byte for byte, indentation included. Upstream stores it in the page because a demo page is where its shaders live; a module that ships into somebody else's markup cannot depend on two script tags with fixed ids existing there.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion no renderer is created.",
+      "why": "Effect contract: mount() stays at rest. The CSS dot plane is the finished section, so not building is the resting state rather than a downgrade.",
+      "kind": "seam"
+    }
+  ]
+}

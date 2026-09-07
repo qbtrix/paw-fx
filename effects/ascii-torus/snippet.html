@@ -1,0 +1,58 @@
+<!-- ascii-torus section. Finished at rest with CSS alone: the block inside
+     <pre data-fx-grid> is a real frame of the effect, dumped from index.js at
+     the same 72x30 grid the script draws, so a blocked script, a pruned bundle
+     or prefers-reduced-motion leaves a donut on the panel rather than an empty
+     box. destroy() puts this exact frame back.
+     The grid is decorative and carries aria-hidden; the eyebrow, headline,
+     lede and the spec list stay real text, so a screen reader gets the
+     section's meaning and none of the art.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-torus/style.css">
+<section class="fx-ascii-torus" data-fx="ascii-torus">
+  <div class="fx-ascii-torus__inner">
+    <div class="fx-ascii-torus__screen">
+      <pre class="fx-ascii-torus__grid" data-fx-grid aria-hidden="true">                                                                        
+                                                                        
+                                                                        
+                                                                        
+                                                                        
+                        :~~~~~~~~~~~:::;;;=!*                           
+                   ,,,,......,,,,,,-----~~~::;;=!*                      
+               ...................,,,,,-----~~~:::;=!#                  
+            .........................,,,,----~~~::::;;=!                
+          .............................,,,,----~~~::;;;;=*              
+         ..............................,,,,------~~~:::;;=!             
+       ..............................,,,,--------~~~~~::;;=!            
+       ..........................,,--~~~~~~~~~~~~~~~~~~::;;=            
+       .......................,          !;;::~~~~~~~~~~::;;            
+       ......................             #=;:::~~~~~~~~~::;            
+       .....................,            !=:;::~~~------~~:;            
+       ........................-:   =;;::~~---~----------~:             
+        .......................................,,,,,,,,,-~              
+         .............................................,-                
+           ..........................................,                  
+              .....................................                     
+                  .............................                         
+                         ..............                                 
+                                                                        
+                                                                        
+                                                                        
+                                                                        
+                                                                        
+                                                                        
+                                                                        </pre>
+    </div>
+    <div class="fx-ascii-torus__copy">
+      <p class="fx-ascii-torus__eyebrow">z-buffer</p>
+      <h2 class="fx-ascii-torus__title">A solid object, and not one polygon.</h2>
+      <p class="fx-ascii-torus__lede">Replace this with your own words. The surface is sampled over two angles, projected by one over depth, and shaded by which way it faces the light.</p>
+      <ul class="fx-ascii-torus__spec">
+        <li><span>Grid</span><b>72 &times; 30</b></li>
+        <li><span>Samples per frame</span><b>~52,700</b></li>
+        <li><span>Shading ramp</span><b>.,-~:;=!*#$@</b></li>
+        <li><span>Dependencies</span><b>none</b></li>
+      </ul>
+    </div>
+  </div>
+</section>

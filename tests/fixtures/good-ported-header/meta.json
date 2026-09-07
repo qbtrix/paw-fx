@@ -1,0 +1,19 @@
+{
+  "name": "good-ported-header",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "fixture: real header comment plus a real vendor import",
+  "needs": [
+    "three"
+  ],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "mrdoob/three.js",
+    "commit": "b1e2c3d4e5f60718293a4b5c6d7e8f9012345678",
+    "path": "examples/webgl_shaders_ocean.html"
+  }
+}

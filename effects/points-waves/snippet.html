@@ -1,0 +1,19 @@
+<!-- points-waves section. Finished at rest with CSS alone: .fx-pwaves__rest is
+     a real dot plane laid back in perspective, and index.js only fades it out
+     once a WebGL renderer has a context. A blocked bundle, a refused context
+     or prefers-reduced-motion all leave the CSS plane in place.
+     The field is pointer-parallaxed: moving over the section eases the camera,
+     which is why the canvas host is not pointer-events:none here.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/points-waves/style.css">
+<section class="fx-pwaves" data-fx="points-waves">
+  <div class="fx-pwaves__rest" aria-hidden="true"></div>
+  <div class="fx-pwaves__canvas" data-fx-canvas aria-hidden="true"></div>
+  <div class="fx-pwaves__inner">
+    <p class="fx-pwaves__eyebrow">Signal processing</p>
+    <h1 class="fx-pwaves__title">Every reading is a point on a surface.</h1>
+    <p class="fx-pwaves__lede">Replace this copy with your own. The field is a real 3D grid of points, so the headline sits on a surface that moves under it rather than a flat backdrop.</p>
+    <p class="fx-pwaves__hint">Move your pointer across the section to lean the camera.</p>
+  </div>
+</section>

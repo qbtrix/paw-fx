@@ -1,0 +1,83 @@
+{
+  "name": "grid-motion",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": [
+    "gallery",
+    "grid",
+    "hero",
+    "background",
+    "parallax",
+    "pointer",
+    "codrops",
+    "anime"
+  ],
+  "summary": "A scattered wall of ten images behind the copy, each panel drawing its own 15 to 60px travel range so the whole collage shifts against the pointer at different rates, lerped at 0.07 and arriving with a 0.7 to 1 scale over two seconds.",
+  "needs": [
+    "anime"
+  ],
+  "options": {
+    "minShift": {
+      "type": "number",
+      "default": 15,
+      "description": "Smallest per-cell travel in px from centre to edge. Upstream's getRandomNumber(15,60) lower bound."
+    },
+    "maxShift": {
+      "type": "number",
+      "default": 60,
+      "description": "Largest per-cell travel in px from centre to edge. Upstream's getRandomNumber(15,60) upper bound."
+    },
+    "ease": {
+      "type": "number",
+      "default": 0.07,
+      "description": "Lerp amount per frame, 0 to 1. Lower is heavier. Upstream's 0.07."
+    },
+    "opacity": {
+      "type": "number",
+      "default": 0.4,
+      "description": "Opacity the wall settles at, which is also its resting value in style.css. Upstream's showItems target."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/ImageGridMotionEffect",
+    "commit": "210f9703661b0547d8c16c91fee5df942f816846",
+    "path": [
+      "src/js/demo1/grid.js",
+      "src/js/utils.js",
+      "src/css/base.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "No image ships with the effect. Every cell paints a gradient built from a --fx-hue until a site sets --fx-img on it, and the gradient stays as the fallback under a slow or failed load.",
+      "why": "Upstream's twenty demo photographs are Codrops', licensed separately from the code, and redistributing them is not ours to do. The effect is the wall and its motion, not the pictures in it -- this is a hero built from the client's own images.",
+      "kind": "ours"
+    },
+    {
+      "what": "GSAP is replaced by anime.js: the showItems timeline becomes createTimeline, gsap.set on each frame becomes a style.translate write, ease 'Expo.easeOut' becomes outExpo and 'Power1.easeOut' becomes outQuad, and every duration is multiplied by 1000 because GSAP counts seconds and anime.js milliseconds. GSAP's stagger amount of 0.6 is a total spread and anime's stagger takes a per-step delay, so it is divided by the number of gaps; grid: 'auto' becomes anime's grid: true, which measures the same bounding boxes.",
+      "why": "GreenSock's licence forbids use in a tool that lets people build animations without writing code, which is what paw-fx is. Both durations, both curves, the 0.7 scale, the 0.4 opacity, the 0.6 spread and the from: 'center' order are upstream's and unchanged.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "One requestAnimationFrame loop walks every cell, instead of each GridItem starting its own; the drift is written to the independent `translate` property rather than through gsap.set's transform; the handle is cancelled on destroy along with both listeners, and every inline translate is cleared.",
+      "why": "Ten independent frame loops are ten callbacks doing the same work at the same time, and upstream keeps no handle on any of them because its page never tears the grid down. One loop is visually identical and is one cancelAnimationFrame. The drift and the arrival's scale would otherwise be two writers on one transform string: anime owns transform for the scale, so the drift takes the separate translate property, which composes with it instead of overwriting it.",
+      "kind": "seam"
+    },
+    {
+      "what": "The pointer is normalised against the section's own box rather than read as clientX/clientY against window.innerWidth/innerHeight, and mousepos starts at the centre and returns there when the pointer leaves.",
+      "why": "Upstream's grid IS the viewport, so the two are the same measurement there. A section is not, and reading window coordinates would make the wall drift by how far down the page the section sits. Starting and resetting at the centre keeps the resting frame the one the stylesheet draws.",
+      "kind": "seam"
+    },
+    {
+      "what": "src/js/cursor.js is not ported: the only mousemove listener here is the one that feeds the grid drift, and the demo's custom cursor element is absent.",
+      "why": "It is the demo page's cursor rather than part of the grid effect, and paw-fx already ships cursor effects of its own that a site can add beside this one.",
+      "kind": "ours"
+    },
+    {
+      "what": "Below 53em the ten pos-N placements are replaced by a four-column wall and the last two cells are hidden.",
+      "why": "Upstream's collage is laid out on a 50-track grid tuned for a desktop viewport; at 375 wide the same placements make ten vertical slivers. The narrow layout keeps the same cells and the same motion.",
+      "kind": "ours"
+    }
+  ]
+}

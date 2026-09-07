@@ -1,0 +1,17 @@
+{
+  "name": "bad-glsl-altered",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "fixture"
+  ],
+  "summary": "Fixture for the port-fidelity gate. Not a shipped effect.",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "cd06eee100810a9682fb2fe49d7d43c81bee52c8",
+    "path": "gloam/shader.frag"
+  }
+}
