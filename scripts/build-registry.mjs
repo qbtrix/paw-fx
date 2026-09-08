@@ -1,6 +1,12 @@
 // Builds dist/registry/ from effects/: registry.json (index), one
 // items/<name>.json per effect carrying the files a site needs under _fx/, and
 // previews/<name>.png beside them.
+//
+// 2026-09-08: an item is now ENGINE-AGNOSTIC. Identity (name, kind, licence,
+// origin, options) and `files` stay top level because the effect's own code is
+// the same on every engine; delivery moved under `targets.<engine>`, and the
+// svelte target is generated from mount(). See "targets" below and the
+// "Targets and engines" section of README.md.
 // Layout inside a site mirrors the repo (_fx/effects/<name>/, _fx/vendor/), so
 // the "../../vendor/<file>" imports in index.js resolve unchanged.
 //
@@ -64,6 +70,91 @@ const OWNER = new Map(Object.entries(manifest).flatMap(([key, e]) => e.files.map
 function version() {
   try { return execSync("git describe --tags --always", { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); }
   catch { return "0.0.0"; }
+}
+
+// ---------------------------------------------------------------- targets
+// ENGINE-AGNOSTIC SHAPE. An item's IDENTITY is engine-neutral -- name, kind,
+// licence, origin, options, preview, and the `files` that make up the effect
+// itself -- while DELIVERY differs per engine. So `files` stays top level (the
+// mount() core is the same code on every engine) and `targets.<engine>` carries
+// only what that engine needs to USE it: html gets the section markup, svelte
+// gets a component. One entry, several formats, which is what keeps one product
+// from becoming three listings once the registry carries other people's work.
+//
+// THE SVELTE TARGET IS GENERATED, NOT HAND-WRITTEN. mount(el, opts) ->
+// {update, destroy} is already the portable core, so the wrapper is the same
+// shape for all 98: mount on mount, update when props change, destroy on
+// teardown. Nothing about the effect is rewritten -- the component imports the
+// very same index.js and style.css the html target ships.
+//
+// WHAT IS DELIBERATELY NOT DONE: `needs` is not resolved to npm packages for
+// build-step engines. It could be (vendor/manifest.json already records
+// `package` and `version` for every key), but tsparticles assigns its exports
+// to globalThis rather than exporting them, so the rewrite is not mechanical
+// for all five keys. The svelte target therefore ships the same self-contained
+// vendor files the html target does. Correct everywhere, heavier than it needs
+// to be on a bundler; revisit when a real Svelte site consumes this.
+const pascal = (name) => name.split(/[^a-z0-9]+/i).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join("");
+
+// Svelte parses { and } in a template as an expression delimiter, and ten of the
+// snippets carry literal braces inside ASCII-art grids. The entities render
+// identically and never reach the expression parser.
+const svelteEscape = (html) => html.replace(/\{/g, "&#123;").replace(/\}/g, "&#125;");
+
+// The stylesheet <link> is html-engine delivery: a Svelte component imports the
+// css instead. Every snippet carries exactly one, on its own line.
+const stripStylesheetLink = (html) => html.replace(/^[ \t]*<link\b[^>]*>[ \t]*\r?\n?/m, "");
+
+export function svelteComponent(name, snippet) {
+  const markup = svelteEscape(stripStylesheetLink(snippet).trim())
+    .split("\n").map((l) => (l.trim() ? "  " + l : l)).join("\n");
+  const tag = pascal(name);
+  return `<!-- ${tag}.svelte -- GENERATED from effects/${name}/snippet.html by
+     scripts/build-registry.mjs. Do not edit by hand; it is rewritten on every
+     \`bun run build\`. The effect's own index.js and style.css are imported
+     unchanged, so this wrapper adds a Svelte lifecycle and nothing else. The
+     markup below is the same resting section the html target ships, so the
+     component is finished at rest before mount() ever runs. -->
+<script>
+  import { onMount } from "svelte";
+  import { mount } from "./index.js";
+  import "./style.css";
+
+  const opts = $props();
+
+  let root;
+  let handle = null;
+
+  onMount(() => {
+    // mount() is handed the section itself, the same element the html target's
+    // usage selects with [data-fx="${name}"].
+    handle = mount(root.querySelector('[data-fx="${name}"]') ?? root, opts);
+    return () => { handle?.destroy?.(); handle = null; };
+  });
+
+  // Props changing is the engine-native equivalent of calling update().
+  $effect(() => { handle?.update?.({ ...opts }); });
+</script>
+
+<!-- display:contents so the wrapper carries the ref without entering layout. -->
+<div bind:this={root} style="display:contents">
+${markup}
+</div>
+`;
+}
+
+function svelteTarget(name, snippet) {
+  const tag = pascal(name);
+  return {
+    files: [{ path: `_fx/effects/${name}/${tag}.svelte`, content: svelteComponent(name, snippet) }],
+    usage: [
+      `<script>`,
+      `  import ${tag} from "$lib/_fx/effects/${name}/${tag}.svelte";`,
+      `</` + `script>`,
+      ``,
+      `<${tag} />`,
+    ].join("\n"),
+  };
 }
 
 export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
@@ -133,23 +224,34 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
         .sort()
         .map((f) => ({ path: `_fx/effects/${name}/demo/${f}`, content: readFileSync(join(demoDir, f), "utf8") }))
     : [];
-  const { version, category, summary, license, origin, options, tags, deviations } = meta;
-  // `$schema`, `type`, `title`, `description` and the per-file `type`/`target`
-  // are what make this same file installable with `npx shadcn add <url>`.
-  // They are additive: the fields paw-fx's own consumers read are untouched,
-  // and one item serves both rather than there being two registries to keep
-  // honest. `target` puts the files under public/, because they are assets a
-  // page links at /_fx/..., not modules anything imports.
+  const { version, category, summary, license, origin, options, tags, deviations, kind } = meta;
+  const snippet = read("snippet.html");
+  // Two audiences, one item. The shadcn fields ($schema, type, title,
+  // description, per-file type/target) make this same file installable with
+  // `npx shadcn add <url>`; `target` puts the files under public/ because they
+  // are assets a page links at /_fx/..., not modules anything imports. The
+  // engine split (kind, engines, targets) keeps identity and files[] neutral
+  // and puts per-engine delivery under targets.<engine>: html carries the
+  // section markup and the hand-written demo pages, svelte a component. Both
+  // read the SAME files[]. Top-level demo/snippet/usage stay for the readers
+  // that predate targets.
+  const targets = {
+    html: { files: [], snippet, usage, demo },
+    svelte: svelteTarget(name, snippet),
+  };
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name, type: "registry:item", title: name, description: summary,
-    version, category, tags, summary, needs, license, origin, options,
+    // `kind` defaults to "effect" so no existing meta.json had to change.
+    version, kind: kind ?? "effect", category, tags, summary, needs, license, origin, options,
     deviations: deviations ?? [],
     files: [...files].map(([path, content]) => ({
       path, content, type: "registry:file", target: `public/${path}`
     })),
+    engines: Object.keys(targets),
+    targets,
     demo,
-    snippet: read("snippet.html"),
+    snippet,
     usage,
   };
 }
@@ -173,7 +275,7 @@ export function build(out = join(ROOT, "dist/registry")) {
   const registry = {
     version: version(),
     generatedAt: new Date().toISOString(),
-    items: items.map(({ name, category, tags, summary, needs, license }) => ({ name, category, tags, summary, needs, license })),
+    items: items.map(({ name, kind, category, tags, summary, needs, license, engines }) => ({ name, kind, category, tags, summary, needs, license, engines })),
   };
   writeFileSync(join(out, "registry.json"), JSON.stringify(registry, null, 2));
   return registry;

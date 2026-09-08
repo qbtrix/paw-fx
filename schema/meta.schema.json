@@ -20,6 +20,15 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "effect",
+        "component",
+        "template"
+      ],
+      "description": "What this registry entry IS, independent of engine. 'effect' is a mount(el,opts) section that any engine can host and is the default when absent, so no existing meta.json changes. 'component' is native to one engine and ships only that target. 'template' is a whole site. The key exists so the registry can carry all three without a second registry."
+    },
     "version": {
       "type": "string"
     },

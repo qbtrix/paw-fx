@@ -212,7 +212,7 @@ const page = (item) => `<!doctype html>
 <title>${item.name}</title>
 <style>html,body{margin:0;padding:0}</style>
 <script src="/_marker.js"></script>
-${item.snippet}
+${item.targets.html.snippet}
 `;
 
 function materialise(items) {

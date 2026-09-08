@@ -32,7 +32,7 @@
 // file that imports something else is refused rather than emitted half-built.
 import { test, expect } from "bun:test";
 import { readFileSync, existsSync } from "node:fs";
-import { build, buildItem } from "../scripts/build-registry.mjs";
+import { build, buildItem, svelteComponent } from "../scripts/build-registry.mjs";
 import { effectDirs } from "../scripts/lint.mjs";
 
 const out = new URL("../dist/registry", import.meta.url).pathname;
@@ -47,7 +47,7 @@ test("build emits registry and aurora-css item", () => {
   const p = `${out}/items/aurora-css.json`;
   expect(existsSync(p)).toBe(true);
   const item = JSON.parse(readFileSync(p, "utf8"));
-  for (const k of ["name", "version", "category", "summary", "needs", "license", "origin", "options", "deviations", "files", "demo", "snippet", "usage"]) {
+  for (const k of ["name", "kind", "version", "category", "summary", "needs", "license", "origin", "options", "deviations", "files", "engines", "targets"]) {
     expect(item).toHaveProperty(k);
   }
   // An effect with no deviations still carries the key, so a consumer (the
@@ -55,13 +55,13 @@ test("build emits registry and aurora-css item", () => {
   expect(Array.isArray(item.deviations)).toBe(true);
   // Same for `demo`: aurora-css has no hand-written demo pages, so the key is
   // an empty list, never absent.
-  expect(item.demo).toEqual([]);
+  expect(item.targets.html.demo).toEqual([]);
   expect(existsSync(`${out}/previews/aurora-css.png`)).toBe(true);
   expect(item.files.map((f) => f.path)).toEqual([
     "_fx/effects/aurora-css/index.js",
     "_fx/effects/aurora-css/style.css",
   ]);
-  expect(item.usage.split("\n")).toHaveLength(3);
+  expect(item.targets.html.usage.split("\n")).toHaveLength(3);
 });
 
 // Root-absolute, because a site always sits at the origin root and "./_fx/..."
@@ -69,11 +69,11 @@ test("build emits registry and aurora-css item", () => {
 // effects routinely appear several times on one page.
 test("usage is root-absolute and mounts every matching section", () => {
   const item = buildItem(fx("effects/aurora-css"));
-  expect(item.usage).toContain('href="/_fx/effects/aurora-css/style.css"');
-  expect(item.usage).toContain("from '/_fx/effects/aurora-css/index.js'");
-  expect(item.usage).toContain("document.querySelectorAll('[data-fx=\"aurora-css\"]').forEach((el) => mount(el))");
-  expect(item.usage).not.toContain("./_fx/");
-  expect(item.usage).not.toContain("querySelector(");
+  expect(item.targets.html.usage).toContain('href="/_fx/effects/aurora-css/style.css"');
+  expect(item.targets.html.usage).toContain("from '/_fx/effects/aurora-css/index.js'");
+  expect(item.targets.html.usage).toContain("document.querySelectorAll('[data-fx=\"aurora-css\"]').forEach((el) => mount(el))");
+  expect(item.targets.html.usage).not.toContain("./_fx/");
+  expect(item.targets.html.usage).not.toContain("querySelector(");
 });
 
 // A side-effect import of a vendor file is relative, so lint passes it; only
@@ -144,4 +144,61 @@ test("effectDirs skips underscore-prefixed directories", () => {
   const dirs = effectDirs().map((d) => d.split("/").pop());
   expect(dirs).toContain("mesh-gradient");
   expect(dirs.some((d) => d.startsWith("_"))).toBe(false);
+});
+
+// ---------------------------------------------------------------- targets
+// The engine-agnostic shape. Identity (name, kind, licence, origin, options)
+// and `files` are neutral; `targets.<engine>` carries only delivery. These
+// assert the split holds, because the whole point of the shape is that a
+// consumer can ask for an engine and a second engine can be added without
+// touching the effects tree.
+test("an item splits neutral identity from per-engine delivery", () => {
+  const item = buildItem(fx("effects/aurora-css"));
+  expect(item.kind).toBe("effect");                      // defaulted, not in meta.json
+  expect(item.engines).toEqual(Object.keys(item.targets));
+  expect(item.engines).toEqual(["html", "svelte"]);
+  // Delivery lives under a target, never at the top level, or a consumer
+  // cannot tell which engine it is holding.
+  for (const k of ["snippet", "usage", "demo"]) expect(item).not.toHaveProperty(k);
+  expect(item.targets.html.snippet).toContain('data-fx="aurora-css"');
+  expect(item.targets.svelte.files[0].path).toBe("_fx/effects/aurora-css/AuroraCss.svelte");
+});
+
+// The svelte target is generated from mount(), so the wrapper must actually
+// wire the three lifecycle points. A component that renders markup but never
+// mounts would still compile and would be silently dead.
+test("the generated svelte component wires mount, update and destroy", () => {
+  const c = svelteComponent("aurora-css", '<link rel="stylesheet" href="/x.css">\n<section data-fx="aurora-css">hi</section>');
+  expect(c).toContain('import { mount } from "./index.js"');
+  expect(c).toContain('import "./style.css"');
+  expect(c).toContain('mount(root.querySelector(\'[data-fx="aurora-css"]\')');
+  expect(c).toContain("handle?.destroy?.()");
+  expect(c).toContain("handle?.update?.");
+  expect(c).toContain("bind:this={root}");
+  // The stylesheet link is html delivery; a component imports the css instead.
+  expect(c).not.toContain("<link");
+  expect(c).toContain("<section data-fx=\"aurora-css\">hi</section>");
+});
+
+// REGRESSION. Svelte reads { } in a template as an expression delimiter, and
+// ten of the 98 snippets carry literal braces inside ASCII-art grids. Raw
+// embedding fails to compile on exactly those ten, which is the kind of bug
+// that ships green because the other 88 are fine.
+test("literal braces in snippet markup are escaped, not left to the parser", () => {
+  const c = svelteComponent("ascii", '<link rel="stylesheet" href="/x.css">\n<pre data-fx="ascii">{a}|}{b</pre>');
+  expect(c).toContain("&#123;a&#125;|&#125;&#123;b");
+  // The only braces left in the markup half are the ones we wrote (bind:this).
+  const markup = c.slice(c.indexOf("</scr" + "ipt>"));
+  expect(markup).not.toContain("{a}");
+});
+
+// Every effect must carry both targets, or "engine-agnostic" is true of one
+// sample and false of the library.
+test("every effect ships both targets", () => {
+  for (const dir of effectDirs()) {
+    const item = buildItem(dir);
+    expect(item.engines).toEqual(["html", "svelte"]);
+    expect(item.targets.svelte.files).toHaveLength(1);
+    expect(item.targets.html.snippet.length).toBeGreaterThan(0);
+  }
 });

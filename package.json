@@ -9,6 +9,7 @@
     "gallery": "bun scripts/build-registry.mjs && bun scripts/build-docs.mjs && bun scripts/build-gallery.mjs",
     "smoke": "bun scripts/smoke.mjs",
     "verify": "bun scripts/verify-ports.mjs",
+    "verify:svelte": "bun scripts/verify-svelte.mjs",
     "test": "bun test",
     "check": "bun run lint && bun run build && bun run docs && bun run smoke && bun test",
     "docs": "bun scripts/build-docs.mjs",

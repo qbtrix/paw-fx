@@ -134,7 +134,7 @@ test("the chrome effects ship with the page", () => {
       expect(readFileSync(join(dir, "gallery", f.path), "utf8")).toBe(f.content);
     }
     expect(html).toContain(`data-fx="${name}"`);
-    expect(html).toContain(item.usage.split("\n")[0]);
+    expect(html).toContain(item.targets.html.usage.split("\n")[0]);
   }
 });
 
@@ -214,7 +214,7 @@ test("every effect has a demo page carrying its snippet and its own mount line",
     const page = readFileSync(join(dir, "gallery", "demo", `${item.name}.html`), "utf8");
     expect(page).toContain(`data-fx="${item.name}"`);
     // Verbatim, not paraphrased: the demo mounts the way the registry says to.
-    const [link, , mount] = item.usage.split("\n");
+    const [link, , mount] = item.targets.html.usage.split("\n");
     expect(page).toContain(mount);
     expect(page).toContain(link);
     expect(page).toContain("?reduced=1");
@@ -270,17 +270,17 @@ test("scroll effects get filler to scroll, and nothing else does", () => {
 // the demo page points at it rather than a copy.
 test("an effect with hand-written demo pages ships them, and its demo links to them", () => {
   const fade = items.find((i) => i.name === "page-fade");
-  expect(fade.demo.map((f) => f.path)).toEqual([
+  expect(fade.targets.html.demo.map((f) => f.path)).toEqual([
     "_fx/effects/page-fade/demo/a.html",
     "_fx/effects/page-fade/demo/b.html",
   ]);
-  for (const f of fade.demo) {
+  for (const f of fade.targets.html.demo) {
     expect(readFileSync(join(dir, "gallery", f.path), "utf8")).toBe(f.content);
   }
   const page = readFileSync(join(dir, "gallery", "demo", "page-fade.html"), "utf8");
   expect(page).toContain('href="/_fx/effects/page-fade/demo/a.html"');
   // Every other effect declares none, so the key is not dead weight on 28 items.
-  expect(items.filter((i) => i.demo.length).map((i) => i.name)).toEqual(["page-fade"]);
+  expect(items.filter((i) => i.targets.html.demo.length).map((i) => i.name)).toEqual(["page-fade"]);
 });
 
 test("the page publishes as an html Paw Site, previews and all", () => {
