@@ -53,7 +53,7 @@ function createRng(seed) {
  * either at runtime -- it is the hand-set ear swings in STATES that keep the
  * geometry inside, and tests/paw-avatar.test.js locks that down. */
 const RADIUS = 100;
-const HALF_BOX = 179;
+const HALF_BOX = 197;
 
 /** Angular samples of the silhouette. A thin ear tip needs more than 64. */
 const SAMPLES = 96;
@@ -183,7 +183,7 @@ const HEAD_CROWN = [{ x: 0, y: -0.14, r: 0.84 }];
  * BEHIND the head, which is what reads as a separate part rather than as a
  * bump on a cloud. Each one is still the same radial machinery.
  */
-const EAR_SWEEP = { n: 9, top: 0.14, len: 0.88, bow: 0.14, r0: 0.37, r1: 0.26 };
+const EAR_SWEEP = { n: 9, top: 0.10, len: 0.88, bow: 0.26, r0: 0.24, r1: 0.38 };
 
 /**
  * The lobe as a swept disk: centres walk a slightly bowed line while the
@@ -196,15 +196,16 @@ const earDisks = () =>
     return {
       x: EAR_SWEEP.bow * u * u,
       y: EAR_SWEEP.top + EAR_SWEEP.len * u,
-      r: lerp(EAR_SWEEP.r0, EAR_SWEEP.r1, u * u)
+      // narrow where it roots on the crown, a round bulb at the hanging end
+      r: lerp(EAR_SWEEP.r0, EAR_SWEEP.r1, Math.sqrt(u))
     };
   });
 
 const EAR_LOBE = earDisks();
 /** Where each ear roots on the skull, before any head tilt. */
-const EAR_ROOT = { x: 0.56, y: -0.64 };
+const EAR_ROOT = { x: 0.60, y: -0.72 };
 /** Outward tilt of a resting ear, radians (negative swings out). A state's `angle` is relative to this. */
-const EAR_TILT = -0.42;
+const EAR_TILT = -0.36;
 
 const mirrored = (circles) => circles.map((c) => ({ ...c, x: -c.x }));
 
