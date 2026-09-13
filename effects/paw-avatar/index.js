@@ -53,7 +53,7 @@ function createRng(seed) {
  * either at runtime -- it is the hand-set ear swings in STATES that keep the
  * geometry inside, and tests/paw-avatar.test.js locks that down. */
 const RADIUS = 100;
-const HALF_BOX = 166;
+const HALF_BOX = 162;
 
 /** Angular samples of the silhouette. A thin ear tip needs more than 64. */
 const SAMPLES = 96;
@@ -218,24 +218,25 @@ function capsulePath(w, h) {
  */
 const ART = {
   head:
-    "M128 29 C91 28 62 49 53 81 C47 102 48 137 57 163 " +
-    "C65 187 89 204 128 207 C167 204 191 187 199 163 " +
-    "C208 137 209 102 203 81 C194 49 165 28 128 29Z",
+    "M160 29 C119 28 84 46 68 78 C54 107 54 149 66 181 " +
+    "C76 208 107 225 160 226 C213 225 244 208 254 181 " +
+    "C266 149 266 107 252 78 C236 46 201 28 160 29Z",
   earL:
-    "M70 73 C49 75 31 90 28 112 C25 135 37 157 52 159 " +
-    "C67 161 79 143 82 122 C85 101 84 80 70 73Z",
+    "M76 74 C51 77 35 95 31 119 C27 141 35 161 51 168 " +
+    "C67 175 83 160 88 138 C93 116 95 91 88 80 C85 75 81 73 76 74Z",
   earR:
-    "M186 73 C207 76 225 91 228 113 C231 136 219 157 204 159 " +
-    "C189 161 177 143 174 122 C171 101 172 80 186 73Z",
+    "M244 74 C269 77 285 95 289 119 C293 141 285 161 269 168 " +
+    "C253 175 237 160 232 138 C227 116 225 91 232 80 C235 75 239 73 244 74Z",
   /** Head bbox centre and half-width, measured off the flattened head path. */
-  cx: 128,
-  cy: 117.98,
-  unit: 78.782,
+  cx: 160,
+  cy: 127.48,
+  unit: 102.764,
   /** Where each ear meets the skull in the drawing: the point it swings about. */
-  pivotL: { x: 70, y: 73 },
-  pivotR: { x: 186, y: 73 },
-  /** Eye ellipse from the drawing. */
-  eye: { cx: 101, cy: 112, rx: 12.5, ry: 25.5 }
+  pivotL: { x: 76, y: 74 },
+  pivotR: { x: 244, y: 74 },
+  /** Eye capsule from the drawing, and the little glass catch inside it. */
+  eye: { cx: 117.5, cy: 116.5, w: 25, h: 51 },
+  catch: { dx: -4.5, dy: -13.5, r: 2.4 }
 };
 
 /** Art coordinates -> head half-widths, origin at the head's centre. */
@@ -310,14 +311,24 @@ function earPose(side, ear, headRot) {
 const deg = (d) => (d * Math.PI) / 180;
 
 /** Half-separation of the eyes on the sphere, degrees. */
-const EYE_SPLIT = 20.04;
+const EYE_SPLIT = 24.43;
 /** Eye size at rest, in head half-widths. Measured off the art ellipse. */
-const EYE_W = 0.3173;
-const EYE_H = 0.6474;
+const EYE_W = 0.2433;
+const EYE_H = 0.4963;
+/**
+ * The drawing's glass catch, in the eye's own space: it rides the eye matrix,
+ * so it stays put on a gaze that is tracking and squashes with a blink.
+ */
+const CATCH = {
+  x: (ART.catch.dx / ART.unit) * RADIUS,
+  y: (ART.catch.dy / ART.unit) * RADIUS,
+  r: (ART.catch.r / ART.unit) * RADIUS
+};
+
 /** The Paw looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
 const REST_GAZE = { yaw: 0, pitch: -2, roll: 0 };
 /** The face sits high on the head. */
-const FACE_Y = -0.0759;
+const FACE_Y = -0.1069;
 
 /** Rotate two vectors of an orthonormal frame within their common plane. */
 function spin(u, v, angle) {
@@ -904,7 +915,9 @@ function template(id, frame) {
   const eR = frame ? frame.earRPath : "";
   const shift = frame ? frame.faceShift : "";
   const eye = (i) =>
-    `<path class="fx-paw-eye" d="${at(i, "d", "")}" transform="${at(i, "matrix", "")}" opacity="${at(i, "alpha", 0)}"/>`;
+    `<g class="fx-paw-eye" transform="${at(i, "matrix", "")}" opacity="${at(i, "alpha", 0)}">` +
+    `<path d="${at(i, "d", "")}"/>` +
+    `<circle class="fx-paw-catch" cx="${r2(CATCH.x)}" cy="${r2(CATCH.y)}" r="${r2(CATCH.r)}"/></g>`;
 
   // One glass part = the drawn fill, then the drawn rim on top. The body
   // additionally clips the art's own sheen and glints to its outline, so
@@ -919,45 +932,47 @@ function template(id, frame) {
 
   const sheen = `
       <g transform="${ART_M}">
-        <path class="fx-paw-sheen" d="M83 56 C99 39 126 34 150 39 C162 42 173 48 182 58 C165 53 150 52 131 55 C112 58 96 66 79 77 C80 69 81 62 83 56Z" fill="url(#fx-paw-sheen-${id})"/>
-        <path class="fx-paw-glint" d="M67 79 C73 61 90 46 106 40" stroke="var(--fx-paw-glint, #FFFFFF)" opacity="0.32"/>
-        <path class="fx-paw-glint" d="M190 83 C185 64 172 51 159 45" stroke="var(--fx-paw-glint, #FFFFFF)" opacity="0.20"/>
+        <path class="fx-paw-sheen" d="M92 63 C111 41 135 34 160 35 C183 36 204 43 220 56 C202 54 181 55 159 60 C134 66 112 74 87 88 C87 78 89 69 92 63Z" fill="url(#fx-paw-sheen-${id})"/>
+        <path class="fx-paw-glint" d="M63 96 C69 72 83 56 103 47" stroke="var(--fx-paw-glint, #FFFFFF)" stroke-width="3.8" opacity="0.33"/>
+        <path class="fx-paw-glint" d="M255 96 C249 72 237 57 219 48" stroke="var(--fx-paw-glint, #FFFFFF)" stroke-width="3.4" opacity="0.21"/>
       </g>`;
 
   return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-HALF_BOX} ${-HALF_BOX} ${HALF_BOX * 2} ${HALF_BOX * 2}" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="fx-paw-glass-${id}" x1="54" y1="34" x2="198" y2="226" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
-      <stop offset="0" stop-color="var(--fx-paw-glass-0, #182033)" stop-opacity="0.78"/>
-      <stop offset="0.45" stop-color="var(--fx-paw-glass-1, #0B0E17)" stop-opacity="0.92"/>
-      <stop offset="1" stop-color="var(--fx-paw-glass-2, #020308)" stop-opacity="0.98"/>
+    <radialGradient id="fx-paw-glass-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(140 65) rotate(90) scale(205 205)">
+      <stop offset="0" stop-color="var(--fx-paw-glass-0, #152033)" stop-opacity="0.92"/>
+      <stop offset="0.52" stop-color="var(--fx-paw-glass-1, #0A0E17)" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="var(--fx-paw-glass-2, #02040A)"/>
+    </radialGradient>
+    <linearGradient id="fx-paw-rim-${id}" x1="52" y1="30" x2="270" y2="235" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
+      <stop offset="0" stop-color="var(--fx-paw-rim-a, #F8FCFF)"/>
+      <stop offset="0.28" stop-color="var(--fx-paw-rim-b, #D6E7FF)"/>
+      <stop offset="0.62" stop-color="var(--fx-paw-rim-c, #8CAFFF)"/>
+      <stop offset="0.84" stop-color="var(--fx-paw-rim-d, #A98CFF)"/>
+      <stop offset="1" stop-color="var(--fx-paw-rim-e, #83A2FF)"/>
     </linearGradient>
-    <linearGradient id="fx-paw-rim-${id}" x1="42" y1="28" x2="214" y2="226" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
-      <stop offset="0" stop-color="var(--fx-paw-rim-a, #F7FBFF)"/>
-      <stop offset="0.34" stop-color="var(--fx-paw-rim-b, #BBD5FF)"/>
-      <stop offset="0.68" stop-color="var(--fx-paw-rim-c, #8AA6FF)"/>
-      <stop offset="1" stop-color="var(--fx-paw-rim-d, #A88CFF)"/>
-    </linearGradient>
-    <linearGradient id="fx-paw-sheen-${id}" x1="75" y1="54" x2="145" y2="126" gradientUnits="userSpaceOnUse">
+    <linearGradient id="fx-paw-sheen-${id}" x1="73" y1="40" x2="180" y2="132" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
-      <stop offset="0.38" stop-color="#DCEBFF" stop-opacity="0.10"/>
+      <stop offset="0.30" stop-color="#DCEAFF" stop-opacity="0.10"/>
       <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
     </linearGradient>
-    <radialGradient id="fx-paw-pool-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(128 214) rotate(90) scale(70 105)">
-      <stop offset="0" stop-color="var(--fx-paw-pool-a, #7FA6FF)" stop-opacity="0.35"/>
-      <stop offset="0.6" stop-color="var(--fx-paw-pool-b, #7A5CFF)" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="var(--fx-paw-pool-b, #7A5CFF)" stop-opacity="0"/>
+    <radialGradient id="fx-paw-floor-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(160 224) rotate(90) scale(34 118)">
+      <stop offset="0" stop-color="var(--fx-paw-floor-a, #AFC4FF)" stop-opacity="0.36"/>
+      <stop offset="0.40" stop-color="var(--fx-paw-floor-b, #7E9FFF)" stop-opacity="0.20"/>
+      <stop offset="0.72" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0"/>
     </radialGradient>
-    <filter id="fx-paw-blur-${id}" x="-80%" y="-80%" width="260%" height="260%">
+    <filter id="fx-paw-blur-${id}" x="-100%" y="-100%" width="300%" height="300%">
       <feGaussianBlur stdDeviation="10"/>
     </filter>
-    <filter id="fx-paw-soft-${id}" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="8"/>
+    <filter id="fx-paw-soft-${id}" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5"/>
     </filter>
   </defs>
   <g class="fx-paw-ground" transform="${ART_M}">
-    <ellipse cx="128" cy="205" rx="92" ry="34" fill="var(--fx-paw-pool-a, #667BFF)" opacity="0.22" filter="url(#fx-paw-blur-${id})"/>
-    <ellipse cx="128" cy="213" rx="74" ry="19" fill="url(#fx-paw-pool-${id})"/>
-    <ellipse cx="128" cy="221" rx="62" ry="10" fill="var(--fx-paw-halo, #A7BCFF)" opacity="0.20" filter="url(#fx-paw-soft-${id})"/>
+    <ellipse cx="160" cy="218" rx="104" ry="34" fill="var(--fx-paw-halo, #6D8DFF)" opacity="0.16" filter="url(#fx-paw-blur-${id})"/>
+    <ellipse cx="160" cy="226" rx="92" ry="17" fill="url(#fx-paw-floor-${id})" filter="url(#fx-paw-soft-${id})"/>
+    <ellipse cx="160" cy="226" rx="69" ry="7" fill="var(--fx-paw-floor-a, #B7CAFF)" opacity="0.22" filter="url(#fx-paw-soft-${id})"/>
   </g>
   ${part("earL", eL)}
   ${part("earR", eR)}
@@ -1042,7 +1057,7 @@ export function mount(el, opts = {}) {
         eyeEls[i].setAttribute("opacity", "0");
         continue;
       }
-      eyeEls[i].setAttribute("d", e.d);
+      eyeEls[i].firstChild.setAttribute("d", e.d);
       eyeEls[i].setAttribute("transform", e.matrix);
       eyeEls[i].setAttribute("opacity", r2(e.alpha));
     }

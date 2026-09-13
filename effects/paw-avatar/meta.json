@@ -69,7 +69,7 @@
     },
     {
       "what": "Rest gaze is square on (yaw 0) where upstream's is a measured 3/4 view (yaw 28.49, pitch 28.62, roll -13), and eyefit.ts is not ported. Look is ported without its `spin`.",
-      "why": "The Paw looks at the reader, and its eyes sit at 0.34 head half-widths, deep inside the outline, so the eye-to-edge correction eyefit exists for has nothing to correct. `spin` serves upstream's intro animation, which has no counterpart here.",
+      "why": "The Paw looks at the reader, and its eyes sit at 0.41 head half-widths, well inside the outline, so the eye-to-edge correction eyefit exists for has nothing to correct. `spin` serves upstream's intro animation, which has no counterpart here.",
       "kind": "ours"
     },
     {

@@ -9,7 +9,7 @@
 import { test, expect } from "bun:test";
 import { PawEngine, STATE_IDS, restingPath, restingMarkup } from "../effects/paw-avatar/index.js";
 
-const HALF_BOX = 166;
+const HALF_BOX = 162;
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
 test("15 states, each with a drawable outline", () => {

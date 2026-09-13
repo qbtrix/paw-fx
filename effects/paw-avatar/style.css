@@ -11,19 +11,21 @@
 .fx-paw {
   /* Colours are the art file's, and every one of them is overridable. The
    * engine emits geometry and never names a colour. */
-  --fx-paw-glass-0: #182033;
-  --fx-paw-glass-1: #0b0e17;
-  --fx-paw-glass-2: #020308;
-  --fx-paw-rim-a: #f7fbff;
-  --fx-paw-rim-b: #bbd5ff;
-  --fx-paw-rim-c: #8aa6ff;
-  --fx-paw-rim-d: #a88cff;
-  --fx-paw-rim-width: 2.4;
-  --fx-paw-ear-rim-width: 2.2;
+  --fx-paw-glass-0: #152033;
+  --fx-paw-glass-1: #0a0e17;
+  --fx-paw-glass-2: #02040a;
+  --fx-paw-rim-a: #f8fcff;
+  --fx-paw-rim-b: #d6e7ff;
+  --fx-paw-rim-c: #8cafff;
+  --fx-paw-rim-d: #a98cff;
+  --fx-paw-rim-e: #83a2ff;
+  --fx-paw-rim-width: 2.6;
+  --fx-paw-ear-rim-width: 2.4;
   --fx-paw-glint: #ffffff;
-  --fx-paw-pool-a: #7fa6ff;
-  --fx-paw-pool-b: #7a5cff;
-  --fx-paw-halo: #a7bcff;
+  --fx-paw-floor-a: #afc4ff;
+  --fx-paw-floor-b: #7e9fff;
+  --fx-paw-floor-c: #7d62ff;
+  --fx-paw-halo: #6d8dff;
   --fx-paw-eye: #f7fbff;
   --fx-paw-warm: #ff8cc4;
   --fx-paw-glow: rgba(140, 170, 255, 0.5);
@@ -48,6 +50,11 @@
   stroke-linejoin: round;
 }
 
+.fx-paw-catch {
+  fill: #ffffff;
+  opacity: 0.38;
+}
+
 .fx-paw-part + .fx-paw-part .fx-paw-rim,
 .fx-paw-part:first-of-type .fx-paw-rim {
   stroke-width: var(--fx-paw-ear-rim-width);
@@ -63,11 +70,10 @@
 
 .fx-paw-glint {
   fill: none;
-  stroke-width: 3;
   stroke-linecap: round;
 }
 
-/* The ground pool reads as light spilling off the glass, so it breathes with
+/* The floor glow reads as light spilling off the glass, so it breathes with
  * the same pulse the bloom does. */
 .fx-paw-ground {
   opacity: calc(0.55 + 0.45 * var(--fx-paw-pulse, 0.5));
