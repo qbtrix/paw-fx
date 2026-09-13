@@ -49,25 +49,48 @@ test("a mid-fade frame is neither endpoint", () => {
 test("glyphs cross in opacity rather than appearing whole", () => {
   const e = new PawEngine("idle");
   e.setState("sleeping", 0);
-  const mid = e.sample(0.2, false).glyphs.zzz;
+  const mid = e.sample(0.2, false).glyphs.zzz.o;
+  const settled = e.sample(5, false).glyphs.zzz.o;
   expect(mid).toBeGreaterThan(0);
-  expect(mid).toBeLessThan(1);
-  expect(e.sample(5, false).glyphs.zzz).toBe(1);
+  expect(mid).toBeLessThan(settled);
+  // a glyph no state asks for is absent, not drawn at zero
+  expect(e.sample(5, false).glyphs.hearts).toBeUndefined();
 });
 
-test("a state change landing mid-fade starts from what is on screen", () => {
-  // Without the frozen departure pose the engine's single history slot makes
-  // this jump back to the full previous state. Measured as a distance between
-  // the frame before the change and the frame just after it.
-  const first = (d) => numbers(d).slice(0, 2);
-  const gap = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+test("a glyph carries its own motion, frozen for a resting frame", () => {
+  // Drifting upward belongs to a "zzz", not to being asleep, so the loop is
+  // authored on the glyph and reads absolute time.
+  const e = new PawEngine("sleeping");
+  expect(e.sample(1).glyphs.zzz.m).not.toBe(e.sample(2.4).glyphs.zzz.m);
+  expect(e.sample(1).glyphs.zzz.m).toBe(e.sample(1).glyphs.zzz.m);
+  // alive: false holds the loop at its starting phase, which is what the
+  // snippet bakes -- a moving glyph would bake a different frame every build
+  expect(e.sample(3, false).glyphs.zzz.m).toBe(e.sample(9, false).glyphs.zzz.m);
+});
+
+test("the ears leave late and swing past", () => {
+  // Upstream measured no overshoot on its body, correctly for a blob. Ears
+  // have mass: without the lag every state change moved head and ears in the
+  // same instant and the character read as rigid.
+  //
+  // idle -> focused is the pair that isolates it: focused changes the ears
+  // and the eyes and nothing else, so the ear outline cannot move for any
+  // other reason (a state that also tilts the head carries the ears with it).
+  const reach = (d) => Math.max(...numbers(d).filter((_, i) => i % 2 === 0));
 
   const e = new PawEngine("idle");
-  e.setState("celebrating", 0);
-  const before = first(e.sample(0.1, false).bodyPath);
-  e.setState("idle", 0.1);
-  const after = first(e.sample(0.1, false).bodyPath);
-  expect(gap(before, after)).toBeLessThan(1);
+  const rest = e.sample(0, false).earRPath;
+  e.setState("focused", 0);
+
+  // the head is already moving while the ear has not left yet
+  expect(e.sample(0.02, false).earRPath).toBe(rest);
+  expect(e.sample(0.02, false).eyes[0].d).not.toBe(new PawEngine("idle").sample(0, false).eyes[0].d);
+
+  const settled = e.sample(9, false).earRPath;
+  expect(settled).not.toBe(rest);
+  // and somewhere in the middle it goes further than where it ends up
+  const past = [0.22, 0.26, 0.3, 0.34].map((t) => reach(e.sample(t, false).earRPath));
+  expect(Math.min(...past)).toBeLessThan(reach(settled));
 });
 
 test("nothing leaves the viewBox, ears included", () => {
