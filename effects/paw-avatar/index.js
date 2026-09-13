@@ -72,7 +72,12 @@ const EAR_LAG = 0.25;
  * either at runtime -- it is the hand-set ear swings in STATES that keep the
  * geometry inside, and tests/paw-avatar.test.js locks that down. */
 const RADIUS = 100;
-const HALF_BOX = 162;
+/**
+ * The smallest half-viewBox any mascot gets. The glyphs are the engine's,
+ * not the drawing's, and the furthest of them sits here; a drawing whose
+ * ears reach past it widens the box instead (see `box` in compileArt).
+ */
+const GLYPH_REACH = 162;
 
 /** Angular samples of the silhouette. A thin ear tip needs more than 64. */
 const SAMPLES = 96;
@@ -223,71 +228,132 @@ function capsulePath(w, h) {
   );
 }
 
-/* ------------------------------------------------------------- the Paw rig
+/* ------------------------------------------------------------ the mascot
  *
- * The character is drawn, not generated: art/paw-os-glass-puppy.svg holds
- * the three silhouettes and the glass that goes on them, and the `d`
- * strings below are that file verbatim. They are cast to radial profiles at
- * load, which is the whole point of the engine -- a drawn outline and a
- * generated one behave identically once both are r(theta), so the art
- * squashes, tilts, interpolates and tracks with no extra machinery.
+ * The character is drawn, not generated, and the drawing is an INPUT. The
+ * engine never learns what a Paw is: it is handed three silhouettes, two
+ * pivots and an eye box, and everything after -- morphing, ears, gaze,
+ * tracking -- is the same whatever the mascot. Hand `mount` a different art
+ * object and you get a different character with the same sixteen states.
  *
- * ART_* are in the art file's own 256 viewBox. Everything after is in head
+ * The Paw's own description is PAW_ART, generated from
+ * art/paw-os-glass-puppy.svg by `bun scripts/paw-art.mjs`. Its numbers are
+ * in the drawing's own viewBox; everything downstream is in head
  * half-widths, the unit the rest of this file speaks.
+ *
+ * THE ONE CONSTRAINT. Each part is r(theta) about a single origin, so every
+ * ray from that origin has to leave the outline exactly once. Blobs, domes
+ * and lobe ears are fine. A tail, an antenna, or a notch deep enough for a
+ * ray to cross twice gets quietly flattened -- which is why the CLI checks
+ * for it and says so rather than letting it ship looking almost right.
  */
-const ART = {
-  head:
-    "M160 29 C119 28 84 46 68 78 C54 107 54 149 66 181 " +
-    "C76 208 107 225 160 226 C213 225 244 208 254 181 " +
-    "C266 149 266 107 252 78 C236 46 201 28 160 29Z",
-  earL:
-    "M76 74 C51 77 35 95 31 119 C27 141 35 161 51 168 " +
-    "C67 175 83 160 88 138 C93 116 95 91 88 80 C85 75 81 73 76 74Z",
-  earR:
-    "M244 74 C269 77 285 95 289 119 C293 141 285 161 269 168 " +
-    "C253 175 237 160 232 138 C227 116 225 91 232 80 C235 75 239 73 244 74Z",
-  /** Head bbox centre and half-width, measured off the flattened head path. */
+export const PAW_ART = {
+  head: "M160 29 C119 28 84 46 68 78 C54 107 54 149 66 181 C76 208 107 225 160 226 C213 225 244 208 254 181 C266 149 266 107 252 78 C236 46 201 28 160 29Z",
+  earL: "M76 74 C51 77 35 95 31 119 C27 141 35 161 51 168 C67 175 83 160 88 138 C93 116 95 91 88 80 C85 75 81 73 76 74Z",
+  earR: "M244 74 C269 77 285 95 289 119 C293 141 285 161 269 168 C253 175 237 160 232 138 C227 116 225 91 232 80 C235 75 239 73 244 74Z",
   cx: 160,
-  cy: 127.48,
-  unit: 102.764,
-  /** Where each ear meets the skull in the drawing: the point it swings about. */
+  cy: 127.49,
+  unit: 102.75,
   pivotL: { x: 76, y: 74 },
   pivotR: { x: 244, y: 74 },
-  /** Eye capsule from the drawing, and the little glass catch inside it. */
   eye: { cx: 117.5, cy: 116.5, w: 25, h: 51 },
-  catch: { dx: -4.5, dy: -13.5, r: 2.4 }
+  catch: { dx: -4.5, dy: -13.5, r: 2.4 },
+  glass: {
+    fill: "<radialGradient id=\"FILL\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M% translate(140 65) rotate(90) scale(205 205)\"><stop offset=\"0\" stop-color=\"var(--fx-paw-glass-0, #152033)\" stop-opacity=\"0.92\"/><stop offset=\"0.52\" stop-color=\"var(--fx-paw-glass-1, #0A0E17)\" stop-opacity=\"0.98\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-glass-2, #02040A)\" stop-opacity=\"1\"/></radialGradient>",
+    rim: "<linearGradient id=\"RIM\" x1=\"52\" y1=\"30\" x2=\"270\" y2=\"235\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M%\"><stop offset=\"0\" stop-color=\"var(--fx-paw-rim-a, #F8FCFF)\"/><stop offset=\"0.28\" stop-color=\"var(--fx-paw-rim-b, #D6E7FF)\"/><stop offset=\"0.62\" stop-color=\"var(--fx-paw-rim-c, #8CAFFF)\"/><stop offset=\"0.84\" stop-color=\"var(--fx-paw-rim-d, #A98CFF)\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-rim-e, #83A2FF)\"/></linearGradient>",
+    defs: "<radialGradient id=\"D0\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M% translate(160 224) rotate(90) scale(34 118)\"><stop offset=\"0\" stop-color=\"var(--fx-paw-floor-a, #AFC4FF)\" stop-opacity=\"0.36\"/><stop offset=\"0.40\" stop-color=\"var(--fx-paw-floor-b, #7E9FFF)\" stop-opacity=\"0.20\"/><stop offset=\"0.72\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0\"/></radialGradient><linearGradient id=\"D1\" x1=\"73\" y1=\"40\" x2=\"180\" y2=\"132\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M%\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\"0.34\"/><stop offset=\"0.30\" stop-color=\"#DCEAFF\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"#FFFFFF\" stop-opacity=\"0\"/></linearGradient><filter id=\"D2\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"10\"/></filter><filter id=\"D3\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"5\"/></filter>",
+    ground: "<ellipse cx=\"160\" cy=\"218\" rx=\"104\" ry=\"34\" fill=\"var(--fx-paw-halo, #6D8DFF)\" opacity=\"0.16\" filter=\"url(#D2)\"/><ellipse cx=\"160\" cy=\"226\" rx=\"92\" ry=\"17\" fill=\"url(#D0)\" filter=\"url(#D3)\"/><ellipse cx=\"160\" cy=\"226\" rx=\"69\" ry=\"7\" fill=\"var(--fx-paw-floor-a, #B7CAFF)\" opacity=\"0.22\" filter=\"url(#D3)\"/>",
+    sheen: "<path d=\"M92 63 C111 41 135 34 160 35 C183 36 204 43 220 56 C202 54 181 55 159 60 C134 66 112 74 87 88 C87 78 89 69 92 63Z\" fill=\"url(#D1)\"/><path d=\"M63 96 C69 72 83 56 103 47\" stroke=\"var(--fx-paw-glint, #FFFFFF)\" stroke-width=\"3.8\" stroke-linecap=\"round\" opacity=\"0.33\"/><path d=\"M255 96 C249 72 237 57 219 48\" stroke=\"var(--fx-paw-glint, #FFFFFF)\" stroke-width=\"3.4\" stroke-linecap=\"round\" opacity=\"0.21\"/>"
+  }
 };
 
-/** Art coordinates -> head half-widths, origin at the head's centre. */
-const toUnits = (px, py) => ({ x: (px - ART.cx) / ART.unit, y: (py - ART.cy) / ART.unit });
-const pathInUnits = (d) => flattenPath(d).map((p) => toUnits(p.x, p.y));
 const centreOf = (pts) => ({
   x: (Math.min(...pts.map((p) => p.x)) + Math.max(...pts.map((p) => p.x))) / 2,
   y: (Math.min(...pts.map((p) => p.y)) + Math.max(...pts.map((p) => p.y))) / 2
 });
 
-const HEAD_PROFILE = profileFromPolygon(pathInUnits(ART.head), 0, 0);
-
 /**
- * An ear is sampled about its own bbox centre, not its pivot: the pivot sits
- * ON the drawn outline, where half the rays would leave at radius zero. The
- * offset between the two is carried in `earPose` instead.
+ * A drawing -> everything the engine needs from it. Ray-casting three
+ * outlines is far too much to redo per frame, and two avatars on a page
+ * usually share one drawing, so the result is memoised on the art object
+ * itself rather than recomputed per mount.
  */
-const EAR = ["l", "r"].reduce((acc, side) => {
-  const pts = pathInUnits(side === "l" ? ART.earL : ART.earR);
-  const pivot = toUnits(
-    side === "l" ? ART.pivotL.x : ART.pivotR.x,
-    side === "l" ? ART.pivotL.y : ART.pivotR.y
-  );
-  const origin = centreOf(pts);
-  acc[side] = {
-    profile: profileFromPolygon(pts, origin.x, origin.y),
-    pivot,
-    /** profile origin measured from the pivot, so a swing rotates about the pivot */
-    arm: { x: origin.x - pivot.x, y: origin.y - pivot.y }
+const compiled = new WeakMap();
+
+export function compileArt(art) {
+  const hit = compiled.get(art);
+  if (hit) return hit;
+
+  const toUnits = (px, py) => ({ x: (px - art.cx) / art.unit, y: (py - art.cy) / art.unit });
+  const pathInUnits = (d) => flattenPath(d).map((p) => toUnits(p.x, p.y));
+
+  // An ear is sampled about its own bbox centre, not its pivot: the pivot
+  // sits ON the drawn outline, where half the rays would leave at radius
+  // zero. The offset between the two is carried in `earPose` instead.
+  const earOf = (d, pivotArt) => {
+    const pts = pathInUnits(d);
+    const pivot = toUnits(pivotArt.x, pivotArt.y);
+    const origin = centreOf(pts);
+    return {
+      profile: profileFromPolygon(pts, origin.x, origin.y),
+      pivot,
+      arm: { x: origin.x - pivot.x, y: origin.y - pivot.y }
+    };
   };
-  return acc;
-}, {});
+
+  // How far this drawing can reach, so the viewBox is sized for it rather
+  // than for the Paw. The bound is taken over the swings the state table
+  // actually asks for, not over every angle an ear could theoretically take:
+  // assuming an ear might point straight out padded the Paw by a quarter of
+  // its frame for a pose nothing ever strikes.
+  const headPts = pathInUnits(art.head);
+  const swing = earSwingRange();
+  const span = (d, pivotArt) => {
+    const pv = toUnits(pivotArt.x, pivotArt.y);
+    const rel = pathInUnits(d).map((p) => ({ x: p.x - pv.x, y: p.y - pv.y }));
+    let far = 0;
+    for (let i = 0; i <= 12; i++) {
+      const a = swing.lo + ((swing.hi - swing.lo) * i) / 12;
+      const c = Math.cos(a);
+      const sn = Math.sin(a);
+      for (const q of rel) {
+        far = Math.max(far, Math.hypot(pv.x + (q.x * c - q.y * sn), pv.y - swing.lift + (q.x * sn + q.y * c)));
+      }
+    }
+    return far;
+  };
+  const reach = Math.max(
+    ...headPts.map((p) => Math.hypot(p.x, p.y)),
+    span(art.earL, art.pivotL),
+    span(art.earR, art.pivotR)
+  );
+
+  const eye = toUnits(art.eye.cx, art.eye.cy);
+  const out = {
+    /** Half the viewBox this drawing needs, glyphs included. */
+    box: Math.max(GLYPH_REACH, Math.ceil(reach * RADIUS) + 8),
+    art,
+    head: profileFromPolygon(headPts, 0, 0),
+    ear: { l: earOf(art.earL, art.pivotL), r: earOf(art.earR, art.pivotR) },
+    eye: {
+      w: art.eye.w / art.unit,
+      h: art.eye.h / art.unit,
+      /** Half-separation on the sphere the eyes ride, degrees. */
+      split: (Math.asin(clamp(Math.abs(eye.x), 0, 1)) * 180) / Math.PI,
+      /** How high the face sits on the head. */
+      y: eye.y
+    },
+    catch: {
+      x: (art.catch.dx / art.unit) * RADIUS,
+      y: (art.catch.dy / art.unit) * RADIUS,
+      r: (art.catch.r / art.unit) * RADIUS
+    },
+    /** Drawing coordinates -> this viewBox, for its gradients and decoration. */
+    m: `scale(${r2(RADIUS / art.unit)}) translate(${-art.cx} ${-art.cy})`
+  };
+  compiled.set(art, out);
+  return out;
+}
 
 /** Scratch buffers: nothing is reallocated per frame. */
 function makeBody() {
@@ -302,8 +368,8 @@ function makeBody() {
  * Two rotations compose: the ear swings about its pivot, then the head tilt
  * turns that result about the head's centre.
  */
-function earPose(side, ear, headRot) {
-  const e = side < 0 ? EAR.l : EAR.r;
+function earPose(side, ear, headRot, art) {
+  const e = side < 0 ? art.ear.l : art.ear.r;
   const a = ear.angle * side;
   const ca = Math.cos(a);
   const sa = Math.sin(a);
@@ -329,25 +395,8 @@ function earPose(side, ear, headRot) {
 
 const deg = (d) => (d * Math.PI) / 180;
 
-/** Half-separation of the eyes on the sphere, degrees. */
-const EYE_SPLIT = 24.43;
-/** Eye size at rest, in head half-widths. Measured off the art ellipse. */
-const EYE_W = 0.2433;
-const EYE_H = 0.4963;
-/**
- * The drawing's glass catch, in the eye's own space: it rides the eye matrix,
- * so it stays put on a gaze that is tracking and squashes with a blink.
- */
-const CATCH = {
-  x: (ART.catch.dx / ART.unit) * RADIUS,
-  y: (ART.catch.dy / ART.unit) * RADIUS,
-  r: (ART.catch.r / ART.unit) * RADIUS
-};
-
-/** The Paw looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
+/** The mascot looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
 const REST_GAZE = { yaw: 0, pitch: -2, roll: 0 };
-/** The face sits high on the head. */
-const FACE_Y = -0.1069;
 
 /** Rotate two vectors of an orthonormal frame within their common plane. */
 function spin(u, v, angle) {
@@ -360,7 +409,7 @@ function spin(u, v, angle) {
 }
 
 /** Head frame then both eye frames. Screen axes: x right, y down, z at you. */
-function eyePoses(gaze, split = EYE_SPLIT) {
+function eyePoses(gaze, split) {
   let f = [0, 0, 1];
   let right = [1, 0, 0];
   let down = [0, 1, 0];
@@ -567,7 +616,12 @@ function glyphTransform(id, t) {
 /* ------------------------------------------------------------------ poses */
 
 const ear = (angle = 0, lift = 0) => ({ angle, lift });
-const eye = (w = EYE_W, h = EYE_H, open = 1, tilt = 0) => ({ w, h, open, tilt });
+/**
+ * An eye, as multipliers of whatever the drawing's own eye is. States say
+ * "a tenth wider", never a size in head half-widths, so one state table
+ * serves every mascot.
+ */
+const eye = (w = 1, h = 1, open = 1, tilt = 0) => ({ w, h, open, tilt });
 
 function basePose(over = {}) {
   return {
@@ -578,7 +632,7 @@ function basePose(over = {}) {
     cy: 0,
     ears: { l: ear(), r: ear() },
     gaze: { ...REST_GAZE },
-    split: EYE_SPLIT,
+    splitScale: 1,
     eyes: [eye(), eye()],
     eyeAlpha: 1,
     wander: 1,
@@ -620,7 +674,7 @@ function blendPose(a, b, t) {
       pitch: lerp(a.gaze.pitch, b.gaze.pitch, t),
       roll: lerp(a.gaze.roll, b.gaze.roll, t)
     },
-    split: lerp(a.split, b.split, t),
+    splitScale: lerp(a.splitScale, b.splitScale, t),
     eyes: [lerpEye(a.eyes[0], b.eyes[0], t), lerpEye(a.eyes[1], b.eyes[1], t)],
     eyeAlpha: lerp(a.eyeAlpha, b.eyeAlpha, t),
     wander: lerp(a.wander, b.wander, t),
@@ -658,7 +712,7 @@ const STATES = {
         sy: 1 + b,
         sx: 1 - b * 0.6,
         ears: { l: ear(-0.30, 0.04), r: ear(-0.34, 0.05) },
-        eyes: [eye(EYE_W * 1.1, EYE_H * 1.05), eye(EYE_W * 1.1, EYE_H * 1.05)],
+        eyes: [eye(1.1, 1.05), eye(1.1, 1.05)],
         glow: 0.75 + Math.sin(t * 6) * 0.22,
         glyphs: { spark: 1 }
       });
@@ -671,7 +725,7 @@ const STATES = {
       rot: -0.13,
       gaze: { yaw: 9, pitch: 4, roll: -4 },
       ears: { l: ear(-0.42, 0.05), r: ear(0.10) },
-      eyes: [eye(EYE_W * 1.05, EYE_H), eye(EYE_W * 0.95, EYE_H * 0.95)]
+      eyes: [eye(1.05, 1), eye(0.95, 0.95)]
     })
   },
 
@@ -682,7 +736,7 @@ const STATES = {
       gaze: { yaw: -16 + Math.sin(t * 0.9) * 3, pitch: 13, roll: 3 },
       wander: 0.35,
       ears: { l: ear(0.10), r: ear(-0.14, 0.03) },
-      eyes: [eye(EYE_W, EYE_H * 0.9), eye(EYE_W, EYE_H * 0.9)],
+      eyes: [eye(1, 0.9), eye(1, 0.9)],
       glyphs: { think: 1 }
     })
   },
@@ -694,7 +748,7 @@ const STATES = {
       ears: { l: ear(0.26), r: ear(0.22) },
       wander: 0.2,
       // narrowed and mirrored: the tilt is what reads as effort rather than anger
-      eyes: [eye(EYE_W * 0.9, EYE_H * 0.62, 1, 13), eye(EYE_W * 0.9, EYE_H * 0.62, 1, -13)],
+      eyes: [eye(0.9, 0.62, 1, 13), eye(0.9, 0.62, 1, -13)],
       glow: 0.55 + Math.sin(t * 4) * 0.1,
       glyphs: { speed: 1 }
     })
@@ -705,7 +759,7 @@ const STATES = {
     pose: () => basePose({
       wander: 0.15,
       ears: { l: ear(0.06), r: ear(0.06) },
-      eyes: [eye(EYE_W * 0.92, EYE_H * 0.58, 1, 11), eye(EYE_W * 0.92, EYE_H * 0.58, 1, -11)]
+      eyes: [eye(0.92, 0.58, 1, 11), eye(0.92, 0.58, 1, -11)]
     })
   },
 
@@ -715,8 +769,8 @@ const STATES = {
     pose: (t) => basePose({
       sy: 1 + 0.03 * Math.exp(-t * 4),
       ears: { l: ear(-0.38, 0.05), r: ear(-0.35, 0.05) },
-      split: EYE_SPLIT * 1.05,
-      eyes: [eye(EYE_W * 1.25, EYE_H * 0.72), eye(EYE_W * 1.25, EYE_H * 0.72)],
+      splitScale: 1.05,
+      eyes: [eye(1.25, 0.72), eye(1.25, 0.72)],
       glow: 0.5 + 0.5 * Math.exp(-t * 2),
       glyphs: { spark: 1 }
     })
@@ -731,7 +785,7 @@ const STATES = {
       gaze: { yaw: 0, pitch: -8, roll: 0 },
       wander: 0,
       glow: 0.18,
-      eyes: [eye(EYE_W, EYE_H * 0.5, 0.04), eye(EYE_W, EYE_H * 0.5, 0.04)],
+      eyes: [eye(1, 0.5, 0.04), eye(1, 0.5, 0.04)],
       glyphs: { zzz: 1 }
     })
   },
@@ -741,7 +795,7 @@ const STATES = {
     pose: () => basePose({
       rot: 0.05,
       ears: { l: ear(-0.12), r: ear(-0.28, 0.04) },
-      eyes: [eye(EYE_W, EYE_H), eye(EYE_W * 1.15, EYE_H * 0.45, 0.02)],
+      eyes: [eye(1, 1), eye(1.15, 0.45, 0.02)],
       glyphs: { spark: 0.7 }
     })
   },
@@ -752,7 +806,7 @@ const STATES = {
       rot: 0.12,
       gaze: { yaw: 6, pitch: -4, roll: 7 },
       ears: { l: ear(0.34), r: ear(-0.32, 0.04) },
-      eyes: [eye(EYE_W * 1.1, EYE_H * 0.95), eye(EYE_W * 0.8, EYE_H * 0.7)],
+      eyes: [eye(1.1, 0.95), eye(0.8, 0.7)],
       glyphs: { question: 1 }
     })
   },
@@ -766,7 +820,7 @@ const STATES = {
       wander: 0.4,
       glow: 0.3,
       ears: { l: ear(0.5, -0.06), r: ear(0.5, -0.06) },
-      eyes: [eye(EYE_W * 0.85, EYE_H * 0.52, 1, -9), eye(EYE_W * 0.85, EYE_H * 0.52, 1, 9)]
+      eyes: [eye(0.85, 0.52, 1, -9), eye(0.85, 0.52, 1, 9)]
     })
   },
 
@@ -817,7 +871,7 @@ const STATES = {
         ears: { l: ear(-0.26 - beat * 0.12, 0.04), r: ear(-0.34 - beat * 0.14, 0.05) },
         gaze: { yaw: Math.sin(t * 0.5) * 9, pitch: 6, roll: 0 },
         wander: 0.5,
-        eyes: [eye(EYE_W * w, EYE_H * w), eye(EYE_W * w, EYE_H * w)],
+        eyes: [eye(w, w), eye(w, w)],
         glow: 0.68 + Math.sin(t * 1.6) * 0.14 + beat * 0.28,
         rainbow: 1,
         glyphs: { sparkA: 1, sparkB: 1, sparkC: 1 }
@@ -831,7 +885,7 @@ const STATES = {
       rot: -0.05,
       ears: { l: ear(-0.2), r: ear(-0.45 + Math.sin(t * 2.2) * 0.05, 0.05) },
       gaze: { yaw: 7, pitch: 2, roll: -2 },
-      eyes: [eye(EYE_W, EYE_H * 1.02), eye(EYE_W, EYE_H * 1.02)],
+      eyes: [eye(1, 1.02), eye(1, 1.02)],
       glow: 0.6 + Math.sin(t * 2.2) * 0.15,
       glyphs: { waves: 1 }
     })
@@ -839,6 +893,33 @@ const STATES = {
 };
 
 export const STATE_IDS = Object.keys(STATES);
+
+/**
+ * The ear swings the state table actually uses, read off the table rather
+ * than kept as a constant beside it -- a constant is the kind of thing that
+ * stops being true the first time someone adds a state. Sampled across time
+ * because a state's ears can move on their own (listening's do).
+ */
+let swingRange = null;
+function earSwingRange() {
+  if (swingRange) return swingRange;
+  let lo = 0;
+  let hi = 0;
+  let lift = 0;
+  for (const id of STATE_IDS) {
+    for (let t = 0; t <= 8; t += 0.25) {
+      const p = STATES[id].pose(t);
+      for (const e of [p.ears.l, p.ears.r]) {
+        lo = Math.min(lo, -Math.abs(e.angle));
+        hi = Math.max(hi, Math.abs(e.angle));
+        lift = Math.max(lift, e.lift);
+      }
+    }
+  }
+  // the settle overshoots by about a tenth before it lands
+  swingRange = { lo: lo * 1.12, hi: hi * 1.12, lift: lift * 1.12 };
+  return swingRange;
+}
 
 /* ------------------------------------------------------------------- look
  * Where the Paw looks when something outside drives it: the pointer.
@@ -883,7 +964,8 @@ export class PawEngine {
    */
   static LOOK_MORPH = 0.24;
 
-  constructor(initial = "idle") {
+  constructor(initial = "idle", art = PAW_ART) {
+    this.art = compileArt(art);
     this.cur = STATES[initial] ? initial : "idle";
     this.prev = null;
     this.frozen = null;
@@ -1001,19 +1083,20 @@ export class PawEngine {
     const cx = pose.cx + life.driftX;
     const cy = pose.cy + life.driftY;
 
+    const art = this.art;
     const head = { rot: pose.rot, sx: pose.sx, sy: pose.sy * life.breath, cx, cy };
-    const bodyPath = closedPath(toPoints(HEAD_PROFILE, head, RADIUS, this.body.head));
+    const bodyPath = closedPath(toPoints(art.head, head, RADIUS, this.body.head));
     const shift = (p) => ({ ...p, cx: p.cx + cx, cy: p.cy + cy });
     const earLPath = closedPath(
-      toPoints(EAR.l.profile, shift(earPose(-1, pose.ears.l, pose.rot)), RADIUS, this.body.earL)
+      toPoints(art.ear.l.profile, shift(earPose(-1, pose.ears.l, pose.rot, art)), RADIUS, this.body.earL)
     );
     const earRPath = closedPath(
-      toPoints(EAR.r.profile, shift(earPose(1, pose.ears.r, pose.rot)), RADIUS, this.body.earR)
+      toPoints(art.ear.r.profile, shift(earPose(1, pose.ears.r, pose.rot, art)), RADIUS, this.body.earR)
     );
 
     const eyes = [];
     if (faceOn) {
-      const poses = eyePoses(gaze, pose.split);
+      const poses = eyePoses(gaze, art.eye.split * pose.splitScale);
       for (let i = 0; i < 2; i++) {
         const e = poses[i];
         if (e.depth <= 0.02) continue;
@@ -1031,9 +1114,9 @@ export class PawEngine {
         // the capsule's tilted axis.
         const k = blinkScale(Math.min(lid, cfg.open));
         eyes.push({
-          d: capsulePath(cfg.w * RADIUS, cfg.h * RADIUS),
+          d: capsulePath(cfg.w * art.eye.w * RADIUS, cfg.h * art.eye.h * RADIUS),
           matrix: `matrix(${r2(ax)},${r2(ay * k)},${r2(bx)},${r2(by * k)},` +
-            `${r2((e.x + cx) * RADIUS)},${r2((e.y + cy + FACE_Y) * RADIUS)})`,
+            `${r2((e.x + cx) * RADIUS)},${r2((e.y + cy + art.eye.y) * RADIUS)})`,
           alpha: pose.eyeAlpha * clamp(e.depth / 0.12)
         });
       }
@@ -1050,7 +1133,7 @@ export class PawEngine {
       eyes,
       glyphs: glyphFrame(pose.glyphs, alive ? now : 0),
       // The face glyphs ride the body drift; the outer marks stay put.
-      faceShift: `translate(${r2(cx * RADIUS)} ${r2((cy + FACE_Y) * RADIUS)})`
+      faceShift: `translate(${r2(cx * RADIUS)} ${r2((cy + art.eye.y) * RADIUS)})`
     };
   }
 }
@@ -1071,7 +1154,8 @@ function glyphFrame(amounts, t) {
 }
 
 /** The resting frame, for baking a CSS-only snippet or a static export. */
-export const restingPath = (state = "idle") => new PawEngine(state).sample(0, false).bodyPath;
+export const restingPath = (state = "idle", art = PAW_ART) =>
+  new PawEngine(state, art).sample(0, false).bodyPath;
 
 /* -------------------------------------------------------------------- DOM */
 
@@ -1082,15 +1166,23 @@ let uid = 0;
  * markup, which is how snippet.html looks finished before any JS runs --
  * possible only because sample() is deterministic.
  *
- * The defs, the sheen, the glints and the ground glow are the art file's,
- * kept in its own 256-viewBox coordinates and mapped into this one by ART_M
- * on a gradientTransform or a wrapping <g>. Keeping the authored numbers
- * rather than converting them means the drawing stays the reference: edit
- * the SVG, paste the new numbers back, done.
+ * Everything material comes from the drawing: its gradients, filters, sheen,
+ * glints and ground stay in the drawing's own coordinates and are mapped in
+ * by `art.m`. Nothing about the glass is hardcoded here, which is what lets
+ * a different mascot bring a completely different look with it.
+ *
+ * The generator writes the drawing's def ids as bare tokens -- FILL and RIM
+ * for whatever the head was filled and stroked with, D0.. for the rest --
+ * and its own transform as %M%. Both get localised per instance, because two
+ * avatars on one page must not share a def id.
  */
-const ART_M = `scale(${r2(RADIUS / ART.unit)}) translate(${-ART.cx} ${-ART.cy})`;
+function template(id, frame, art) {
+  const gid = (k) => `fx-paw-${k.toLowerCase()}-${id}`;
+  const localise = (svg) =>
+    svg
+      .split("%M%").join(art.m)
+      .replace(/\b(FILL|RIM|D\d+)\b/g, (k) => gid(k));
 
-function template(id, frame) {
   const at = (i, k, dflt) => (frame ? (frame.eyes[i] ? frame.eyes[i][k] : dflt) : dflt);
   const glyph = (k) => {
     const g = GLYPHS[k];
@@ -1107,52 +1199,26 @@ function template(id, frame) {
   const eye = (i) =>
     `<g class="fx-paw-eye" transform="${at(i, "matrix", "")}" opacity="${at(i, "alpha", 0)}">` +
     `<path d="${at(i, "d", "")}"/>` +
-    `<circle class="fx-paw-catch" cx="${r2(CATCH.x)}" cy="${r2(CATCH.y)}" r="${r2(CATCH.r)}"/></g>`;
+    `<circle class="fx-paw-catch" cx="${r2(art.catch.x)}" cy="${r2(art.catch.y)}" r="${r2(art.catch.r)}"/></g>`;
 
-  // One glass part = the drawn fill, then the drawn rim on top. The body
-  // additionally clips the art's own sheen and glints to its outline, so
-  // they never spill when a state squashes or tilts it.
+  // One glass part = the drawn fill, then the drawn rim on top, then the
+  // spectrum rim the creative state fades up. The body additionally clips
+  // the drawing's sheen to its outline so it never spills when a state
+  // squashes or tilts it.
   const part = (key, dd, extra = "") => `
   <g class="fx-paw-part">
     <clipPath id="fx-paw-clip-${key}-${id}"><path data-part="${key}" d="${dd}"/></clipPath>
-    <path class="fx-paw-fill" data-part="${key}" d="${dd}" fill="url(#fx-paw-glass-${id})"/>${extra ? `
+    <path class="fx-paw-fill" data-part="${key}" d="${dd}" fill="url(#${gid("FILL")})"/>${extra ? `
     <g clip-path="url(#fx-paw-clip-${key}-${id})">${extra}</g>` : ""}
-    <path class="fx-paw-rim" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-rim-${id})"/>
+    <path class="fx-paw-rim" data-part="${key}" d="${dd}" fill="none" stroke="url(#${gid("RIM")})"/>
     <path class="fx-paw-rim fx-paw-rim-spectrum" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-spectrum-${id})"/>
   </g>`;
 
-  const sheen = `
-      <g transform="${ART_M}">
-        <path class="fx-paw-sheen" d="M92 63 C111 41 135 34 160 35 C183 36 204 43 220 56 C202 54 181 55 159 60 C134 66 112 74 87 88 C87 78 89 69 92 63Z" fill="url(#fx-paw-sheen-${id})"/>
-        <path class="fx-paw-glint" d="M63 96 C69 72 83 56 103 47" stroke="var(--fx-paw-glint, #FFFFFF)" stroke-width="3.8" opacity="0.33"/>
-        <path class="fx-paw-glint" d="M255 96 C249 72 237 57 219 48" stroke="var(--fx-paw-glint, #FFFFFF)" stroke-width="3.4" opacity="0.21"/>
-      </g>`;
-
-  return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-HALF_BOX} ${-HALF_BOX} ${HALF_BOX * 2} ${HALF_BOX * 2}" aria-hidden="true" focusable="false">
+  return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-art.box} ${-art.box} ${art.box * 2} ${art.box * 2}" aria-hidden="true" focusable="false">
   <defs>
-    <radialGradient id="fx-paw-glass-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(140 65) rotate(90) scale(205 205)">
-      <stop offset="0" stop-color="var(--fx-paw-glass-0, #152033)" stop-opacity="0.92"/>
-      <stop offset="0.52" stop-color="var(--fx-paw-glass-1, #0A0E17)" stop-opacity="0.98"/>
-      <stop offset="1" stop-color="var(--fx-paw-glass-2, #02040A)"/>
-    </radialGradient>
-    <linearGradient id="fx-paw-rim-${id}" x1="52" y1="30" x2="270" y2="235" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
-      <stop offset="0" stop-color="var(--fx-paw-rim-a, #F8FCFF)"/>
-      <stop offset="0.28" stop-color="var(--fx-paw-rim-b, #D6E7FF)"/>
-      <stop offset="0.62" stop-color="var(--fx-paw-rim-c, #8CAFFF)"/>
-      <stop offset="0.84" stop-color="var(--fx-paw-rim-d, #A98CFF)"/>
-      <stop offset="1" stop-color="var(--fx-paw-rim-e, #83A2FF)"/>
-    </linearGradient>
-    <linearGradient id="fx-paw-sheen-${id}" x1="73" y1="40" x2="180" y2="132" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
-      <stop offset="0.30" stop-color="#DCEAFF" stop-opacity="0.10"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="fx-paw-floor-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(160 224) rotate(90) scale(34 118)">
-      <stop offset="0" stop-color="var(--fx-paw-floor-a, #AFC4FF)" stop-opacity="0.36"/>
-      <stop offset="0.40" stop-color="var(--fx-paw-floor-b, #7E9FFF)" stop-opacity="0.20"/>
-      <stop offset="0.72" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0.10"/>
-      <stop offset="1" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0"/>
-    </radialGradient>
+    ${localise(art.art.glass.fill)}
+    ${localise(art.art.glass.rim)}
+    ${localise(art.art.glass.defs)}
     <linearGradient id="fx-paw-spectrum-${id}" class="fx-paw-spectrum-def" x1="-110" y1="0" x2="110" y2="0" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#ff5d7a"/>
       <stop offset="0.17" stop-color="#ffb03a"/>
@@ -1162,21 +1228,11 @@ function template(id, frame) {
       <stop offset="0.84" stop-color="#e070ff"/>
       <stop offset="1" stop-color="#ff5d7a"/>
     </linearGradient>
-    <filter id="fx-paw-blur-${id}" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="10"/>
-    </filter>
-    <filter id="fx-paw-soft-${id}" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="5"/>
-    </filter>
   </defs>
-  <g class="fx-paw-ground" transform="${ART_M}">
-    <ellipse cx="160" cy="218" rx="104" ry="34" fill="var(--fx-paw-halo, #6D8DFF)" opacity="0.16" filter="url(#fx-paw-blur-${id})"/>
-    <ellipse cx="160" cy="226" rx="92" ry="17" fill="url(#fx-paw-floor-${id})" filter="url(#fx-paw-soft-${id})"/>
-    <ellipse cx="160" cy="226" rx="69" ry="7" fill="var(--fx-paw-floor-a, #B7CAFF)" opacity="0.22" filter="url(#fx-paw-soft-${id})"/>
-  </g>
+  <g class="fx-paw-ground" transform="${art.m}">${localise(art.art.glass.ground)}</g>
   ${part("earL", eL)}
   ${part("earR", eR)}
-  ${part("body", d, sheen)}
+  ${part("body", d, `<g transform="${art.m}">${localise(art.art.glass.sheen)}</g>`)}
   <g class="fx-paw-face" transform="${shift}">
     ${eye(0)}
     ${eye(1)}
@@ -1207,6 +1263,8 @@ export function mount(el, opts = {}) {
     // An explicit state wins over the showcase carousel: a site that asks for
     // "thinking" means it, and the snippet ships with both attributes.
     cycle: ds.fxState ? 0 : ds.fxCycle ?? 0,
+    /** The drawing. Pass a different one and you get a different mascot. */
+    art: PAW_ART,
     ...opts
   };
   const still = typeof matchMedia === "function" &&
@@ -1215,7 +1273,8 @@ export function mount(el, opts = {}) {
   // The wrapper carries the sizing, so mount() works on any host element --
   // the snippet's section, or a bare <span> in a chat bubble.
   const restore = el.innerHTML;
-  el.innerHTML = template(++uid);
+  const engineArt = compileArt(o.art);
+  el.innerHTML = template(++uid, null, engineArt);
 
   const svg = el.querySelector(".fx-paw-svg");
   const wrap = svg.parentElement;
@@ -1230,7 +1289,7 @@ export function mount(el, opts = {}) {
   const face = svg.querySelector(".fx-paw-face");
   const spectrum = svg.querySelector(".fx-paw-spectrum-def");
 
-  const engine = new PawEngine(o.state);
+  const engine = new PawEngine(o.state, o.art);
   let raf = 0;
   // Seeded here, not on the first frame: update() can be called before rAF has
   // run, and a t0 of 0 would date that change hundreds of seconds in the
@@ -1359,8 +1418,10 @@ export function mount(el, opts = {}) {
 }
 
 /** Static markup for one state: snippet.html, and any still export. */
-export const restingMarkup = (state = "idle", id = "s") =>
-  template(id, new PawEngine(state).sample(0, false));
+export const restingMarkup = (state = "idle", id = "s", art = PAW_ART) => {
+  const e = new PawEngine(state, art);
+  return template(id, e.sample(0, false), e.art);
+};
 
 export const meta = {
   name: "paw-avatar",

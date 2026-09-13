@@ -8,29 +8,12 @@
 
 /* --fx-paw-size is read with a fallback rather than declared here, so an
  * ancestor can set it and the wrapper inherits it. */
+/* Nothing is DECLARED here. Every --fx-paw-* below is read with a fallback,
+ * and the drawing's own colours are the fallbacks, written into the SVG by
+ * the art generator. Declaring them on .fx-paw instead would win over any
+ * ancestor -- which is exactly what a site theming its mascot, or a second
+ * mascot on the same page, needs to be able to do. */
 .fx-paw {
-  /* Colours are the art file's, and every one of them is overridable. The
-   * engine emits geometry and never names a colour. */
-  --fx-paw-glass-0: #152033;
-  --fx-paw-glass-1: #0a0e17;
-  --fx-paw-glass-2: #02040a;
-  --fx-paw-rim-a: #f8fcff;
-  --fx-paw-rim-b: #d6e7ff;
-  --fx-paw-rim-c: #8cafff;
-  --fx-paw-rim-d: #a98cff;
-  --fx-paw-rim-e: #83a2ff;
-  --fx-paw-rim-width: 2.6;
-  --fx-paw-ear-rim-width: 2.4;
-  --fx-paw-glint: #ffffff;
-  --fx-paw-floor-a: #afc4ff;
-  --fx-paw-floor-b: #7e9fff;
-  --fx-paw-floor-c: #7d62ff;
-  --fx-paw-halo: #6d8dff;
-  --fx-paw-rainbow: 0;
-  --fx-paw-eye: #f7fbff;
-  --fx-paw-warm: #ff8cc4;
-  --fx-paw-glow: rgba(140, 170, 255, 0.5);
-
   display: inline-flex;
   width: var(--fx-paw-size, 240px);
   height: var(--fx-paw-size, 240px);
@@ -43,11 +26,11 @@
   overflow: visible;
   /* --fx-paw-pulse (0..1) is written per frame by the engine: states pulse
    * it (excited, love) or dim it (sleeping), and every state breathes. */
-  filter: drop-shadow(0 0 calc(8px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow));
+  filter: drop-shadow(0 0 calc(8px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow, rgba(140, 170, 255, 0.5)));
 }
 
 .fx-paw-rim {
-  stroke-width: var(--fx-paw-rim-width);
+  stroke-width: var(--fx-paw-rim-width, 2.6);
   stroke-linejoin: round;
   /* The art's rim fades out as the spectrum one comes up, so the two never
    * stack into a thicker edge. */
@@ -65,11 +48,11 @@
 
 .fx-paw-part + .fx-paw-part .fx-paw-rim,
 .fx-paw-part:first-of-type .fx-paw-rim {
-  stroke-width: var(--fx-paw-ear-rim-width);
+  stroke-width: var(--fx-paw-ear-rim-width, 2.4);
 }
 
 .fx-paw-part:last-of-type .fx-paw-rim {
-  stroke-width: var(--fx-paw-rim-width);
+  stroke-width: var(--fx-paw-rim-width, 2.6);
 }
 
 .fx-paw-sheen {
@@ -88,31 +71,31 @@
 }
 
 .fx-paw-eye {
-  fill: var(--fx-paw-eye);
+  fill: var(--fx-paw-eye, #f7fbff);
   filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75));
 }
 
 .fx-paw-glyph {
-  fill: var(--fx-paw-eye);
+  fill: var(--fx-paw-eye, #f7fbff);
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
 }
 
 /* Marks that read as handwriting rather than as solid shapes. */
 .fx-paw-stroke {
   fill: none;
-  stroke: var(--fx-paw-eye);
+  stroke: var(--fx-paw-eye, #f7fbff);
   stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .fx-paw-warm {
-  fill: var(--fx-paw-warm);
+  fill: var(--fx-paw-warm, #ff8cc4);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .fx-paw-svg {
-    filter: drop-shadow(0 0 14px var(--fx-paw-glow));
+    filter: drop-shadow(0 0 14px var(--fx-paw-glow, rgba(140, 170, 255, 0.5)));
   }
 }
 

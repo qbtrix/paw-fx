@@ -22,6 +22,19 @@ dist/registry/    build output (gitignored), including previews/ and gallery/
 A directory under `effects/` whose name starts with `_` is shared code, not an
 effect: `effectDirs()` skips it, so lint, build and smoke never walk it.
 
+## Bring your own mascot
+
+`paw-avatar` animates a drawing, not a character. Give an SVG the ids the
+generator asks for and `bun scripts/paw-art.mjs <mascot.svg>` prints the art
+block; pass it as `mount(el, { art })` and the same sixteen states, pointer
+tracking and glow come with it. The generator also checks the one constraint
+that matters -- every part becomes `r(theta)` about a single origin, so a
+concavity deep enough for a ray to cross the outline twice gets flattened --
+and says so rather than letting a drawing ship looking almost right. The
+contract is documented at the top of `scripts/paw-art.mjs`;
+`tests/fixtures/art/blip-bot.svg` is a second mascot the suite runs every
+state against, so the claim is tested and not just asserted.
+
 ## Effect contract
 
 - `index.js` is an ES module exporting `mount(el, opts = {})` which returns `{ update(next), destroy() }`, plus `export const meta` mirroring meta.json. Nothing touches globals at import time (see Vendor). No bare-specifier imports in any form: side-effect `import "x"`, binding imports, `export ... from "x"`, dynamic `import("x")` all count, and dependencies are `../../vendor/<file>` where the file is one `vendor/manifest.json` lists for a key in `needs`. Inside a site the files land at `_fx/effects/<name>/` and `_fx/vendor/`, the same two-level shape, so the relative import resolves unchanged.
