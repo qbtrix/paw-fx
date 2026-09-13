@@ -629,6 +629,32 @@ const STATES = {
 
 export const STATE_IDS = Object.keys(STATES);
 
+/* ------------------------------------------------------------------- look
+ * Where the Paw looks when something outside drives it: the pointer.
+ * Ported from bloub src/bot/engine.ts, minus its `spin`.
+ *
+ * `yaw` and `pitch` are ABSOLUTE directions that REPLACE the pose's as `mix`
+ * rises, and the ENGINE does that blend, not the caller: only the engine
+ * knows the pose at this instant, so a caller compensating for it would read
+ * the arriving value while the morph is still running and the eyes would
+ * jump on every mood change. Absolute on both axes for the same reason --
+ * relative, the eye height would follow each state's own gaze and drop the
+ * moment the state changed. What carries an expression during tracking is
+ * the SHAPE of its eyes, not where it looks; the pointer decides that.
+ *
+ * `wander` is separate from `mix`. When the pointer moves the idle drift has
+ * to die down, or the Paw looks like it is hunting the cursor without ever
+ * holding it. Left as one value, the gaze froze the moment tracking started.
+ */
+const NO_LOOK = { yaw: 0, pitch: 0, mix: 0, wander: 1 };
+
+const lerpLook = (a, b, t) => ({
+  yaw: lerp(a.yaw, b.yaw, t),
+  pitch: lerp(a.pitch, b.pitch, t),
+  mix: lerp(a.mix, b.mix, t),
+  wander: lerp(a.wander, b.wander, t)
+});
+
 /* ----------------------------------------------------------------- engine
  * Ported from bloub src/bot/engine.ts. Two things matter here and both are
  * upstream's: sample(now) is a pure function of time, so pause, scrub and
@@ -638,6 +664,14 @@ export const STATE_IDS = Object.keys(STATES);
  * of history means a second change snaps back to the full previous pose.
  */
 export class PawEngine {
+  /**
+   * Catch-up time for the gaze, seconds. Shorter than a state morph: a gaze
+   * that follows should look attentive, not viscous. Because the target is
+   * reset on every pointer move, this is also what gives tracking its
+   * inertia -- the gaze never quite reaches a cursor that keeps moving.
+   */
+  static LOOK_MORPH = 0.24;
+
   constructor(initial = "idle") {
     this.cur = STATES[initial] ? initial : "idle";
     this.prev = null;
@@ -645,6 +679,10 @@ export class PawEngine {
     this.tCur = 0;
     this.tPrev = 0;
     this.blinkAt = -10;
+    this.look = NO_LOOK;
+    this.lookPrev = NO_LOOK;
+    this.lookAt = -10;
+    this.lookMorph = PawEngine.LOOK_MORPH;
     this.body = makeBody();
   }
 
@@ -667,6 +705,33 @@ export class PawEngine {
     return blendPose(origin, pose, easeOutQuint(clamp(since / def.morph)));
   }
 
+  /**
+   * New look target, `null` to fall back to the state's own gaze.
+   *
+   * It departs from the CURRENT look, not from the previous target the way a
+   * state change does: this is called on every pointer move, and departing
+   * from the old target would rewind the gaze a notch before each catch-up,
+   * so the tracking would shiver instead of gliding.
+   *
+   * A non-finite target is refused and the last one kept. One NaN, from a
+   * getBoundingClientRect on a zero-sized box, would otherwise propagate to
+   * every later frame and the Paw would never come to rest again.
+   */
+  setLook(look, now, morph = PawEngine.LOOK_MORPH) {
+    if (look && !Number.isFinite(look.yaw + look.pitch + look.mix + look.wander)) return;
+    this.lookPrev = this.lookAtTime(now);
+    this.look = look ?? NO_LOOK;
+    this.lookAt = now;
+    this.lookMorph = morph;
+  }
+
+  /** Look in force at `now`, catch-up included. */
+  lookAtTime(now) {
+    const k = (now - this.lookAt) / this.lookMorph;
+    if (k >= 1) return this.look;
+    return lerpLook(this.lookPrev, this.look, easeOutQuint(clamp(k)));
+  }
+
   setState(id, now) {
     if (!STATES[id] || id === this.cur) return;
     const midFade = this.prev !== null && now - this.tCur < STATES[this.cur].morph;
@@ -686,18 +751,25 @@ export class PawEngine {
     this.tCur = now;
     this.tPrev = now;
     this.blinkAt = -10;
+    this.look = NO_LOOK;
+    this.lookPrev = NO_LOOK;
+    this.lookAt = -10;
   }
 
   sample(now, alive = true) {
     const pose = this.composed(now);
     const faceOn = pose.eyeAlpha > 0.01;
+    const look = this.lookAtTime(now);
     const life = alive
-      ? liveliness(now, pose.wander, faceOn)
+      ? liveliness(now, pose.wander * look.wander, faceOn)
       : { dYaw: 0, dPitch: 0, dRoll: 0, lid: 1, driftX: 0, driftY: 0, breath: 1 };
 
+    // The two aims REPLACE the pose's as `mix` rises; the drift is added
+    // AFTER, so a head held toward the pointer still lives.
     const gaze = {
-      yaw: pose.gaze.yaw + life.dYaw,
-      pitch: pose.gaze.pitch + life.dPitch,
+      yaw: lerp(pose.gaze.yaw, look.yaw, look.mix) + life.dYaw,
+      pitch: lerp(pose.gaze.pitch, look.pitch, look.mix) + life.dPitch,
+      // Roll follows nothing: it is the state's own head tilt.
       roll: pose.gaze.roll + life.dRoll
     };
 
@@ -848,6 +920,7 @@ export function mount(el, opts = {}) {
   const o = {
     state: ds.fxState ?? "idle",
     speed: ds.fxSpeed ?? 1,
+    track: ds.fxTrack !== "false",
     // An explicit state wins over the showcase carousel: a site that asks for
     // "thinking" means it, and the snippet ships with both attributes.
     cycle: ds.fxState ? 0 : ds.fxCycle ?? 0,
@@ -882,6 +955,9 @@ export function mount(el, opts = {}) {
   let t0 = typeof performance === "object" ? performance.now() : 0;
   let cycleAt = 0;
   let cycleAt0 = 0;
+  /* Last sampled time, so a pointer move dates its look without reading a
+   * second clock. A frame old at most, which is below the catch-up time. */
+  let clock = 0;
 
   const speed = () => clamp(Number(o.speed) || 1, 0.1, 10);
 
@@ -907,6 +983,7 @@ export function mount(el, opts = {}) {
 
   function frame(ts) {
     const now = ((ts - t0) / 1000) * speed();
+    clock = now;
     const every = Number(o.cycle) || 0;
     if (every > 0 && now - cycleAt0 >= every) {
       cycleAt0 = now;
@@ -915,6 +992,50 @@ export function mount(el, opts = {}) {
     }
     draw(now);
     raf = requestAnimationFrame(frame);
+  }
+
+  /* ------------------------------------------------------------ tracking
+   * How far the gaze travels at the edge of its reach, degrees. Past that
+   * the tanh saturates, so a pointer on the far side of the page and one
+   * just outside the avatar ask for nearly the same look. */
+  const MAX_YAW = 27;
+  const MAX_PITCH = 17;
+  /* Reach, in avatar widths from its centre. */
+  const REACH = 1.8;
+
+  let released = true;
+
+  const onMove = (e) => {
+    // Touch has no hovering pointer: a tap would yank the gaze and leave it.
+    if (e.pointerType && e.pointerType !== "mouse") return;
+    const r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const nx = (e.clientX - (r.left + r.width / 2)) / (r.width * REACH);
+    const ny = (e.clientY - (r.top + r.height / 2)) / (r.height * REACH);
+    engine.setLook(
+      {
+        yaw: MAX_YAW * Math.tanh(nx * 2),
+        // screen y grows downward, pitch grows upward
+        pitch: -MAX_PITCH * Math.tanh(ny * 2),
+        mix: 1,
+        wander: 0.15
+      },
+      clock
+    );
+    released = false;
+  };
+
+  const onRelease = () => {
+    if (released) return;
+    engine.setLook(null, clock, 0.6);
+    released = true;
+  };
+
+  const tracking = o.track && !still && typeof window !== "undefined";
+  if (tracking) {
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("blur", onRelease);
+    document.addEventListener("pointerleave", onRelease);
   }
 
   if (still) draw(0);
@@ -935,6 +1056,11 @@ export function mount(el, opts = {}) {
     },
     destroy() {
       cancelAnimationFrame(raf);
+      if (tracking) {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("blur", onRelease);
+        document.removeEventListener("pointerleave", onRelease);
+      }
       el.innerHTML = restore;
     }
   };
@@ -953,6 +1079,7 @@ export const meta = {
   options: {
     state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening." },
     speed: { type: "number", default: 1, description: "Time multiplier for the whole engine. Clamped to 0.1-10." },
-    cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." }
+    cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." },
+    track: { type: "boolean", default: true, description: "Follow the mouse pointer with the gaze. Set data-fx-track=\"false\" to hold the state's own gaze." }
   }
 };

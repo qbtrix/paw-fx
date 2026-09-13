@@ -89,3 +89,27 @@ test("the resting markup carries the resting frame", () => {
   expect(svg).toContain(restingPath("idle"));
   expect(svg).not.toContain('d=""');
 });
+
+test("the gaze follows a look target and releases back", () => {
+  const e = new PawEngine("idle");
+  const rest = e.sample(2, false).eyes[0].matrix;
+  e.setLook({ yaw: 27, pitch: -12, mix: 1, wander: 0.15 }, 2);
+  const held = e.sample(3, false).eyes[0].matrix;
+  expect(held).not.toBe(rest);
+  // catching up, so a frame inside the morph is neither end
+  const mid = e.sample(2.1, false).eyes[0].matrix;
+  expect(mid).not.toBe(rest);
+  expect(mid).not.toBe(held);
+  e.setLook(null, 3);
+  expect(e.sample(6, false).eyes[0].matrix).toBe(rest);
+});
+
+test("a non-finite look target is refused, not propagated", () => {
+  // A getBoundingClientRect on a zero-sized box gives 0/0. One NaN reaching
+  // the engine would poison every later frame.
+  const e = new PawEngine("idle");
+  e.setLook({ yaw: 20, pitch: 0, mix: 1, wander: 0.2 }, 0);
+  const good = e.sample(2, false).eyes[0].matrix;
+  e.setLook({ yaw: NaN, pitch: 0, mix: 1, wander: 0.2 }, 2);
+  expect(e.sample(4, false).eyes[0].matrix).toBe(good);
+});

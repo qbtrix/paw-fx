@@ -2,19 +2,49 @@
   "name": "paw-avatar",
   "version": "1.0.0",
   "category": "character",
-  "tags": ["mascot", "avatar", "svg", "morph", "agent-state", "glass", "dark"],
-  "summary": "A glass puppy head whose 15 agent states (idle, thinking, working, sleeping, error...) morph into each other; pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
+  "tags": [
+    "mascot",
+    "avatar",
+    "svg",
+    "morph",
+    "agent-state",
+    "glass",
+    "dark"
+  ],
+  "summary": "A glass puppy head whose 15 agent states (idle, thinking, working, sleeping, error...) morph into each other, with a gaze that follows the pointer. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
   "needs": [],
   "options": {
-    "state": { "type": "string", "default": "idle", "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening." },
-    "speed": { "type": "number", "default": 1, "description": "Time multiplier for the whole engine. Clamped to 0.1-10." },
-    "cycle": { "type": "number", "default": 0, "description": "Seconds per state when walking every state in turn; 0 holds the chosen state." }
+    "state": {
+      "type": "string",
+      "default": "idle",
+      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Time multiplier for the whole engine. Clamped to 0.1-10."
+    },
+    "cycle": {
+      "type": "number",
+      "default": 0,
+      "description": "Seconds per state when walking every state in turn; 0 holds the chosen state."
+    },
+    "track": {
+      "type": "boolean",
+      "default": true,
+      "description": "Follow the mouse pointer with the gaze. Set data-fx-track=\"false\" to hold the state's own gaze."
+    }
   },
   "license": "MIT",
   "origin": {
     "repo": "jeremy-prt/bloub",
     "commit": "b4bb3c1b5f93c7b87a2e8d620f667c4093d97749",
-    "path": ["src/bot/math.ts", "src/bot/shape.ts", "src/bot/face.ts", "src/bot/engine.ts"]
+    "path": [
+      "src/bot/math.ts",
+      "src/bot/shape.ts",
+      "src/bot/face.ts",
+      "src/bot/engine.ts"
+    ]
   },
   "deviations": [
     {
