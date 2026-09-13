@@ -1,27 +1,34 @@
 /* paw-avatar — glass skin for the Paw mascot.
  *
- * The material is entirely here: the engine emits one outline plus eye and
+ * The material is entirely here: the engine emits outlines plus eye and
  * glyph geometry and never names a colour. Swapping --fx-paw-* re-skins the
  * character without touching index.js, which is bloub's skins idea done in
- * CSS instead of in the sampler. */
+ * CSS instead of in the sampler.
+ *
+ * The glass is four layers per part, all in the SVG the engine emits: a dark
+ * fill, a wide blurred stroke clipped inside the part (the fresnel edge that
+ * reads as thickness), a crisp rim, and an outer bloom on the whole svg. */
 
+/* --fx-paw-size is read with a fallback rather than declared here, so an
+ * ancestor can set it and the wrapper inherits it. */
 .fx-paw {
-  --fx-paw-size: 240px;
-  --fx-paw-top: #cfe0ff;
-  --fx-paw-mid: #2b3358;
-  --fx-paw-bottom: #0b0e1c;
-  --fx-paw-rim-a: #eaf1ff;
-  --fx-paw-rim-b: #8fa6ff;
-  --fx-paw-rim-c: #b98bff;
-  --fx-paw-rim-width: 3;
+  --fx-paw-top: #2a3358;
+  --fx-paw-mid: #10152b;
+  --fx-paw-bottom: #05070f;
+  --fx-paw-rim-a: #ffffff;
+  --fx-paw-rim-b: #a6bbff;
+  --fx-paw-rim-c: #b58dff;
+  --fx-paw-rim-width: 2.4;
+  --fx-paw-inner-width: 26;
   --fx-paw-eye: #ffffff;
-  --fx-paw-warm: #ff7eb6;
-  --fx-paw-glow: rgba(126, 152, 255, 0.55);
-  --fx-paw-shine: rgba(255, 255, 255, 0.34);
+  --fx-paw-warm: #ff8cc4;
+  --fx-paw-glow: rgba(140, 170, 255, 0.55);
+  --fx-paw-halo: rgba(220, 232, 255, 0.55);
+  --fx-paw-shine: rgba(255, 255, 255, 0.5);
 
   display: inline-flex;
-  width: var(--fx-paw-size);
-  height: var(--fx-paw-size);
+  width: var(--fx-paw-size, 240px);
+  height: var(--fx-paw-size, 240px);
   line-height: 0;
 }
 
@@ -29,33 +36,42 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 0 18px var(--fx-paw-glow));
+  filter:
+    drop-shadow(0 0 4px var(--fx-paw-halo))
+    drop-shadow(0 0 22px var(--fx-paw-glow));
 }
 
-.fx-paw-body {
+.fx-paw-fill {
+  fill-opacity: 0.96;
+}
+
+.fx-paw-inner {
+  stroke-width: var(--fx-paw-inner-width);
+  opacity: 0.55;
+}
+
+.fx-paw-rim {
   stroke-width: var(--fx-paw-rim-width);
   stroke-linejoin: round;
-  /* The fill is a dark glass; the gradient stops carry the light. */
-  fill-opacity: 0.94;
+  opacity: 0.95;
 }
 
 .fx-paw-shine {
   fill: var(--fx-paw-shine);
-  filter: blur(14px);
 }
 
 .fx-paw-shine-b {
-  fill: var(--fx-paw-shine);
-  opacity: 0.45;
-  filter: blur(10px);
+  opacity: 0.4;
 }
 
 .fx-paw-eye {
   fill: var(--fx-paw-eye);
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
 }
 
 .fx-paw-glyph {
   fill: var(--fx-paw-eye);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
 }
 
 /* Marks that read as handwriting rather than as solid shapes. */
@@ -71,20 +87,10 @@
   fill: var(--fx-paw-warm);
 }
 
-/* The resting frame is already in the markup, so there is nothing to fade in
- * and nothing to hide while the module loads. */
 @media (prefers-reduced-motion: reduce) {
   .fx-paw-svg {
-    filter: none;
+    filter: drop-shadow(0 0 12px var(--fx-paw-glow));
   }
-}
-
-/* The ears are drawn first and pass behind the head, which is what makes
- * them read as a separate part rather than as bumps on one blob. */
-.fx-paw-ear {
-  stroke-width: var(--fx-paw-rim-width);
-  stroke-linejoin: round;
-  fill-opacity: 0.94;
 }
 
 /* The section the snippet ships as: a dark stage the glass reads against.

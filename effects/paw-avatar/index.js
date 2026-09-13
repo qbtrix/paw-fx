@@ -162,7 +162,8 @@ function capsulePath(w, h) {
  * Every state is a handful of numbers on this rig, so poses interpolate as
  * a real ear rotation instead of a crossfade between two traced outlines. */
 
-const HEAD = [{ x: 0, y: 0, r: 1 }];
+/** Two disks a little apart: a dome wider than it is tall, still one smooth outline. */
+const HEAD = [{ x: -0.08, y: 0, r: 0.98 }, { x: 0.08, y: 0, r: 0.98 }];
 /** Everything below this flattens: the Paw sits, it does not float. */
 const FLOOR = 0.74;
 
@@ -176,7 +177,7 @@ const FLOOR = 0.74;
  * BEHIND the head, which is what reads as a separate part rather than as a
  * bump on a cloud. Each one is still the same radial machinery.
  */
-const EAR_SWEEP = { n: 9, top: 0.10, len: 1.02, bow: 0.24, r0: 0.38, r1: 0.17 };
+const EAR_SWEEP = { n: 9, top: 0.10, len: 0.86, bow: 0.42, r0: 0.40, r1: 0.22 };
 
 /**
  * The lobe as a swept disk: centres walk a slightly bowed line while the
@@ -195,7 +196,7 @@ const earDisks = () =>
 
 const EAR_LOBE = earDisks();
 /** Where each ear roots on the skull, before any head tilt. */
-const EAR_ROOT = { x: 0.84, y: -0.44 };
+const EAR_ROOT = { x: 0.80, y: -0.46 };
 
 const mirrored = (circles) => circles.map((c) => ({ ...c, x: -c.x }));
 
@@ -242,11 +243,11 @@ const deg = (d) => (d * Math.PI) / 180;
 const EYE_SPLIT = 19;
 /** Eye size at rest, in head radii. */
 const EYE_W = 0.30;
-const EYE_H = 0.50;
+const EYE_H = 0.54;
 /** The Paw looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
 const REST_GAZE = { yaw: 0, pitch: -2, roll: 0 };
 /** The face sits high on the head. */
-const FACE_Y = -0.02;
+const FACE_Y = -0.10;
 
 /** Rotate two vectors of an orthonormal frame within their common plane. */
 function spin(u, v, angle) {
@@ -742,27 +743,39 @@ function template(id, frame) {
   const shift = frame ? frame.faceShift : "";
   const eye = (i) =>
     `<path class="fx-paw-eye" d="${at(i, "d", "")}" transform="${at(i, "matrix", "")}" opacity="${at(i, "alpha", 0)}"/>`;
+  // One glass part = fill, a wide blurred stroke clipped INSIDE it (the
+  // fresnel edge glow that reads as thick glass), then a crisp rim on top.
+  const part = (key, d, extra = "") => `
+  <g class="fx-paw-part">
+    <clipPath id="fx-paw-clip-${key}-${id}"><path data-part="${key}" d="${d}"/></clipPath>
+    <path class="fx-paw-fill" data-part="${key}" d="${d}" fill="url(#fx-paw-skin-${id})"/>
+    <g clip-path="url(#fx-paw-clip-${key}-${id})">
+      <path class="fx-paw-inner" data-part="${key}" d="${d}" fill="none" stroke="url(#fx-paw-rim-${id})" filter="url(#fx-paw-soft-${id})"/>${extra}
+    </g>
+    <path class="fx-paw-rim" data-part="${key}" d="${d}" fill="none" stroke="url(#fx-paw-rim-${id})"/>
+  </g>`;
+  const shine = `
+      <ellipse class="fx-paw-shine" cx="-30" cy="-74" rx="52" ry="22" transform="rotate(-18 -30 -74)" filter="url(#fx-paw-soft-${id})"/>
+      <ellipse class="fx-paw-shine fx-paw-shine-b" cx="46" cy="-40" rx="14" ry="36" transform="rotate(18 46 -40)" filter="url(#fx-paw-soft-${id})"/>`;
   return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-HALF_BOX} ${-HALF_BOX} ${HALF_BOX * 2} ${HALF_BOX * 2}" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="fx-paw-skin-${id}" x1="0" y1="0" x2="0.35" y2="1">
+    <linearGradient id="fx-paw-skin-${id}" x1="0" y1="0" x2="0.3" y2="1">
       <stop offset="0" stop-color="var(--fx-paw-top)"/>
-      <stop offset="0.55" stop-color="var(--fx-paw-mid)"/>
+      <stop offset="0.5" stop-color="var(--fx-paw-mid)"/>
       <stop offset="1" stop-color="var(--fx-paw-bottom)"/>
     </linearGradient>
-    <linearGradient id="fx-paw-rim-${id}" x1="0" y1="-1" x2="0.6" y2="1">
+    <linearGradient id="fx-paw-rim-${id}" x1="0.2" y1="0" x2="0.8" y2="1">
       <stop offset="0" stop-color="var(--fx-paw-rim-a)"/>
-      <stop offset="0.5" stop-color="var(--fx-paw-rim-b)"/>
+      <stop offset="0.55" stop-color="var(--fx-paw-rim-b)"/>
       <stop offset="1" stop-color="var(--fx-paw-rim-c)"/>
     </linearGradient>
-    <clipPath id="fx-paw-clip-${id}"><path class="fx-paw-outline" d="${d}"/></clipPath>
+    <filter id="fx-paw-soft-${id}" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
   </defs>
-  <path class="fx-paw-ear" data-ear="l" d="${eL}" fill="url(#fx-paw-skin-${id})" stroke="url(#fx-paw-rim-${id})"/>
-  <path class="fx-paw-ear" data-ear="r" d="${eR}" fill="url(#fx-paw-skin-${id})" stroke="url(#fx-paw-rim-${id})"/>
-  <path class="fx-paw-body fx-paw-outline" d="${d}" fill="url(#fx-paw-skin-${id})" stroke="url(#fx-paw-rim-${id})"/>
-  <g clip-path="url(#fx-paw-clip-${id})">
-    <ellipse class="fx-paw-shine" cx="-34" cy="-66" rx="46" ry="26" transform="rotate(-24 -34 -66)"/>
-    <ellipse class="fx-paw-shine fx-paw-shine-b" cx="44" cy="-52" rx="18" ry="34" transform="rotate(16 44 -52)"/>
-  </g>
+  ${part("earL", eL)}
+  ${part("earR", eR)}
+  ${part("body", d, shine)}
   <g class="fx-paw-face" transform="${shift}">
     ${eye(0)}
     ${eye(1)}
@@ -803,9 +816,11 @@ export function mount(el, opts = {}) {
   el.innerHTML = template(++uid);
 
   const svg = el.querySelector(".fx-paw-svg");
-  const outlines = svg.querySelectorAll(".fx-paw-outline");
-  const earL = svg.querySelector('[data-ear="l"]');
-  const earR = svg.querySelector('[data-ear="r"]');
+  const parts = {
+    body: svg.querySelectorAll('[data-part="body"]'),
+    earL: svg.querySelectorAll('[data-part="earL"]'),
+    earR: svg.querySelectorAll('[data-part="earR"]')
+  };
   const eyeEls = svg.querySelectorAll(".fx-paw-eye");
   const glyphEls = {};
   for (const g of svg.querySelectorAll(".fx-paw-glyph")) glyphEls[g.dataset.g] = g;
@@ -825,9 +840,9 @@ export function mount(el, opts = {}) {
 
   function draw(now) {
     const f = engine.sample(now, !still);
-    for (const p of outlines) p.setAttribute("d", f.bodyPath);
-    earL.setAttribute("d", f.earLPath);
-    earR.setAttribute("d", f.earRPath);
+    for (const p of parts.body) p.setAttribute("d", f.bodyPath);
+    for (const p of parts.earL) p.setAttribute("d", f.earLPath);
+    for (const p of parts.earR) p.setAttribute("d", f.earRPath);
     face.setAttribute("transform", f.faceShift);
     for (let i = 0; i < eyeEls.length; i++) {
       const e = f.eyes[i];
