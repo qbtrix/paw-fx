@@ -215,6 +215,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | canvas-trails | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/canvas-2d/index.js` + `examples/canvas-2d/index.html` |
 | morph-nav | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/auto-layout/nav/index.js` + `examples/auto-layout/nav/index.html` |
 | dock-magnify | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/dock.tsx` |
+| paw-avatar | MIT | [jeremy-prt/bloub](https://github.com/jeremy-prt/bloub) `b4bb3c1`, `src/bot/math.ts` + `src/bot/shape.ts` + `src/bot/face.ts` + `src/bot/engine.ts` |
 
 ## The two shader families carry their licences differently
 
@@ -238,6 +239,17 @@ package paw-fx does not vendor, so the palettes here are ours and the output doe
 not match the upstream posters. Both are declared per effect, with `kind: "ours"`.
 `sg-louver` is the one exception to the second half: its upstream meta.json
 declares no post chain at all, so it declares only the palette.
+
+`paw-avatar` is the one port where the upstream licence and the upstream LOOK
+come apart, and the split is upstream's own: bloub's README says its MIT licence
+covers the code, not the x.ai avatar design it recreates. So the engine is
+ported -- the radial silhouette machinery, the sphere the eyes sit on, the blink
+calendar, the clock-free `sample(t)` and the frozen-departure pose that keeps a
+mid-fade state change continuous -- and none of the geometry is. Upstream's
+`PROFILES` arrays and its fourteen states are frame-by-frame measurements of
+that avatar and appear nowhere here; the Paw head, its ear rig and its fifteen
+states are ours, authored as unions of disks rather than traced. `meta.json`
+declares the whole split under `deviations`, with `kind: "ours"`.
 
 The three Vanta ports DO carry upstream code, inlined -- a Vanta effect extends
 `src/_base.js` and this repo's build emits only `index.js` and `style.css` per

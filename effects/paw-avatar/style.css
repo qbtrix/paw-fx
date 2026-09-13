@@ -1,0 +1,103 @@
+/* paw-avatar — glass skin for the Paw mascot.
+ *
+ * The material is entirely here: the engine emits one outline plus eye and
+ * glyph geometry and never names a colour. Swapping --fx-paw-* re-skins the
+ * character without touching index.js, which is bloub's skins idea done in
+ * CSS instead of in the sampler. */
+
+.fx-paw {
+  --fx-paw-size: 240px;
+  --fx-paw-top: #cfe0ff;
+  --fx-paw-mid: #2b3358;
+  --fx-paw-bottom: #0b0e1c;
+  --fx-paw-rim-a: #eaf1ff;
+  --fx-paw-rim-b: #8fa6ff;
+  --fx-paw-rim-c: #b98bff;
+  --fx-paw-rim-width: 3;
+  --fx-paw-eye: #ffffff;
+  --fx-paw-warm: #ff7eb6;
+  --fx-paw-glow: rgba(126, 152, 255, 0.55);
+  --fx-paw-shine: rgba(255, 255, 255, 0.34);
+
+  display: inline-flex;
+  width: var(--fx-paw-size);
+  height: var(--fx-paw-size);
+  line-height: 0;
+}
+
+.fx-paw-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 18px var(--fx-paw-glow));
+}
+
+.fx-paw-body {
+  stroke-width: var(--fx-paw-rim-width);
+  stroke-linejoin: round;
+  /* The fill is a dark glass; the gradient stops carry the light. */
+  fill-opacity: 0.94;
+}
+
+.fx-paw-shine {
+  fill: var(--fx-paw-shine);
+  filter: blur(14px);
+}
+
+.fx-paw-shine-b {
+  fill: var(--fx-paw-shine);
+  opacity: 0.45;
+  filter: blur(10px);
+}
+
+.fx-paw-eye {
+  fill: var(--fx-paw-eye);
+}
+
+.fx-paw-glyph {
+  fill: var(--fx-paw-eye);
+}
+
+/* Marks that read as handwriting rather than as solid shapes. */
+.fx-paw-stroke {
+  fill: none;
+  stroke: var(--fx-paw-eye);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fx-paw-warm {
+  fill: var(--fx-paw-warm);
+}
+
+/* The resting frame is already in the markup, so there is nothing to fade in
+ * and nothing to hide while the module loads. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-paw-svg {
+    filter: none;
+  }
+}
+
+/* The ears are drawn first and pass behind the head, which is what makes
+ * them read as a separate part rather than as bumps on one blob. */
+.fx-paw-ear {
+  stroke-width: var(--fx-paw-rim-width);
+  stroke-linejoin: round;
+  fill-opacity: 0.94;
+}
+
+/* The section the snippet ships as: a dark stage the glass reads against.
+ * Drop .fx-paw on its own into any layout if you only want the avatar. */
+.fx-paw-stage {
+  display: grid;
+  place-items: center;
+  min-height: 68vh;
+  padding: 8vh 6vw;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #17203f 0%, #0b0f1e 55%, #05070f 100%);
+}
+
+.fx-paw-stage .fx-paw {
+  --fx-paw-size: min(46vh, 380px);
+}

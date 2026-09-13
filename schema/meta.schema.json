@@ -33,9 +33,10 @@
         "cursor",
         "transition",
         "menu",
-        "gallery"
+        "gallery",
+        "character"
       ],
-      "description": "Which shelf the effect sits on. `menu` covers navigation reveals and hover treatments on nav items; `gallery` covers image grids, sliders and looping galleries. Both were added when the Codrops survey found its two strongest families had nowhere to go."
+      "description": "Which shelf the effect sits on. `menu` covers navigation reveals and hover treatments on nav items; `gallery` covers image grids, sliders and looping galleries. Both were added when the Codrops survey found its two strongest families had nowhere to go. `character` covers a mascot or avatar the page drives by state rather than a decorative background."
     },
     "tags": {
       "type": "array",

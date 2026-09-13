@@ -1,0 +1,46 @@
+{
+  "name": "paw-avatar",
+  "version": "1.0.0",
+  "category": "character",
+  "tags": ["mascot", "avatar", "svg", "morph", "agent-state", "glass", "dark"],
+  "summary": "A glass puppy head whose 15 agent states (idle, thinking, working, sleeping, error...) morph into each other; pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
+  "needs": [],
+  "options": {
+    "state": { "type": "string", "default": "idle", "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening." },
+    "speed": { "type": "number", "default": 1, "description": "Time multiplier for the whole engine. Clamped to 0.1-10." },
+    "cycle": { "type": "number", "default": 0, "description": "Seconds per state when walking every state in turn; 0 holds the chosen state." }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "jeremy-prt/bloub",
+    "commit": "b4bb3c1b5f93c7b87a2e8d620f667c4093d97749",
+    "path": ["src/bot/math.ts", "src/bot/shape.ts", "src/bot/face.ts", "src/bot/engine.ts"]
+  },
+  "deviations": [
+    {
+      "what": "The character is ours. Upstream's PROFILES arrays and its 14 states are frame-by-frame measurements of the x.ai bot; none of those numbers are here. The Paw head is authored as a union of disks with a flat bottom, each ear is a three-disk lobe on a rotating root, and the 15 states are ours.",
+      "why": "Upstream's own README says its MIT licence covers the code, not the visual design it recreates. Porting the engine and authoring a new character is the only use of it that is ours to ship.",
+      "kind": "ours"
+    },
+    {
+      "what": "Poses interpolate the ear rig (angle, lift) and the silhouette is rebuilt from it each frame, instead of lerping two sampled radius arrays as upstream's blend() does.",
+      "why": "A lerp between two traced outlines crossfades an ear; lerping the rig rotates it. Upstream has one body and no limbs, so the question never came up there.",
+      "kind": "ours"
+    },
+    {
+      "what": "Silhouettes are sampled at 96 angles, not upstream's 64, and everything below y = 0.84 head radii is clamped flat.",
+      "why": "A drooping ear tip is thinner than anything on a single blob and blobs out at 64 samples. The flat bottom is the Paw sitting rather than floating, which a union of disks cannot give on its own.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rest gaze is square on (yaw 0) where upstream's is a measured 3/4 view (yaw 28.49, pitch 28.62, roll -13), and eyefit.ts is not ported.",
+      "why": "The Paw looks at the reader. Its eyes also sit at 0.33 head radii, deep inside the outline, so the eye-to-edge correction eyefit exists for has nothing to correct.",
+      "kind": "ours"
+    },
+    {
+      "what": "TypeScript ported to plain ES modules; the Vue component, decor.ts, cycles.ts, expressions.ts, skins.ts and all of src/ui are not ported.",
+      "why": "paw-fx effects are framework-free vanilla with a mount() contract, and the skin is CSS custom properties rather than a JS skin table.",
+      "kind": "seam"
+    }
+  ]
+}
