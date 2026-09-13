@@ -12,6 +12,8 @@
     "test": "bun test",
     "check": "bun run lint && bun run build && bun run docs && bun run smoke && bun test",
     "docs": "bun scripts/build-docs.mjs",
-    "registry:deploy": "bun run gallery && wrangler deploy"
+    "registry:deploy": "bun run site && wrangler deploy",
+    "registry:serve": "bun scripts/serve-registry.mjs",
+    "site": "bun run gallery && bun scripts/build-site.mjs"
   }
 }

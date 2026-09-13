@@ -33,11 +33,17 @@ agent reading llms.txt in a chat window has no page to resolve a relative link
 against -- so changing the Worker name means changing `--base` with it.
 
 ```bash
-bun run registry:deploy    # build + docs + gallery, then wrangler deploy
+bun run site               # registry + docs + gallery, assembled into dist/site
+bun run registry:serve     # look at it locally, headers and all
+bun run registry:deploy    # build the site, then wrangler deploy
 ```
 
-That also publishes the browsable gallery at `/gallery/` and the live demo page
-for each effect.
+The gallery is the root and the registry sits beside it. That is not a
+preference: the gallery is a Paw Site built out of paw-fx, so its sections link
+`/_fx/effects/<name>/...` root-absolute exactly as a real site does, and under
+any prefix every one of those misses. `build-site.mjs` lays the two out
+together rather than rewriting either, which is also why a local look is the
+real thing: there is no redirect rule to behave differently on the edge.
 
 ## Layout
 
