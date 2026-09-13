@@ -46,6 +46,25 @@ function createRng(seed) {
   };
 }
 
+/**
+ * Ear settle: one damped overshoot, normalised so f(0) = 0 and f(1) = 1.
+ *
+ * Ours, and the one place the Paw disagrees with upstream on purpose. Bloub
+ * measured its bot and found NO overshoot on the body -- correct for a
+ * floating blob, wrong for something with ears. Ears have mass: they leave
+ * late, swing past, and settle. Without this every state change moved the
+ * head and the ears in the same instant, which is what made the character
+ * read as rigid however good the silhouette was.
+ *
+ * Exactly 1 at the end matters: the engine drops back to the raw pose once
+ * the morph window closes, so anything short of 1 would snap.
+ */
+const EAR_SETTLE_NORM = 1 / (1 - Math.exp(-5) * Math.cos(7));
+const earSettle = (k) => (1 - Math.exp(-5 * k) * Math.cos(7 * k)) * EAR_SETTLE_NORM;
+
+/** How far behind the head the ears start, as a fraction of the state's morph. */
+const EAR_LAG = 0.25;
+
 /* --------------------------------------------------------------- frame of
  * reference. RADIUS is the head radius in viewBox units and every number
  * below is a fraction of it. HALF_BOX is not free: a raised ear reaches
@@ -406,37 +425,144 @@ function liveliness(t, wander = 1, blink = true) {
 /* ----------------------------------------------------------------- glyphs
  * The small marks around the head. Ours. A "!!" cannot be reached by
  * morphing a capsule and neither can a heart, so like bloub's decor these
- * cross in OPACITY, never in geometry: each one is a static <g> drawn once
- * and faded. The three face glyphs replace the eyes (eyeAlpha 0) rather
- * than sitting beside them. */
+ * cross in OPACITY, never in geometry. The three face glyphs replace the
+ * eyes (eyeAlpha 0) rather than sitting beside them.
+ *
+ * Each also carries a MOTION: a loop of its own, authored once here rather
+ * than per state, because drifting upward is a property of a "zzz" and not
+ * of being asleep. A state still only says how much of the glyph is showing.
+ * The motion reads absolute time, so a held state keeps moving, and it is
+ * frozen at 0 for a resting frame so the baked snippet is stable.
+ *
+ * `at` is where the glyph sits; anything that scales or rotates is authored
+ * around its own origin so it does not swing away from the head when it does.
+ */
 
 const zed = (x, y, s) => `M${x} ${y}h${s}l${-s} ${s}h${s}`;
 /** Four-point star: the arms pinch at the centre, which is what reads as a spark. */
-const spark4 = (x, y, s) =>
-  `M${x} ${y - s}Q${x + s * 0.12} ${y - s * 0.12} ${x + s} ${y}` +
-  `Q${x + s * 0.12} ${y + s * 0.12} ${x} ${y + s}` +
-  `Q${x - s * 0.12} ${y + s * 0.12} ${x - s} ${y}` +
-  `Q${x - s * 0.12} ${y - s * 0.12} ${x} ${y - s}z`;
+const spark4 = (s) =>
+  `M0 ${-s}Q${s * 0.12} ${-s * 0.12} ${s} 0` +
+  `Q${s * 0.12} ${s * 0.12} 0 ${s}` +
+  `Q${-s * 0.12} ${s * 0.12} ${-s} 0` +
+  `Q${-s * 0.12} ${-s * 0.12} 0 ${-s}z`;
 const heart = (x, y, s) =>
   `M${x} ${y + s * 0.9}c${-s * 1.3} ${-s * 0.9} ${-s * 0.8} ${-s * 1.9} 0 ${-s * 1.1}` +
   `c${s * 0.8} ${-s * 0.8} ${s * 1.3} ${s * 0.2} 0 ${s * 1.1}z`;
 
+/** A loop that fades in and out once per cycle, starting part-way in so a
+ *  frozen frame shows something rather than the invisible moment at u = 0. */
+const cycle = (t, rate) => (t * rate + 0.25) % 1;
+const arch = (u) => Math.sin(u * Math.PI);
+/** Twinkle: never fully out, never twice at the same moment. */
+const twinkle = (t, rate, phase) => 0.5 + 0.5 * Math.sin(t * rate + phase);
+
 const GLYPHS = {
-  spark: `<path d="M78 -104L92 -122M104 -96L124 -104M64 -120L70 -142"/>`,
-  think: `<circle cx="112" cy="-112" r="9"/><circle cx="134" cy="-134" r="6"/>`,
-  zzz: `<path d="${zed(96, -120, 16)}${zed(120, -140, 12)}${zed(138, -154, 9)}"/>`,
-  question: `<path d="M96 -132a15 15 0 1 1 15 15v9"/><circle cx="111" cy="-96" r="5"/>`,
-  hearts: `<path class="fx-paw-warm" d="${heart(-16, -122, 13)}${heart(30, -140, 9)}"/>`,
-  sparkle: `<path d="${spark4(104, -108, 20)}${spark4(140, -76, 12)}${spark4(76, -134, 9)}"/>`,
-  waves: `<path d="M104 -96a26 26 0 0 1 20 -24M112 -74a44 44 0 0 1 34 -40M120 -52a62 62 0 0 1 48 -56"/>`,
-  speed: `<path d="M-118 -30h-42M-126 -6h-54M-118 18h-38"/>`,
-  faceHappy: `<path d="M-51 0q18 -22 36 0M15 0q18 -22 36 0"/>`,
-  faceX: `<path d="M-42 -16l16 16l-16 16M42 -16l-16 16l16 16"/>`,
-  faceLove: `<path class="fx-paw-warm" d="${heart(-33, -10, 15)}${heart(33, -10, 15)}"/>`
+  spark: {
+    at: [94, -118],
+    html: `<path d="M-16 14L-2 -4M10 22L30 14M-30 -2L-24 -24"/>`,
+    stroke: true,
+    motion: (t) => ({ s: 1 + 0.16 * Math.sin(t * 7) })
+  },
+  think: {
+    at: [123, -123],
+    html: `<circle cx="-11" cy="11" r="9"/><circle cx="11" cy="-11" r="6"/>`,
+    motion: (t) => ({ dy: -4 * Math.sin(t * 1.2) })
+  },
+  zzz: {
+    at: [0, 0],
+    html: `<path d="${zed(96, -120, 16)}${zed(120, -140, 12)}${zed(138, -154, 9)}"/>`,
+    stroke: true,
+    motion: (t) => {
+      const u = cycle(t, 0.3);
+      return { dy: -30 * u, o: arch(u) };
+    }
+  },
+  question: {
+    at: [105, -114],
+    html: `<path d="M-9 -18a15 15 0 1 1 15 15v9"/><circle cx="6" cy="18" r="5"/>`,
+    stroke: true,
+    motion: (t) => ({ r: Math.sin(t * 2.2) * 7 })
+  },
+  hearts: {
+    at: [0, 0],
+    html: `<path class="fx-paw-warm" d="${heart(-16, -122, 13)}${heart(30, -140, 9)}"/>`,
+    motion: (t) => {
+      const u = cycle(t, 0.35);
+      return { dx: 6 * Math.sin(u * TAU), dy: -26 * u, o: arch(u) };
+    }
+  },
+  waves: {
+    at: [100, -40],
+    html: `<path d="M4 -56a26 26 0 0 1 20 -24M12 -34a44 44 0 0 1 34 -40M20 -12a62 62 0 0 1 48 -56"/>`,
+    stroke: true,
+    motion: (t) => {
+      const u = cycle(t, 0.9);
+      return { s: 0.86 + 0.28 * u, o: arch(u) };
+    }
+  },
+  speed: {
+    at: [0, 0],
+    html: `<path d="M-118 -30h-42M-126 -6h-54M-118 18h-38"/>`,
+    stroke: true,
+    motion: (t) => {
+      const u = cycle(t, 1.6);
+      return { dx: -26 * u, o: arch(u) };
+    }
+  },
+  // Three separate sparks rather than one group: staggered phases are what
+  // make it read as twinkling instead of pulsing.
+  sparkA: {
+    at: [104, -108],
+    html: `<path d="${spark4(20)}"/>`,
+    motion: (t) => {
+      const k = twinkle(t, 2.1, 0);
+      return { s: 0.6 + 0.55 * k, r: 12 * k, o: 0.45 + 0.55 * k };
+    }
+  },
+  sparkB: {
+    at: [140, -76],
+    html: `<path d="${spark4(12)}"/>`,
+    motion: (t) => {
+      const k = twinkle(t, 2.7, 2.1);
+      return { s: 0.5 + 0.6 * k, r: -16 * k, o: 0.35 + 0.65 * k };
+    }
+  },
+  sparkC: {
+    at: [76, -134],
+    html: `<path d="${spark4(9)}"/>`,
+    motion: (t) => {
+      const k = twinkle(t, 3.4, 4.3);
+      return { s: 0.45 + 0.7 * k, r: 20 * k, o: 0.3 + 0.7 * k };
+    }
+  },
+  faceHappy: {
+    at: [0, 0],
+    html: `<path d="M-51 0q18 -22 36 0M15 0q18 -22 36 0"/>`,
+    stroke: true
+  },
+  faceX: {
+    at: [0, 0],
+    html: `<path d="M-42 -16l16 16l-16 16M42 -16l-16 16l16 16"/>`,
+    stroke: true
+  },
+  faceLove: {
+    at: [0, 0],
+    html: `<path class="fx-paw-warm" d="${heart(-33, -10, 15)}${heart(33, -10, 15)}"/>`
+  }
 };
 
-/** Glyphs drawn with a stroke rather than a fill. */
-const STROKED = new Set(["spark", "zzz", "question", "waves", "speed", "faceHappy", "faceX"]);
+const GLYPH_IDS = Object.keys(GLYPHS);
+
+/** Where a glyph sits this frame, as one transform. */
+function glyphTransform(id, t) {
+  const g = GLYPHS[id];
+  const m = g.motion ? g.motion(t) : {};
+  const x = r2(g.at[0] + (m.dx ?? 0));
+  const y = r2(g.at[1] + (m.dy ?? 0));
+  const rot = m.r ? ` rotate(${r2(m.r)})` : "";
+  const sc = m.s != null ? ` scale(${r2(m.s)})` : "";
+  return `translate(${x} ${y})${rot}${sc}`;
+}
 
 /* ------------------------------------------------------------------ poses */
 
@@ -678,17 +804,25 @@ const STATES = {
    */
   creative: {
     morph: 0.55,
-    pose: (t) => basePose({
-      rot: Math.sin(t * 0.7) * 0.04,
-      cy: Math.sin(t * 1.1) * 0.014,
-      ears: { l: ear(-0.26, 0.04), r: ear(-0.34, 0.05) },
-      gaze: { yaw: Math.sin(t * 0.5) * 9, pitch: 6, roll: 0 },
-      wander: 0.5,
-      eyes: [eye(EYE_W * 1.06, EYE_H * 1.04), eye(EYE_W * 1.06, EYE_H * 1.04)],
-      glow: 0.72 + Math.sin(t * 1.6) * 0.18,
-      rainbow: 1,
-      glyphs: { sparkle: 1 }
-    })
+    pose: (t) => {
+      // An idea landing, every few seconds: a fast rise and a slow fall, not
+      // a sine. A constant shimmer reads as decoration; a beat reads as
+      // something happening.
+      const p = t % 4.2;
+      const beat = p < 0.12 ? p / 0.12 : Math.exp(-(p - 0.12) * 3.2);
+      const w = 1.06 + beat * 0.1;
+      return basePose({
+        rot: Math.sin(t * 0.7) * 0.04,
+        cy: Math.sin(t * 1.1) * 0.014 - beat * 0.02,
+        ears: { l: ear(-0.26 - beat * 0.12, 0.04), r: ear(-0.34 - beat * 0.14, 0.05) },
+        gaze: { yaw: Math.sin(t * 0.5) * 9, pitch: 6, roll: 0 },
+        wander: 0.5,
+        eyes: [eye(EYE_W * w, EYE_H * w), eye(EYE_W * w, EYE_H * w)],
+        glow: 0.68 + Math.sin(t * 1.6) * 0.14 + beat * 0.28,
+        rainbow: 1,
+        glyphs: { sparkA: 1, sparkB: 1, sparkC: 1 }
+      });
+    }
   },
 
   listening: {
@@ -772,14 +906,22 @@ export class PawEngine {
     const def = STATES[this.cur];
     const pose = def.pose(Math.max(0, now - this.tCur));
     const since = now - this.tCur;
-    if (since >= def.morph) return pose;
+    // The ears finish after the head, so the window they share is longer.
+    if (since >= def.morph * (1 + EAR_LAG)) return pose;
     const origin = this.frozen ?? (this.prev
       ? STATES[this.prev].pose(Math.max(0, now - this.tPrev))
       : null);
     if (!origin) return pose;
     // Ease-out, and the ratio is CLAMPED: reading a date before the change
     // would give a negative ratio that the ease extrapolates far past the pose.
-    return blendPose(origin, pose, easeOutQuint(clamp(since / def.morph)));
+    const out = blendPose(origin, pose, easeOutQuint(clamp(since / def.morph)));
+    const ke = clamp((since - def.morph * EAR_LAG) / def.morph);
+    const te = earSettle(ke);
+    out.ears = {
+      l: lerpEar(origin.ears.l, pose.ears.l, te),
+      r: lerpEar(origin.ears.r, pose.ears.r, te)
+    };
+    return out;
   }
 
   /**
@@ -906,11 +1048,26 @@ export class PawEngine {
       earLPath,
       earRPath,
       eyes,
-      glyphs: pose.glyphs,
+      glyphs: glyphFrame(pose.glyphs, alive ? now : 0),
       // The face glyphs ride the body drift; the outer marks stay put.
       faceShift: `translate(${r2(cx * RADIUS)} ${r2((cy + FACE_Y) * RADIUS)})`
     };
   }
+}
+
+/**
+ * The glyphs this frame: how much of each is showing, and where it is.
+ * A glyph the pose never mentions is left out rather than emitted at zero.
+ */
+function glyphFrame(amounts, t) {
+  const out = {};
+  for (const id in amounts) {
+    const a = amounts[id];
+    if (a <= 0.001) continue;
+    const m = GLYPHS[id].motion ? GLYPHS[id].motion(t) : {};
+    out[id] = { o: clamp(a * (m.o ?? 1)), m: glyphTransform(id, t) };
+  }
+  return out;
 }
 
 /** The resting frame, for baking a CSS-only snippet or a static export. */
@@ -935,14 +1092,14 @@ const ART_M = `scale(${r2(RADIUS / ART.unit)}) translate(${-ART.cx} ${-ART.cy})`
 
 function template(id, frame) {
   const at = (i, k, dflt) => (frame ? (frame.eyes[i] ? frame.eyes[i][k] : dflt) : dflt);
-  const marks = Object.keys(GLYPHS)
-    .filter((k) => !k.startsWith("face"))
-    .map((k) => `<g class="fx-paw-glyph${STROKED.has(k) ? " fx-paw-stroke" : ""}" data-g="${k}" opacity="${frame ? r2(frame.glyphs[k] ?? 0) : 0}">${GLYPHS[k]}</g>`)
-    .join("");
-  const faces = Object.keys(GLYPHS)
-    .filter((k) => k.startsWith("face"))
-    .map((k) => `<g class="fx-paw-glyph${STROKED.has(k) ? " fx-paw-stroke" : ""}" data-g="${k}" opacity="${frame ? r2(frame.glyphs[k] ?? 0) : 0}">${GLYPHS[k]}</g>`)
-    .join("");
+  const glyph = (k) => {
+    const g = GLYPHS[k];
+    const f = frame ? frame.glyphs[k] : null;
+    return `<g class="fx-paw-glyph${g.stroke ? " fx-paw-stroke" : ""}" data-g="${k}"` +
+      ` opacity="${f ? r2(f.o) : 0}" transform="${f ? f.m : glyphTransform(k, 0)}">${g.html}</g>`;
+  };
+  const marks = GLYPH_IDS.filter((k) => !k.startsWith("face")).map(glyph).join("");
+  const faces = GLYPH_IDS.filter((k) => k.startsWith("face")).map(glyph).join("");
   const d = frame ? frame.bodyPath : "";
   const eL = frame ? frame.earLPath : "";
   const eR = frame ? frame.earRPath : "";
@@ -1109,7 +1266,11 @@ export function mount(el, opts = {}) {
       eyeEls[i].setAttribute("transform", e.matrix);
       eyeEls[i].setAttribute("opacity", r2(e.alpha));
     }
-    for (const k in glyphEls) glyphEls[k].setAttribute("opacity", r2(f.glyphs[k] ?? 0));
+    for (const k in glyphEls) {
+      const g = f.glyphs[k];
+      glyphEls[k].setAttribute("opacity", g ? r2(g.o) : 0);
+      if (g) glyphEls[k].setAttribute("transform", g.m);
+    }
   }
 
   function frame(ts) {
