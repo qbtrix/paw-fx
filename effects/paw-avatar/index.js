@@ -789,7 +789,9 @@ export function mount(el, opts = {}) {
   const o = {
     state: ds.fxState ?? "idle",
     speed: ds.fxSpeed ?? 1,
-    cycle: ds.fxCycle ?? 0,
+    // An explicit state wins over the showcase carousel: a site that asks for
+    // "thinking" means it, and the snippet ships with both attributes.
+    cycle: ds.fxState ? 0 : ds.fxCycle ?? 0,
     ...opts
   };
   const still = typeof matchMedia === "function" &&
@@ -811,7 +813,11 @@ export function mount(el, opts = {}) {
 
   const engine = new PawEngine(o.state);
   let raf = 0;
-  let t0 = 0;
+  // Seeded here, not on the first frame: update() can be called before rAF has
+  // run, and a t0 of 0 would date that change hundreds of seconds in the
+  // future, leaving the avatar stuck on its initial state until wall clock
+  // caught up. rAF timestamps share performance.now()'s origin.
+  let t0 = typeof performance === "object" ? performance.now() : 0;
   let cycleAt = 0;
   let cycleAt0 = 0;
 
@@ -837,7 +843,6 @@ export function mount(el, opts = {}) {
   }
 
   function frame(ts) {
-    if (!t0) t0 = ts;
     const now = ((ts - t0) / 1000) * speed();
     const every = Number(o.cycle) || 0;
     if (every > 0 && now - cycleAt0 >= every) {

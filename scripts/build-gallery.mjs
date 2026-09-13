@@ -13,7 +13,7 @@
 // and one long scroll is not browsing:
 //
 //   top bar   the name, the count, and a search field with a "/" shortcut
-//   sidebar   nine collapsible category groups, each with a live count and the
+//   sidebar   ten collapsible category groups, each with a live count and the
 //             effects inside it, plus a group of cross-cutting filters. It is
 //             a drawer under 900px rather than nothing.
 //   main      two views of one column, swapped by the fragment. With nothing
