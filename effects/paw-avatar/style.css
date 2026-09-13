@@ -36,9 +36,11 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+  /* --fx-paw-pulse (0..1) is written per frame by the engine: states pulse
+   * it (excited, love) or dim it (sleeping), and every state breathes. */
   filter:
     drop-shadow(0 0 4px var(--fx-paw-halo))
-    drop-shadow(0 0 22px var(--fx-paw-glow));
+    drop-shadow(0 0 calc(12px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow));
 }
 
 .fx-paw-fill {
@@ -47,7 +49,7 @@
 
 .fx-paw-inner {
   stroke-width: var(--fx-paw-inner-width);
-  opacity: 0.55;
+  opacity: calc(0.38 + 0.35 * var(--fx-paw-pulse, 0.5));
 }
 
 .fx-paw-rim {

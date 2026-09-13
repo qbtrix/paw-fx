@@ -53,7 +53,7 @@ function createRng(seed) {
  * either at runtime -- it is the hand-set ear swings in STATES that keep the
  * geometry inside, and tests/paw-avatar.test.js locks that down. */
 const RADIUS = 100;
-const HALF_BOX = 185;
+const HALF_BOX = 179;
 
 /** Angular samples of the silhouette. A thin ear tip needs more than 64. */
 const SAMPLES = 96;
@@ -87,17 +87,20 @@ function unionOfCirclesProfile(circles, out = new Array(SAMPLES)) {
 }
 
 /**
- * Flatten everything below `y`. Ours, not upstream: the union gives a round
- * bottom and the Paw sits on a flat one. One clamp per downward ray beats
- * reaching for profileFromPolygon.
+ * Superellipse |x/sx|^n + |y/sy|^n = 1 as a profile. n = 2 is an ellipse,
+ * n ~ 3 the squircle that gives the Paw its rounded base corners.
+ * Ported from bloub src/bot/shape.ts.
  */
-function floorProfile(radii, y) {
-  for (let i = 0; i < SAMPLES; i++) {
-    const s = SIN[i];
-    if (s > 1e-6) radii[i] = Math.min(radii[i], y / s);
-  }
-  return radii;
+function superellipseProfile(n, sx = 1, sy = 1) {
+  return ANGLES.map((_, i) => {
+    const c = Math.abs(COS[i] / sx) ** n;
+    const s = Math.abs(SIN[i] / sy) ** n;
+    return (c + s) ** (-1 / n);
+  });
 }
+
+/** Union of two star-shaped profiles about the same origin: the farther edge wins. */
+const maxProfile = (a, b) => a.map((r, i) => Math.max(r, b[i]));
 
 /** Profile -> screen points. `scale` = head radius in viewBox units. */
 function toPoints(radii, pose, scale, out = []) {
@@ -162,10 +165,13 @@ function capsulePath(w, h) {
  * Every state is a handful of numbers on this rig, so poses interpolate as
  * a real ear rotation instead of a crossfade between two traced outlines. */
 
-/** Two disks a little apart: a dome wider than it is tall, still one smooth outline. */
-const HEAD = [{ x: -0.08, y: 0, r: 0.98 }, { x: 0.08, y: 0, r: 0.98 }];
-/** Everything below this flattens: the Paw sits, it does not float. */
-const FLOOR = 0.74;
+/**
+ * The head is a mound: a squircle for the base (flat-ish bottom, rounded
+ * corners, wider than tall) under a disk for the crown. Two star-shaped
+ * profiles about the same origin union as a per-sample max.
+ */
+const HEAD_BASE = { n: 3.0, sx: 1.02, sy: 0.76 };
+const HEAD_CROWN = [{ x: 0, y: -0.14, r: 0.84 }];
 
 /**
  * One ear, in its OWN space, with the origin at the root it swings about.
@@ -177,7 +183,7 @@ const FLOOR = 0.74;
  * BEHIND the head, which is what reads as a separate part rather than as a
  * bump on a cloud. Each one is still the same radial machinery.
  */
-const EAR_SWEEP = { n: 9, top: 0.10, len: 0.86, bow: 0.42, r0: 0.40, r1: 0.22 };
+const EAR_SWEEP = { n: 9, top: 0.14, len: 0.88, bow: 0.14, r0: 0.37, r1: 0.26 };
 
 /**
  * The lobe as a swept disk: centres walk a slightly bowed line while the
@@ -196,7 +202,9 @@ const earDisks = () =>
 
 const EAR_LOBE = earDisks();
 /** Where each ear roots on the skull, before any head tilt. */
-const EAR_ROOT = { x: 0.80, y: -0.46 };
+const EAR_ROOT = { x: 0.56, y: -0.64 };
+/** Outward tilt of a resting ear, radians (negative swings out). A state's `angle` is relative to this. */
+const EAR_TILT = -0.42;
 
 const mirrored = (circles) => circles.map((c) => ({ ...c, x: -c.x }));
 
@@ -205,7 +213,10 @@ const EAR_PROFILE = {
   l: unionOfCirclesProfile(mirrored(EAR_LOBE)),
   r: unionOfCirclesProfile(EAR_LOBE)
 };
-const HEAD_PROFILE = floorProfile(unionOfCirclesProfile(HEAD), FLOOR);
+const HEAD_PROFILE = maxProfile(
+  superellipseProfile(HEAD_BASE.n, HEAD_BASE.sx, HEAD_BASE.sy),
+  unionOfCirclesProfile(HEAD_CROWN)
+);
 
 /** Scratch buffers: nothing is reallocated per frame. */
 function makeBody() {
@@ -223,7 +234,7 @@ function earPose(side, ear, headRot) {
   const c = Math.cos(headRot);
   const s = Math.sin(headRot);
   return {
-    rot: headRot + ear.angle * side,
+    rot: headRot + (EAR_TILT + ear.angle) * side,
     sx: 1,
     sy: 1,
     cx: rx * c - ry * s,
@@ -247,7 +258,7 @@ const EYE_H = 0.54;
 /** The Paw looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
 const REST_GAZE = { yaw: 0, pitch: -2, roll: 0 };
 /** The face sits high on the head. */
-const FACE_Y = -0.10;
+const FACE_Y = -0.08;
 
 /** Rotate two vectors of an orthonormal frame within their common plane. */
 function spin(u, v, angle) {
@@ -368,6 +379,8 @@ function basePose(over = {}) {
     eyes: [eye(), eye()],
     eyeAlpha: 1,
     wander: 1,
+    /** bloom strength 0..1; states pulse it, sample() adds a slow breath */
+    glow: 0.5,
     glyphs: {},
     ...over
   };
@@ -406,6 +419,7 @@ function blendPose(a, b, t) {
     eyes: [lerpEye(a.eyes[0], b.eyes[0], t), lerpEye(a.eyes[1], b.eyes[1], t)],
     eyeAlpha: lerp(a.eyeAlpha, b.eyeAlpha, t),
     wander: lerp(a.wander, b.wander, t),
+    glow: lerp(a.glow, b.glow, t),
     glyphs
   };
 }
@@ -439,6 +453,7 @@ const STATES = {
         sx: 1 - b * 0.6,
         ears: { l: ear(-0.30, 0.04), r: ear(-0.34, 0.05) },
         eyes: [eye(EYE_W * 1.1, EYE_H * 1.05), eye(EYE_W * 1.1, EYE_H * 1.05)],
+        glow: 0.75 + Math.sin(t * 6) * 0.22,
         glyphs: { spark: 1 }
       });
     }
@@ -474,6 +489,7 @@ const STATES = {
       wander: 0.2,
       // narrowed and mirrored: the tilt is what reads as effort rather than anger
       eyes: [eye(EYE_W * 0.9, EYE_H * 0.62, 1, 13), eye(EYE_W * 0.9, EYE_H * 0.62, 1, -13)],
+      glow: 0.55 + Math.sin(t * 4) * 0.1,
       glyphs: { speed: 1 }
     })
   },
@@ -495,6 +511,7 @@ const STATES = {
       ears: { l: ear(-0.38, 0.05), r: ear(-0.35, 0.05) },
       split: EYE_SPLIT * 1.05,
       eyes: [eye(EYE_W * 1.25, EYE_H * 0.72), eye(EYE_W * 1.25, EYE_H * 0.72)],
+      glow: 0.5 + 0.5 * Math.exp(-t * 2),
       glyphs: { spark: 1 }
     })
   },
@@ -507,6 +524,7 @@ const STATES = {
       ears: { l: ear(0.30), r: ear(0.30) },
       gaze: { yaw: 0, pitch: -8, roll: 0 },
       wander: 0,
+      glow: 0.18,
       eyes: [eye(EYE_W, EYE_H * 0.5, 0.04), eye(EYE_W, EYE_H * 0.5, 0.04)],
       glyphs: { zzz: 1 }
     })
@@ -540,6 +558,7 @@ const STATES = {
       sy: 0.965,
       gaze: { yaw: 0, pitch: -13, roll: 0 },
       wander: 0.4,
+      glow: 0.3,
       ears: { l: ear(0.5, -0.06), r: ear(0.5, -0.06) },
       eyes: [eye(EYE_W * 0.85, EYE_H * 0.52, 1, -9), eye(EYE_W * 0.85, EYE_H * 0.52, 1, 9)]
     })
@@ -552,6 +571,7 @@ const STATES = {
       cy: Math.sin(t * 2.4) * 0.012,
       ears: { l: ear(-0.18), r: ear(-0.18) },
       eyeAlpha: 0,
+      glow: 0.7 + Math.sin(t * 2.4) * 0.2,
       glyphs: { faceLove: 1, hearts: 1 }
     })
   },
@@ -565,6 +585,7 @@ const STATES = {
         sy: 1 + b,
         ears: { l: ear(-0.42, 0.05), r: ear(-0.38, 0.05) },
         eyeAlpha: 0,
+        glow: 0.8 + Math.sin(t * 7) * 0.2,
         glyphs: { faceX: 1, spark: 1 }
       });
     }
@@ -577,6 +598,7 @@ const STATES = {
       ears: { l: ear(-0.2), r: ear(-0.45 + Math.sin(t * 2.2) * 0.05, 0.05) },
       gaze: { yaw: 7, pitch: 2, roll: -2 },
       eyes: [eye(EYE_W, EYE_H * 1.02), eye(EYE_W, EYE_H * 1.02)],
+      glow: 0.6 + Math.sin(t * 2.2) * 0.15,
       glyphs: { waves: 1 }
     })
   }
@@ -704,6 +726,7 @@ export class PawEngine {
     }
 
     return {
+      glow: clamp(pose.glow + (alive ? Math.sin((now / 3.4) * TAU) * 0.08 : 0)),
       bodyPath,
       earLPath,
       earRPath,
@@ -816,6 +839,7 @@ export function mount(el, opts = {}) {
   el.innerHTML = template(++uid);
 
   const svg = el.querySelector(".fx-paw-svg");
+  const wrap = svg.parentElement;
   const parts = {
     body: svg.querySelectorAll('[data-part="body"]'),
     earL: svg.querySelectorAll('[data-part="earL"]'),
@@ -840,6 +864,7 @@ export function mount(el, opts = {}) {
 
   function draw(now) {
     const f = engine.sample(now, !still);
+    wrap.style.setProperty("--fx-paw-pulse", r2(f.glow));
     for (const p of parts.body) p.setAttribute("d", f.bodyPath);
     for (const p of parts.earL) p.setAttribute("d", f.earLPath);
     for (const p of parts.earR) p.setAttribute("d", f.earRPath);
