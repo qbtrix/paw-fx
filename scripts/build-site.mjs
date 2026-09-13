@@ -28,6 +28,25 @@ export function buildSite(registryDir = join(ROOT, "dist/registry"), out = join(
   mkdirSync(out, { recursive: true });
   cpSync(gallery, out, { recursive: true });
 
+  // Hand-authored pages, and the derivation module the avatar page runs on a
+  // dropped file. That module is deliberately not part of the effect: a site
+  // that only mounts an avatar should not carry an SVG reader it never calls.
+  const site = join(ROOT, "site");
+  if (existsSync(site)) cpSync(site, out, { recursive: true });
+  cpSync(join(ROOT, "scripts/art-from-svg.mjs"), join(out, "art-from-svg.mjs"));
+
+  // Two drawings someone can drop straight back in: the Paw itself, and a
+  // mascot that is deliberately nothing like it. A contract is easier to read
+  // from two examples than from a paragraph.
+  mkdirSync(join(out, "examples"), { recursive: true });
+  for (const [from, to] of [
+    ["effects/paw-avatar/art/paw-os-glass-puppy.svg", "paw-os-glass-puppy.svg"],
+    ["tests/fixtures/art/blip-bot.svg", "blip-bot.svg"]
+  ]) {
+    const src = join(ROOT, from);
+    if (existsSync(src)) cpSync(src, join(out, "examples", to));
+  }
+
   // Everything the registry build wrote, minus the gallery it already copied.
   for (const entry of ["registry.json", "llms.txt", "llms-full.txt", "_headers", "items", "e", "previews"]) {
     const src = join(registryDir, entry);

@@ -9,6 +9,8 @@ import { build } from "../scripts/build-registry.mjs";
 import { buildDocs, effectPage } from "../scripts/build-docs.mjs";
 import { buildGallery } from "../scripts/build-gallery.mjs";
 import { buildSite } from "../scripts/build-site.mjs";
+import { artFromSvg, artBlock } from "../scripts/art-from-svg.mjs";
+import { restingMarkup } from "../effects/paw-avatar/index.js";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 
@@ -97,4 +99,27 @@ test("the served site puts the gallery where its own links expect it", () => {
   for (const f of ["llms.txt", "registry.json", "_headers", "items", "e"]) {
     expect(existsSync(join(site, f))).toBe(true);
   }
+});
+
+test("the generator returns the shape it prints", () => {
+  // These were two shapes for a while: artFromSvg kept FILL and RIM inside
+  // defs while artBlock split them out, so a drawing the CLI handled fine
+  // could not be mounted by the page that ran the same derivation.
+  const svg = readFileSync(join(import.meta.dir, "fixtures/art/blip-bot.svg"), "utf8");
+  const { art } = artFromSvg(svg, "blip-bot");
+  expect(Object.keys(art.glass).sort()).toEqual(["defs", "fill", "ground", "rim", "sheen"]);
+  expect(art.glass.fill).toContain('id="FILL"');
+  expect(art.glass.rim).toContain('id="RIM"');
+  expect(art.glass.defs).not.toContain('id="FILL"');
+  // and what it prints parses back to the same thing
+  expect(artBlock(art, "X")).toContain(JSON.stringify(art.glass.fill));
+});
+
+test("a drawing the CLI reads is one the engine can mount", () => {
+  const svg = readFileSync(join(import.meta.dir, "fixtures/art/blip-bot.svg"), "utf8");
+  const { art } = artFromSvg(svg, "blip-bot");
+  const markup = restingMarkup("idle", "x", art);
+  expect(markup).toContain("fx-paw-fill-x");
+  expect(markup).not.toContain("%M%");
+  expect(markup).not.toMatch(/id="(FILL|RIM|D\d+)"/);
 });

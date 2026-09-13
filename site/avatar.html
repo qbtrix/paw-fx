@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>paw-avatar — a mascot with sixteen states, paw-fx</title>
+<meta name="description" content="Sixteen agent states, a gaze that follows the pointer, and a character you can swap for your own drawing.">
+<link rel="stylesheet" href="/_fx/effects/paw-avatar/style.css">
+<style>
+:root{
+  --g-bg:#08080d; --g-panel:#0c0c12; --g-raised:#101017; --g-line:#1f1f29;
+  --g-line-soft:#16161e; --g-ink:#f3f3f6; --g-muted:#9c9caa; --g-dim:#6d6d7b;
+  --g-accent:#8b4cff; --g-accent-2:#fe8bbb; --g-good:#86efac; --g-bad:#ff8a8a;
+  --g-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--g-bg);color:var(--g-ink);
+  font:15px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:78rem;margin:0 auto;padding:0 1.5rem 6rem}
+header.top{position:sticky;top:0;z-index:5;background:rgba(8,8,13,.86);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--g-line-soft)}
+header.top .wrap{display:flex;align-items:center;gap:1rem;height:3.5rem;padding-bottom:0}
+.brand{font-family:var(--g-mono);font-weight:600;letter-spacing:-.02em}
+.brand span{color:var(--g-dim);font-weight:400;margin-left:.5rem}
+.top a.back{margin-left:auto;font-family:var(--g-mono);font-size:.8rem;color:var(--g-muted);text-decoration:none}
+.top a.back:hover{color:var(--g-ink)}
+
+h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;letter-spacing:-.03em;margin:3rem 0 .75rem}
+h2{font-size:1.5rem;letter-spacing:-.02em;margin:0 0 .35rem}
+.lede{color:var(--g-muted);max-width:46rem;margin:0 0 2rem;font-size:1.05rem}
+section{margin:4.5rem 0 0;scroll-margin-top:5rem}
+.sub{color:var(--g-dim);max-width:46rem;margin:0 0 1.5rem}
+
+/* hero */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:1.5rem;align-items:stretch}
+@media (max-width:60rem){.stage{grid-template-columns:1fr}}
+.pane{background:radial-gradient(120% 90% at 50% 0%,#161d38 0%,#0b0e1c 55%,#06070e 100%);
+  border:1px solid var(--g-line);border-radius:1rem;display:grid;place-items:center;
+  min-height:26rem;position:relative;overflow:hidden}
+.pane .host{--fx-paw-size:min(22rem,52vw)}
+.now{position:absolute;left:1rem;bottom:1rem;font-family:var(--g-mono);font-size:.78rem;
+  color:var(--g-muted);background:rgba(8,8,13,.6);border:1px solid var(--g-line);
+  border-radius:999px;padding:.3rem .8rem}
+.side{background:var(--g-panel);border:1px solid var(--g-line);border-radius:1rem;padding:1rem}
+.states{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem}
+.state{display:flex;align-items:center;gap:.55rem;background:var(--g-raised);
+  border:1px solid var(--g-line);border-radius:.6rem;padding:.4rem .55rem;cursor:pointer;
+  font:inherit;color:var(--g-muted);text-align:left;font-size:.82rem;transition:border-color .15s,color .15s}
+.state:hover{border-color:var(--g-accent);color:var(--g-ink)}
+.state[aria-pressed="true"]{border-color:var(--g-accent);color:var(--g-ink);
+  box-shadow:inset 0 0 0 1px var(--g-accent)}
+.state .chip{--fx-paw-size:2rem;flex:0 0 auto;pointer-events:none}
+
+/* grid of every state */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.75rem}
+.card{background:var(--g-panel);border:1px solid var(--g-line);border-radius:.8rem;
+  padding:1rem .75rem .7rem;text-align:center;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--g-accent)}
+.card .host{--fx-paw-size:7.5rem;pointer-events:none}
+.card b{display:block;font:500 .85rem var(--g-mono);margin-top:.5rem;letter-spacing:-.01em}
+.card i{display:block;font-style:normal;color:var(--g-dim);font-size:.75rem}
+
+/* copy blocks */
+.copy{position:relative;margin:0 0 1rem}
+.copy pre{margin:0;background:var(--g-panel);border:1px solid var(--g-line);border-radius:.7rem;
+  padding:1rem 5.5rem 1rem 1rem;overflow:auto;font:13px/1.55 var(--g-mono);color:#d8d8e2}
+.copy button{position:absolute;top:.6rem;right:.6rem;font:500 .74rem var(--g-mono);
+  background:var(--g-raised);color:var(--g-muted);border:1px solid var(--g-line);
+  border-radius:.45rem;padding:.35rem .7rem;cursor:pointer}
+.copy button:hover{color:var(--g-ink);border-color:var(--g-accent)}
+.copy button.done{color:var(--g-good);border-color:var(--g-good)}
+.label{font:500 .78rem var(--g-mono);color:var(--g-dim);margin:0 0 .4rem}
+
+/* bring your own */
+.byo{display:grid;grid-template-columns:20rem minmax(0,1fr);gap:1.5rem;align-items:start}
+@media (max-width:60rem){.byo{grid-template-columns:1fr}}
+.drop{background:var(--g-panel);border:1.5px dashed var(--g-line);border-radius:1rem;
+  padding:2rem 1.25rem;text-align:center;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--g-accent);background:#12101c}
+.drop p{color:var(--g-muted);margin:.5rem 0 1rem;font-size:.9rem}
+.drop label{display:inline-block;background:var(--g-ink);color:#07070c;border-radius:.5rem;
+  padding:.5rem 1rem;font:600 .85rem/1 ui-sans-serif,system-ui;cursor:pointer}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.report{font:13px/1.7 var(--g-mono);margin:1rem 0 0;padding:0;list-style:none}
+.report li::before{content:"ok  ";color:var(--g-good)}
+.report li.warn::before{content:"warn  ";color:var(--g-accent-2)}
+.report li.bad::before{content:"LOST  ";color:var(--g-bad)}
+.report li.info::before{content:"info  ";color:var(--g-dim)}
+.report li{color:var(--g-muted)}
+.hidden{display:none}
+footer{margin-top:6rem;border-top:1px solid var(--g-line-soft);padding-top:1.5rem;
+  color:var(--g-dim);font-size:.85rem}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">paw&mdash;fx <span>paw-avatar</span></div>
+  <a class="back" href="/">&larr; all effects</a>
+</div></header>
+
+<div class="wrap">
+
+<h1>A mascot with sixteen states.</h1>
+<p class="lede">One drawing, sixteen poses that morph into each other, and a gaze that follows your
+pointer. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact &mdash;
+and the character is an input, so the whole thing works just as well on your drawing as on this one.</p>
+
+<div class="stage">
+  <div class="pane"><div class="host" id="hero"></div><div class="now" id="nowLabel">idle</div></div>
+  <div class="side">
+    <p class="label">States</p>
+    <div class="states" id="stateList"></div>
+  </div>
+</div>
+
+<section id="states">
+  <h2>Every state</h2>
+  <p class="sub">Each one is live, not a screenshot. Click any of them to drive the one above.</p>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="byo">
+  <h2>Bring your own mascot</h2>
+  <p class="sub">The engine does not know what a Paw is. It is handed three silhouettes, two pivots
+  and an eye box; everything after is the same whatever the character. Drop an SVG that follows the
+  contract and it runs the identical derivation the command line does, in this page, on your file.
+  Nothing is uploaded &mdash; the file never leaves your browser.</p>
+
+  <div class="byo">
+    <div>
+      <div class="drop" id="drop">
+        <strong>Drop an SVG here</strong>
+        <p>or pick one</p>
+        <label for="file">Choose a file<input id="file" type="file" accept=".svg,image/svg+xml"></label>
+        <p style="margin-top:1rem">or try one:
+          <a href="#byo" data-example="/examples/blip-bot.svg">blip-bot</a> &middot;
+          <a href="#byo" data-example="/examples/paw-os-glass-puppy.svg">the Paw</a>
+        </p>
+      </div>
+      <ul class="report" id="report"></ul>
+    </div>
+    <div>
+      <div class="pane" style="min-height:18rem"><div class="host" id="byoHero" style="--fx-paw-size:min(14rem,40vw)"></div></div>
+      <div class="grid hidden" id="byoGrid" style="margin-top:.75rem"></div>
+    </div>
+  </div>
+
+  <div class="copy hidden" id="artCopy" style="margin-top:1.5rem">
+    <p class="label">Your art block &mdash; paste it beside the effect and pass it to mount()</p>
+    <pre id="artOut"></pre><button data-copy="artOut">Copy</button>
+  </div>
+
+  <p class="label" style="margin-top:2rem">The contract</p>
+  <div class="copy">
+<pre>&lt;path   id="paw-head"   d="…"/&gt;   the skull, one closed M/C path
+&lt;path   id="paw-ear-l"  d="…"/&gt;   left ear, <b>starting at the point it hangs from</b>
+&lt;path   id="paw-ear-r"  d="…"/&gt;   right ear, same
+&lt;rect   id="paw-eye-l" …/&gt;        the resting eye (or an &lt;ellipse&gt;)
+&lt;circle id="paw-catch" …/&gt;        optional, a glass catch inside that eye
+&lt;g      id="paw-ground"&gt;…&lt;/g&gt;     optional, behind everything, never clipped
+&lt;g      id="paw-sheen"&gt;…&lt;/g&gt;      optional, clipped to the head
+&lt;defs&gt;…&lt;/defs&gt;                    the head's own fill and stroke become the
+                                  material, so name your gradients freely</pre>
+  </div>
+  <p class="sub">Where an ear hangs from is the one thing that cannot be derived &mdash; it is a
+  fact about the character, not about the outline &mdash; so its path has to start there. Everything
+  else comes off the drawing: scale and centre from the head's box, eye size and separation from the
+  eye, the material from the defs.</p>
+  <p class="sub"><strong>One limit, and it is reported rather than hidden.</strong> Each part becomes
+  <code>r(&theta;)</code> about a single origin, which is what buys the morphing. Every ray has to leave
+  the outline exactly once. Domes, blobs and lobe ears are fine; a tail, an antenna or a notch deep
+  enough for a ray to cross twice gets flattened, and the check above says so.</p>
+</section>
+
+<section id="use">
+  <h2>Use it</h2>
+  <p class="sub">Two files and a line of markup. No build step, no bundler, nothing fetched off-site.</p>
+  <p class="label">Install</p>
+  <div class="copy"><pre id="cmd"></pre><button data-copy="cmd">Copy</button></div>
+  <p class="label">Or copy the files and drop this in</p>
+  <div class="copy"><pre id="usage"></pre><button data-copy="usage">Copy</button></div>
+  <p class="label">Hold one state, or let it walk them</p>
+  <div class="copy"><pre id="opts"></pre><button data-copy="opts">Copy</button></div>
+</section>
+
+<footer>
+  paw-avatar is MIT. Its engine is ported from
+  <a href="https://github.com/jeremy-prt/bloub">jeremy-prt/bloub</a>; the character is ours, and yours.
+</footer>
+</div>
+
+<script type="module">
+import { mount, PAW_ART, STATE_IDS } from "/_fx/effects/paw-avatar/index.js";
+import { artFromSvg, artBlock, SAMPLES } from "/art-from-svg.mjs";
+
+const $ = (id) => document.getElementById(id);
+const MOOD = {
+  idle: "calm and ready", happy: "friendly and warm", excited: "let's go",
+  curious: "exploring", thinking: "ideas in progress", working: "on it",
+  focused: "deep work", surprised: "oh", sleeping: "rest mode",
+  wink: "task complete", confused: "hmm", sad: "it's okay",
+  love: "you got this", celebrating: "amazing", creative: "making something new",
+  listening: "I'm all ears"
+};
+
+/* ---- hero and the state list ---- */
+const hero = mount($("hero"), { state: "idle" });
+let current = "idle";
+const buttons = new Map();
+
+function show(state) {
+  current = state;
+  hero.update({ state });
+  $("nowLabel").textContent = `${state} — ${MOOD[state] ?? ""}`;
+  for (const [id, b] of buttons) b.setAttribute("aria-pressed", String(id === state));
+  writeOpts();
+}
+
+for (const id of STATE_IDS) {
+  const b = document.createElement("button");
+  b.className = "state";
+  b.type = "button";
+  b.setAttribute("aria-pressed", String(id === "idle"));
+  const chip = document.createElement("span");
+  chip.className = "chip";
+  b.append(chip, document.createTextNode(id));
+  b.onclick = () => show(id);
+  $("stateList").append(b);
+  buttons.set(id, b);
+  // a live avatar, not an icon: the chip is the state it names
+  mount(chip, { state: id, track: false });
+}
+
+/* ---- every state, large ---- */
+function cards(into, art) {
+  into.replaceChildren();
+  for (const id of STATE_IDS) {
+    const card = document.createElement("div");
+    card.className = "card";
+    const host = document.createElement("div");
+    host.className = "host";
+    const name = document.createElement("b");
+    name.textContent = id;
+    const mood = document.createElement("i");
+    mood.textContent = MOOD[id] ?? "";
+    card.append(host, name, mood);
+    card.onclick = () => show(id);
+    into.append(card);
+    mount(host, { state: id, art, track: false });
+  }
+}
+cards($("grid"), PAW_ART);
+show("idle");
+
+/* ---- copy ---- */
+for (const b of document.querySelectorAll("[data-copy]")) {
+  b.onclick = async () => {
+    await navigator.clipboard.writeText($(b.dataset.copy).textContent);
+    b.textContent = "Copied";
+    b.classList.add("done");
+    setTimeout(() => { b.textContent = "Copy"; b.classList.remove("done"); }, 1400);
+  };
+}
+$("cmd").textContent = `npx shadcn@latest add ${location.origin}/items/paw-avatar.json`;
+$("usage").textContent =
+  `<link rel="stylesheet" href="/_fx/effects/paw-avatar/style.css">\n` +
+  `<section class="fx-paw-stage" data-fx="paw-avatar"></section>\n` +
+  `<script type="module">\n` +
+  `  import { mount } from "/_fx/effects/paw-avatar/index.js";\n` +
+  `  document.querySelectorAll('[data-fx="paw-avatar"]').forEach((el) => mount(el));\n` +
+  `<\/script>`;
+function writeOpts() {
+  $("opts").textContent =
+    `mount(el, { state: ${JSON.stringify(current)} });      // hold one state\n` +
+    `mount(el, { cycle: 2.6 });               // walk every state\n` +
+    `mount(el, { track: false });             // stop following the pointer\n` +
+    `mount(el, { art: MY_ART });              // your mascot, same states`;
+}
+writeOpts();
+
+/* ---- bring your own ---- */
+let byo = null;
+const drop = $("drop");
+const report = $("report");
+
+function say(kind, text) {
+  const li = document.createElement("li");
+  li.className = kind;
+  li.textContent = text;
+  report.append(li);
+}
+
+function load(text, label) {
+  report.replaceChildren();
+  let result;
+  try {
+    result = artFromSvg(text, label);
+  } catch (e) {
+    say("bad", e.message);
+    return;
+  }
+  const { art, reports, warn, reach } = result;
+  for (const r of reports) {
+    if (r.rays === 0) say("", `${r.name}: star-shaped, every ray leaves once`);
+    else say("bad", `${r.name}: ${r.rays}/${SAMPLES} rays cross twice, up to ${r.pct.toFixed(1)}% flattened`);
+  }
+  for (const w of warn) say("warn", w);
+  say("info", `widest point is ${reach.toFixed(2)} head half-widths`);
+
+  // A fresh object every load: compileArt memoises on identity, so reusing
+  // one would serve the previous drawing's profiles for the new file.
+  byo = JSON.parse(JSON.stringify(art));
+  if (byoHandle) byoHandle.destroy();
+  byoHandle = mount($("byoHero"), { art: byo, cycle: 2.2 });
+  $("byoGrid").classList.remove("hidden");
+  cards($("byoGrid"), byo);
+  $("artCopy").classList.remove("hidden");
+  $("artOut").textContent = artBlock(art, "MY_ART");
+}
+let byoHandle = null;
+
+const read = (file) => file.text().then((t) => load(t, file.name));
+for (const a of document.querySelectorAll("[data-example]")) {
+  a.onclick = async (e) => {
+    e.preventDefault();
+    const url = a.dataset.example;
+    load(await (await fetch(url)).text(), url.split("/").pop());
+  };
+}
+$("file").onchange = (e) => e.target.files[0] && read(e.target.files[0]);
+for (const type of ["dragenter", "dragover"]) {
+  drop.addEventListener(type, (e) => { e.preventDefault(); drop.classList.add("over"); });
+}
+for (const type of ["dragleave", "drop"]) {
+  drop.addEventListener(type, () => drop.classList.remove("over"));
+}
+drop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f) read(f);
+});
+</script>
+</body>
+</html>
