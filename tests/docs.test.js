@@ -7,6 +7,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { build } from "../scripts/build-registry.mjs";
 import { buildDocs, effectPage } from "../scripts/build-docs.mjs";
+import { buildGallery } from "../scripts/build-gallery.mjs";
+import { buildSite } from "../scripts/build-site.mjs";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 
@@ -80,4 +82,19 @@ test("every generated link is absolute", () => {
 test("llms-full carries every page, for one fetch instead of ninety-nine", () => {
   const full = readFileSync(join(out, "llms-full.txt"), "utf8");
   for (const it of registry.items) expect(full).toContain(`# ${it.name}\n`);
+});
+
+test("the served site puts the gallery where its own links expect it", () => {
+  // The gallery links /_fx/... root-absolute, as a real site does. Served
+  // under a prefix every one of those misses, which is why the site is
+  // assembled rather than the gallery being rewritten.
+  const site = mkdtempSync(join(tmpdir(), "paw-fx-site-"));
+  buildGallery(out);
+  buildSite(out, site);
+  expect(existsSync(join(site, "index.html"))).toBe(true);
+  expect(existsSync(join(site, "_fx"))).toBe(true);
+  // and the machine surface is beside it, not under it
+  for (const f of ["llms.txt", "registry.json", "_headers", "items", "e"]) {
+    expect(existsSync(join(site, f))).toBe(true);
+  }
 });
