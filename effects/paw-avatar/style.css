@@ -1,0 +1,132 @@
+/* paw-avatar — the Paw's glass, as custom properties.
+ *
+ * The material comes from the drawing (art/paw-os-glass-puppy.svg): its
+ * gradients, sheen, glints and ground pool live in the SVG the engine emits,
+ * and every colour in them is a --fx-paw-* property with the art's own value
+ * as the fallback. Swapping those re-skins the character without touching
+ * index.js, which is bloub's skins idea done in CSS instead of the sampler. */
+
+/* --fx-paw-size is read with a fallback rather than declared here, so an
+ * ancestor can set it and the wrapper inherits it. */
+.fx-paw {
+  /* Colours are the art file's, and every one of them is overridable. The
+   * engine emits geometry and never names a colour. */
+  --fx-paw-glass-0: #152033;
+  --fx-paw-glass-1: #0a0e17;
+  --fx-paw-glass-2: #02040a;
+  --fx-paw-rim-a: #f8fcff;
+  --fx-paw-rim-b: #d6e7ff;
+  --fx-paw-rim-c: #8cafff;
+  --fx-paw-rim-d: #a98cff;
+  --fx-paw-rim-e: #83a2ff;
+  --fx-paw-rim-width: 2.6;
+  --fx-paw-ear-rim-width: 2.4;
+  --fx-paw-glint: #ffffff;
+  --fx-paw-floor-a: #afc4ff;
+  --fx-paw-floor-b: #7e9fff;
+  --fx-paw-floor-c: #7d62ff;
+  --fx-paw-halo: #6d8dff;
+  --fx-paw-rainbow: 0;
+  --fx-paw-eye: #f7fbff;
+  --fx-paw-warm: #ff8cc4;
+  --fx-paw-glow: rgba(140, 170, 255, 0.5);
+
+  display: inline-flex;
+  width: var(--fx-paw-size, 240px);
+  height: var(--fx-paw-size, 240px);
+  line-height: 0;
+}
+
+.fx-paw-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* --fx-paw-pulse (0..1) is written per frame by the engine: states pulse
+   * it (excited, love) or dim it (sleeping), and every state breathes. */
+  filter: drop-shadow(0 0 calc(8px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow));
+}
+
+.fx-paw-rim {
+  stroke-width: var(--fx-paw-rim-width);
+  stroke-linejoin: round;
+  /* The art's rim fades out as the spectrum one comes up, so the two never
+   * stack into a thicker edge. */
+  opacity: calc(1 - var(--fx-paw-rainbow, 0));
+}
+
+.fx-paw-rim-spectrum {
+  opacity: var(--fx-paw-rainbow, 0);
+}
+
+.fx-paw-catch {
+  fill: #ffffff;
+  opacity: 0.38;
+}
+
+.fx-paw-part + .fx-paw-part .fx-paw-rim,
+.fx-paw-part:first-of-type .fx-paw-rim {
+  stroke-width: var(--fx-paw-ear-rim-width);
+}
+
+.fx-paw-part:last-of-type .fx-paw-rim {
+  stroke-width: var(--fx-paw-rim-width);
+}
+
+.fx-paw-sheen {
+  opacity: 0.8;
+}
+
+.fx-paw-glint {
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* The floor glow reads as light spilling off the glass, so it breathes with
+ * the same pulse the bloom does. */
+.fx-paw-ground {
+  opacity: calc(0.55 + 0.45 * var(--fx-paw-pulse, 0.5));
+}
+
+.fx-paw-eye {
+  fill: var(--fx-paw-eye);
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75));
+}
+
+.fx-paw-glyph {
+  fill: var(--fx-paw-eye);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
+}
+
+/* Marks that read as handwriting rather than as solid shapes. */
+.fx-paw-stroke {
+  fill: none;
+  stroke: var(--fx-paw-eye);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fx-paw-warm {
+  fill: var(--fx-paw-warm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-paw-svg {
+    filter: drop-shadow(0 0 14px var(--fx-paw-glow));
+  }
+}
+
+/* The section the snippet ships as: a dark stage the glass reads against.
+ * Drop .fx-paw on its own into any layout if you only want the avatar. */
+.fx-paw-stage {
+  display: grid;
+  place-items: center;
+  min-height: 68vh;
+  padding: 8vh 6vw;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #17203f 0%, #0b0f1e 55%, #05070f 100%);
+}
+
+.fx-paw-stage .fx-paw {
+  --fx-paw-size: min(46vh, 380px);
+}
