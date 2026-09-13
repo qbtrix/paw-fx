@@ -53,7 +53,7 @@ function createRng(seed) {
  * either at runtime -- it is the hand-set ear swings in STATES that keep the
  * geometry inside, and tests/paw-avatar.test.js locks that down. */
 const RADIUS = 100;
-const HALF_BOX = 197;
+const HALF_BOX = 166;
 
 /** Angular samples of the silhouette. A thin ear tip needs more than 64. */
 const SAMPLES = 96;
@@ -87,40 +87,65 @@ function unionOfCirclesProfile(circles, out = new Array(SAMPLES)) {
 }
 
 /**
- * Superellipse |x/sx|^n + |y/sy|^n = 1 as a profile. n = 2 is an ellipse,
- * n ~ 3 the squircle that gives the Paw its rounded base corners.
- * Ported from bloub src/bot/shape.ts.
+ * Polygon -> radial profile, by casting a ray from `center` at every sample
+ * angle and keeping the farthest edge hit. Ported from bloub
+ * src/bot/shape.ts, where it exists for the shapes that do not fall out of
+ * r(theta) naturally. Here it is how the authored art becomes morphable:
+ * once a drawn silhouette is a profile, it squashes, tilts and interpolates
+ * exactly like a generated one. Computed once at load, never per frame.
  */
-function superellipseProfile(n, sx = 1, sy = 1) {
-  return ANGLES.map((_, i) => {
-    const c = Math.abs(COS[i] / sx) ** n;
-    const s = Math.abs(SIN[i] / sy) ** n;
-    return (c + s) ** (-1 / n);
-  });
+function profileFromPolygon(poly, cx, cy) {
+  const radii = new Array(SAMPLES).fill(0);
+  const n = poly.length;
+  for (let k = 0; k < SAMPLES; k++) {
+    const dx = COS[k];
+    const dy = SIN[k];
+    let best = 0;
+    for (let i = 0; i < n; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % n];
+      const ex = b.x - a.x;
+      const ey = b.y - a.y;
+      const den = dx * ey - dy * ex;
+      if (Math.abs(den) < 1e-9) continue;
+      const px = a.x - cx;
+      const py = a.y - cy;
+      const t = (px * ey - py * ex) / den; // distance along the ray
+      const u = (px * dy - py * dx) / den; // position along the edge
+      if (t > best && u >= 0 && u <= 1) best = t;
+    }
+    radii[k] = best;
+  }
+  return radii;
 }
 
 /**
- * Radial profile of one offset ellipse: the far ray/ellipse intersection.
- * Same shape of maths as the union of disks above, and exact while the
- * origin is inside. The disks version cannot do this: an ellipse is the one
- * crown that is round on top without also being round at the sides.
+ * An `M x y C ... Z` path to a polygon. Ours: upstream traced video frames
+ * and had no path to read. Only absolute M/C/Z, which is what the art file
+ * uses; anything else would need more parser than this effect can justify.
  */
-function ellipseProfile({ cx, cy, rx, ry }) {
-  const out = new Array(SAMPLES);
-  for (let i = 0; i < SAMPLES; i++) {
-    const dx = COS[i];
-    const dy = SIN[i];
-    const a = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
-    const b = (cx * dx) / (rx * rx) + (cy * dy) / (ry * ry);
-    const c = (cx * cx) / (rx * rx) + (cy * cy) / (ry * ry) - 1;
-    const disc = b * b - a * c;
-    out[i] = disc < 0 ? 0 : Math.max(0, (b + Math.sqrt(disc)) / a);
+function flattenPath(d, steps = 24) {
+  const n = d.match(/-?\d+(?:\.\d+)?/g).map(Number);
+  const pts = [];
+  let i = 0;
+  let x = n[i++];
+  let y = n[i++];
+  pts.push({ x, y });
+  while (i + 6 <= n.length) {
+    const x1 = n[i++], y1 = n[i++], x2 = n[i++], y2 = n[i++], x3 = n[i++], y3 = n[i++];
+    for (let k = 1; k <= steps; k++) {
+      const t = k / steps;
+      const v = 1 - t;
+      pts.push({
+        x: v * v * v * x + 3 * v * v * t * x1 + 3 * v * t * t * x2 + t * t * t * x3,
+        y: v * v * v * y + 3 * v * v * t * y1 + 3 * v * t * t * y2 + t * t * t * y3
+      });
+    }
+    x = x3;
+    y = y3;
   }
-  return out;
+  return pts;
 }
-
-/** Union of two star-shaped profiles about the same origin: the farther edge wins. */
-const maxProfile = (a, b) => a.map((r, i) => Math.max(r, b[i]));
 
 /** Profile -> screen points. `scale` = head radius in viewBox units. */
 function toPoints(radii, pose, scale, out = []) {
@@ -180,66 +205,69 @@ function capsulePath(w, h) {
 }
 
 /* ------------------------------------------------------------- the Paw rig
- * Ours. A head of three overlapping disks with a flat bottom, and one ear
- * per side built as a three-disk lobe that swings about a root on the skull.
- * Every state is a handful of numbers on this rig, so poses interpolate as
- * a real ear rotation instead of a crossfade between two traced outlines. */
-
-/**
- * The head is a mound: a squircle base (flat-ish bottom, rounded corners,
- * wider than tall) with an oval crown sitting on top of it. Only the crown
- * is an ellipse, and it is narrower than the base, so it rounds the top
- * without touching the sides or the bottom. Two star-shaped profiles about
- * the same origin union as a per-sample max.
- */
-const HEAD_BASE = { n: 3.0, sx: 1.02, sy: 0.76 };
-const HEAD_CROWN = { cx: 0, cy: -0.10, rx: 0.86, ry: 0.92 };
-
-/**
- * One ear, in its OWN space, with the origin at the root it swings about.
- * Three disks tapering downward; the origin sits inside the first, which is
- * what keeps the lobe star-shaped and so expressible as r(theta) at all.
  *
- * The Paw is three silhouettes, not one. Upstream's bot is a single blob and
- * needs only one profile; giving the ears their own means they can pass
- * BEHIND the head, which is what reads as a separate part rather than as a
- * bump on a cloud. Each one is still the same radial machinery.
+ * The character is drawn, not generated: art/paw-os-glass-puppy.svg holds
+ * the three silhouettes and the glass that goes on them, and the `d`
+ * strings below are that file verbatim. They are cast to radial profiles at
+ * load, which is the whole point of the engine -- a drawn outline and a
+ * generated one behave identically once both are r(theta), so the art
+ * squashes, tilts, interpolates and tracks with no extra machinery.
+ *
+ * ART_* are in the art file's own 256 viewBox. Everything after is in head
+ * half-widths, the unit the rest of this file speaks.
  */
-const EAR_SWEEP = { n: 9, top: 0.10, len: 0.88, bow: 0.26, r0: 0.24, r1: 0.38 };
+const ART = {
+  head:
+    "M128 29 C91 28 62 49 53 81 C47 102 48 137 57 163 " +
+    "C65 187 89 204 128 207 C167 204 191 187 199 163 " +
+    "C208 137 209 102 203 81 C194 49 165 28 128 29Z",
+  earL:
+    "M70 73 C49 75 31 90 28 112 C25 135 37 157 52 159 " +
+    "C67 161 79 143 82 122 C85 101 84 80 70 73Z",
+  earR:
+    "M186 73 C207 76 225 91 228 113 C231 136 219 157 204 159 " +
+    "C189 161 177 143 174 122 C171 101 172 80 186 73Z",
+  /** Head bbox centre and half-width, measured off the flattened head path. */
+  cx: 128,
+  cy: 117.98,
+  unit: 78.782,
+  /** Where each ear meets the skull in the drawing: the point it swings about. */
+  pivotL: { x: 70, y: 73 },
+  pivotR: { x: 186, y: 73 },
+  /** Eye ellipse from the drawing. */
+  eye: { cx: 101, cy: 112, rx: 12.5, ry: 25.5 }
+};
+
+/** Art coordinates -> head half-widths, origin at the head's centre. */
+const toUnits = (px, py) => ({ x: (px - ART.cx) / ART.unit, y: (py - ART.cy) / ART.unit });
+const pathInUnits = (d) => flattenPath(d).map((p) => toUnits(p.x, p.y));
+const centreOf = (pts) => ({
+  x: (Math.min(...pts.map((p) => p.x)) + Math.max(...pts.map((p) => p.x))) / 2,
+  y: (Math.min(...pts.map((p) => p.y)) + Math.max(...pts.map((p) => p.y))) / 2
+});
+
+const HEAD_PROFILE = profileFromPolygon(pathInUnits(ART.head), 0, 0);
 
 /**
- * The lobe as a swept disk: centres walk a slightly bowed line while the
- * radius tapers. Closely spaced disks make the union smooth, where three
- * far-apart ones scallop the outline.
+ * An ear is sampled about its own bbox centre, not its pivot: the pivot sits
+ * ON the drawn outline, where half the rays would leave at radius zero. The
+ * offset between the two is carried in `earPose` instead.
  */
-const earDisks = () =>
-  Array.from({ length: EAR_SWEEP.n }, (_, i) => {
-    const u = i / (EAR_SWEEP.n - 1);
-    return {
-      x: EAR_SWEEP.bow * u * u,
-      y: EAR_SWEEP.top + EAR_SWEEP.len * u,
-      // narrow where it roots on the crown, a round bulb at the hanging end
-      r: lerp(EAR_SWEEP.r0, EAR_SWEEP.r1, Math.sqrt(u))
-    };
-  });
-
-const EAR_LOBE = earDisks();
-/** Where each ear roots on the skull, before any head tilt. */
-const EAR_ROOT = { x: 0.60, y: -0.72 };
-/** Outward tilt of a resting ear, radians (negative swings out). A state's `angle` is relative to this. */
-const EAR_TILT = -0.36;
-
-const mirrored = (circles) => circles.map((c) => ({ ...c, x: -c.x }));
-
-/** Constant: the ear never changes shape, only where it hangs and how far out. */
-const EAR_PROFILE = {
-  l: unionOfCirclesProfile(mirrored(EAR_LOBE)),
-  r: unionOfCirclesProfile(EAR_LOBE)
-};
-const HEAD_PROFILE = maxProfile(
-  superellipseProfile(HEAD_BASE.n, HEAD_BASE.sx, HEAD_BASE.sy),
-  ellipseProfile(HEAD_CROWN)
-);
+const EAR = ["l", "r"].reduce((acc, side) => {
+  const pts = pathInUnits(side === "l" ? ART.earL : ART.earR);
+  const pivot = toUnits(
+    side === "l" ? ART.pivotL.x : ART.pivotR.x,
+    side === "l" ? ART.pivotL.y : ART.pivotR.y
+  );
+  const origin = centreOf(pts);
+  acc[side] = {
+    profile: profileFromPolygon(pts, origin.x, origin.y),
+    pivot,
+    /** profile origin measured from the pivot, so a swing rotates about the pivot */
+    arm: { x: origin.x - pivot.x, y: origin.y - pivot.y }
+  };
+  return acc;
+}, {});
 
 /** Scratch buffers: nothing is reallocated per frame. */
 function makeBody() {
@@ -247,21 +275,29 @@ function makeBody() {
 }
 
 /**
- * Screen placement of one ear. `side` is -1 left, +1 right; a positive
+ * Screen placement of one ear. `side` is -1 left, +1 right; a negative
  * `angle` swings the lobe outward on both sides, `lift` raises the root, and
- * the head's own tilt carries the root around with it.
+ * the head's own tilt carries the whole ear around with it.
+ *
+ * Two rotations compose: the ear swings about its pivot, then the head tilt
+ * turns that result about the head's centre.
  */
 function earPose(side, ear, headRot) {
-  const rx = EAR_ROOT.x * side;
-  const ry = EAR_ROOT.y - ear.lift;
-  const c = Math.cos(headRot);
-  const s = Math.sin(headRot);
+  const e = side < 0 ? EAR.l : EAR.r;
+  const a = ear.angle * side;
+  const ca = Math.cos(a);
+  const sa = Math.sin(a);
+  // profile origin after the swing, still in head space
+  const ox = e.pivot.x + (e.arm.x * ca - e.arm.y * sa);
+  const oy = e.pivot.y - ear.lift + (e.arm.x * sa + e.arm.y * ca);
+  const ch = Math.cos(headRot);
+  const sh = Math.sin(headRot);
   return {
-    rot: headRot + (EAR_TILT + ear.angle) * side,
+    rot: headRot + a,
     sx: 1,
     sy: 1,
-    cx: rx * c - ry * s,
-    cy: rx * s + ry * c
+    cx: ox * ch - oy * sh,
+    cy: ox * sh + oy * ch
   };
 }
 
@@ -274,14 +310,14 @@ function earPose(side, ear, headRot) {
 const deg = (d) => (d * Math.PI) / 180;
 
 /** Half-separation of the eyes on the sphere, degrees. */
-const EYE_SPLIT = 19;
-/** Eye size at rest, in head radii. */
-const EYE_W = 0.30;
-const EYE_H = 0.54;
+const EYE_SPLIT = 20.04;
+/** Eye size at rest, in head half-widths. Measured off the art ellipse. */
+const EYE_W = 0.3173;
+const EYE_H = 0.6474;
 /** The Paw looks at you: unlike bloub's 3/4 bot, rest gaze is square on. */
 const REST_GAZE = { yaw: 0, pitch: -2, roll: 0 };
 /** The face sits high on the head. */
-const FACE_Y = -0.08;
+const FACE_Y = -0.0759;
 
 /** Rotate two vectors of an orthonormal frame within their common plane. */
 function spin(u, v, angle) {
@@ -786,10 +822,10 @@ export class PawEngine {
     const bodyPath = closedPath(toPoints(HEAD_PROFILE, head, RADIUS, this.body.head));
     const shift = (p) => ({ ...p, cx: p.cx + cx, cy: p.cy + cy });
     const earLPath = closedPath(
-      toPoints(EAR_PROFILE.l, shift(earPose(-1, pose.ears.l, pose.rot)), RADIUS, this.body.earL)
+      toPoints(EAR.l.profile, shift(earPose(-1, pose.ears.l, pose.rot)), RADIUS, this.body.earL)
     );
     const earRPath = closedPath(
-      toPoints(EAR_PROFILE.r, shift(earPose(1, pose.ears.r, pose.rot)), RADIUS, this.body.earR)
+      toPoints(EAR.r.profile, shift(earPose(1, pose.ears.r, pose.rot)), RADIUS, this.body.earR)
     );
 
     const eyes = [];
@@ -844,7 +880,15 @@ let uid = 0;
  * The SVG skeleton. With a `frame` it bakes that frame's geometry into the
  * markup, which is how snippet.html looks finished before any JS runs --
  * possible only because sample() is deterministic.
+ *
+ * The defs, the sheen, the glints and the ground glow are the art file's,
+ * kept in its own 256-viewBox coordinates and mapped into this one by ART_M
+ * on a gradientTransform or a wrapping <g>. Keeping the authored numbers
+ * rather than converting them means the drawing stays the reference: edit
+ * the SVG, paste the new numbers back, done.
  */
+const ART_M = `scale(${r2(RADIUS / ART.unit)}) translate(${-ART.cx} ${-ART.cy})`;
+
 function template(id, frame) {
   const at = (i, k, dflt) => (frame ? (frame.eyes[i] ? frame.eyes[i][k] : dflt) : dflt);
   const marks = Object.keys(GLYPHS)
@@ -861,39 +905,63 @@ function template(id, frame) {
   const shift = frame ? frame.faceShift : "";
   const eye = (i) =>
     `<path class="fx-paw-eye" d="${at(i, "d", "")}" transform="${at(i, "matrix", "")}" opacity="${at(i, "alpha", 0)}"/>`;
-  // One glass part = fill, a wide blurred stroke clipped INSIDE it (the
-  // fresnel edge glow that reads as thick glass), then a crisp rim on top.
-  const part = (key, d, extra = "") => `
+
+  // One glass part = the drawn fill, then the drawn rim on top. The body
+  // additionally clips the art's own sheen and glints to its outline, so
+  // they never spill when a state squashes or tilts it.
+  const part = (key, dd, extra = "") => `
   <g class="fx-paw-part">
-    <clipPath id="fx-paw-clip-${key}-${id}"><path data-part="${key}" d="${d}"/></clipPath>
-    <path class="fx-paw-fill" data-part="${key}" d="${d}" fill="url(#fx-paw-skin-${id})"/>
-    <g clip-path="url(#fx-paw-clip-${key}-${id})">
-      <path class="fx-paw-inner" data-part="${key}" d="${d}" fill="none" stroke="url(#fx-paw-rim-${id})" filter="url(#fx-paw-soft-${id})"/>${extra}
-    </g>
-    <path class="fx-paw-rim" data-part="${key}" d="${d}" fill="none" stroke="url(#fx-paw-rim-${id})"/>
+    <clipPath id="fx-paw-clip-${key}-${id}"><path data-part="${key}" d="${dd}"/></clipPath>
+    <path class="fx-paw-fill" data-part="${key}" d="${dd}" fill="url(#fx-paw-glass-${id})"/>${extra ? `
+    <g clip-path="url(#fx-paw-clip-${key}-${id})">${extra}</g>` : ""}
+    <path class="fx-paw-rim" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-rim-${id})"/>
   </g>`;
-  const shine = `
-      <ellipse class="fx-paw-shine" cx="-30" cy="-74" rx="52" ry="22" transform="rotate(-18 -30 -74)" filter="url(#fx-paw-soft-${id})"/>
-      <ellipse class="fx-paw-shine fx-paw-shine-b" cx="46" cy="-40" rx="14" ry="36" transform="rotate(18 46 -40)" filter="url(#fx-paw-soft-${id})"/>`;
+
+  const sheen = `
+      <g transform="${ART_M}">
+        <path class="fx-paw-sheen" d="M83 56 C99 39 126 34 150 39 C162 42 173 48 182 58 C165 53 150 52 131 55 C112 58 96 66 79 77 C80 69 81 62 83 56Z" fill="url(#fx-paw-sheen-${id})"/>
+        <path class="fx-paw-glint" d="M67 79 C73 61 90 46 106 40" stroke="var(--fx-paw-glint, #FFFFFF)" opacity="0.32"/>
+        <path class="fx-paw-glint" d="M190 83 C185 64 172 51 159 45" stroke="var(--fx-paw-glint, #FFFFFF)" opacity="0.20"/>
+      </g>`;
+
   return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-HALF_BOX} ${-HALF_BOX} ${HALF_BOX * 2} ${HALF_BOX * 2}" aria-hidden="true" focusable="false">
   <defs>
-    <linearGradient id="fx-paw-skin-${id}" x1="0" y1="0" x2="0.3" y2="1">
-      <stop offset="0" stop-color="var(--fx-paw-top)"/>
-      <stop offset="0.5" stop-color="var(--fx-paw-mid)"/>
-      <stop offset="1" stop-color="var(--fx-paw-bottom)"/>
+    <linearGradient id="fx-paw-glass-${id}" x1="54" y1="34" x2="198" y2="226" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
+      <stop offset="0" stop-color="var(--fx-paw-glass-0, #182033)" stop-opacity="0.78"/>
+      <stop offset="0.45" stop-color="var(--fx-paw-glass-1, #0B0E17)" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="var(--fx-paw-glass-2, #020308)" stop-opacity="0.98"/>
     </linearGradient>
-    <linearGradient id="fx-paw-rim-${id}" x1="0.2" y1="0" x2="0.8" y2="1">
-      <stop offset="0" stop-color="var(--fx-paw-rim-a)"/>
-      <stop offset="0.55" stop-color="var(--fx-paw-rim-b)"/>
-      <stop offset="1" stop-color="var(--fx-paw-rim-c)"/>
+    <linearGradient id="fx-paw-rim-${id}" x1="42" y1="28" x2="214" y2="226" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M}">
+      <stop offset="0" stop-color="var(--fx-paw-rim-a, #F7FBFF)"/>
+      <stop offset="0.34" stop-color="var(--fx-paw-rim-b, #BBD5FF)"/>
+      <stop offset="0.68" stop-color="var(--fx-paw-rim-c, #8AA6FF)"/>
+      <stop offset="1" stop-color="var(--fx-paw-rim-d, #A88CFF)"/>
     </linearGradient>
-    <filter id="fx-paw-soft-${id}" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="9"/>
+    <linearGradient id="fx-paw-sheen-${id}" x1="75" y1="54" x2="145" y2="126" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
+      <stop offset="0.38" stop-color="#DCEBFF" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="fx-paw-pool-${id}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="${ART_M} translate(128 214) rotate(90) scale(70 105)">
+      <stop offset="0" stop-color="var(--fx-paw-pool-a, #7FA6FF)" stop-opacity="0.35"/>
+      <stop offset="0.6" stop-color="var(--fx-paw-pool-b, #7A5CFF)" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="var(--fx-paw-pool-b, #7A5CFF)" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="fx-paw-blur-${id}" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <filter id="fx-paw-soft-${id}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8"/>
     </filter>
   </defs>
+  <g class="fx-paw-ground" transform="${ART_M}">
+    <ellipse cx="128" cy="205" rx="92" ry="34" fill="var(--fx-paw-pool-a, #667BFF)" opacity="0.22" filter="url(#fx-paw-blur-${id})"/>
+    <ellipse cx="128" cy="213" rx="74" ry="19" fill="url(#fx-paw-pool-${id})"/>
+    <ellipse cx="128" cy="221" rx="62" ry="10" fill="var(--fx-paw-halo, #A7BCFF)" opacity="0.20" filter="url(#fx-paw-soft-${id})"/>
+  </g>
   ${part("earL", eL)}
   ${part("earR", eR)}
-  ${part("body", d, shine)}
+  ${part("body", d, sheen)}
   <g class="fx-paw-face" transform="${shift}">
     ${eye(0)}
     ${eye(1)}

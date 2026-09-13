@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <defs>
+    <!-- Glass body -->
+    <linearGradient id="glassFill" x1="54" y1="34" x2="198" y2="226" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#182033" stop-opacity="0.78"/>
+      <stop offset="0.45" stop-color="#0B0E17" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#020308" stop-opacity="0.98"/>
+    </linearGradient>
+
+    <!-- Cool rim -->
+    <linearGradient id="rim" x1="42" y1="28" x2="214" y2="226" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7FBFF"/>
+      <stop offset="0.34" stop-color="#BBD5FF"/>
+      <stop offset="0.68" stop-color="#8AA6FF"/>
+      <stop offset="1" stop-color="#A88CFF"/>
+    </linearGradient>
+
+    <!-- Soft purple/blue glow -->
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(128 214) rotate(90) scale(70 105)">
+      <stop offset="0" stop-color="#7FA6FF" stop-opacity="0.35"/>
+      <stop offset="0.6" stop-color="#7A5CFF" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#7A5CFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="blurGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+
+    <filter id="bodyGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+
+    <!-- Subtle glass highlight -->
+    <linearGradient id="highlight" x1="75" y1="54" x2="145" y2="126" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
+      <stop offset="0.38" stop-color="#DCEBFF" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient glow -->
+  <ellipse cx="128" cy="205" rx="92" ry="34" fill="#667BFF" opacity="0.22" filter="url(#blurGlow)"/>
+  <ellipse cx="128" cy="213" rx="74" ry="19" fill="url(#glow)"/>
+
+  <!-- Ground reflection -->
+  <ellipse cx="128" cy="221" rx="62" ry="10" fill="#A7BCFF" opacity="0.20" filter="url(#softShadow)"/>
+
+  <!-- LEFT EAR -->
+  <path
+    d="M70 73
+       C49 75 31 90 28 112
+       C25 135 37 157 52 159
+       C67 161 79 143 82 122
+       C85 101 84 80 70 73Z"
+    fill="url(#glassFill)"
+    stroke="url(#rim)"
+    stroke-width="2.2"
+  />
+
+  <!-- RIGHT EAR -->
+  <path
+    d="M186 73
+       C207 76 225 91 228 113
+       C231 136 219 157 204 159
+       C189 161 177 143 174 122
+       C171 101 172 80 186 73Z"
+    fill="url(#glassFill)"
+    stroke="url(#rim)"
+    stroke-width="2.2"
+  />
+
+  <!-- Main puppy head -->
+  <path
+    d="M128 29
+       C91 28 62 49 53 81
+       C47 102 48 137 57 163
+       C65 187 89 204 128 207
+       C167 204 191 187 199 163
+       C208 137 209 102 203 81
+       C194 49 165 28 128 29Z"
+    fill="url(#glassFill)"
+    stroke="url(#rim)"
+    stroke-width="2.4"
+  />
+
+  <!-- Inner glass sheen -->
+  <path
+    d="M83 56
+       C99 39 126 34 150 39
+       C162 42 173 48 182 58
+       C165 53 150 52 131 55
+       C112 58 96 66 79 77
+       C80 69 81 62 83 56Z"
+    fill="url(#highlight)"
+    opacity="0.8"
+  />
+
+  <!-- Left eye -->
+  <ellipse cx="101" cy="112" rx="12.5" ry="25.5" fill="#F7FBFF"/>
+  <ellipse cx="101" cy="111" rx="6.5" ry="14.5" fill="#FFFFFF" opacity="0.18"/>
+
+  <!-- Right eye -->
+  <ellipse cx="155" cy="112" rx="12.5" ry="25.5" fill="#F7FBFF"/>
+  <ellipse cx="155" cy="111" rx="6.5" ry="14.5" fill="#FFFFFF" opacity="0.18"/>
+
+  <!-- Tiny glass reflection dots -->
+  <circle cx="95" cy="101" r="2.2" fill="#FFFFFF" opacity="0.42"/>
+  <circle cx="149" cy="101" r="2.2" fill="#FFFFFF" opacity="0.42"/>
+
+  <!-- Rim glints -->
+  <path
+    d="M67 79 C73 61 90 46 106 40"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    opacity="0.32"
+  />
+  <path
+    d="M190 83 C185 64 172 51 159 45"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    opacity="0.20"
+  />
+</svg>

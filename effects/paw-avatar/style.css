@@ -1,30 +1,32 @@
-/* paw-avatar — glass skin for the Paw mascot.
+/* paw-avatar — the Paw's glass, as custom properties.
  *
- * The material is entirely here: the engine emits outlines plus eye and
- * glyph geometry and never names a colour. Swapping --fx-paw-* re-skins the
- * character without touching index.js, which is bloub's skins idea done in
- * CSS instead of in the sampler.
- *
- * The glass is four layers per part, all in the SVG the engine emits: a dark
- * fill, a wide blurred stroke clipped inside the part (the fresnel edge that
- * reads as thickness), a crisp rim, and an outer bloom on the whole svg. */
+ * The material comes from the drawing (art/paw-os-glass-puppy.svg): its
+ * gradients, sheen, glints and ground pool live in the SVG the engine emits,
+ * and every colour in them is a --fx-paw-* property with the art's own value
+ * as the fallback. Swapping those re-skins the character without touching
+ * index.js, which is bloub's skins idea done in CSS instead of the sampler. */
 
 /* --fx-paw-size is read with a fallback rather than declared here, so an
  * ancestor can set it and the wrapper inherits it. */
 .fx-paw {
-  --fx-paw-top: #2a3358;
-  --fx-paw-mid: #10152b;
-  --fx-paw-bottom: #05070f;
-  --fx-paw-rim-a: #ffffff;
-  --fx-paw-rim-b: #a6bbff;
-  --fx-paw-rim-c: #b58dff;
+  /* Colours are the art file's, and every one of them is overridable. The
+   * engine emits geometry and never names a colour. */
+  --fx-paw-glass-0: #182033;
+  --fx-paw-glass-1: #0b0e17;
+  --fx-paw-glass-2: #020308;
+  --fx-paw-rim-a: #f7fbff;
+  --fx-paw-rim-b: #bbd5ff;
+  --fx-paw-rim-c: #8aa6ff;
+  --fx-paw-rim-d: #a88cff;
   --fx-paw-rim-width: 2.4;
-  --fx-paw-inner-width: 26;
-  --fx-paw-eye: #ffffff;
+  --fx-paw-ear-rim-width: 2.2;
+  --fx-paw-glint: #ffffff;
+  --fx-paw-pool-a: #7fa6ff;
+  --fx-paw-pool-b: #7a5cff;
+  --fx-paw-halo: #a7bcff;
+  --fx-paw-eye: #f7fbff;
   --fx-paw-warm: #ff8cc4;
-  --fx-paw-glow: rgba(140, 170, 255, 0.55);
-  --fx-paw-halo: rgba(220, 232, 255, 0.55);
-  --fx-paw-shine: rgba(255, 255, 255, 0.5);
+  --fx-paw-glow: rgba(140, 170, 255, 0.5);
 
   display: inline-flex;
   width: var(--fx-paw-size, 240px);
@@ -38,42 +40,47 @@
   overflow: visible;
   /* --fx-paw-pulse (0..1) is written per frame by the engine: states pulse
    * it (excited, love) or dim it (sleeping), and every state breathes. */
-  filter:
-    drop-shadow(0 0 4px var(--fx-paw-halo))
-    drop-shadow(0 0 calc(12px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow));
-}
-
-.fx-paw-fill {
-  fill-opacity: 0.96;
-}
-
-.fx-paw-inner {
-  stroke-width: var(--fx-paw-inner-width);
-  opacity: calc(0.38 + 0.35 * var(--fx-paw-pulse, 0.5));
+  filter: drop-shadow(0 0 calc(8px + 20px * var(--fx-paw-pulse, 0.5)) var(--fx-paw-glow));
 }
 
 .fx-paw-rim {
   stroke-width: var(--fx-paw-rim-width);
   stroke-linejoin: round;
-  opacity: 0.95;
 }
 
-.fx-paw-shine {
-  fill: var(--fx-paw-shine);
+.fx-paw-part + .fx-paw-part .fx-paw-rim,
+.fx-paw-part:first-of-type .fx-paw-rim {
+  stroke-width: var(--fx-paw-ear-rim-width);
 }
 
-.fx-paw-shine-b {
-  opacity: 0.4;
+.fx-paw-part:last-of-type .fx-paw-rim {
+  stroke-width: var(--fx-paw-rim-width);
+}
+
+.fx-paw-sheen {
+  opacity: 0.8;
+}
+
+.fx-paw-glint {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* The ground pool reads as light spilling off the glass, so it breathes with
+ * the same pulse the bloom does. */
+.fx-paw-ground {
+  opacity: calc(0.55 + 0.45 * var(--fx-paw-pulse, 0.5));
 }
 
 .fx-paw-eye {
   fill: var(--fx-paw-eye);
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.75));
 }
 
 .fx-paw-glyph {
   fill: var(--fx-paw-eye);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
 }
 
 /* Marks that read as handwriting rather than as solid shapes. */
@@ -91,7 +98,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fx-paw-svg {
-    filter: drop-shadow(0 0 12px var(--fx-paw-glow));
+    filter: drop-shadow(0 0 14px var(--fx-paw-glow));
   }
 }
 

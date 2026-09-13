@@ -247,9 +247,11 @@ ported -- the radial silhouette machinery, the sphere the eyes sit on, the blink
 calendar, the clock-free `sample(t)` and the frozen-departure pose that keeps a
 mid-fade state change continuous -- and none of the geometry is. Upstream's
 `PROFILES` arrays and its fourteen states are frame-by-frame measurements of
-that avatar and appear nowhere here; the Paw head, its ear rig and its fifteen
-states are ours, authored as unions of disks rather than traced. `meta.json`
-declares the whole split under `deviations`, with `kind: "ours"`.
+that avatar and appear nowhere here. The Paw is our own drawing, committed
+alongside the effect at `effects/paw-avatar/art/paw-os-glass-puppy.svg`: its
+three paths and its glass are what `index.js` carries, cast to radial profiles
+at load. `meta.json` declares the whole split under `deviations`, with
+`kind: "ours"`.
 
 The three Vanta ports DO carry upstream code, inlined -- a Vanta effect extends
 `src/_base.js` and this repo's build emits only `index.js` and `style.css` per
