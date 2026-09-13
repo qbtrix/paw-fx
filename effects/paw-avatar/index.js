@@ -99,6 +99,26 @@ function superellipseProfile(n, sx = 1, sy = 1) {
   });
 }
 
+/**
+ * Radial profile of one offset ellipse: the far ray/ellipse intersection.
+ * Same shape of maths as the union of disks above, and exact while the
+ * origin is inside. The disks version cannot do this: an ellipse is the one
+ * crown that is round on top without also being round at the sides.
+ */
+function ellipseProfile({ cx, cy, rx, ry }) {
+  const out = new Array(SAMPLES);
+  for (let i = 0; i < SAMPLES; i++) {
+    const dx = COS[i];
+    const dy = SIN[i];
+    const a = (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry);
+    const b = (cx * dx) / (rx * rx) + (cy * dy) / (ry * ry);
+    const c = (cx * cx) / (rx * rx) + (cy * cy) / (ry * ry) - 1;
+    const disc = b * b - a * c;
+    out[i] = disc < 0 ? 0 : Math.max(0, (b + Math.sqrt(disc)) / a);
+  }
+  return out;
+}
+
 /** Union of two star-shaped profiles about the same origin: the farther edge wins. */
 const maxProfile = (a, b) => a.map((r, i) => Math.max(r, b[i]));
 
@@ -166,12 +186,14 @@ function capsulePath(w, h) {
  * a real ear rotation instead of a crossfade between two traced outlines. */
 
 /**
- * The head is a mound: a squircle for the base (flat-ish bottom, rounded
- * corners, wider than tall) under a disk for the crown. Two star-shaped
- * profiles about the same origin union as a per-sample max.
+ * The head is a mound: a squircle base (flat-ish bottom, rounded corners,
+ * wider than tall) with an oval crown sitting on top of it. Only the crown
+ * is an ellipse, and it is narrower than the base, so it rounds the top
+ * without touching the sides or the bottom. Two star-shaped profiles about
+ * the same origin union as a per-sample max.
  */
 const HEAD_BASE = { n: 3.0, sx: 1.02, sy: 0.76 };
-const HEAD_CROWN = [{ x: 0, y: -0.14, r: 0.84 }];
+const HEAD_CROWN = { cx: 0, cy: -0.10, rx: 0.86, ry: 0.92 };
 
 /**
  * One ear, in its OWN space, with the origin at the root it swings about.
@@ -216,7 +238,7 @@ const EAR_PROFILE = {
 };
 const HEAD_PROFILE = maxProfile(
   superellipseProfile(HEAD_BASE.n, HEAD_BASE.sx, HEAD_BASE.sy),
-  unionOfCirclesProfile(HEAD_CROWN)
+  ellipseProfile(HEAD_CROWN)
 );
 
 /** Scratch buffers: nothing is reallocated per frame. */
