@@ -11,6 +11,7 @@
     "verify": "bun scripts/verify-ports.mjs",
     "test": "bun test",
     "check": "bun run lint && bun run build && bun run docs && bun run smoke && bun test",
-    "docs": "bun scripts/build-docs.mjs"
+    "docs": "bun scripts/build-docs.mjs",
+    "registry:deploy": "bun run gallery && wrangler deploy"
   }
 }

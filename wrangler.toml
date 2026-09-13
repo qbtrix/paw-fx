@@ -1,0 +1,20 @@
+# The registry, as a static site on Workers.
+#
+# There is no Worker script: `assets` with no `main` serves dist/registry
+# directly off the edge, which is all this needs. Everything here is generated
+# by `bun run build && bun run docs`, so the deploy is:
+#
+#   bun run registry:deploy
+#
+# WHY THE URL MATTERS. llms.txt links and the `npx shadcn add` line have to be
+# absolute -- an agent reading llms.txt in a chat window has no page to resolve
+# a relative link against -- so this hostname is baked into the generated docs
+# at build time. Change the name here and change --base in package.json with
+# it, or the docs will point at a host that no longer answers.
+name = "paw-fx"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./dist/registry"
+# The registry is a set of files, not an app: a miss is a miss, not an index.
+not_found_handling = "none"
