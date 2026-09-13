@@ -123,3 +123,19 @@ test("a drawing the CLI reads is one the engine can mount", () => {
   expect(markup).not.toContain("%M%");
   expect(markup).not.toMatch(/id="(FILL|RIM|D\d+)"/);
 });
+
+test("only the gradients the engine paints with are mapped", () => {
+  // The head's fill and rim paint paths the engine emits in ITS space, so
+  // those gradients have to be brought across. Everything else paints inside
+  // the lifted <g transform="%M%"> and is already carried by it; mapping
+  // those too applies the transform twice and the gradient lands off the
+  // drawing, which looks exactly like the highlight having been deleted.
+  // That is how the Paw lost its sheen, so this is the shape of that bug.
+  const svg = readFileSync(join(import.meta.dir, "fixtures/art/blip-bot.svg"), "utf8");
+  const { art } = artFromSvg(svg, "blip-bot");
+  expect(art.glass.fill).toContain("%M%");
+  expect(art.glass.rim).toContain("%M%");
+  expect(art.glass.defs).not.toContain("%M%");
+  // and the ones that are not mapped keep the drawing's own coordinates
+  expect(art.glass.defs).toContain("gradientTransform=\"translate(150 232)");
+});

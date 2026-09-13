@@ -261,7 +261,7 @@ export const PAW_ART = {
   glass: {
     fill: "<radialGradient id=\"FILL\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M% translate(140 65) rotate(90) scale(205 205)\"><stop offset=\"0\" stop-color=\"var(--fx-paw-glass-0, #152033)\" stop-opacity=\"0.92\"/><stop offset=\"0.52\" stop-color=\"var(--fx-paw-glass-1, #0A0E17)\" stop-opacity=\"0.98\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-glass-2, #02040A)\" stop-opacity=\"1\"/></radialGradient>",
     rim: "<linearGradient id=\"RIM\" x1=\"52\" y1=\"30\" x2=\"270\" y2=\"235\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M%\"><stop offset=\"0\" stop-color=\"var(--fx-paw-rim-a, #F8FCFF)\"/><stop offset=\"0.28\" stop-color=\"var(--fx-paw-rim-b, #D6E7FF)\"/><stop offset=\"0.62\" stop-color=\"var(--fx-paw-rim-c, #8CAFFF)\"/><stop offset=\"0.84\" stop-color=\"var(--fx-paw-rim-d, #A98CFF)\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-rim-e, #83A2FF)\"/></linearGradient>",
-    defs: "<radialGradient id=\"D0\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M% translate(160 224) rotate(90) scale(34 118)\"><stop offset=\"0\" stop-color=\"var(--fx-paw-floor-a, #AFC4FF)\" stop-opacity=\"0.36\"/><stop offset=\"0.40\" stop-color=\"var(--fx-paw-floor-b, #7E9FFF)\" stop-opacity=\"0.20\"/><stop offset=\"0.72\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0\"/></radialGradient><linearGradient id=\"D1\" x1=\"73\" y1=\"40\" x2=\"180\" y2=\"132\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"%M%\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\"0.34\"/><stop offset=\"0.30\" stop-color=\"#DCEAFF\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"#FFFFFF\" stop-opacity=\"0\"/></linearGradient><filter id=\"D2\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"10\"/></filter><filter id=\"D3\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"5\"/></filter>",
+    defs: "<radialGradient id=\"D0\" cx=\"0\" cy=\"0\" r=\"1\" gradientUnits=\"userSpaceOnUse\" gradientTransform=\"translate(160 224) rotate(90) scale(34 118)\"><stop offset=\"0\" stop-color=\"var(--fx-paw-floor-a, #AFC4FF)\" stop-opacity=\"0.36\"/><stop offset=\"0.40\" stop-color=\"var(--fx-paw-floor-b, #7E9FFF)\" stop-opacity=\"0.20\"/><stop offset=\"0.72\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"var(--fx-paw-floor-c, #7D62FF)\" stop-opacity=\"0\"/></radialGradient><linearGradient id=\"D1\" x1=\"73\" y1=\"40\" x2=\"180\" y2=\"132\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\"0.34\"/><stop offset=\"0.30\" stop-color=\"#DCEAFF\" stop-opacity=\"0.10\"/><stop offset=\"1\" stop-color=\"#FFFFFF\" stop-opacity=\"0\"/></linearGradient><filter id=\"D2\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"10\"/></filter><filter id=\"D3\" x=\"-100%\" y=\"-100%\" width=\"300%\" height=\"300%\"><feGaussianBlur stdDeviation=\"5\"/></filter>",
     ground: "<ellipse cx=\"160\" cy=\"218\" rx=\"104\" ry=\"34\" fill=\"var(--fx-paw-halo, #6D8DFF)\" opacity=\"0.16\" filter=\"url(#D2)\"/><ellipse cx=\"160\" cy=\"226\" rx=\"92\" ry=\"17\" fill=\"url(#D0)\" filter=\"url(#D3)\"/><ellipse cx=\"160\" cy=\"226\" rx=\"69\" ry=\"7\" fill=\"var(--fx-paw-floor-a, #B7CAFF)\" opacity=\"0.22\" filter=\"url(#D3)\"/>",
     sheen: "<path d=\"M92 63 C111 41 135 34 160 35 C183 36 204 43 220 56 C202 54 181 55 159 60 C134 66 112 74 87 88 C87 78 89 69 92 63Z\" fill=\"url(#D1)\"/><path d=\"M63 96 C69 72 83 56 103 47\" stroke=\"var(--fx-paw-glint, #FFFFFF)\" stroke-width=\"3.8\" stroke-linecap=\"round\" opacity=\"0.33\"/><path d=\"M255 96 C249 72 237 57 219 48\" stroke=\"var(--fx-paw-glint, #FFFFFF)\" stroke-width=\"3.4\" stroke-linecap=\"round\" opacity=\"0.21\"/>"
   }
@@ -1175,6 +1175,13 @@ let uid = 0;
  * for whatever the head was filled and stroked with, D0.. for the rest --
  * and its own transform as %M%. Both get localised per instance, because two
  * avatars on one page must not share a def id.
+ *
+ * The lifted groups carry `fill="none"`, which is not decoration: an SVG root
+ * is conventionally written `<svg fill="none">` and everything inside inherits
+ * it, so a highlight stroked and never filled has no fill attribute of its
+ * own. Lift that path out of its file without the context and it fills black,
+ * which paints a dark shape exactly where the shine was. Reproducing the root
+ * is what makes a drawing behave here as it does on its own.
  */
 function template(id, frame, art) {
   const gid = (k) => `fx-paw-${k.toLowerCase()}-${id}`;
@@ -1229,10 +1236,10 @@ function template(id, frame, art) {
       <stop offset="1" stop-color="#ff5d7a"/>
     </linearGradient>
   </defs>
-  <g class="fx-paw-ground" transform="${art.m}">${localise(art.art.glass.ground)}</g>
+  <g class="fx-paw-ground" fill="none" transform="${art.m}">${localise(art.art.glass.ground)}</g>
   ${part("earL", eL)}
   ${part("earR", eR)}
-  ${part("body", d, `<g transform="${art.m}">${localise(art.art.glass.sheen)}</g>`)}
+  ${part("body", d, `<g fill="none" transform="${art.m}">${localise(art.art.glass.sheen)}</g>`)}
   <g class="fx-paw-face" transform="${shift}">
     ${eye(0)}
     ${eye(1)}

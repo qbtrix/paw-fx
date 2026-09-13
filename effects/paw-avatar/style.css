@@ -55,15 +55,6 @@
   stroke-width: var(--fx-paw-rim-width, 2.6);
 }
 
-.fx-paw-sheen {
-  opacity: 0.8;
-}
-
-.fx-paw-glint {
-  fill: none;
-  stroke-linecap: round;
-}
-
 /* The floor glow reads as light spilling off the glass, so it breathes with
  * the same pulse the bloom does. */
 .fx-paw-ground {

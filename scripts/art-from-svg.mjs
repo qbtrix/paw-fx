@@ -205,11 +205,26 @@ export function artFromSvg(svg, label = "svg") {
   const localise = (str) => {
     let out = tidy(str);
     for (const [from, to] of rename) out = out.split(`"${from}"`).join(`"${to}"`).split(`url(#${from})`).join(`url(#${to})`);
-    // a userSpaceOnUse def is in the drawing's coordinates and has to be mapped
-    return out.replace(/gradientTransform="(?!%M%)/g, 'gradientTransform="%M% ').replace(/%M% "/g, '%M%"');
+    return out;
   };
-  const withMap = (str) =>
-    str.replace(/(<(?:linear|radial)Gradient[^>]*gradientUnits="userSpaceOnUse")(?![^>]*gradientTransform)/g, '$1 gradientTransform="%M%"');
+
+  /**
+   * Map a userSpaceOnUse gradient from the drawing's coordinates into the
+   * engine's, by prefixing %M% to its transform.
+   *
+   * ONLY the head's own fill and rim get this, and the distinction is the
+   * whole of it: those two paint paths the engine emits in ITS space, so the
+   * gradient has to be brought across. Every other def paints something
+   * inside the lifted <g transform="%M%"> -- the sheen, the floor glow -- and
+   * is already carried by that group. Mapping those as well applies the
+   * transform twice and the gradient lands somewhere off the drawing, which
+   * looks exactly like the highlight having been deleted.
+   */
+  const mapped = (str) =>
+    str
+      .replace(/(<(?:linear|radial)Gradient[^>]*gradientUnits="userSpaceOnUse")(?![^>]*gradientTransform)/g,
+               '$1 gradientTransform="%M%"')
+      .replace(/gradientTransform="(?!%M%)/g, 'gradientTransform="%M% ');
 
   // fill and rim come out of defs as their own fields rather than staying
   // inside it. The engine needs them separately -- they are what a part is
@@ -217,12 +232,12 @@ export function artFromSvg(svg, label = "svg") {
   // means there is one glass object, not one for the page and one for the
   // file. (There were two, briefly, and the page could not mount a drawing
   // the command line handled fine.)
-  const allDefs = localise(withMap(defs)).trim();
+  const allDefs = localise(defs).trim();
   const grad = (id) =>
     allDefs.match(new RegExp(`<(?:linear|radial)Gradient[^>]*id="${id}"[\\s\\S]*?<\\/(?:linear|radial)Gradient>`))?.[0] ?? "";
   const glass = {
-    fill: grad("FILL"),
-    rim: grad("RIM"),
+    fill: mapped(grad("FILL")),
+    rim: mapped(grad("RIM")),
     defs: allDefs.replace(/<(?:linear|radial)Gradient[^>]*id="(?:FILL|RIM)"[\s\S]*?<\/(?:linear|radial)Gradient>/g, "").trim(),
     ground: localise(group(svg, "paw-ground") ?? ""),
     sheen: localise(group(svg, "paw-sheen") ?? "")

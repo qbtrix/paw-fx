@@ -175,3 +175,14 @@ test("the spectrum rim travels, and only where a state asks for it", () => {
   // resting frames hold still, so the snippet bakes one angle
   expect(e.sample(3, false).spectrum).toBe(0);
 });
+
+test("lifted decoration inherits the root the drawing was written against", () => {
+  // An SVG root is conventionally `<svg fill="none">`, so a highlight that is
+  // stroked and never filled carries no fill of its own. Lift it out of its
+  // file without that context and it fills black, painting a dark shape
+  // exactly where the shine was. This is how the Paw lost its sheen once.
+  const svg = restingMarkup("idle", "s");
+  const sheen = svg.slice(svg.indexOf("fx-paw-clip-body-s"));
+  expect(sheen).toMatch(/<g fill="none" transform=/);
+  expect(svg).toMatch(/class="fx-paw-ground" fill="none"/);
+});
