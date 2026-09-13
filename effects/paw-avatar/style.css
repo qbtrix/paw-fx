@@ -56,9 +56,34 @@
 }
 
 /* The floor glow reads as light spilling off the glass, so it breathes with
- * the same pulse the bloom does. */
+ * the same pulse the bloom does.
+ *
+ * It is also the single most expensive thing here: it is drawn with the
+ * drawing's own feGaussianBlur, and because the paths beside it change every
+ * frame the whole filtered subtree is re-rasterised with them. Measured on a
+ * page holding 34 avatars, removing it alone took 30fps to 60. So it is a
+ * token: a hero sitting on a surface wants it, a 2rem chip inside a button
+ * has no surface to sit on and should not pay for one.
+ *
+ * Set --fx-paw-ground: none to drop it. The token is a `display` value and
+ * not a 0..1 amount on purpose: opacity 0 still rasterises the filter, so an
+ * invisible floor glow costs exactly what a visible one does. Measured, after
+ * shipping the opacity version and finding it changed nothing. */
 .fx-paw-ground {
+  display: var(--fx-paw-ground, inline);
   opacity: calc(0.55 + 0.45 * var(--fx-paw-pulse, 0.5));
+}
+
+.fx-paw {
+  container-type: inline-size;
+}
+
+/* Below about 5rem there is no room for a floor glow to read as one, so it
+ * turns itself off rather than waiting to be told. */
+@container (max-width: 5rem) {
+  .fx-paw-ground {
+    display: none;
+  }
 }
 
 .fx-paw-eye {
