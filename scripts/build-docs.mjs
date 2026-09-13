@@ -27,7 +27,7 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const DEFAULT_BASE = "https://raw.githubusercontent.com/qbtrix/paw-fx/main/dist/registry";
+const DEFAULT_BASE = "https://paw-fx.workers.dev";
 
 /** The shelves, in the order a reader should meet them. */
 const SHELF = {
@@ -154,6 +154,22 @@ export function buildDocs(out = join(ROOT, "dist/registry"), base = DEFAULT_BASE
     index.push("");
   }
 
+  // Cloudflare serves .md and .txt as octet-stream by default, which makes a
+  // browser download llms.txt instead of showing it. CORS is open because the
+  // registry is public data and a browser-side tool has no other way in;
+  // `npx shadcn add` fetches from node and would not need it.
+  writeFileSync(
+    join(out, "_headers"),
+    [
+      "/*",
+      "  Access-Control-Allow-Origin: *",
+      "/*.md",
+      "  Content-Type: text/markdown; charset=utf-8",
+      "/*.txt",
+      "  Content-Type: text/plain; charset=utf-8",
+      ""
+    ].join("\n")
+  );
   writeFileSync(join(out, "llms.txt"), index.join("\n"));
   writeFileSync(
     join(out, "llms-full.txt"),

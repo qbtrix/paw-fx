@@ -26,9 +26,18 @@ npx shadcn@latest add <base>/items/paw-avatar.json
 ninety-nine). They are generated from the same build as the registry, so they
 cannot drift from it.
 
-`<base>` is wherever `dist/registry` is served. Pass it at build time --
-`bun scripts/build-docs.mjs --base https://…` -- because an agent reading
-llms.txt in a chat window has no page to resolve a relative link against.
+`<base>` is `https://paw-fx.workers.dev`, where `dist/registry` is served from
+as a static Worker (`wrangler.toml`, no script: `assets` with no `main` is the
+whole thing). It is baked into the generated docs at build time, because an
+agent reading llms.txt in a chat window has no page to resolve a relative link
+against -- so changing the Worker name means changing `--base` with it.
+
+```bash
+bun run registry:deploy    # build + docs + gallery, then wrangler deploy
+```
+
+That also publishes the browsable gallery at `/gallery/` and the live demo page
+for each effect.
 
 ## Layout
 

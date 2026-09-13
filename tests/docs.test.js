@@ -59,6 +59,24 @@ test("items are installable by a shadcn client", () => {
   }
 });
 
+test("the deployed surface serves text as text, and lets a browser read it", () => {
+  // Cloudflare serves .md and .txt as octet-stream by default, which makes a
+  // browser download llms.txt rather than show it. CORS is open because a
+  // browser-side tool has no other way in.
+  const headers = readFileSync(join(out, "_headers"), "utf8");
+  expect(headers).toContain("Access-Control-Allow-Origin: *");
+  expect(headers).toContain("text/markdown");
+  expect(headers).toContain("text/plain");
+});
+
+test("every generated link is absolute", () => {
+  // A relative link is useless to an agent reading this in a chat window.
+  const index = readFileSync(join(out, "llms.txt"), "utf8");
+  for (const [, href] of index.matchAll(/\]\(([^)]+)\)/g)) {
+    expect(href.startsWith("http")).toBe(true);
+  }
+});
+
 test("llms-full carries every page, for one fetch instead of ninety-nine", () => {
   const full = readFileSync(join(out, "llms-full.txt"), "utf8");
   for (const it of registry.items) expect(full).toContain(`# ${it.name}\n`);
