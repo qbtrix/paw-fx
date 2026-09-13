@@ -12,8 +12,8 @@ import { PawEngine, STATE_IDS, restingPath, restingMarkup } from "../effects/paw
 const HALF_BOX = 162;
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
-test("15 states, each with a drawable outline", () => {
-  expect(STATE_IDS).toHaveLength(15);
+test("16 states, each with a drawable outline", () => {
+  expect(STATE_IDS).toHaveLength(16);
   for (const id of STATE_IDS) {
     const f = new PawEngine(id).sample(0, false);
     for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
@@ -112,4 +112,17 @@ test("a non-finite look target is refused, not propagated", () => {
   const good = e.sample(2, false).eyes[0].matrix;
   e.setLook({ yaw: NaN, pitch: 0, mix: 1, wander: 0.2 }, 2);
   expect(e.sample(4, false).eyes[0].matrix).toBe(good);
+});
+
+test("the spectrum rim travels, and only where a state asks for it", () => {
+  // The hue travels on the engine's clock, not on CSS keyframes: a second
+  // clock would drift out of step with pause, scrub and the baked frame.
+  const e = new PawEngine("creative");
+  expect(e.sample(1).rainbow).toBe(1);
+  expect(e.sample(1).spectrum).not.toBe(e.sample(2).spectrum);
+  // and it is a function of time like everything else
+  expect(e.sample(1).spectrum).toBe(e.sample(1).spectrum);
+  expect(new PawEngine("idle").sample(1).rainbow).toBe(0);
+  // resting frames hold still, so the snippet bakes one angle
+  expect(e.sample(3, false).spectrum).toBe(0);
 });

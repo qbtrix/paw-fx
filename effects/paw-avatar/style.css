@@ -26,6 +26,7 @@
   --fx-paw-floor-b: #7e9fff;
   --fx-paw-floor-c: #7d62ff;
   --fx-paw-halo: #6d8dff;
+  --fx-paw-rainbow: 0;
   --fx-paw-eye: #f7fbff;
   --fx-paw-warm: #ff8cc4;
   --fx-paw-glow: rgba(140, 170, 255, 0.5);
@@ -48,6 +49,13 @@
 .fx-paw-rim {
   stroke-width: var(--fx-paw-rim-width);
   stroke-linejoin: round;
+  /* The art's rim fades out as the spectrum one comes up, so the two never
+   * stack into a thicker edge. */
+  opacity: calc(1 - var(--fx-paw-rainbow, 0));
+}
+
+.fx-paw-rim-spectrum {
+  opacity: var(--fx-paw-rainbow, 0);
 }
 
 .fx-paw-catch {

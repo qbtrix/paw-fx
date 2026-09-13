@@ -9,15 +9,16 @@
     "morph",
     "agent-state",
     "glass",
+    "pointer",
     "dark"
   ],
-  "summary": "A glass puppy head whose 15 agent states (idle, thinking, working, sleeping, error...) morph into each other, with a gaze that follows the pointer. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
+  "summary": "A glass puppy head whose 16 agent states (idle, thinking, working, creative, sleeping...) morph into each other, with a gaze that follows the pointer and a spectrum rim for creative work. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
   "needs": [],
   "options": {
     "state": {
       "type": "string",
       "default": "idle",
-      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening."
+      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening."
     },
     "speed": {
       "type": "number",

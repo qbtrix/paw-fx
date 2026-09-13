@@ -411,6 +411,12 @@ function liveliness(t, wander = 1, blink = true) {
  * than sitting beside them. */
 
 const zed = (x, y, s) => `M${x} ${y}h${s}l${-s} ${s}h${s}`;
+/** Four-point star: the arms pinch at the centre, which is what reads as a spark. */
+const spark4 = (x, y, s) =>
+  `M${x} ${y - s}Q${x + s * 0.12} ${y - s * 0.12} ${x + s} ${y}` +
+  `Q${x + s * 0.12} ${y + s * 0.12} ${x} ${y + s}` +
+  `Q${x - s * 0.12} ${y + s * 0.12} ${x - s} ${y}` +
+  `Q${x - s * 0.12} ${y - s * 0.12} ${x} ${y - s}z`;
 const heart = (x, y, s) =>
   `M${x} ${y + s * 0.9}c${-s * 1.3} ${-s * 0.9} ${-s * 0.8} ${-s * 1.9} 0 ${-s * 1.1}` +
   `c${s * 0.8} ${-s * 0.8} ${s * 1.3} ${s * 0.2} 0 ${s * 1.1}z`;
@@ -421,6 +427,7 @@ const GLYPHS = {
   zzz: `<path d="${zed(96, -120, 16)}${zed(120, -140, 12)}${zed(138, -154, 9)}"/>`,
   question: `<path d="M96 -132a15 15 0 1 1 15 15v9"/><circle cx="111" cy="-96" r="5"/>`,
   hearts: `<path class="fx-paw-warm" d="${heart(-16, -122, 13)}${heart(30, -140, 9)}"/>`,
+  sparkle: `<path d="${spark4(104, -108, 20)}${spark4(140, -76, 12)}${spark4(76, -134, 9)}"/>`,
   waves: `<path d="M104 -96a26 26 0 0 1 20 -24M112 -74a44 44 0 0 1 34 -40M120 -52a62 62 0 0 1 48 -56"/>`,
   speed: `<path d="M-118 -30h-42M-126 -6h-54M-118 18h-38"/>`,
   faceHappy: `<path d="M-51 0q18 -22 36 0M15 0q18 -22 36 0"/>`,
@@ -451,6 +458,8 @@ function basePose(over = {}) {
     wander: 1,
     /** bloom strength 0..1; states pulse it, sample() adds a slow breath */
     glow: 0.5,
+    /** how much of the rim is spectrum rather than the art's own 0..1 */
+    rainbow: 0,
     glyphs: {},
     ...over
   };
@@ -490,11 +499,12 @@ function blendPose(a, b, t) {
     eyeAlpha: lerp(a.eyeAlpha, b.eyeAlpha, t),
     wander: lerp(a.wander, b.wander, t),
     glow: lerp(a.glow, b.glow, t),
+    rainbow: lerp(a.rainbow, b.rainbow, t),
     glyphs
   };
 }
 
-/* ------------------------------------------------------------ the 15 states
+/* ------------------------------------------------------------ the 16 states
  * Each is a function of `t`, the seconds elapsed IN that state, so a state
  * can animate on its own (the working shake, the excited bounce) while the
  * engine separately crossfades it against whatever it replaced. */
@@ -659,6 +669,26 @@ const STATES = {
         glyphs: { faceX: 1, spark: 1 }
       });
     }
+  },
+
+  /**
+   * The one state with a spectrum rim. The hue travels because the engine
+   * hands the renderer an angle, not because CSS keyframes run: a second
+   * clock would break pause, scrub and the resting frame the snippet bakes.
+   */
+  creative: {
+    morph: 0.55,
+    pose: (t) => basePose({
+      rot: Math.sin(t * 0.7) * 0.04,
+      cy: Math.sin(t * 1.1) * 0.014,
+      ears: { l: ear(-0.26, 0.04), r: ear(-0.34, 0.05) },
+      gaze: { yaw: Math.sin(t * 0.5) * 9, pitch: 6, roll: 0 },
+      wander: 0.5,
+      eyes: [eye(EYE_W * 1.06, EYE_H * 1.04), eye(EYE_W * 1.06, EYE_H * 1.04)],
+      glow: 0.72 + Math.sin(t * 1.6) * 0.18,
+      rainbow: 1,
+      glyphs: { sparkle: 1 }
+    })
   },
 
   listening: {
@@ -869,6 +899,9 @@ export class PawEngine {
 
     return {
       glow: clamp(pose.glow + (alive ? Math.sin((now / 3.4) * TAU) * 0.08 : 0)),
+      rainbow: clamp(pose.rainbow),
+      /** Degrees. One turn every 9 s, and a function of `now` like everything else. */
+      spectrum: alive ? ((now * 40) % 360) : 0,
       bodyPath,
       earLPath,
       earRPath,
@@ -928,6 +961,7 @@ function template(id, frame) {
     <path class="fx-paw-fill" data-part="${key}" d="${dd}" fill="url(#fx-paw-glass-${id})"/>${extra ? `
     <g clip-path="url(#fx-paw-clip-${key}-${id})">${extra}</g>` : ""}
     <path class="fx-paw-rim" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-rim-${id})"/>
+    <path class="fx-paw-rim fx-paw-rim-spectrum" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-spectrum-${id})"/>
   </g>`;
 
   const sheen = `
@@ -962,6 +996,15 @@ function template(id, frame) {
       <stop offset="0.72" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0.10"/>
       <stop offset="1" stop-color="var(--fx-paw-floor-c, #7D62FF)" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="fx-paw-spectrum-${id}" class="fx-paw-spectrum-def" x1="-110" y1="0" x2="110" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff5d7a"/>
+      <stop offset="0.17" stop-color="#ffb03a"/>
+      <stop offset="0.34" stop-color="#8bff7a"/>
+      <stop offset="0.5" stop-color="#48e5ff"/>
+      <stop offset="0.67" stop-color="#7f8cff"/>
+      <stop offset="0.84" stop-color="#e070ff"/>
+      <stop offset="1" stop-color="#ff5d7a"/>
+    </linearGradient>
     <filter id="fx-paw-blur-${id}" x="-100%" y="-100%" width="300%" height="300%">
       <feGaussianBlur stdDeviation="10"/>
     </filter>
@@ -1028,6 +1071,7 @@ export function mount(el, opts = {}) {
   const glyphEls = {};
   for (const g of svg.querySelectorAll(".fx-paw-glyph")) glyphEls[g.dataset.g] = g;
   const face = svg.querySelector(".fx-paw-face");
+  const spectrum = svg.querySelector(".fx-paw-spectrum-def");
 
   const engine = new PawEngine(o.state);
   let raf = 0;
@@ -1047,6 +1091,10 @@ export function mount(el, opts = {}) {
   function draw(now) {
     const f = engine.sample(now, !still);
     wrap.style.setProperty("--fx-paw-pulse", r2(f.glow));
+    wrap.style.setProperty("--fx-paw-rainbow", r2(f.rainbow));
+    // Rotating the gradient rather than recolouring the stops: the travel is
+    // one attribute, and the stops loop so the seam never shows.
+    if (f.rainbow > 0.01) spectrum.setAttribute("gradientTransform", `rotate(${r2(f.spectrum)})`);
     for (const p of parts.body) p.setAttribute("d", f.bodyPath);
     for (const p of parts.earL) p.setAttribute("d", f.earLPath);
     for (const p of parts.earR) p.setAttribute("d", f.earRPath);
@@ -1160,7 +1208,7 @@ export const meta = {
   needs: [],
   license: "MIT",
   options: {
-    state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, listening." },
+    state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening." },
     speed: { type: "number", default: 1, description: "Time multiplier for the whole engine. Clamped to 0.1-10." },
     cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." },
     track: { type: "boolean", default: true, description: "Follow the mouse pointer with the gaze. Set data-fx-track=\"false\" to hold the state's own gaze." }
