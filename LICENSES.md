@@ -1,6 +1,7 @@
 # Licences
 
-paw-fx itself is MIT. Every ported effect keeps its upstream licence; the
+paw-fx itself is MIT; the notice is in `LICENSE` at the repo root. Every
+ported effect keeps its upstream licence; the
 allow-list is MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, Unlicense, CC0-1.0.
 Ported files carry the upstream copyright header, as a comment, in `index.js`,
 and cite `repo`, `commit` and `path` in `meta.json.origin`.

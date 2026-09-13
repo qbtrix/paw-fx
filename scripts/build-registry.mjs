@@ -134,10 +134,20 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
         .map((f) => ({ path: `_fx/effects/${name}/demo/${f}`, content: readFileSync(join(demoDir, f), "utf8") }))
     : [];
   const { version, category, summary, license, origin, options, tags, deviations } = meta;
+  // `$schema`, `type`, `title`, `description` and the per-file `type`/`target`
+  // are what make this same file installable with `npx shadcn add <url>`.
+  // They are additive: the fields paw-fx's own consumers read are untouched,
+  // and one item serves both rather than there being two registries to keep
+  // honest. `target` puts the files under public/, because they are assets a
+  // page links at /_fx/..., not modules anything imports.
   return {
-    name, version, category, tags, summary, needs, license, origin, options,
+    $schema: "https://ui.shadcn.com/schema/registry-item.json",
+    name, type: "registry:item", title: name, description: summary,
+    version, category, tags, summary, needs, license, origin, options,
     deviations: deviations ?? [],
-    files: [...files].map(([path, content]) => ({ path, content })),
+    files: [...files].map(([path, content]) => ({
+      path, content, type: "registry:file", target: `public/${path}`
+    })),
     demo,
     snippet: read("snippet.html"),
     usage,

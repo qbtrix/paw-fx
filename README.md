@@ -2,6 +2,34 @@
 
 Vanilla animated-section library for Paw Sites. Every effect is a port of a named upstream (see `meta.json.origin`), served to site-building agents over MCP.
 
+## Using an effect
+
+Three ways in, depending on who is asking.
+
+**Copy the folder.** `effects/<name>/` is the whole effect: an ES module, a
+stylesheet, the section markup. Drop `index.js` and `style.css` under
+`public/_fx/effects/<name>/`, paste `snippet.html` where the section goes, and
+mount it. No build step, no bundler, no install. This needs nothing but the
+repo.
+
+**Install it.** Every item in `dist/registry/items/` is a shadcn registry item
+as well as ours, so a shadcn client can place the files for you:
+
+```bash
+npx shadcn@latest add <base>/items/paw-avatar.json
+```
+
+**Point an agent at it.** `bun run docs` writes `llms.txt` (the
+[llmstxt.org](https://llmstxt.org) index, one line per effect), `e/<name>.md`
+(one effect, with its options, its markup and its install line) and
+`llms-full.txt` (all of it, for an agent that would rather spend one fetch than
+ninety-nine). They are generated from the same build as the registry, so they
+cannot drift from it.
+
+`<base>` is wherever `dist/registry` is served. Pass it at build time --
+`bun scripts/build-docs.mjs --base https://…` -- because an agent reading
+llms.txt in a chat window has no page to resolve a relative link against.
+
 ## Layout
 
 ```
