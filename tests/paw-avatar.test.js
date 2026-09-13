@@ -7,7 +7,7 @@
 // swap at the halfway mark), and nothing leaving the viewBox (an ear swung
 // out is the only geometry that can, and the margin is hand-set).
 import { test, expect } from "bun:test";
-import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART } from "../effects/paw-avatar/index.js";
+import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART, moodPose, MOOD_PRESETS } from "../effects/paw-avatar/index.js";
 import { BLIP_ART } from "./fixtures/art/blip-bot.js";
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
@@ -185,4 +185,66 @@ test("lifted decoration inherits the root the drawing was written against", () =
   const sheen = svg.slice(svg.indexOf("fx-paw-clip-body-s"));
   expect(sheen).toMatch(/<g fill="none" transform=/);
   expect(svg).toMatch(/class="fx-paw-ground" fill="none"/);
+});
+
+test("every corner of the mood space is a drawable face", () => {
+  for (const valence of [-1, 1]) {
+    for (const arousal of [0, 1]) {
+      for (const attention of [0, 1]) {
+        const e = new PawEngine("idle");
+        e.setMood({ valence, arousal, attention }, 0);
+        const f = e.sample(5, false);
+        for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
+          expect(numbers(d).every(Number.isFinite)).toBe(true);
+        }
+        expect(f.eyes.length).toBe(2);
+      }
+    }
+  }
+});
+
+test("each axis moves the thing it is supposed to, and not the others", () => {
+  // An axis that quietly nudges everything is impossible to tune and
+  // impossible to read back, so the mapping gives each one a job.
+  const at = (m) => moodPose(m, 0);
+  const base = { valence: 0, arousal: 0.5, attention: 0.5 };
+
+  // arousal owns eye height
+  expect(at({ ...base, arousal: 0.9 }).eyes[0].h).toBeGreaterThan(at({ ...base, arousal: 0.1 }).eyes[0].h);
+  // attention owns eye width, and leaves height alone
+  const wide = at({ ...base, attention: 1 });
+  const narrow = at({ ...base, attention: 0 });
+  expect(wide.eyes[0].w).toBeGreaterThan(narrow.eyes[0].w);
+  expect(wide.eyes[0].h).toBe(narrow.eyes[0].h);
+  // attention is also how much the gaze stays put
+  expect(wide.wander).toBeLessThan(narrow.wander);
+  // valence tips the ears: up when it is going well, down when it is not
+  expect(at({ ...base, valence: 1 }).ears.l.angle).toBeLessThan(at({ ...base, valence: -1 }).ears.l.angle);
+  // and mirrors the eye tilt, which is what separates an expression from a head roll
+  const sad = at({ ...base, valence: -1 });
+  expect(sad.eyes[0].tilt).toBe(-sad.eyes[1].tilt);
+  expect(sad.eyes[0].tilt).toBeLessThan(0);
+});
+
+test("low arousal closes the lids rather than shortening the eye", () => {
+  // Modelling drowsiness as a very short eye looked like a squint, which
+  // reads as effort -- the opposite of what it should say.
+  expect(moodPose({ valence: 0, arousal: 0, attention: 0.5 }).eyes[0].open).toBeLessThan(0.1);
+  expect(moodPose({ valence: 0, arousal: 0.5, attention: 0.5 }).eyes[0].open).toBe(1);
+});
+
+test("a mood fades in like a state, and a state can take over again", () => {
+  const e = new PawEngine("idle");
+  const idle = e.sample(2, false).earLPath;
+  e.setMood({ valence: -0.9, arousal: 0.1, attention: 0.2 }, 2);
+  const settled = e.sample(9, false).earLPath;
+  expect(settled).not.toBe(idle);
+  const mid = e.sample(2.3, false).earLPath;
+  expect(mid).not.toBe(idle);
+  expect(mid).not.toBe(settled);
+  // and it is still a pure function of time
+  expect(e.sample(2.3, false).earLPath).toBe(mid);
+  e.setState("excited", 10);
+  expect(e.state).toBe("excited");
+  expect(e.sample(14, false).earLPath).not.toBe(settled);
 });

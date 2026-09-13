@@ -73,6 +73,18 @@ section{margin:4.5rem 0 0;scroll-margin-top:5rem}
 .copy button.done{color:var(--g-good);border-color:var(--g-good)}
 .label{font:500 .78rem var(--g-mono);color:var(--g-dim);margin:0 0 .4rem}
 
+/* axes and presets */
+.axes{display:grid;gap:.9rem}
+.axis label{display:flex;justify-content:space-between;font:500 .8rem var(--g-mono);
+  color:var(--g-muted);margin-bottom:.3rem}
+.axis label b{color:var(--g-ink);font-weight:500}
+.axis input{width:100%;accent-color:var(--g-accent)}
+.axis p{margin:.25rem 0 0;font-size:.72rem;color:var(--g-dim);display:flex;justify-content:space-between}
+.presets{display:flex;flex-wrap:wrap;gap:.35rem}
+.presets button{font:500 .76rem var(--g-mono);background:var(--g-raised);color:var(--g-muted);
+  border:1px solid var(--g-line);border-radius:999px;padding:.3rem .65rem;cursor:pointer}
+.presets button:hover{color:var(--g-ink);border-color:var(--g-accent)}
+
 /* bring your own */
 .byo{display:grid;grid-template-columns:20rem minmax(0,1fr);gap:1.5rem;align-items:start}
 @media (max-width:60rem){.byo{grid-template-columns:1fr}}
@@ -119,6 +131,31 @@ and the character is an input, so the whole thing works just as well on your dra
   <h2>Every state</h2>
   <p class="sub">Each one is live, not a screenshot. Click any of them to drive the one above.</p>
   <div class="grid" id="grid"></div>
+</section>
+
+<section id="mood">
+  <h2>Or drive it by mood</h2>
+  <p class="sub">The sixteen states are authored, which is why they read well &mdash; and what they
+  cannot do is sit between two of themselves. An agent's condition is not one of sixteen labels; it
+  is confidence 0.2 and load 0.8. Three axes, and any point on them is a face.</p>
+
+  <div class="stage">
+    <div class="pane"><div class="host" id="moodHero"></div><div class="now" id="moodLabel"></div></div>
+    <div class="side">
+      <p class="label">Axes</p>
+      <div class="axes" id="axes"></div>
+      <p class="label" style="margin-top:1.25rem">Jump to where a state sits</p>
+      <div class="presets" id="presets"></div>
+    </div>
+  </div>
+
+  <div class="copy" style="margin-top:1.25rem">
+    <pre id="moodCode"></pre><button data-copy="moodCode">Copy</button>
+  </div>
+  <p class="sub">A point cannot reach everything, and it is worth saying plainly: <code>wink</code>
+  is an asymmetry, <code>happy</code>, <code>love</code> and <code>celebrating</code> replace the eyes
+  with a drawn face, and <code>creative</code> carries a spectrum rim. Those are characters, not
+  coordinates. The mood space gives you the capsule-eyed range; the rest stay presets.</p>
 </section>
 
 <section id="byo">
@@ -192,7 +229,7 @@ and the character is an input, so the whole thing works just as well on your dra
 </div>
 
 <script type="module">
-import { mount, PAW_ART, STATE_IDS } from "/_fx/effects/paw-avatar/index.js";
+import { mount, PAW_ART, STATE_IDS, MOOD_PRESETS, NEUTRAL_MOOD } from "/_fx/effects/paw-avatar/index.js";
 import { artFromSvg, artBlock, SAMPLES } from "/art-from-svg.mjs";
 
 const $ = (id) => document.getElementById(id);
@@ -253,6 +290,60 @@ function cards(into, art) {
 }
 cards($("grid"), PAW_ART);
 show("idle");
+
+/* ---- mood ---- */
+const AXES = [
+  ["valence", -1, 1, 0.02, "badly", "well"],
+  ["arousal", 0, 1, 0.01, "asleep", "racing"],
+  ["attention", 0, 1, 0.01, "inward", "on you"]
+];
+const moodHero = mount($("moodHero"), { state: "idle" });
+const sliders = new Map();
+
+function moodNow() {
+  const m = {};
+  for (const [k, s] of sliders) m[k] = Number(s.value);
+  return m;
+}
+function applyMood() {
+  const m = moodNow();
+  moodHero.update({ mood: m });
+  for (const [k, s] of sliders) s.closest(".axis").querySelector("b").textContent = Number(s.value).toFixed(2);
+  $("moodLabel").textContent =
+    `valence ${m.valence.toFixed(2)} · arousal ${m.arousal.toFixed(2)} · attention ${m.attention.toFixed(2)}`;
+  $("moodCode").textContent =
+    `mount(el, {\n` +
+    `  mood: { valence: ${m.valence.toFixed(2)}, arousal: ${m.arousal.toFixed(2)}, attention: ${m.attention.toFixed(2)} }\n` +
+    `});\n\n` +
+    `// or declaratively\n` +
+    `<section data-fx="paw-avatar" data-fx-mood="${m.valence.toFixed(2)},${m.arousal.toFixed(2)},${m.attention.toFixed(2)}"></section>`;
+}
+
+for (const [key, min, max, step, lo, hi] of AXES) {
+  const wrap = document.createElement("div");
+  wrap.className = "axis";
+  wrap.innerHTML =
+    `<label for="ax-${key}">${key}<b></b></label>` +
+    `<input id="ax-${key}" type="range" min="${min}" max="${max}" step="${step}">` +
+    `<p><span>${lo}</span><span>${hi}</span></p>`;
+  $("axes").append(wrap);
+  const input = wrap.querySelector("input");
+  input.value = String(NEUTRAL_MOOD[key]);
+  input.oninput = applyMood;
+  sliders.set(key, input);
+}
+
+for (const [name, point] of Object.entries(MOOD_PRESETS)) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = name;
+  b.onclick = () => {
+    for (const [k, s] of sliders) s.value = String(point[k]);
+    applyMood();
+  };
+  $("presets").append(b);
+}
+applyMood();
 
 /* ---- copy ---- */
 for (const b of document.querySelectorAll("[data-copy]")) {

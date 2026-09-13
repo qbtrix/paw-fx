@@ -892,6 +892,104 @@ const STATES = {
   }
 };
 
+/* ------------------------------------------------------------- the mood space
+ *
+ * The sixteen states are AUTHORED: each is a hand-tuned set of numbers, and
+ * that is why they read well. What they cannot do is sit between two of
+ * themselves. An agent's condition is not one of sixteen labels -- it is
+ * confidence 0.2 and load 0.8, and snapping that to the nearer named state
+ * throws away most of what it knew.
+ *
+ * So: three axes, and any point on them is a face. The named states stay
+ * exactly as they are and are not generated from this; a point is simply
+ * another way to drive the same rig.
+ *
+ *   valence    -1 badly … +1 well          how it is going
+ *   arousal     0 asleep … 1 racing        how much is happening
+ *   attention   0 inward … 1 on you        where it is pointed
+ *
+ * Each axis is given ONE job per part of the rig wherever possible, because
+ * an axis that quietly nudges everything is impossible to tune and
+ * impossible to read back. Where two axes do meet on a number, the comment
+ * says which wins and why.
+ *
+ * WHAT A POINT CANNOT REACH, said plainly: wink is an asymmetry, happy, love
+ * and celebrating replace the eyes with a drawn face, and creative carries a
+ * spectrum rim. Those are characters, not coordinates. A mood gives you the
+ * capsule-eyed range; the rest stay presets.
+ */
+
+export const NEUTRAL_MOOD = { valence: 0, arousal: 0.45, attention: 0.5 };
+
+/** Where each named state sits, near enough to read the space by. */
+export const MOOD_PRESETS = {
+  idle: { valence: 0.05, arousal: 0.4, attention: 0.45 },
+  excited: { valence: 0.8, arousal: 0.95, attention: 0.7 },
+  curious: { valence: 0.25, arousal: 0.6, attention: 0.85 },
+  thinking: { valence: 0.05, arousal: 0.4, attention: 0.1 },
+  working: { valence: 0.1, arousal: 0.7, attention: 0.15 },
+  focused: { valence: 0.05, arousal: 0.6, attention: 0.2 },
+  surprised: { valence: 0.1, arousal: 0.95, attention: 1 },
+  sleeping: { valence: 0.05, arousal: 0, attention: 0 },
+  confused: { valence: -0.3, arousal: 0.45, attention: 0.4 },
+  sad: { valence: -0.75, arousal: 0.2, attention: 0.3 },
+  listening: { valence: 0.2, arousal: 0.5, attention: 1 }
+};
+
+const MOOD_MORPH = 0.5;
+
+/**
+ * A point in the space -> a pose on the rig.
+ *
+ * `t` is seconds since the mood was set, so a mood breathes and shifts like
+ * any state rather than standing still.
+ */
+export function moodPose(mood, t = 0) {
+  const v = clamp(mood.valence ?? 0, -1, 1);
+  const a = clamp(mood.arousal ?? 0.45, 0, 1);
+  const at = clamp(mood.attention ?? 0.5, 0, 1);
+  const down = Math.max(0, -v);
+  const up = Math.max(0, v);
+
+  // EARS carry valence and attention together, which is the one place two
+  // axes genuinely meet: an ear says both "this is going well" and "I am
+  // pointed at you", and on a real animal it is the same muscle.
+  const ear1 = -0.34 * at - 0.26 * v + 0.30 * (0.55 - a);
+  // A little asymmetry so the two ears never read as one rigid piece. It
+  // rides arousal: a racing mascot is not symmetrical, a sleeping one is.
+  const skew = 0.05 * a * Math.sin(t * 0.6);
+
+  // EYES: height is arousal, width is attention. Keeping them on separate
+  // axes is what lets "wide awake but not looking at you" exist at all.
+  const h = 0.55 + 0.8 * a;
+  const w = 0.86 + 0.32 * at;
+  // Below a floor the lids simply close. Modelling drowsiness as a very
+  // short eye instead looked like a squint, which reads as effort.
+  const open = a < 0.12 ? 0.04 + (a / 0.12) * 0.9 : 1;
+  // Mirrored tilt: outer corners down when it is going badly, faintly up
+  // when it is going well. Same-sign tilt is a head roll, not an expression.
+  const tilt = -13 * down + 5 * up;
+
+  return basePose({
+    // A low, unhappy mascot sits lower and rounder.
+    cy: 0.03 * down * (1 - a),
+    sy: 1 + 0.02 * (a - 0.5),
+    ears: { l: ear(ear1 + skew, 0.05 * a * at), r: ear(ear1 - skew, 0.05 * a * at) },
+    gaze: { yaw: 0, pitch: -11 * (1 - a) + 9 * v, roll: 0 },
+    // Attention is literally how much the gaze stays put: a mascot thinking
+    // about something else lets its eyes drift, and one watching you does not.
+    wander: 0.15 + 0.9 * (1 - at),
+    eyes: [eye(w, h, open, tilt), eye(w, h, open, -tilt)],
+    glow: 0.12 + 0.55 * a + 0.28 * up
+  });
+}
+
+/** A mood, as a state definition the engine can fade to like any other. */
+const moodState = (mood) => ({
+  morph: MOOD_MORPH,
+  pose: (t) => moodPose(mood, t)
+});
+
 export const STATE_IDS = Object.keys(STATES);
 
 /**
@@ -967,7 +1065,13 @@ export class PawEngine {
   constructor(initial = "idle", art = PAW_ART) {
     this.art = compileArt(art);
     this.cur = STATES[initial] ? initial : "idle";
+    // The pose SOURCE, not the name: a mood is a definition with no entry in
+    // the state table, and everything downstream -- the fade, the ear lag,
+    // the frozen departure -- works the same either way once the engine
+    // holds a def rather than a key.
+    this.curDef = STATES[this.cur];
     this.prev = null;
+    this.prevDef = null;
     this.frozen = null;
     this.tCur = 0;
     this.tPrev = 0;
@@ -985,13 +1089,13 @@ export class PawEngine {
 
   /** Composite pose at `now`, fade included. Extracted so setState can freeze it. */
   composed(now) {
-    const def = STATES[this.cur];
+    const def = this.curDef;
     const pose = def.pose(Math.max(0, now - this.tCur));
     const since = now - this.tCur;
     // The ears finish after the head, so the window they share is longer.
     if (since >= def.morph * (1 + EAR_LAG)) return pose;
-    const origin = this.frozen ?? (this.prev
-      ? STATES[this.prev].pose(Math.max(0, now - this.tPrev))
+    const origin = this.frozen ?? (this.prevDef
+      ? this.prevDef.pose(Math.max(0, now - this.tPrev))
       : null);
     if (!origin) return pose;
     // Ease-out, and the ratio is CLAMPED: reading a date before the change
@@ -1035,19 +1139,45 @@ export class PawEngine {
 
   setState(id, now) {
     if (!STATES[id] || id === this.cur) return;
-    const midFade = this.prev !== null && now - this.tCur < STATES[this.cur].morph;
+    this.transition(STATES[id], id, now);
+  }
+
+  /**
+   * A point in the mood space, faded to like any state.
+   *
+   * No same-value guard, unlike setState: a mood arrives from a slider or
+   * from an agent's own numbers, so two calls are rarely identical and the
+   * caller is entitled to nudge it as often as it likes.
+   */
+  setMood(mood, now) {
+    this.transition(moodState(mood), "mood", now);
+    this.mood = mood;
+  }
+
+  /** The shared half of a state change: whatever the new pose source is. */
+  transition(def, id, now) {
+    const midFade = this.prevDef !== null && now - this.tCur < this.curDef.morph;
+    // The engine keeps ONE slot of history, so a change landing mid-fade
+    // would otherwise depart from the full previous pose instead of the
+    // partly blended one on screen. Freezing only in that case matters:
+    // freezing always would stop the outgoing state animating during its
+    // own fade.
     this.frozen = midFade ? this.composed(now) : null;
     this.prev = this.cur;
+    this.prevDef = this.curDef;
     this.tPrev = this.tCur;
     this.cur = id;
+    this.curDef = def;
     this.tCur = now;
-    if (STATES[id].blinkIn) this.blinkAt = now;
+    if (def.blinkIn) this.blinkAt = now;
   }
 
   /** Restart on `id` with no history, as if the engine were new. */
   reset(id, now) {
     this.cur = STATES[id] ? id : "idle";
+    this.curDef = STATES[this.cur];
     this.prev = null;
+    this.prevDef = null;
     this.frozen = null;
     this.tCur = now;
     this.tPrev = now;
@@ -1270,6 +1400,8 @@ export function mount(el, opts = {}) {
     // An explicit state wins over the showcase carousel: a site that asks for
     // "thinking" means it, and the snippet ships with both attributes.
     cycle: ds.fxState ? 0 : ds.fxCycle ?? 0,
+    /** A point in the mood space, "valence,arousal,attention", instead of a state. */
+    mood: ds.fxMood ?? "",
     /** The drawing. Pass a different one and you get a different mascot. */
     art: PAW_ART,
     ...opts
@@ -1296,7 +1428,18 @@ export function mount(el, opts = {}) {
   const face = svg.querySelector(".fx-paw-face");
   const spectrum = svg.querySelector(".fx-paw-spectrum-def");
 
+  /** "0.2,0.8,0.5" or {valence,arousal,attention}; anything else is no mood. */
+  const asMood = (m) => {
+    if (!m) return null;
+    if (typeof m === "object") return m;
+    const n = String(m).split(",").map(Number);
+    if (n.length !== 3 || !n.every(Number.isFinite)) return null;
+    return { valence: n[0], arousal: n[1], attention: n[2] };
+  };
+
   const engine = new PawEngine(o.state, o.art);
+  const mood0 = asMood(o.mood);
+  if (mood0) engine.setMood(mood0, 0);
   let raf = 0;
   // Seeded here, not on the first frame: update() can be called before rAF has
   // run, and a t0 of 0 would date that change hundreds of seconds in the
@@ -1402,6 +1545,13 @@ export function mount(el, opts = {}) {
   return {
     update(next = {}) {
       Object.assign(o, next);
+      if ("mood" in next) {
+        const m = asMood(next.mood);
+        const now = still ? 0 : ((performance.now() - t0) / 1000) * speed();
+        if (m) engine.setMood(m, now);
+        else engine.setState(o.state ?? "idle", now);
+        if (still) draw(0);
+      }
       if (next.state && next.state !== engine.state) {
         // Reduced motion holds no clock, so a change there lands whole.
         const now = still ? 0 : (performance.now() - t0) / 1000 * speed();
@@ -1440,6 +1590,7 @@ export const meta = {
     state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening." },
     speed: { type: "number", default: 1, description: "Time multiplier for the whole engine. Clamped to 0.1-10." },
     cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." },
+    mood: { type: "string", default: "", description: "A point in the mood space instead of a named state: \"valence,arousal,attention\", each -1..1, 0..1, 0..1. Empty means use the state." },
     track: { type: "boolean", default: true, description: "Follow the mouse pointer with the gaze. Set data-fx-track=\"false\" to hold the state's own gaze." }
   }
 };

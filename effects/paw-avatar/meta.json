@@ -13,7 +13,7 @@
     "byo-art",
     "dark"
   ],
-  "summary": "A glass mascot whose 16 agent states (idle, thinking, working, creative, sleeping...) morph into each other, with a gaze that follows the pointer. The character is a drawing you can swap: pass your own SVG's art block to mount() and the same states, tracking and glow come with it.",
+  "summary": "A glass mascot whose 16 agent states morph into each other, with a gaze that follows the pointer. Drive it by state, or by a point in a three-axis mood space for anything between them. The character is a drawing you can swap: pass your own SVG's art block to mount().",
   "needs": [],
   "options": {
     "state": {
@@ -30,6 +30,11 @@
       "type": "number",
       "default": 0,
       "description": "Seconds per state when walking every state in turn; 0 holds the chosen state."
+    },
+    "mood": {
+      "type": "string",
+      "default": "",
+      "description": "A point in the mood space instead of a named state: \"valence,arousal,attention\", each -1..1, 0..1, 0..1. Empty means use the state."
     },
     "track": {
       "type": "boolean",
