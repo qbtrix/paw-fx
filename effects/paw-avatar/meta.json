@@ -10,9 +10,10 @@
     "agent-state",
     "glass",
     "pointer",
+    "byo-art",
     "dark"
   ],
-  "summary": "A glass puppy head whose 16 agent states (idle, thinking, working, creative, sleeping...) morph into each other, with a gaze that follows the pointer and a spectrum rim for creative work. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact.",
+  "summary": "A glass mascot whose 16 agent states (idle, thinking, working, creative, sleeping...) morph into each other, with a gaze that follows the pointer. The character is a drawing you can swap: pass your own SVG's art block to mount() and the same states, tracking and glow come with it.",
   "needs": [],
   "options": {
     "state": {
@@ -54,8 +55,8 @@
       "kind": "ours"
     },
     {
-      "what": "The silhouettes come from an authored SVG parsed at load (flattenPath, ours) rather than from arrays traced off video frames, and the head and each ear are separate profiles instead of upstream's single blob.",
-      "why": "Upstream traced a reference video and had no path to read; we have the drawing itself, so the drawing stays the source and the numbers are never hand-copied. Separate profiles let the ears pass behind the head and rotate about their own pivot, which a one-blob model cannot do.",
+      "what": "The silhouettes come from an authored SVG parsed at load (flattenPath, ours) rather than from arrays traced off video frames, the head and each ear are separate profiles instead of upstream's single blob, and the drawing is an INPUT: mount({ art }) takes a different mascot and the engine is unchanged.",
+      "why": "Upstream traced a reference video and had no path to read; we have the drawing itself, so the drawing stays the source and the numbers are never hand-copied. Separate profiles let the ears pass behind the head and rotate about their own pivot. Making the art an input is what turns one mascot into a primitive.",
       "kind": "ours"
     },
     {

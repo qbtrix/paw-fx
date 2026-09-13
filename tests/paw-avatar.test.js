@@ -7,9 +7,8 @@
 // swap at the halfway mark), and nothing leaving the viewBox (an ear swung
 // out is the only geometry that can, and the margin is hand-set).
 import { test, expect } from "bun:test";
-import { PawEngine, STATE_IDS, restingPath, restingMarkup } from "../effects/paw-avatar/index.js";
-
-const HALF_BOX = 162;
+import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART } from "../effects/paw-avatar/index.js";
+import { BLIP_ART } from "./fixtures/art/blip-bot.js";
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
 test("16 states, each with a drawable outline", () => {
@@ -93,16 +92,43 @@ test("the ears leave late and swing past", () => {
   expect(Math.min(...past)).toBeLessThan(reach(settled));
 });
 
-test("nothing leaves the viewBox, ears included", () => {
+test.each([
+  ["the Paw", PAW_ART],
+  ["another mascot entirely", BLIP_ART]
+])("nothing leaves the viewBox for %s, ears included", (_name, art) => {
+  // The box is derived from the drawing and the swings the state table asks
+  // for, so a mascot with longer ears gets a wider one rather than clipping.
+  const box = compileArt(art).box;
   for (const id of STATE_IDS) {
-    const e = new PawEngine(id);
+    const e = new PawEngine(id, art);
     for (const t of [0, 0.3, 1, 4]) {
       const f = e.sample(t);
       for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
-        for (const n of numbers(d)) expect(Math.abs(n)).toBeLessThan(HALF_BOX);
+        for (const n of numbers(d)) expect(Math.abs(n)).toBeLessThan(box);
       }
     }
   }
+});
+
+test("the engine holds no opinion about the character", () => {
+  // Every state, on a mascot with a square skull and upright blade ears.
+  // If this passes, the drawing really is an input and not a decoration.
+  for (const id of STATE_IDS) {
+    const f = new PawEngine(id, BLIP_ART).sample(0, false);
+    for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
+      expect(d.startsWith("M")).toBe(true);
+      expect(numbers(d).every(Number.isFinite)).toBe(true);
+    }
+  }
+  const blip = new PawEngine("idle", BLIP_ART).sample(0, false);
+  const paw = new PawEngine("idle", PAW_ART).sample(0, false);
+  expect(blip.bodyPath).not.toBe(paw.bodyPath);
+  // its eye is a different size, and the states ask in multiples, not units
+  expect(blip.eyes[0].d).not.toBe(paw.eyes[0].d);
+  // and it brings its own material, not the Paw's
+  const markup = restingMarkup("idle", "b", BLIP_ART);
+  expect(markup).toContain("#3a2410");
+  expect(markup).not.toContain("#152033");
 });
 
 test("the resting markup carries the resting frame", () => {
