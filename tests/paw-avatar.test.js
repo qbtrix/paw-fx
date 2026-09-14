@@ -345,3 +345,14 @@ test("hue interpolates the short way round", () => {
   const longWay = Math.min(Math.abs(mid - 113.5), 360 - Math.abs(mid - 113.5));
   expect(shortWay).toBeLessThan(longWay);
 });
+
+test("the second rim lands in the part group, not the clipPath", () => {
+  // The first [data-part] node in a part is the clipPath's copy of the
+  // outline. A path appended beside THAT is a mask, not a picture: every id
+  // resolves, nothing errors, and the rainbow is simply not there. This is
+  // a markup-level check because the failure was a markup-level one.
+  const svg = restingMarkup("idle", "s");
+  const part = svg.slice(svg.indexOf('<g class="fx-paw-part">'), svg.indexOf("</g>", svg.indexOf('<g class="fx-paw-part">')) + 4);
+  // the clipPath closes before the fill and rim, so an append lands after them
+  expect(part.indexOf("</clipPath>")).toBeLessThan(part.indexOf('class="fx-paw-fill"'));
+});

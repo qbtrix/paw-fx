@@ -37,10 +37,12 @@
   opacity: calc(1 - var(--fx-paw-alt-rim, 0));
 }
 
-/* The second rim's own opacity is set per frame; this only stops it
- * inheriting the fade above. */
+/* The second rim: the spectrum, or a tint. Its opacity, fill and stroke are
+ * all set per frame, so nothing here may name them -- a CSS opacity would
+ * beat the attribute and pin it. Only the stroke geometry lives here. */
 .fx-paw-rim-alt {
-  opacity: 1;
+  stroke-width: var(--fx-paw-rim-width, 2.6);
+  stroke-linejoin: round;
 }
 
 /* Mark colours. Named for what they mean, not for the hue, so a re-skin

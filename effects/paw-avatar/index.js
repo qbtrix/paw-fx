@@ -2046,21 +2046,44 @@ export function mount(el, opts = {}) {
         continue;
       }
       if (!el) {
-        const host = parts[key][0].parentElement;
-        host.insertAdjacentHTML("beforeend",
-          `<path class="fx-paw-rim fx-paw-rim-alt" d="" fill="none"/>`);
+        // The first [data-part] node is the clipPath's copy of the outline,
+        // so its parent is the <clipPath> -- and a path inserted in there is
+        // a mask, not a picture. It went in there once, and the rainbow
+        // vanished while every id still resolved. The part group is what we
+        // want, and closest() is what finds it.
+        const host = parts[key][0].closest(".fx-paw-part");
+        host.insertAdjacentHTML("beforeend", `<path class="fx-paw-rim-alt" d=""/>`);
         el = host.lastElementChild;
         altRims[key] = el;
       }
       el.setAttribute("d", key === "body" ? f.bodyPath : key === "earL" ? f.earLPath : f.earRPath);
-      el.setAttribute("stroke", f.rainbow >= f.tint ? spectrumRef : `hsl(${r2(f.tintHue)} 90% 68%)`);
-      el.setAttribute("opacity", r2(alt));
+      if (f.rainbow >= f.tint) {
+        // the spectrum is an outline only; the glass underneath stays the drawing's
+        el.setAttribute("stroke", spectrumRef);
+        el.setAttribute("fill", "none");
+        el.setAttribute("opacity", r2(f.rainbow));
+      } else {
+        // A tint is the glass itself changing colour, so it is a FILL as well
+        // as a rim. The fill is deep and the rim is bright, which is how lit
+        // glass looks: the body soaks the colour, the edge catches the light.
+        const h = r2(f.tintHue);
+        el.setAttribute("stroke", `hsl(${h} 92% 70%)`);
+        el.setAttribute("fill", `hsl(${h} 80% 40%)`);
+        el.setAttribute("fill-opacity", r2(0.42 * f.tint));
+        el.setAttribute("opacity", r2(f.tint));
+      }
     }
     wrap.style.setProperty("--fx-paw-alt-rim", r2(alt));
     if (f.tint > 0.01) {
-      wrap.style.setProperty("--fx-paw-glow", `hsl(${r2(f.tintHue)} 85% 62% / ${r2(0.35 + 0.3 * f.tint)})`);
+      const h = r2(f.tintHue);
+      // the bloom and the floor follow the glass
+      wrap.style.setProperty("--fx-paw-glow", `hsl(${h} 90% 58% / ${r2(0.3 + 0.35 * f.tint)})`);
+      wrap.style.setProperty("--fx-paw-halo", `hsl(${h} 85% 60%)`);
+      wrap.style.setProperty("--fx-paw-floor-a", `hsl(${h} 85% 72%)`);
     } else {
       wrap.style.removeProperty("--fx-paw-glow");
+      wrap.style.removeProperty("--fx-paw-halo");
+      wrap.style.removeProperty("--fx-paw-floor-a");
     }
     for (const p of parts.body) p.setAttribute("d", f.bodyPath);
     for (const p of parts.earL) p.setAttribute("d", f.earLPath);
