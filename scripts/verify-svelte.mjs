@@ -66,11 +66,15 @@ const fails = [];
 let compiled = 0;
 let warned = 0;
 const byCode = new Map();
+const noTarget = [];
 
 for (const f of readdirSync(itemsDir).filter((f) => f.endsWith(".json")).sort()) {
   const item = JSON.parse(readFileSync(join(itemsDir, f), "utf8"));
   const target = item.targets?.svelte;
-  if (!target) continue;
+  // Not a failure: an effect whose vendor key publishes onto globalThis cannot
+  // run under a bundler, so it ships no svelte target at all. Counted and named
+  // so a reader seeing fewer components than effects knows why.
+  if (!target) { noTarget.push(item.name); continue; }
   for (const file of target.files) {
     try {
       const res = compile(file.content, { filename: file.path, generate: "client" });
@@ -101,3 +105,6 @@ if (byCode.size) {
   console.log(`  warnings by code: ${[...byCode].sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c} x${n}`).join(", ")}`);
 }
 console.log(`svelte ok: ${compiled} component(s) compile against svelte ${VERSION}${warned ? ` (${warned} warning(s))` : ""}`);
+if (noTarget.length) {
+  console.log(`  ${noTarget.length} effect(s) ship no svelte target on purpose (vendor publishes globals): ${noTarget.join(", ")}`);
+}

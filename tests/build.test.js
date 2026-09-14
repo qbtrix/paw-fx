@@ -171,9 +171,9 @@ test("the generated svelte component wires mount, update and destroy", () => {
   const c = svelteComponent("aurora-css", '<link rel="stylesheet" href="/x.css">\n<section data-fx="aurora-css">hi</section>');
   expect(c).toContain('import { mount } from "./index.js"');
   expect(c).toContain('import "./style.css"');
-  expect(c).toContain('mount(root.querySelector(\'[data-fx="aurora-css"]\')');
-  expect(c).toContain("handle?.destroy?.()");
-  expect(c).toContain("handle?.update?.");
+  expect(c).toContain('root.querySelectorAll(\'[data-fx="aurora-css"]\')');
+  expect(c).toContain("h?.destroy?.()");
+  expect(c).toContain("h?.update?.");
   expect(c).toContain("bind:this={root}");
   // The stylesheet link is html delivery; a component imports the css instead.
   expect(c).not.toContain("<link");
@@ -192,13 +192,51 @@ test("literal braces in snippet markup are escaped, not left to the parser", () 
   expect(markup).not.toContain("{a}");
 });
 
-// Every effect must carry both targets, or "engine-agnostic" is true of one
-// sample and false of the library.
-test("every effect ships both targets", () => {
+// engines[] is a PROMISE, not a label. This is the invariant behind it, keyed
+// off the manifest rather than a hardcoded list of names, so adding another
+// globals-publishing vendor key cannot quietly ship five more dead targets.
+//
+// FOUND BY RENDERING, NOT BY COMPILING. The five tsParticles effects compiled
+// clean, mounted clean, rendered a correctly sized section and reported no
+// error, and did nothing at all: the vendored bundle executes under Vite but
+// never publishes `tsParticles`/`loadSlim` onto globalThis, so each effect hits
+// its own `if (!engine || !loadSlim) return` guard and no-ops.
+test("svelte is claimed only where a bundler can actually run it", () => {
+  const manifest = JSON.parse(readFileSync(fx("vendor/manifest.json"), "utf8"));
+  const globalKeys = Object.entries(manifest).filter(([, v]) => v.publishesGlobals).map(([k]) => k);
+  expect(globalKeys).toEqual(["tsparticles"]);
+
+  const htmlOnly = [];
   for (const dir of effectDirs()) {
     const item = buildItem(dir);
-    expect(item.engines).toEqual(["html", "svelte"]);
-    expect(item.targets.svelte.files).toHaveLength(1);
+    // html is universal: every effect ships it.
+    expect(item.engines[0]).toBe("html");
     expect(item.targets.html.snippet.length).toBeGreaterThan(0);
+
+    const usesGlobals = item.needs.some((k) => globalKeys.includes(k));
+    expect(item.engines.includes("svelte")).toBe(!usesGlobals);
+    if (usesGlobals) {
+      htmlOnly.push(item.name);
+      // Absent, not empty: a consumer asking for an engine gets nothing back
+      // rather than an object that looks usable.
+      expect(item.targets.svelte).toBeUndefined();
+    } else {
+      expect(item.targets.svelte.files).toHaveLength(1);
+    }
   }
+  expect(htmlOnly.sort()).toEqual(["bokeh-drift", "confetti-burst", "links-network", "snow-fall", "starfield"]);
+});
+
+// REGRESSION. cursor-spotlight ships THREE data-fx cards under one snippet and
+// the html usage mounts every one of them. The first svelte wrapper used
+// querySelector and mounted only the first, leaving two cards dead -- a
+// divergence that compiles, renders, and passes a "did it mount" check.
+test("the svelte wrapper mounts every matching section, not just the first", () => {
+  const item = buildItem(fx("effects/cursor-spotlight"));
+  const c = item.targets.svelte.files[0].content;
+  expect(c).toContain('querySelectorAll(\'[data-fx="cursor-spotlight"]\')');
+  expect(c).not.toContain("querySelector('[data-fx");
+  // The html target really does mount all of them, which is what we match.
+  expect(item.targets.html.usage).toContain("querySelectorAll");
+  expect((item.targets.html.snippet.match(/data-fx="cursor-spotlight"/g) ?? []).length).toBe(3);
 });

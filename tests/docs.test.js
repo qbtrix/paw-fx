@@ -43,8 +43,8 @@ test("a page carries what someone would actually paste", () => {
   const item = JSON.parse(readFileSync(join(out, "items", "paw-avatar.json"), "utf8"));
   const page = effectPage(item, BASE);
   expect(page).toContain("# paw-avatar");
-  expect(page).toContain(item.usage);
-  expect(page).toContain(item.snippet.trim());
+  expect(page).toContain(item.targets.html.usage);
+  expect(page).toContain(item.targets.html.snippet.trim());
   for (const f of item.files) expect(page).toContain(f.path);
   expect(page).toContain(`npx shadcn@latest add ${BASE}/items/paw-avatar.json`);
   // a ported effect says where it came from, on the page and not only in JSON

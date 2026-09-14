@@ -127,7 +127,7 @@ so a consumer can filter without loading items.
 item
 ├─ name kind category tags license origin options deviations   identity, neutral
 ├─ files[]                                the effect itself, neutral
-├─ engines[]  ["html", "svelte"]
+├─ engines[]  ["html", "svelte"]         93 of 98; the other 5 are ["html"]
 └─ targets
    ├─ html    snippet · usage · demo[]    the section markup and its demo pages
    └─ svelte  files[<Name>.svelte] · usage
@@ -149,15 +149,31 @@ reaches the expression parser. And the stylesheet `<link>` is html delivery, not
 part of the section, so it is stripped and replaced by a css import -- every
 snippet carries exactly one, on its own line.
 
-**What is deliberately not done.** `needs` is not resolved to npm packages for
-build-step engines. It could be: `vendor/manifest.json` already records
-`package` and `version` for every key. But tsParticles assigns its exports to
-`globalThis` rather than exporting them, so the rewrite is not mechanical across
-all five keys, and a half-mechanical rewrite of ported code is exactly the kind
-of judgement the gates exist to avoid. The svelte target therefore ships the
-same self-contained vendor files the html target does: correct everywhere,
-heavier than it needs to be on a bundler. Revisit when a real Svelte site
-consumes this.
+**Five effects have no svelte target, and that is the honest answer rather than
+a gap.** The svelte target ships the same self-contained vendor files the html
+target does, which works for `anime`, `three`, `paper` and `lenis` because all
+four are real ES modules with real exports. It does not work for `tsparticles`.
+That bundle publishes its engine onto `globalThis` instead of exporting it, and
+under a bundler its UMD branch resolves to the module exports, so the global
+never appears. Measured under Vite, not assumed: `globalThis.__tsParticlesInternals`
+IS set, so the file executes and is not tree-shaken, while `globalThis.tsParticles`
+and `globalThis.loadSlim` are both `undefined`.
+
+The five effects that need it (`bokeh-drift`, `confetti-burst`, `links-network`,
+`snow-fall`, `starfield`) each guard with `if (!engine || !loadSlim) return`, so
+the failure is silent in the worst way: the section compiles, mounts, renders at
+a correct size, logs no error, and does nothing. Only rendering catches it; no
+compile gate can. So `vendor/manifest.json` marks that key `publishesGlobals`
+and those effects ship `engines: ["html"]` with no `targets.svelte` at all.
+`engines[]` is a promise about what will actually run, and an absent target is
+better than one that looks usable and is dead.
+
+**The upgrade path** is to resolve `needs` to npm packages for build-step
+engines, which `vendor/manifest.json` already has the data for (`package` and
+`version` on every key). That is what would let the five back in, since
+`@tsparticles/slim` exports properly when imported by name. It is not done here
+because rewriting a ported effect's imports is the kind of judgement the gates
+exist to replace, and no real Svelte site consumes this yet.
 
 `kind` is what keeps this from needing a second registry later. `effect` is a
 `mount()` section any engine can host and is the default when the key is absent,

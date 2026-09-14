@@ -123,17 +123,22 @@ export function svelteComponent(name, snippet) {
   const opts = $props();
 
   let root;
-  let handle = null;
+  let handles = [];
 
   onMount(() => {
-    // mount() is handed the section itself, the same element the html target's
-    // usage selects with [data-fx="${name}"].
-    handle = mount(root.querySelector('[data-fx="${name}"]') ?? root, opts);
-    return () => { handle?.destroy?.(); handle = null; };
+    // querySelectorAll, NOT querySelector: the html target's usage mounts EVERY
+    // matching section, and cursor-spotlight ships three cards under one
+    // snippet. Mounting only the first left two of its three cards dead in
+    // Svelte while the html target ran all three, which is a divergence the
+    // component still renders and still compiles through.
+    const found = root.querySelectorAll('[data-fx="${name}"]');
+    const els = found.length ? [...found] : [root];
+    handles = els.map((el) => mount(el, opts));
+    return () => { for (const h of handles) h?.destroy?.(); handles = []; };
   });
 
   // Props changing is the engine-native equivalent of calling update().
-  $effect(() => { handle?.update?.({ ...opts }); });
+  $effect(() => { const next = { ...opts }; for (const h of handles) h?.update?.(next); });
 </script>
 
 <!-- display:contents so the wrapper carries the ref without entering layout. -->
@@ -231,13 +236,24 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
   // `npx shadcn add <url>`; `target` puts the files under public/ because they
   // are assets a page links at /_fx/..., not modules anything imports. The
   // engine split (kind, engines, targets) keeps identity and files[] neutral
-  // and puts per-engine delivery under targets.<engine>: html carries the
-  // section markup and the hand-written demo pages, svelte a component. Both
-  // read the SAME files[]. Top-level demo/snippet/usage stay for the readers
-  // that predate targets.
+  // and puts per-engine delivery under targets.<engine>. Nothing about
+  // delivery lives at the top level any more; readers go through targets.
+  // html carries the section markup and the hand-written demo pages; svelte
+  // carries a component. Both drive the SAME files[] above.
+  // A vendor key that publishes onto globalThis instead of exporting cannot
+  // survive a bundler: measured, not assumed. The vendored tsParticles bundle
+  // DOES execute under Vite (globalThis.__tsParticlesInternals is set) but
+  // never publishes `tsParticles`/`loadSlim`, because its UMD branch resolves
+  // to the module exports rather than the browser global. The effects then hit
+  // their own `if (!engine || !loadSlim) return` guard and silently do nothing:
+  // the section still renders at rest, still throws no error, still passes a
+  // "did it mount" check, and is dead. So those effects do not CLAIM svelte.
+  // That is the point of engines[] -- it is a promise, and a target that
+  // cannot run is worse than an absent one.
+  const bundlerSafe = needs.every((k) => !manifest[k]?.publishesGlobals);
   const targets = {
     html: { files: [], snippet, usage, demo },
-    svelte: svelteTarget(name, snippet),
+    ...(bundlerSafe ? { svelte: svelteTarget(name, snippet) } : {}),
   };
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
@@ -250,9 +266,6 @@ export function buildItem(dir, vendorDir = join(ROOT, "vendor")) {
     })),
     engines: Object.keys(targets),
     targets,
-    demo,
-    snippet,
-    usage,
   };
 }
 
