@@ -31,6 +31,11 @@
       "default": 0,
       "description": "Seconds per state when walking every state in turn; 0 holds the chosen state."
     },
+    "fps": {
+      "type": "number",
+      "default": 0,
+      "description": "Cap how often it redraws. 0 draws every frame the browser offers; 30 halves the work for a mascot nobody is staring at, and the animation is unchanged because the pose is a function of time."
+    },
     "mood": {
       "type": "string",
       "default": "",

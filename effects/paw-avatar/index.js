@@ -1974,6 +1974,15 @@ export function mount(el, opts = {}) {
     // An explicit state wins over the showcase carousel: a site that asks for
     // "thinking" means it, and the snippet ships with both attributes.
     cycle: ds.fxState ? 0 : ds.fxCycle ?? 0,
+    /**
+     * Draws per second. 0 means every frame the browser offers.
+     *
+     * Sixty is right for a hero somebody is looking at. It is wasteful for a
+     * mascot idling in the corner of a desktop: measured on a Tauri window,
+     * drawing the resting Paw at 60 cost about 9% of a core, and almost all
+     * of that is breathing and drift nobody can see at half the rate.
+     */
+    fps: Number(ds.fxFps ?? 0) || 0,
     /** A point in the mood space, "valence,arousal,attention", instead of a state. */
     mood: ds.fxMood ?? "",
     /** The drawing. Pass a different one and you get a different mascot. */
@@ -2034,6 +2043,8 @@ export function mount(el, opts = {}) {
   /* Last sampled time, so a pointer move dates its look without reading a
    * second clock. A frame old at most, which is below the catch-up time. */
   let clock = 0;
+  /** When the last draw went out, for the fps cap. */
+  let lastDraw = -1e9;
 
   const speed = () => clamp(Number(o.speed) || 1, 0.1, 10);
 
@@ -2159,7 +2170,14 @@ export function mount(el, opts = {}) {
       cycleAt = (cycleAt + 1) % STATE_IDS.length;
       engine.setState(STATE_IDS[cycleAt], now);
     }
-    if (onScreen) draw(now);
+    // The clock always advances; only the DRAWING is rationed. A capped
+    // avatar is not a slower one -- sample(t) is a function of time, so it
+    // shows the right frame for the moment it is drawn, just less often.
+    const cap = Number(o.fps) || 0;
+    if (onScreen && (!cap || ts - lastDraw >= 1000 / cap - 1)) {
+      lastDraw = ts;
+      draw(now);
+    }
     raf = requestAnimationFrame(frame);
   }
 
@@ -2314,6 +2332,7 @@ export const meta = {
     state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, awkward, annoyed, gloomy, dizzy, starstruck, crying, overheated, firedUp, powering, shocked, smug, deadpan, listening." },
     speed: { type: "number", default: 1, description: "Time multiplier for the whole engine. Clamped to 0.1-10." },
     cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." },
+    fps: { type: "number", default: 0, description: "Cap how often it redraws. 0 draws every frame the browser offers; 30 halves the work for a mascot nobody is staring at, and the animation is unchanged because the pose is a function of time." },
     mood: { type: "string", default: "", description: "A point in the mood space instead of a named state: \"valence,arousal,attention\", each -1..1, 0..1, 0..1. Empty means use the state." },
     track: { type: "boolean", default: true, description: "Follow the mouse pointer with the gaze. Set data-fx-track=\"false\" to hold the state's own gaze." }
   }
