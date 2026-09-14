@@ -481,7 +481,7 @@ export function buildGallery(registryDir, out = join(registryDir, "gallery")) {
     const item = items.find((i) => i.name === name);
     if (!item) throw new Error(`gallery chrome wants "${name}", which the registry does not have`);
     if ((item.needs || []).length) throw new Error(`gallery chrome "${name}" needs ${item.needs.join(", ")}; chrome must be dependency-free`);
-    const [link, , mount] = item.usage.split("\n");
+    const [link, , mount] = item.targets.html.usage.split("\n");
     links.push(link);
     mounts.push(mount);
   }

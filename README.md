@@ -97,7 +97,7 @@ Vendored files are the one exception to the no-globals rule. The tsParticles sli
 
 ## meta.json
 
-Validated against `schema/meta.schema.json`: `name` (kebab), `version`, `category` (backgrounds, particles, 3d-hero, scroll, text, cursor, transition), `tags[]`, `summary`, `needs[]` (vendor keys), `options{}` (name to `{type, default, description}`), `license` (allow-list in LICENSES.md), `origin`. `origin` itself is always required, because lint treats a missing one as ported and fails safe; `repo`, `commit` and `path` inside it are required only when `origin.repo` is not `paw-fx`. An original writes `"origin": { "repo": "paw-fx" }` and nothing else.
+Validated against `schema/meta.schema.json`: `name` (kebab), `kind` (optional: `effect`, `component` or `template`; absent means `effect`), `version`, `category` (backgrounds, particles, 3d-hero, scroll, text, cursor, transition), `tags[]`, `summary`, `needs[]` (vendor keys), `options{}` (name to `{type, default, description}`), `license` (allow-list in LICENSES.md), `origin`. `origin` itself is always required, because lint treats a missing one as ported and fails safe; `repo`, `commit` and `path` inside it are required only when `origin.repo` is not `paw-fx`. An original writes `"origin": { "repo": "paw-fx" }` and nothing else.
 
 ## Adding an effect
 
@@ -107,9 +107,90 @@ Lint enforces: schema, licence allow-list and origin, every `needs` key present 
 
 ## Registry
 
-`bun run build` writes `dist/registry/registry.json` (index: name, category, tags, summary, needs, license), `dist/registry/items/<name>.json` (meta plus `deviations`, `files[{path, content}]`, `snippet`, `usage`) and `dist/registry/previews/<name>.png`, copied from the effect. Those last two exist because `dist/registry/` is the whole of what a consumer sees -- the MCP server serves it and the gallery reads it and nothing else -- so the two questions a human asks before trusting an effect, what does it look like and where does it depart from upstream, have to be answerable from the registry. An effect with no `preview.png` is skipped rather than failing the build; a preview is a presentation asset, not part of the contract lint gates. Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it. An item also carries `demo`: the hand-written pages under `effects/<name>/demo/`, emitted at `_fx/effects/<name>/demo/<file>` and kept out of `files[]` on purpose (see Live demos). It is an empty list on an effect that ships none, never absent.
+`bun run build` writes `dist/registry/registry.json` (index: name, kind, category, tags, summary, needs, license, engines), `dist/registry/items/<name>.json` (meta plus `deviations`, `files[{path, content}]`, `engines[]` and `targets{}` -- see Targets and engines) and `dist/registry/previews/<name>.png`, copied from the effect. Those last two exist because `dist/registry/` is the whole of what a consumer sees -- the MCP server serves it and the gallery reads it and nothing else -- so the two questions a human asks before trusting an effect, what does it look like and where does it depart from upstream, have to be answerable from the registry. An effect with no `preview.png` is skipped rather than failing the build; a preview is a presentation asset, not part of the contract lint gates. Files are the effect's `index.js` and `style.css`, its `shader.frag` when it has one, every `../_shared/<file>` its index.js imports (emitted as `_fx/effects/_shared/<filename>`), and, for each `needs` key, every file and licence file `vendor/manifest.json` lists for it, emitted as `_fx/vendor/<filename>`; the build fails if one is missing from `vendor/`. `usage` is three lines: link the css, place the snippet, mount it. An item also carries `demo`: the hand-written pages under `effects/<name>/demo/`, emitted at `_fx/effects/<name>/demo/<file>` and kept out of `files[]` on purpose (see Live demos). It is an empty list on an effect that ships none, never absent.
 
 Paths in `usage` and in `snippet.html` are root-absolute (`/_fx/...`), not page-relative. An html Paw Site is served by an assets-only Worker with `assets.directory: "."` and the sites code has no base-path concept, so a site always sits at the origin root: `./_fx/...` would resolve wrong on any nested page such as `/blog/post.html`. `usage` mounts with `querySelectorAll` and a loop, because the scroll, text and cursor categories routinely appear several times on one page.
+
+## Targets and engines
+
+An item's IDENTITY is engine-neutral and its DELIVERY is not, so the two are
+stored apart. `name`, `kind`, `category`, `tags`, `license`, `origin`, `options`,
+`deviations` and the preview describe the thing itself and sit at the top level.
+So does `files[]`, because the effect's own code -- `index.js`, `style.css`,
+`shader.frag`, `_shared/`, the vendored dependencies -- is the same code on
+every engine; `mount(el, opts) -> {update, destroy}` is not an html idea. What
+differs per engine is only how you REACH that code, and that lives under
+`targets.<engine>`. `engines[]` is `Object.keys(targets)` and rides on the index
+so a consumer can filter without loading items.
+
+```
+item
+├─ name kind category tags license origin options deviations   identity, neutral
+├─ files[]                                the effect itself, neutral
+├─ engines[]  ["html", "svelte"]         93 of 98; the other 5 are ["html"]
+└─ targets
+   ├─ html    snippet · usage · demo[]    the section markup and its demo pages
+   └─ svelte  files[<Name>.svelte] · usage
+```
+
+**The svelte target is generated, never hand-written.** `mount()` is already the
+portable core, so the wrapper is one shape for all 98: mount on mount, update
+when props change, destroy on teardown, importing the very same `index.js` and
+`style.css` the html target ships. Nothing about the port is rewritten, so a
+Svelte consumer and an html consumer are running identical effect code. The
+component embeds the same resting markup the snippet carries, so it is finished
+at rest before `mount()` runs, exactly as the html target is.
+
+Two things about that generation are worth knowing because both were found the
+hard way. Svelte reads `{` and `}` in a template as an expression delimiter, and
+ten of the 98 snippets carry literal braces inside ASCII-art grids, so the
+markup is escaped to `&#123;`/`&#125;`, which renders identically and never
+reaches the expression parser. And the stylesheet `<link>` is html delivery, not
+part of the section, so it is stripped and replaced by a css import -- every
+snippet carries exactly one, on its own line.
+
+**Five effects have no svelte target, and that is the honest answer rather than
+a gap.** The svelte target ships the same self-contained vendor files the html
+target does, which works for `anime`, `three`, `paper` and `lenis` because all
+four are real ES modules with real exports. It does not work for `tsparticles`.
+That bundle publishes its engine onto `globalThis` instead of exporting it, and
+under a bundler its UMD branch resolves to the module exports, so the global
+never appears. Measured under Vite, not assumed: `globalThis.__tsParticlesInternals`
+IS set, so the file executes and is not tree-shaken, while `globalThis.tsParticles`
+and `globalThis.loadSlim` are both `undefined`.
+
+The five effects that need it (`bokeh-drift`, `confetti-burst`, `links-network`,
+`snow-fall`, `starfield`) each guard with `if (!engine || !loadSlim) return`, so
+the failure is silent in the worst way: the section compiles, mounts, renders at
+a correct size, logs no error, and does nothing. Only rendering catches it; no
+compile gate can. So `vendor/manifest.json` marks that key `publishesGlobals`
+and those effects ship `engines: ["html"]` with no `targets.svelte` at all.
+`engines[]` is a promise about what will actually run, and an absent target is
+better than one that looks usable and is dead.
+
+**The upgrade path** is to resolve `needs` to npm packages for build-step
+engines, which `vendor/manifest.json` already has the data for (`package` and
+`version` on every key). That is what would let the five back in, since
+`@tsparticles/slim` exports properly when imported by name. It is not done here
+because rewriting a ported effect's imports is the kind of judgement the gates
+exist to replace, and no real Svelte site consumes this yet.
+
+`kind` is what keeps this from needing a second registry later. `effect` is a
+`mount()` section any engine can host and is the default when the key is absent,
+which is why no existing `meta.json` changed. `component` would be native to one
+engine and ship only that target. `template` would be a whole site. One
+registry, one listing per product, several delivery formats.
+
+**Verifying the svelte target.** `bun run verify:svelte` compiles every
+generated component with a real Svelte compiler and fails on any that does not.
+It is NOT part of `bun run check`, and that is deliberate: paw-fx ships zero
+dependencies and the effects must keep shipping zero, so the compiler is not a
+devDependency here. It is resolved from a sibling checkout that has one
+(`paw-enterprise`, `ripple`) or from `PAW_FX_SVELTE_ROOT`. If it finds no
+compiler it exits 1 and says so rather than skipping, because a gate that
+reports green when it did not run is worse than no gate. It compiles only; it
+does not render, so it proves the component is valid Svelte and its lifecycle
+wiring parses, not that the effect looks right once mounted.
 
 ## Gallery
 
@@ -250,6 +331,7 @@ bun run build   # dist/registry
 bun run gallery # build, then dist/registry/gallery (the public page)
 bun run smoke   # resting state renders with no effect script (needs agent-browser)
 bun run verify  # port fidelity against the pinned upstream (network, needs gh)
+bun run verify:svelte  # the generated svelte components compile (needs a svelte compiler)
 bun test
 bun run check   # lint + build + smoke + test
 ```

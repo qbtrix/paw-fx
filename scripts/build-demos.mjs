@@ -119,8 +119,8 @@ const filler = (blocks, cls = "") =>
 // Both toggle states ship in the markup and CSS shows one, so the control needs
 // no script of its own and works on the first paint.
 function bar(item, rewired = false) {
-  const two = item.demo?.length
-    ? `\n  <a class="fxd-bar__extra" href="/${esc(item.demo[0].path)}">Two-page demo</a>`
+  const two = item.targets.html.demo?.length
+    ? `\n  <a class="fxd-bar__extra" href="/${esc(item.targets.html.demo[0].path)}">Two-page demo</a>`
     : "";
   // Said out loud on the page, because a visitor who clicks a link here should
   // know the destination is a demo convenience and not part of the section.
@@ -148,17 +148,17 @@ function bar(item, rewired = false) {
  * mistakes a demo convenience for the section's real markup.
  */
 const rewireDemoLinks = (item) => {
-  const dest = (item.demo ?? []).find((f) => /\/(a|index)\.html$/.test(f.path))?.path;
-  if (!dest) return { snippet: item.snippet, rewired: false };
-  const snippet = item.snippet.replace(
+  const dest = (item.targets.html.demo ?? []).find((f) => /\/(a|index)\.html$/.test(f.path))?.path;
+  if (!dest) return { snippet: item.targets.html.snippet, rewired: false };
+  const snippet = item.targets.html.snippet.replace(
     /href="\/(?!_fx\/)[^"]*"/g,
     `href="/${dest.replace(/^\//, "")}"`,
   );
-  return { snippet, rewired: snippet !== item.snippet };
+  return { snippet, rewired: snippet !== item.targets.html.snippet };
 };
 
 export function demoPage(item) {
-  const [link, , mount] = item.usage.split("\n");
+  const [link, , mount] = item.targets.html.usage.split("\n");
   const scroll = item.category === "scroll";
   const { snippet, rewired } = rewireDemoLinks(item);
   return `<!doctype html>
@@ -199,7 +199,7 @@ export function buildDemos(items, out) {
 
   mkdirSync(join(out, "demo"), { recursive: true });
   for (const item of items) {
-    for (const f of [...item.files, ...(item.demo ?? [])]) put(f.path, f.content);
+    for (const f of [...item.files, ...(item.targets.html.demo ?? [])]) put(f.path, f.content);
     put(`demo/${item.name}.html`, demoPage(item));
   }
   copyFileSync(join(ASSETS, "demo.css"), join(out, "demo", "demo.css"));
