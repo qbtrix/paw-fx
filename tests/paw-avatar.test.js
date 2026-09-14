@@ -7,12 +7,12 @@
 // swap at the halfway mark), and nothing leaving the viewBox (an ear swung
 // out is the only geometry that can, and the margin is hand-set).
 import { test, expect } from "bun:test";
-import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART } from "../effects/paw-avatar/index.js";
+import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART, moodPose, MOOD_PRESETS } from "../effects/paw-avatar/index.js";
 import { BLIP_ART } from "./fixtures/art/blip-bot.js";
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
-test("16 states, each with a drawable outline", () => {
-  expect(STATE_IDS).toHaveLength(16);
+test("every state has a drawable outline", () => {
+  expect(STATE_IDS.length).toBeGreaterThanOrEqual(28);
   for (const id of STATE_IDS) {
     const f = new PawEngine(id).sample(0, false);
     for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
@@ -185,4 +185,174 @@ test("lifted decoration inherits the root the drawing was written against", () =
   const sheen = svg.slice(svg.indexOf("fx-paw-clip-body-s"));
   expect(sheen).toMatch(/<g fill="none" transform=/);
   expect(svg).toMatch(/class="fx-paw-ground" fill="none"/);
+});
+
+test("every corner of the mood space is a drawable face", () => {
+  for (const valence of [-1, 1]) {
+    for (const arousal of [0, 1]) {
+      for (const attention of [0, 1]) {
+        const e = new PawEngine("idle");
+        e.setMood({ valence, arousal, attention }, 0);
+        const f = e.sample(5, false);
+        for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
+          expect(numbers(d).every(Number.isFinite)).toBe(true);
+        }
+        expect(f.eyes.length).toBe(2);
+      }
+    }
+  }
+});
+
+test("each axis moves the thing it is supposed to, and not the others", () => {
+  // An axis that quietly nudges everything is impossible to tune and
+  // impossible to read back, so the mapping gives each one a job.
+  const at = (m) => moodPose(m, 0);
+  const base = { valence: 0, arousal: 0.5, attention: 0.5 };
+
+  // arousal owns eye height
+  expect(at({ ...base, arousal: 0.9 }).eyes[0].h).toBeGreaterThan(at({ ...base, arousal: 0.1 }).eyes[0].h);
+  // attention owns eye width, and leaves height alone
+  const wide = at({ ...base, attention: 1 });
+  const narrow = at({ ...base, attention: 0 });
+  expect(wide.eyes[0].w).toBeGreaterThan(narrow.eyes[0].w);
+  expect(wide.eyes[0].h).toBe(narrow.eyes[0].h);
+  // attention is also how much the gaze stays put
+  expect(wide.wander).toBeLessThan(narrow.wander);
+  // valence tips the ears: up when it is going well, down when it is not
+  expect(at({ ...base, valence: 1 }).ears.l.angle).toBeLessThan(at({ ...base, valence: -1 }).ears.l.angle);
+  // and mirrors the eye tilt, which is what separates an expression from a head roll
+  const sad = at({ ...base, valence: -1 });
+  expect(sad.eyes[0].tilt).toBe(-sad.eyes[1].tilt);
+  expect(sad.eyes[0].tilt).toBeLessThan(0);
+});
+
+test("low arousal closes the lids rather than shortening the eye", () => {
+  // Modelling drowsiness as a very short eye looked like a squint, which
+  // reads as effort -- the opposite of what it should say.
+  expect(moodPose({ valence: 0, arousal: 0, attention: 0.5 }).eyes[0].open).toBeLessThan(0.1);
+  expect(moodPose({ valence: 0, arousal: 0.5, attention: 0.5 }).eyes[0].open).toBe(1);
+});
+
+test("a mood fades in like a state, and a state can take over again", () => {
+  const e = new PawEngine("idle");
+  const idle = e.sample(2, false).earLPath;
+  e.setMood({ valence: -0.9, arousal: 0.1, attention: 0.2 }, 2);
+  const settled = e.sample(9, false).earLPath;
+  expect(settled).not.toBe(idle);
+  const mid = e.sample(2.3, false).earLPath;
+  expect(mid).not.toBe(idle);
+  expect(mid).not.toBe(settled);
+  // and it is still a pure function of time
+  expect(e.sample(2.3, false).earLPath).toBe(mid);
+  e.setState("excited", 10);
+  expect(e.state).toBe("excited");
+  expect(e.sample(14, false).earLPath).not.toBe(settled);
+});
+
+test("a reaction layers on the pose instead of replacing it", () => {
+  // A poke is not a state: the mascot does not stop thinking because you
+  // prodded it. So the state it was in has to survive the flinch.
+  const e = new PawEngine("thinking");
+  const before = e.sample(3).glyphs.think;
+  e.react("poke", 3);
+  const during = e.sample(3.08);
+  expect(during.bodyPath).not.toBe(e.sample(3).bodyPath);
+  expect(during.glyphs.think).toBeDefined();
+  expect(during.glyphs.think.o).toBeCloseTo(before.o, 5);
+  // and it is spent inside its window rather than lingering
+  expect(e.impulseAt("poke", 3 + 2)).toBe(0);
+});
+
+test("an impulse restarts rather than accumulating", () => {
+  // Two pokes in quick succession are two flinches, not one enormous one.
+  const e = new PawEngine("idle");
+  e.react("poke", 0);
+  const first = Math.abs(e.impulseAt("poke", 0.05));
+  e.react("poke", 0.2);
+  expect(Math.abs(e.impulseAt("poke", 0.25))).toBeCloseTo(first, 5);
+});
+
+test("the spin takes the eyes round the back and lands where it would anyway", () => {
+  // Only possible because the eyes ride a sphere: a full turn puts them
+  // behind the head and returns them from the other side, and -360 is the
+  // same angle as 0, so it costs nothing at the far end.
+  const e = new PawEngine("idle");
+  e.setState("creative", 0);
+  const counts = [0.1, 0.2, 0.3].map((t) => e.sample(t).eyes.length);
+  expect(Math.min(...counts)).toBeLessThan(2);
+  expect(e.sample(5).eyes[0].matrix).toBe(new PawEngine("creative").sample(5).eyes[0].matrix);
+});
+
+test("a resting frame has no reactions in it", () => {
+  // alive: false is what the snippet bakes, and a baked flinch would ship.
+  const e = new PawEngine("idle");
+  e.react("poke", 0);
+  e.setHover(true, 0);
+  expect(e.sample(0.05, false).bodyPath).toBe(new PawEngine("idle").sample(0.05, false).bodyPath);
+});
+
+test("nothing is in the markup that the frame is not showing", () => {
+  // The point of the ephemeral layer: a mark, a mouth or a second rim that
+  // nobody asked for is not a hidden node, it is no node. The floor glow
+  // already proved invisible and absent are not the same cost.
+  const bare = restingMarkup("idle", "s");
+  expect(bare).not.toContain("fx-paw-glyph");
+  expect(bare).not.toContain("fx-paw-rim-alt");
+  expect(bare.match(/<g class="fx-paw-mouth"><\/g>/)).not.toBeNull();
+
+  // and a state that does use them says so in its own markup
+  const loud = restingMarkup("firedUp", "s");
+  expect(loud).toContain('data-g="flame#0"');
+  expect(loud).toContain("fx-paw-mouth\"><path");
+});
+
+test("an emitter is many instances of one definition", () => {
+  const e = new PawEngine("crying");
+  const keys = Object.keys(e.sample(2).glyphs).filter((k) => k.startsWith("tears"));
+  expect(keys.length).toBeGreaterThan(1);
+  // each carries its own phase, so no two sit in the same place
+  const places = new Set(keys.map((k) => e.sample(2).glyphs[k].m));
+  expect(places.size).toBe(keys.length);
+});
+
+test("one rim layer serves both the spectrum and a tint", () => {
+  // Two layers would mean one of them idling in every avatar that wants
+  // neither, which is the thing this whole pass is about.
+  expect(new PawEngine("creative").sample(1).rainbow).toBe(1);
+  expect(new PawEngine("gloomy").sample(1).tint).toBeGreaterThan(0);
+  expect(new PawEngine("idle").sample(1).tint).toBe(0);
+  expect(new PawEngine("idle").sample(1).rainbow).toBe(0);
+});
+
+test("a mouth exists only where a state opens one", () => {
+  expect(new PawEngine("idle").sample(1).mouth).toBeNull();
+  const m = new PawEngine("firedUp").sample(2).mouth;
+  expect(m.d.startsWith("M")).toBe(true);
+  expect(m.alpha).toBeGreaterThan(0.5);
+  // and it is derived for a drawing that never drew one
+  expect(compileArt(PAW_ART).mouth.w).toBeGreaterThan(0);
+});
+
+test("hue interpolates the short way round", () => {
+  // annoyed is 12 degrees and gloomy is 215: 203 forward, 157 back. The short
+  // way is backwards THROUGH zero, so the midpoint sits near 293 and not near
+  // 113. Sweeping the long way would flash every colour on the journey.
+  const e = new PawEngine("annoyed");
+  const def = 0.6; // gloomy's morph
+  e.setState("gloomy", 0);
+  const mid = e.sample(def / 2, false).tintHue;
+  const shortWay = Math.min(Math.abs(mid - 293.5), 360 - Math.abs(mid - 293.5));
+  const longWay = Math.min(Math.abs(mid - 113.5), 360 - Math.abs(mid - 113.5));
+  expect(shortWay).toBeLessThan(longWay);
+});
+
+test("the second rim lands in the part group, not the clipPath", () => {
+  // The first [data-part] node in a part is the clipPath's copy of the
+  // outline. A path appended beside THAT is a mask, not a picture: every id
+  // resolves, nothing errors, and the rainbow is simply not there. This is
+  // a markup-level check because the failure was a markup-level one.
+  const svg = restingMarkup("idle", "s");
+  const part = svg.slice(svg.indexOf('<g class="fx-paw-part">'), svg.indexOf("</g>", svg.indexOf('<g class="fx-paw-part">')) + 4);
+  // the clipPath closes before the fill and rim, so an append lands after them
+  expect(part.indexOf("</clipPath>")).toBeLessThan(part.indexOf('class="fx-paw-fill"'));
 });

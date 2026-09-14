@@ -13,13 +13,13 @@
     "byo-art",
     "dark"
   ],
-  "summary": "A glass mascot whose 16 agent states (idle, thinking, working, creative, sleeping...) morph into each other, with a gaze that follows the pointer. The character is a drawing you can swap: pass your own SVG's art block to mount() and the same states, tracking and glow come with it.",
+  "summary": "A glass mascot with 28 agent states that morph into each other, a gaze that follows the pointer, and the anime shorthand: sweat drops, vein pops, spiral eyes, steam, tears, flame. Drive it by state or by a point in a three-axis mood space. The character is a drawing you can swap.",
   "needs": [],
   "options": {
     "state": {
       "type": "string",
       "default": "idle",
-      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening."
+      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, awkward, annoyed, gloomy, dizzy, starstruck, crying, overheated, firedUp, powering, shocked, smug, deadpan, listening."
     },
     "speed": {
       "type": "number",
@@ -30,6 +30,16 @@
       "type": "number",
       "default": 0,
       "description": "Seconds per state when walking every state in turn; 0 holds the chosen state."
+    },
+    "fps": {
+      "type": "number",
+      "default": 0,
+      "description": "Cap how often it redraws. 0 draws every frame the browser offers; 30 halves the work for a mascot nobody is staring at, and the animation is unchanged because the pose is a function of time."
+    },
+    "mood": {
+      "type": "string",
+      "default": "",
+      "description": "A point in the mood space instead of a named state: \"valence,arousal,attention\", each -1..1, 0..1, 0..1. Empty means use the state."
     },
     "track": {
       "type": "boolean",

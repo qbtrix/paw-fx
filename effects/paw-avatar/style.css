@@ -32,14 +32,33 @@
 .fx-paw-rim {
   stroke-width: var(--fx-paw-rim-width, 2.6);
   stroke-linejoin: round;
-  /* The art's rim fades out as the spectrum one comes up, so the two never
+  /* The art's rim fades out as the second one comes up, so the two never
    * stack into a thicker edge. */
-  opacity: calc(1 - var(--fx-paw-rainbow, 0));
+  opacity: calc(1 - var(--fx-paw-alt-rim, 0));
 }
 
-.fx-paw-rim-spectrum {
-  opacity: var(--fx-paw-rainbow, 0);
+/* The second rim: the spectrum, or a tint. Its opacity, fill and stroke are
+ * all set per frame, so nothing here may name them -- a CSS opacity would
+ * beat the attribute and pin it. Only the stroke geometry lives here. */
+.fx-paw-rim-alt {
+  stroke-width: var(--fx-paw-rim-width, 2.6);
+  stroke-linejoin: round;
 }
+
+/* Mark colours. Named for what they mean, not for the hue, so a re-skin
+ * moves them together. */
+.fx-paw-hot { fill: var(--fx-paw-hot, #ff6a4d); }
+.fx-paw-cool { fill: var(--fx-paw-cool, #7fc4ff); }
+.fx-paw-stroke .fx-paw-hot,
+.fx-paw-stroke.fx-paw-hot > path { stroke: var(--fx-paw-hot, #ff6a4d); }
+
+.fx-paw-glyph .fx-paw-cool { fill: var(--fx-paw-cool, #7fc4ff); }
+.fx-paw-stroke .fx-paw-cool { stroke: var(--fx-paw-cool, #7fc4ff); fill: none; }
+.fx-paw-stroke .fx-paw-hot { stroke: var(--fx-paw-hot, #ff6a4d); fill: none; }
+.fx-paw-warmline { stroke: var(--fx-paw-warm, #ff8cc4); fill: none; }
+/* A flash is nearly white with a warm cast. Hot red at low opacity on a dark
+ * ground is not a flash, it is a stain. */
+.fx-paw-flash { fill: var(--fx-paw-flash, #ffe4c8); }
 
 .fx-paw-catch {
   fill: #ffffff;
@@ -56,9 +75,40 @@
 }
 
 /* The floor glow reads as light spilling off the glass, so it breathes with
- * the same pulse the bloom does. */
+ * the same pulse the bloom does.
+ *
+ * It is also the single most expensive thing here: it is drawn with the
+ * drawing's own feGaussianBlur, and because the paths beside it change every
+ * frame the whole filtered subtree is re-rasterised with them. Measured on a
+ * page holding 34 avatars, removing it alone took 30fps to 60. So it is a
+ * token: a hero sitting on a surface wants it, a 2rem chip inside a button
+ * has no surface to sit on and should not pay for one.
+ *
+ * Set --fx-paw-ground: none to drop it. The token is a `display` value and
+ * not a 0..1 amount on purpose: opacity 0 still rasterises the filter, so an
+ * invisible floor glow costs exactly what a visible one does. Measured, after
+ * shipping the opacity version and finding it changed nothing. */
 .fx-paw-ground {
+  display: var(--fx-paw-ground, inline);
   opacity: calc(0.55 + 0.45 * var(--fx-paw-pulse, 0.5));
+}
+
+.fx-paw {
+  container-type: inline-size;
+}
+
+/* Below about 5rem there is no room for a floor glow to read as one, so it
+ * turns itself off rather than waiting to be told. */
+@container (max-width: 5rem) {
+  .fx-paw-ground {
+    display: none;
+  }
+}
+
+/* The mouth takes the eye colour: it is the same lit face material, and a
+ * mouth in a different white reads as a sticker. */
+.fx-paw-mouth path {
+  fill: var(--fx-paw-eye, #f7fbff);
 }
 
 .fx-paw-eye {
