@@ -1,0 +1,68 @@
+{
+  "name": "sg-hologram",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["hologram", "hud", "scanlines", "chroma", "projection", "glitch", "sci-fi", "dark", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's hologram: a scanline projection thrown into a dark hazy room, with a far measurement grid, a lattice of dialled rings and near scrolling readout bars sliding against one another on a slow camera drift, every edge split into a cyan and a magenta ghost. The HUD counterpart to the gradient shader heroes.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#3b82f6", "#a855f7", "#22d3ee", "#f43f5e"],
+      "description": "Four poles. Index 2 is the hologram itself — the pale core, the cyan ghost, the motes in the beam and the bloom; index 3 is the warm ghost fringe; indices 0 and 1 mix the dark room the projector lights. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.35,
+      "description": "Rate of the camera drift, gauge rotation, bar scrolling and interference bands; 0 freezes the projection. Upstream default, range 0 to 2."
+    },
+    "split": {
+      "type": "number",
+      "default": 3,
+      "description": "Horizontal offset of the cyan and magenta ghosts in CSS pixels; 0 is a clean single image. Upstream default, range 0 to 12."
+    },
+    "scan": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Depth of the horizontal scanlines combing the projection; 0 removes them. Upstream default, range 0 to 1."
+    },
+    "flicker": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Brightness flicker, dropouts and the frequency of horizontal tears; 0 is a steady projector. Upstream default, range 0 to 2."
+    },
+    "haze": {
+      "type": "number",
+      "default": 0.8,
+      "description": "How much the projector lights the room: floor glow, drifting dust and motes in the beam. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["hologram/shader.frag", "hologram/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are passed explicitly, where upstream's runtime passes none.",
+      "why": "hologram/meta.json declares `palette: null`, so upstream feeds zeros and the shader falls through to the four colours it carries itself — the palette its poster is rendered with. paw-fx's paletteFor never produces zeros, so the port passes those same four rather than a value the fallback branch would never see. Same colours, reached by a different road.",
+      "kind": "seam"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.04, vignette 0.25, saturation 1.08 and contrast 1.04 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "u_mouseInfluence is held at upstream's 0.0 and is not exposed as an option.",
+      "why": "glsl-mount.js keeps u_mouse at (0,0) and attaches no pointer listener, so the knob would be a control that moves nothing. Upstream's own default is 0.0, so the rendered result is unchanged.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

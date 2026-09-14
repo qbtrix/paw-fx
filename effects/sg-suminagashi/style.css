@@ -1,0 +1,262 @@
+/* sg-suminagashi: the CSS half of the effect. This file is the whole hero on
+   its own -- with JavaScript off, before index.js has fetched shader.frag, or
+   after a WebGL failure sends mount() back to rest, this is what a visitor
+   sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting sheet together instead of leaving the two clashing at the
+   moment the canvas appears.
+
+   THE SHADER DOES NOT READ THE POLES BY INDEX, and this file cannot either. It
+   takes the PALEST of the four to tint the paper stock and the DEEPEST to warm
+   the sumi black, by luma; --fx-c1 is the second, coloured ink and --fx-c2
+   tints it. So the paper here is mixed from --fx-c3 and the ink from --fx-c1
+   only because, in the default set, those happen to be the palest and the
+   coloured one. Change two poles for a lighter pair and the shader moves the
+   paper while this file does not. Re-check the pairing when restyling.
+
+   LIGHT GROUND, like sg-bask and unlike everything else here: the field is warm
+   washi and the ink is dark, so the copy is near-black and the scrim is a warm
+   WHITE wash. Raising --fx-scrim makes the sheet brighter, not darker.
+
+   Nor is the resting layer a blurred field. The shader draws thin concentric
+   ring nests, so the rest draws them too -- three repeating-radial-gradients at
+   the three drop points, plus a paper grain -- under a 0.5px blur rather than
+   the ~50px one the gradient heroes use. Blurred to a smudge, the canvas would
+   read as a cut.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-sumi__rest   the CSS sheet, covered by the canvas once it paints
+     -1  <canvas>         inserted by glsl-mount.js (inline style)
+      0  .fx-sumi__scrim  legibility wash, over whichever layer is showing
+      1  .fx-sumi__inner  the copy */
+.fx-sumi {
+  --fx-c1: #3b82f6;
+  --fx-c2: #a855f7;
+  --fx-c3: #22d3ee;
+  --fx-c4: #f43f5e;
+  --fx-bg: #e8e0cf;
+  --fx-ink: #191a22;
+  --fx-muted: #4a4b57;
+  --fx-speed: 1;
+  --fx-scrim: 0.5;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Three nests where the shader drops them, the middle one lowest and largest,
+   drawn as hairline rings at roughly the 0.052 frame-relative spacing the
+   `size` default asks for. Each nest is two gradients a pixel apart: the sumi
+   black and the coloured ink, which is how the shader alternates its two inks
+   drop by drop. The sheet under them is the warm stock the shader mixes, tinted
+   a whisper by the palest pole exactly as it does. */
+.fx-sumi__rest {
+  position: absolute;
+  inset: -8%;
+  z-index: -2;
+  background:
+    repeating-radial-gradient(
+      circle at 27% 34%,
+      color-mix(in oklab, var(--fx-c1) 46%, transparent) 0 1px,
+      transparent 1px 30px
+    ),
+    repeating-radial-gradient(
+      circle at 27% 34%,
+      color-mix(in oklab, var(--fx-ink) 40%, transparent) 0 1px,
+      transparent 1px 60px
+    ),
+    repeating-radial-gradient(
+      circle at 50% 74%,
+      color-mix(in oklab, var(--fx-ink) 52%, transparent) 0 1px,
+      transparent 1px 34px
+    ),
+    repeating-radial-gradient(
+      circle at 79% 27%,
+      color-mix(in oklab, var(--fx-ink) 44%, transparent) 0 1px,
+      transparent 1px 27px
+    ),
+    radial-gradient(64% 58% at 50% 74%, color-mix(in oklab, var(--fx-c1) 9%, transparent), transparent 76%),
+    linear-gradient(174deg, color-mix(in oklab, var(--fx-c3) 6%, #f0e8d8), color-mix(in oklab, var(--fx-bg) 88%, #ffffff));
+  filter: blur(0.5px);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-sumi[data-fx-live] .fx-sumi__rest {
+  opacity: 0;
+}
+
+/* The washi fibre. Denser than the other heroes' grain layer because here it is
+   not hiding gradient banding -- it is the paper, and the shader draws its own
+   fibres, mottle and specks into the stock. Multiply, because on a bright
+   ground additive noise reads as haze rather than as tooth. Inline SVG, so the
+   section fetches nothing. */
+.fx-sumi__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.11;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7 0.95' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* A white wash, not a dark one: the copy is near-black and the sheet is the
+   bright thing, so legibility comes from lifting the pixels under the text
+   rather than dropping them -- and here it is doing real work, because an ink
+   ring crossing a headline is a hard dark line, not a soft gradient. Held flat
+   across the inner 40%, wider than the gradient heroes hold theirs, then eased
+   out over four stops so the flat core does not draw its own ellipse. Measured
+   worst case across four animation frames with the copy hidden is recorded in
+   the PR; re-measure the same way before lowering --fx-scrim. */
+.fx-sumi__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    102% 90% at 50% 50%,
+    color-mix(in oklab, #fbf6ea 94%, transparent) 0%,
+    color-mix(in oklab, #fbf6ea 94%, transparent) 40%,
+    color-mix(in oklab, #fbf6ea 66%, transparent) 58%,
+    color-mix(in oklab, #fbf6ea 34%, transparent) 74%,
+    color-mix(in oklab, #fbf6ea 12%, transparent) 89%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-sumi__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-sumi__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 24%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, #ffffff 62%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-sumi__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--fx-c1) 70%, var(--fx-ink));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 30%, transparent);
+}
+
+.fx-sumi__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-sumi__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-sumi__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-sumi__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-sumi__cta--primary {
+  background: var(--fx-ink);
+  color: #f7f1e3;
+}
+
+.fx-sumi__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, #ffffff 55%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-sumi__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-sumi__cta--ghost:hover {
+  background: color-mix(in oklab, #ffffff 80%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 48%, transparent);
+}
+
+.fx-sumi__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed -- the drift of
+   the water, which is what `drift` drives in the shader. It translates and
+   barely scales: scaling hairline rings makes them beat against the display
+   grid. The shader has its own reduced-motion path in glsl-mount.js: one static
+   frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-sumi__rest {
+    animation: fx-sumi-drift calc(52s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-sumi-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-1.4%, 1%, 0) scale(1.015);
+    }
+    100% {
+      transform: translate3d(1.4%, -1.2%, 0) scale(1.008);
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "name": "sg-suminagashi",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["suminagashi", "marbling", "ink", "paper", "rings", "feathered", "light", "high-key", "editorial", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's suminagashi: Japanese floating-ink marbling on warm fibred paper, where nests of thin concentric rings grow around three drop points, flatten one another where they meet, and are drawn out by a stylus into long feathered tongues. A light-ground hero that is line work rather than a gradient.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#3b82f6", "#a855f7", "#22d3ee", "#f43f5e"],
+      "description": "Four poles. Index 0 is the coloured ink and index 1 tints it. The other two are not read by position: the shader takes whichever of the four is palest to tint the paper stock and whichever is deepest to warm the sumi black, by luma — so swapping a pole for a lighter colour can move the paper. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "rings": {
+      "type": "number",
+      "default": 21,
+      "description": "Drops per nest; low is a few bold rings with paper between them, high packs each nest with fine hairlines. Upstream default, range 5 to 21."
+    },
+    "size": {
+      "type": "number",
+      "default": 0.052,
+      "description": "Spacing between rings, frame-relative; low is a dense nest of hairlines, high spreads a few wide rings across the sheet. Upstream default, range 0.02 to 0.08."
+    },
+    "draw": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How far the stylus pulls the rings into drawn-out tongues; 0 leaves the nests round. Upstream default, range 0 to 2."
+    },
+    "fan": {
+      "type": "number",
+      "default": 1,
+      "description": "Amplitude of the fanned waves that feather every line; 0 is calm concentric rings. Upstream default, range 0 to 2.5."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Speed of the water: the breath ripple, the drifting fan and stylus lines, and the wandering drop points; 0 stills the surface. Upstream default, range 0 to 1.5."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["suminagashi/shader.frag", "suminagashi/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are passed explicitly, where upstream's runtime passes none.",
+      "why": "suminagashi/meta.json declares `palette: null`, so upstream feeds zeros and the shader falls through to the four colours it carries itself — the palette its poster is rendered with. paw-fx's paletteFor never produces zeros, so the port passes those same four rather than a value the fallback branch would never see. Same colours, reached by a different road.",
+      "kind": "seam"
+    },
+    {
+      "what": "The `draw` default is 0.5, taken from suminagashi/meta.json, not the 1.0 in the shader's own comment beside `uniform float u_draw`.",
+      "why": "The two pinned upstream files disagree. meta.json `params` is the block upstream's runtime actually feeds the shader, so it is the one the port follows; the comment is documentation that drifted.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.14, saturation 1.05 and contrast 1.03 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers what the poster's grain was there for — though here the shader already draws its own paper fibres, mottle and specks.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

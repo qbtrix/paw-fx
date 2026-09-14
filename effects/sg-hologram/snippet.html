@@ -1,0 +1,22 @@
+<!-- sg-hologram section. Finished at rest with CSS alone: the grid, the ring
+     lattice and the scanlines in .fx-holo__rest are the hero with JavaScript
+     off, and index.js only covers them with a WebGL canvas once it has the
+     shader, a context and a linked program. The _fx paths are root-absolute
+     because a site always sits at the origin root, and "./_fx/..." would break
+     on a nested page such as /blog/post.html. The three decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-hologram/style.css">
+<section class="fx-holo" data-fx="sg-hologram">
+  <div class="fx-holo__rest" aria-hidden="true"></div>
+  <div class="fx-holo__scrim" aria-hidden="true"></div>
+  <div class="fx-holo__grain" aria-hidden="true"></div>
+  <div class="fx-holo__inner">
+    <p class="fx-holo__eyebrow"><span class="fx-holo__dot" aria-hidden="true"></span>Live telemetry</p>
+    <h1 class="fx-holo__title">Every number in the room, projected at once.</h1>
+    <p class="fx-holo__lede">Replace this copy with your own. The headline slot takes one line or three, and the projection keeps drifting behind it either way.</p>
+    <div class="fx-holo__actions">
+      <a class="fx-holo__cta fx-holo__cta--primary" href="#">Open the console</a>
+      <a class="fx-holo__cta fx-holo__cta--ghost" href="#">Read the docs</a>
+    </div>
+  </div>
+</section>

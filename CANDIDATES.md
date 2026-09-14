@@ -1,6 +1,8 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-06**. Every sha below is the head of the named repo's
+Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+and is unchanged; the dated log at the bottom carries everything screened since.
+Every sha below is the head of the named repo's
 default branch at that moment, resolved through
 `gh api repos/codrops/<name>/branches/<default>` — a real 40-hex commit, never a
 branch name.
@@ -808,3 +810,128 @@ bounds every visual claim above: 36 candidates judged from source, trees,
 `index.html` markup and Codrops' own article blurbs. Before a port ships, someone
 should open the demo. That is a review step, not a research step, but it is not
 optional.
+
+---
+
+# Scout log
+
+One section per run. The `Survey date` line at the top of this file is the
+watermark the next run reads; everything below is what a run actually looked at,
+so nobody re-opens a source that was already closed.
+
+## 2026-09-14 — window 2026-09-06 to 2026-09-14
+
+Eight days. Four sources open, one shut in our face, two effects landed.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-suminagashi` | `shader-gallery/shaders`, `suminagashi/shader.frag` + `suminagashi/meta.json` | `4e8d4cb2` | MIT | Japanese floating-ink marbling on warm washi. Light ground and line work rather than a gradient, which nothing else in the library is — `sg-bask` was the only light-ground hero and it is a gradient. |
+| `sg-hologram` | `shader-gallery/shaders`, `hologram/shader.frag` + `hologram/meta.json` | `4e8d4cb2` | MIT | Scanline HUD projection with chroma ghosts, dialled ring gauges and a hazy room. No sci-fi/telemetry hero existed; `code-reveal-grid` is the nearest and it is a code background. |
+
+Both gates green: `check` 101 effects (lint, build, smoke, 388 tests),
+`verify` 97 pass / 1 warn / 0 fail, and the warn is `paw-avatar`'s pre-existing
+one. Neither new port raises even a `numeric-trace` warn.
+
+### Vetted, not ported — 57 more shaders at the same sha
+
+`shader-gallery/shaders` added 59 shaders across `ea23b47d` (2026-09-08) and
+`39feb27d` (2026-09-09), then promoted six out of its workshop in `4e8d4cb2`.
+All 59 are listed in `manifest.json` at that head, all MIT, all written to the
+same uniform contract `effects/_shared/glsl-mount.js` already supplies
+(`u_time`, `u_resolution`, `u_mouse`, `u_pixelRatio`, `u_palette[4]` plus float
+params), all GLSL ES 1.00. That makes each one roughly an hour of porting with
+no new dependency and no new runtime. The 57 not taken this run, at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`:
+
+`acidsquares` `agate` `ballpit` `beacon` `beams` `blinds` `boids` `brick`
+`bulge` `carbon` `chalk` `chrome` `circuit` `condensation` `confetti` `conic`
+`crystal` `damascus` `datamosh` `deckle` `dendrite` `dunes` `engraving`
+`erosion` `felt` `filings` `flowfield` `fluted` `foil` `gabor` `grainient`
+`griddistort` `hyperspeed` `inkflow` `lightleak` `lightshow` `marquee`
+`mirrorplane` `mycelium` `newton` `obsidian` `opart` `pillar` `pixelsort`
+`plaque` `plasma` `plumage` `rainglass` `scales` `scratches` `shatter`
+`spotlight` `thermal` `turing` `waxseal` `wireframe` `woodgrain`
+
+Eight were read closely and their posters opened. Ranked for a future run:
+`obsidian` (fractured volcanic glass, dark material), `rainglass` (rain on a
+night window, bokeh behind it — richer than `bokeh-drift` but adjacent to it),
+`lightleak` (anamorphic film flares — adjacent to `god-rays`), `chrome` (liquid
+mirror — close enough to `liquid-metal` to want a side-by-side first),
+`damascus`, `foil`. Skip as duplicates of something already shipped: `marquee`,
+`confetti`, `plasma`, `grainient`, `ascii`-adjacent names, `bokeh`.
+
+One trap worth carrying forward: these shaders declare `"palette": null` in
+their upstream `meta.json`, which means upstream's runtime feeds zeros and the
+shader falls through to four colours it carries in its own `main()`. Those four
+are what the poster is rendered with, so a port should pass them explicitly
+rather than invent a palette — and it is a `seam`, not an `ours` deviation. That
+is the opposite of the `cd06eee` seventeen, whose metas name a palette preset
+the port genuinely cannot resolve.
+
+### Rejected
+
+| Candidate | Source | Reason |
+|---|---|---|
+| 3D Face Mask with Three.js | `kaltwrk/experiment-001`, Codrops hub 2026-09-06 | Needs a webcam and MediaPipe, which fetches its models off-site. Not a section, and it would break the "style.css fetches nothing off-site" rule at the runtime level. |
+| Building Depth: a 3D Renderer Inside Figma | Codrops 2026-09-13 | No repo published with the article, so no LICENSE to resolve. Also a Figma plugin, not a web section. |
+| Yestalgia (Decathlon) | Codrops 2026-09-12 | Case study. No code. |
+| Inside the First Three.js Conference | Codrops 2026-09-10 | Editorial. No code. |
+| Turning Names Into Digital Architecture | Codrops 2026-09-09 | No repo link; the demo is a Webflow site. No LICENSE to resolve. |
+| Still: a Generative Garden in WebGPU | Codrops 2026-09-09 | No repo link. |
+| Infinite Liquid Glass Grid | Codrops 2026-09-08 | No repo link, and the stack is React Three Fiber v10 + Next.js + WebGPU + `pmndrs/glyph`. Not vanilla-portable even with a licence. |
+| Drawing With Light: Lit GPU Tubes | Codrops 2026-09-07 | No repo link. TSL on the WebGPU renderer, which we do not vendor. |
+| `DavidHDev/canvas-ui` | GitHub, 4572★, pushed 2026-09-13 | `LICENSE.md` resolves to `NOASSERTION` — GitHub cannot identify it, so it is not on the allow-list. Same author as React Bits, which is a standing hard reject. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest item is 2026-09-06 (the face mask
+  above). Nothing published 09-07 to 09-14. Confirms CONCERN 6 above from
+  another angle: the hub's recent output is Three.js conference experiments,
+  not sections.
+- **Codrops org repos.** Newest push is `RotatingOnScrollAnimations`,
+  2026-06-18. Nothing new.
+- **Vendor releases.** `tsparticles` v4.4.0 shipped 2026-08-31, before the
+  watermark, and it is a library bump rather than an effect — we vendor 4.3.2
+  and nothing in the release asks us to move. `lenis` newest is v1.3.26
+  (2026-08-05), already the vendored version. `paper-design/shaders` has cut no
+  GitHub releases at all.
+- **GitHub topic search** (`css-animation`, `shaders`, `scroll-animation`,
+  `webgl`, `animation`, pushed since 2026-09-06). Everything above the noise
+  floor is an engine, an editor or a game — `bgfx`, `Graphite`, `Pixelorama`,
+  `rust-gpu`. Nothing section-shaped. `pushed:` is a poor proxy for "new", so a
+  future run should weight `created:` instead.
+
+### CodePen is closed to us right now
+
+Worth its own heading because it costs a future run half an hour to rediscover.
+`codepen.io` sits behind a Cloudflare bot challenge that neither route gets
+past: `curl` with a browser user-agent returns **403** on `/trending`, `/picks`
+and every RSS feed (`/picks/feed`, `/popular/pens/feed`, `/spark/feed`), and
+headless Chrome through `agent-browser` loads the interstitial and stays on
+"Just a moment…". `WebFetch` gets the same 403. So there is no way to browse
+trending pens or to read a pen's details page — and the details page is the only
+place the MIT notice is evidenced, which is what Step 3 requires before the
+snapshot recipe may run.
+
+This does **not** retire CodePen as a source. `dither-relief` and
+`glass-transition` are still valid ports and `cdpn.io` (the asset host the
+snapshot recipe reads from) is a different host and was not tested as blocked.
+If a future run has a way to see a details page — a signed-in browser profile, a
+pen URL the captain supplies directly — the recipe still works. Discovery is
+what is blocked, not porting.
+
+### A note the next run should read first
+
+`agent-browser screenshot` hung on every call for the first half of this run:
+`CDP command timed out: Page.captureScreenshot`, then `Failed to read: Resource
+temporarily unavailable (os error 35)`. It survived closing the session, killing
+the daemon and killing Chrome. `open` and `eval` worked the whole time; only
+screenshot was dead, which takes out both the preview capture and the entire
+`smoke` gate.
+
+The fix is one command: **`agent-browser stream disable`**. Runtime streaming
+was enabled (`ws://127.0.0.1:49969`, `Connected: false`), and a screencast
+holding the capture pipeline starves `Page.captureScreenshot`. Check
+`agent-browser stream status` before concluding the tool is broken.
