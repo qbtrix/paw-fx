@@ -1,0 +1,22 @@
+<!-- sg-suminagashi section. Finished at rest with CSS alone: the three ring
+     nests and the washi grain in .fx-sumi__rest are the hero with JavaScript
+     off, and index.js only covers them with a WebGL canvas once it has the
+     shader, a context and a linked program. The _fx paths are root-absolute
+     because a site always sits at the origin root, and "./_fx/..." would break
+     on a nested page such as /blog/post.html. The three decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-suminagashi/style.css">
+<section class="fx-sumi" data-fx="sg-suminagashi">
+  <div class="fx-sumi__rest" aria-hidden="true"></div>
+  <div class="fx-sumi__scrim" aria-hidden="true"></div>
+  <div class="fx-sumi__grain" aria-hidden="true"></div>
+  <div class="fx-sumi__inner">
+    <p class="fx-sumi__eyebrow"><span class="fx-sumi__dot" aria-hidden="true"></span>Made slowly</p>
+    <h1 class="fx-sumi__title">One sheet at a time, and none of them the same.</h1>
+    <p class="fx-sumi__lede">Swap this for your own words. The headline takes one line or three, and the ink keeps spreading behind it either way.</p>
+    <div class="fx-sumi__actions">
+      <a class="fx-sumi__cta fx-sumi__cta--primary" href="#">See the work</a>
+      <a class="fx-sumi__cta fx-sumi__cta--ghost" href="#">About the studio</a>
+    </div>
+  </div>
+</section>
