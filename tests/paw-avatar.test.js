@@ -248,3 +248,45 @@ test("a mood fades in like a state, and a state can take over again", () => {
   expect(e.state).toBe("excited");
   expect(e.sample(14, false).earLPath).not.toBe(settled);
 });
+
+test("a reaction layers on the pose instead of replacing it", () => {
+  // A poke is not a state: the mascot does not stop thinking because you
+  // prodded it. So the state it was in has to survive the flinch.
+  const e = new PawEngine("thinking");
+  const before = e.sample(3).glyphs.think;
+  e.react("poke", 3);
+  const during = e.sample(3.08);
+  expect(during.bodyPath).not.toBe(e.sample(3).bodyPath);
+  expect(during.glyphs.think).toBeDefined();
+  expect(during.glyphs.think.o).toBeCloseTo(before.o, 5);
+  // and it is spent inside its window rather than lingering
+  expect(e.impulseAt("poke", 3 + 2)).toBe(0);
+});
+
+test("an impulse restarts rather than accumulating", () => {
+  // Two pokes in quick succession are two flinches, not one enormous one.
+  const e = new PawEngine("idle");
+  e.react("poke", 0);
+  const first = Math.abs(e.impulseAt("poke", 0.05));
+  e.react("poke", 0.2);
+  expect(Math.abs(e.impulseAt("poke", 0.25))).toBeCloseTo(first, 5);
+});
+
+test("the spin takes the eyes round the back and lands where it would anyway", () => {
+  // Only possible because the eyes ride a sphere: a full turn puts them
+  // behind the head and returns them from the other side, and -360 is the
+  // same angle as 0, so it costs nothing at the far end.
+  const e = new PawEngine("idle");
+  e.setState("creative", 0);
+  const counts = [0.1, 0.2, 0.3].map((t) => e.sample(t).eyes.length);
+  expect(Math.min(...counts)).toBeLessThan(2);
+  expect(e.sample(5).eyes[0].matrix).toBe(new PawEngine("creative").sample(5).eyes[0].matrix);
+});
+
+test("a resting frame has no reactions in it", () => {
+  // alive: false is what the snippet bakes, and a baked flinch would ship.
+  const e = new PawEngine("idle");
+  e.react("poke", 0);
+  e.setHover(true, 0);
+  expect(e.sample(0.05, false).bodyPath).toBe(new PawEngine("idle").sample(0.05, false).bodyPath);
+});

@@ -858,6 +858,10 @@ const STATES = {
    */
   creative: {
     morph: 0.55,
+    // A full turn on arrival. The eyes ride a sphere, so this takes them
+    // round the back and returns them from the other side; -360 is the same
+    // angle as 0, so it costs nothing at the far end.
+    spinIn: 360,
     pose: (t) => {
       // An idea landing, every few seconds: a fast rise and a slow fall, not
       // a sine. A constant shimmer reads as decoration; a beat reads as
@@ -1038,12 +1042,46 @@ function earSwingRange() {
  */
 const NO_LOOK = { yaw: 0, pitch: 0, mix: 0, wander: 1 };
 
+/**
+ * A tour to travel ON THE WAY somewhere, in degrees, faded to nothing as it
+ * arrives. Ported from bloub, where it serves the intro; here a state asks
+ * for one on entry.
+ *
+ * It works because the eyes ride a sphere: a full turn takes them round the
+ * back of the head and brings them back from the other side, and -360 being
+ * the same angle as 0 means it changes nothing about where they end up. Flat
+ * eyes cannot do this at all -- they would slide off the face.
+ */
+const SPIN_TIME = 1.1;
+
 const lerpLook = (a, b, t) => ({
   yaw: lerp(a.yaw, b.yaw, t),
   pitch: lerp(a.pitch, b.pitch, t),
   mix: lerp(a.mix, b.mix, t),
   wander: lerp(a.wander, b.wander, t)
 });
+
+/* ------------------------------------------------------------- reactions
+ *
+ * Short-lived answers to something the reader did, layered on whatever pose
+ * is current rather than replacing it. A poke is not a state: the mascot
+ * does not stop thinking because you prodded it, it flinches and carries on
+ * thinking.
+ *
+ * Each is a function of the time since it was set, so sample(t) stays pure
+ * and a poke can be scrubbed back to like anything else. Same contract
+ * setLook keeps, for the same reason.
+ */
+
+/** Squash, bounce, settle. One oscillation, spent inside its window. */
+const pokeCurve = (k) => (k >= 1 ? 0 : Math.exp(-4 * k) * Math.cos(k * 9));
+/** A rise too fast to see and a fall you do: a startle, not a swell. */
+const startleCurve = (k) => (k >= 1 ? 0 : k < 0.08 ? k / 0.08 : Math.exp(-(k - 0.08) * 4.5));
+
+const IMPULSE = {
+  poke: { time: 0.7, curve: pokeCurve },
+  startle: { time: 1.1, curve: startleCurve }
+};
 
 /* ----------------------------------------------------------------- engine
  * Ported from bloub src/bot/engine.ts. Two things matter here and both are
@@ -1080,6 +1118,13 @@ export class PawEngine {
     this.lookPrev = NO_LOOK;
     this.lookAt = -10;
     this.lookMorph = PawEngine.LOOK_MORPH;
+    /** kind -> { at, strength }; read by time, never ticked. */
+    this.impulses = {};
+    this.spinAt = -10;
+    this.spinDeg = 0;
+    this.hover = 0;
+    this.hoverPrev = 0;
+    this.hoverAt = -10;
     this.body = makeBody();
   }
 
@@ -1143,6 +1188,40 @@ export class PawEngine {
   }
 
   /**
+   * Something the reader just did. `kind` is "poke" or "startle"; `strength`
+   * scales it, so a slow drag and a flung pointer do not read the same.
+   *
+   * Re-setting restarts rather than accumulates: two pokes in quick
+   * succession are two flinches, not one enormous one.
+   */
+  react(kind, now, strength = 1) {
+    if (!IMPULSE[kind] || !Number.isFinite(now + strength)) return;
+    this.impulses[kind] = { at: now, strength: clamp(strength, 0, 1) };
+  }
+
+  /** How much of an impulse is left at `now`, 0 once it is spent. */
+  impulseAt(kind, now) {
+    const i = this.impulses[kind];
+    if (!i) return 0;
+    const k = (now - i.at) / IMPULSE[kind].time;
+    return k < 0 || k >= 1 ? 0 : IMPULSE[kind].curve(k) * i.strength;
+  }
+
+  /** Pointer over the mascot, or not. Eases rather than snapping. */
+  setHover(on, now) {
+    const next = on ? 1 : 0;
+    if (next === this.hover) return;
+    this.hoverPrev = this.hoverAtTime(now);
+    this.hover = next;
+    this.hoverAt = now;
+  }
+
+  hoverAtTime(now) {
+    const k = (now - this.hoverAt) / 0.3;
+    return k >= 1 ? this.hover : lerp(this.hoverPrev, this.hover, easeOutQuint(clamp(k)));
+  }
+
+  /**
    * A point in the mood space, faded to like any state.
    *
    * No same-value guard, unlike setState: a mood arrives from a slider or
@@ -1170,6 +1249,10 @@ export class PawEngine {
     this.curDef = def;
     this.tCur = now;
     if (def.blinkIn) this.blinkAt = now;
+    if (def.spinIn) {
+      this.spinAt = now;
+      this.spinDeg = def.spinIn;
+    }
   }
 
   /** Restart on `id` with no history, as if the engine were new. */
@@ -1190,15 +1273,48 @@ export class PawEngine {
   sample(now, alive = true) {
     const pose = this.composed(now);
     const faceOn = pose.eyeAlpha > 0.01;
+
+    // --- what the reader just did ----------------------------------------
+    // Layered on the pose, not swapped for it. A poke oscillates through
+    // zero on purpose: that IS the bounce, so the squash follows the curve
+    // while the things that should only ever go one way take its positive
+    // half.
+    const poke = alive ? this.impulseAt("poke", now) : 0;
+    const startle = alive ? this.impulseAt("startle", now) : 0;
+    const hover = alive ? this.hoverAtTime(now) : 0;
+    if (poke || startle || hover) {
+      const hit = Math.max(poke, 0);
+      pose.sx += 0.09 * poke;
+      pose.sy -= 0.11 * poke;
+      pose.cy += 0.035 * poke;
+      const flick = 0.4 * poke - 0.3 * startle - 0.14 * hover;
+      pose.ears.l.angle += flick;
+      pose.ears.r.angle += flick;
+      for (const e of pose.eyes) {
+        e.w += 0.18 * startle + 0.06 * hover;
+        e.h += 0.2 * startle - 0.12 * hit;
+      }
+      // Being looked at is a reason to look back, so the drift dies down.
+      pose.wander *= 1 - 0.6 * hover;
+      pose.glow = clamp(pose.glow + 0.28 * startle + 0.15 * hover + 0.2 * hit);
+    }
+
     const look = this.lookAtTime(now);
     const life = alive
       ? liveliness(now, pose.wander * look.wander, faceOn)
       : { dYaw: 0, dPitch: 0, dRoll: 0, lid: 1, driftX: 0, driftY: 0, breath: 1 };
 
+    const spinK = (now - this.spinAt) / SPIN_TIME;
+    const spin = alive && spinK >= 0 && spinK < 1
+      ? this.spinDeg * (1 - easeOutQuint(spinK))
+      : 0;
+
     // The two aims REPLACE the pose's as `mix` rises; the drift is added
     // AFTER, so a head held toward the pointer still lives.
     const gaze = {
-      yaw: lerp(pose.gaze.yaw, look.yaw, look.mix) + life.dYaw,
+      // The spin is subtracted ON THE WAY and fades with arrival, so the eyes
+      // travel the long way round without changing where they end up.
+      yaw: lerp(pose.gaze.yaw, look.yaw, look.mix) + life.dYaw - spin,
       pitch: lerp(pose.gaze.pitch, look.pitch, look.mix) + life.dPitch,
       // Roll follows nothing: it is the state's own head tilt.
       roll: pose.gaze.roll + life.dRoll
@@ -1505,12 +1621,30 @@ export function mount(el, opts = {}) {
   const REACH = 1.8;
 
   let released = true;
+  /* Pointer speed, for the startle. Kept here and not in the engine: the
+   * engine is told WHAT happened, never asked to work it out from raw input. */
+  let lastMove = null;
+  let lastStartle = -10;
+  /** px/ms that counts as sudden. A brisk drag is ~1.5; a flung pointer ~4. */
+  const STARTLE_SPEED = 2.6;
+  /** A startle every frame would be a twitch, not a reaction. */
+  const STARTLE_GAP = 1.4;
 
   const onMove = (e) => {
     // Touch has no hovering pointer: a tap would yank the gaze and leave it.
     if (e.pointerType && e.pointerType !== "mouse") return;
     const r = svg.getBoundingClientRect();
     if (!r.width || !r.height) return;
+    if (lastMove) {
+      const dt = Math.max(1, clock * 1000 - lastMove.t);
+      const speed = Math.hypot(e.clientX - lastMove.x, e.clientY - lastMove.y) / dt;
+      if (speed > STARTLE_SPEED && clock - lastStartle > STARTLE_GAP) {
+        engine.react("startle", clock, clamp((speed - STARTLE_SPEED) / 4));
+        lastStartle = clock;
+      }
+    }
+    lastMove = { x: e.clientX, y: e.clientY, t: clock * 1000 };
+
     const nx = (e.clientX - (r.left + r.width / 2)) / (r.width * REACH);
     const ny = (e.clientY - (r.top + r.height / 2)) / (r.height * REACH);
     engine.setLook(
@@ -1527,22 +1661,37 @@ export function mount(el, opts = {}) {
   };
 
   const onRelease = () => {
+    engine.setHover(false, clock);
     if (released) return;
     engine.setLook(null, clock, 0.6);
     released = true;
   };
+
+  // Poking and hovering are about the mascot itself, so they sit on the
+  // element; tracking and the startle are about the pointer anywhere, so
+  // those sit on the window.
+  const onDown = () => engine.react("poke", clock);
+  const onEnter = () => engine.setHover(true, clock);
+  const onOut = () => engine.setHover(false, clock);
 
   const tracking = o.track && !still && typeof window !== "undefined";
   if (tracking) {
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("blur", onRelease);
     document.addEventListener("pointerleave", onRelease);
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointerenter", onEnter);
+    el.addEventListener("pointerleave", onOut);
   }
 
   if (still) draw(0);
   else raf = requestAnimationFrame(frame);
 
   return {
+    /** The engine, for anything the pointer wiring does not cover. */
+    engine,
+    /** Engine time now, which is what its dated setters expect. */
+    clock: () => clock,
     update(next = {}) {
       Object.assign(o, next);
       if ("mood" in next) {
@@ -1568,6 +1717,9 @@ export function mount(el, opts = {}) {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("blur", onRelease);
         document.removeEventListener("pointerleave", onRelease);
+        el.removeEventListener("pointerdown", onDown);
+        el.removeEventListener("pointerenter", onEnter);
+        el.removeEventListener("pointerleave", onOut);
       }
       el.innerHTML = restore;
     }

@@ -118,6 +118,9 @@ footer{margin-top:6rem;border-top:1px solid var(--g-line-soft);padding-top:1.5re
 <p class="lede">One drawing, sixteen poses that morph into each other, and a gaze that follows your
 pointer. The pose is a pure function of time, so it pauses, scrubs and exports frame-exact &mdash;
 and the character is an input, so the whole thing works just as well on your drawing as on this one.</p>
+<p class="lede" style="margin-top:-1.25rem"><strong>Poke it.</strong> Hover it, click it, or fling
+your pointer past it. Those are layered on whatever it is doing rather than replacing it: prodding
+a mascot that is thinking makes it flinch and carry on thinking.</p>
 
 <div class="stage">
   <div class="pane"><div class="host" id="hero"></div><div class="now" id="nowLabel">idle</div></div>
@@ -220,6 +223,12 @@ and the character is an input, so the whole thing works just as well on your dra
   <div class="copy"><pre id="usage"></pre><button data-copy="usage">Copy</button></div>
   <p class="label">Hold one state, or let it walk them</p>
   <div class="copy"><pre id="opts"></pre><button data-copy="opts">Copy</button></div>
+  <p class="label">React to something yourself</p>
+  <div class="copy"><pre id="react">const paw = mount(el);
+
+paw.engine.react("poke", paw.clock());      // a flinch, then it carries on
+paw.engine.react("startle", paw.clock());   // eyes wide, ears up
+paw.engine.setHover(true, paw.clock());     // it looks back at you</pre><button data-copy="react">Copy</button></div>
 </section>
 
 <footer>
