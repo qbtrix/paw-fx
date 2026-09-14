@@ -32,14 +32,28 @@
 .fx-paw-rim {
   stroke-width: var(--fx-paw-rim-width, 2.6);
   stroke-linejoin: round;
-  /* The art's rim fades out as the spectrum one comes up, so the two never
+  /* The art's rim fades out as the second one comes up, so the two never
    * stack into a thicker edge. */
-  opacity: calc(1 - var(--fx-paw-rainbow, 0));
+  opacity: calc(1 - var(--fx-paw-alt-rim, 0));
 }
 
-.fx-paw-rim-spectrum {
-  opacity: var(--fx-paw-rainbow, 0);
+/* The second rim's own opacity is set per frame; this only stops it
+ * inheriting the fade above. */
+.fx-paw-rim-alt {
+  opacity: 1;
 }
+
+/* Mark colours. Named for what they mean, not for the hue, so a re-skin
+ * moves them together. */
+.fx-paw-hot { fill: var(--fx-paw-hot, #ff6a4d); }
+.fx-paw-cool { fill: var(--fx-paw-cool, #7fc4ff); }
+.fx-paw-stroke .fx-paw-hot,
+.fx-paw-stroke.fx-paw-hot > path { stroke: var(--fx-paw-hot, #ff6a4d); }
+
+.fx-paw-glyph .fx-paw-cool { fill: var(--fx-paw-cool, #7fc4ff); }
+.fx-paw-stroke .fx-paw-cool { stroke: var(--fx-paw-cool, #7fc4ff); fill: none; }
+.fx-paw-stroke .fx-paw-hot { stroke: var(--fx-paw-hot, #ff6a4d); fill: none; }
+.fx-paw-warmline { stroke: var(--fx-paw-warm, #ff8cc4); fill: none; }
 
 .fx-paw-catch {
   fill: #ffffff;
@@ -84,6 +98,12 @@
   .fx-paw-ground {
     display: none;
   }
+}
+
+/* The mouth takes the eye colour: it is the same lit face material, and a
+ * mouth in a different white reads as a sticker. */
+.fx-paw-mouth path {
+  fill: var(--fx-paw-eye, #f7fbff);
 }
 
 .fx-paw-eye {

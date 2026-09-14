@@ -13,13 +13,13 @@
     "byo-art",
     "dark"
   ],
-  "summary": "A glass mascot whose 16 agent states morph into each other, with a gaze that follows the pointer. Drive it by state, or by a point in a three-axis mood space for anything between them. The character is a drawing you can swap: pass your own SVG's art block to mount().",
+  "summary": "A glass mascot with 28 agent states that morph into each other, a gaze that follows the pointer, and the anime shorthand: sweat drops, vein pops, spiral eyes, steam, tears, flame. Drive it by state or by a point in a three-axis mood space. The character is a drawing you can swap.",
   "needs": [],
   "options": {
     "state": {
       "type": "string",
       "default": "idle",
-      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening."
+      "description": "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, awkward, annoyed, gloomy, dizzy, starstruck, crying, overheated, firedUp, powering, shocked, smug, deadpan, listening."
     },
     "speed": {
       "type": "number",

@@ -11,8 +11,8 @@ import { PawEngine, STATE_IDS, restingPath, restingMarkup, compileArt, PAW_ART, 
 import { BLIP_ART } from "./fixtures/art/blip-bot.js";
 const numbers = (d) => d.match(/-?\d+(?:\.\d+)?/g).map(Number);
 
-test("16 states, each with a drawable outline", () => {
-  expect(STATE_IDS).toHaveLength(16);
+test("every state has a drawable outline", () => {
+  expect(STATE_IDS.length).toBeGreaterThanOrEqual(28);
   for (const id of STATE_IDS) {
     const f = new PawEngine(id).sample(0, false);
     for (const d of [f.bodyPath, f.earLPath, f.earRPath]) {
@@ -289,4 +289,59 @@ test("a resting frame has no reactions in it", () => {
   e.react("poke", 0);
   e.setHover(true, 0);
   expect(e.sample(0.05, false).bodyPath).toBe(new PawEngine("idle").sample(0.05, false).bodyPath);
+});
+
+test("nothing is in the markup that the frame is not showing", () => {
+  // The point of the ephemeral layer: a mark, a mouth or a second rim that
+  // nobody asked for is not a hidden node, it is no node. The floor glow
+  // already proved invisible and absent are not the same cost.
+  const bare = restingMarkup("idle", "s");
+  expect(bare).not.toContain("fx-paw-glyph");
+  expect(bare).not.toContain("fx-paw-rim-alt");
+  expect(bare.match(/<g class="fx-paw-mouth"><\/g>/)).not.toBeNull();
+
+  // and a state that does use them says so in its own markup
+  const loud = restingMarkup("firedUp", "s");
+  expect(loud).toContain('data-g="flame#0"');
+  expect(loud).toContain("fx-paw-mouth\"><path");
+});
+
+test("an emitter is many instances of one definition", () => {
+  const e = new PawEngine("crying");
+  const keys = Object.keys(e.sample(2).glyphs).filter((k) => k.startsWith("tears"));
+  expect(keys.length).toBeGreaterThan(1);
+  // each carries its own phase, so no two sit in the same place
+  const places = new Set(keys.map((k) => e.sample(2).glyphs[k].m));
+  expect(places.size).toBe(keys.length);
+});
+
+test("one rim layer serves both the spectrum and a tint", () => {
+  // Two layers would mean one of them idling in every avatar that wants
+  // neither, which is the thing this whole pass is about.
+  expect(new PawEngine("creative").sample(1).rainbow).toBe(1);
+  expect(new PawEngine("gloomy").sample(1).tint).toBeGreaterThan(0);
+  expect(new PawEngine("idle").sample(1).tint).toBe(0);
+  expect(new PawEngine("idle").sample(1).rainbow).toBe(0);
+});
+
+test("a mouth exists only where a state opens one", () => {
+  expect(new PawEngine("idle").sample(1).mouth).toBeNull();
+  const m = new PawEngine("firedUp").sample(2).mouth;
+  expect(m.d.startsWith("M")).toBe(true);
+  expect(m.alpha).toBeGreaterThan(0.5);
+  // and it is derived for a drawing that never drew one
+  expect(compileArt(PAW_ART).mouth.w).toBeGreaterThan(0);
+});
+
+test("hue interpolates the short way round", () => {
+  // annoyed is 12 degrees and gloomy is 215: 203 forward, 157 back. The short
+  // way is backwards THROUGH zero, so the midpoint sits near 293 and not near
+  // 113. Sweeping the long way would flash every colour on the journey.
+  const e = new PawEngine("annoyed");
+  const def = 0.6; // gloomy's morph
+  e.setState("gloomy", 0);
+  const mid = e.sample(def / 2, false).tintHue;
+  const shortWay = Math.min(Math.abs(mid - 293.5), 360 - Math.abs(mid - 293.5));
+  const longWay = Math.min(Math.abs(mid - 113.5), 360 - Math.abs(mid - 113.5));
+  expect(shortWay).toBeLessThan(longWay);
 });

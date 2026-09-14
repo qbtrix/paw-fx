@@ -211,6 +211,29 @@ function closedPath(pts, tension = 1 / 6) {
   return `${d}Z`;
 }
 
+/**
+ * The mouth, drawn from three numbers in a box the drawing gives.
+ *
+ * Generated rather than morphed between drawn shapes, for the same reason
+ * the eyes are: a mouth is a curve and an opening, and two numbers express
+ * that far better than a set of traced outlines could interpolate between.
+ *
+ * `curve` is +1 smile, -1 frown. It is the control point's Y, and in screen
+ * coordinates a smile's middle sits LOWER than its corners, so positive is
+ * down. `open` is how far the lower edge drops away from the upper one, with
+ * a floor: at zero the two edges would coincide and a filled shape with no
+ * area is nothing at all.
+ */
+function mouthPath(w, h, curve, open) {
+  const hw = Math.max(w, 0.01) / 2;
+  const lift = curve * h * 0.9;
+  const depth = Math.max(h * 0.16, open * h);
+  return (
+    `M${r2(-hw)} 0Q0 ${r2(lift)} ${r2(hw)} 0` +
+    `Q0 ${r2(lift + depth)} ${r2(-hw)} 0z`
+  );
+}
+
 /** Capsule (stadium) centred on the origin: the eye shape. Ported from bloub. */
 function capsulePath(w, h) {
   const hw = Math.max(w, 0.01) / 2;
@@ -343,6 +366,16 @@ export function compileArt(art) {
       /** How high the face sits on the head. */
       y: eye.y
     },
+    /**
+     * Where a mouth would go. Derived when the drawing has none, which is
+     * the common case: most mascots are drawn at rest and at rest this one
+     * has no mouth. Deriving it means a state can open one on any drawing.
+     */
+    mouth: art.mouth
+      ? { x: toUnits(art.mouth.cx, art.mouth.cy).x, y: toUnits(art.mouth.cx, art.mouth.cy).y,
+          w: art.mouth.w / art.unit, h: art.mouth.h / art.unit }
+      : { x: 0, y: eye.y + (art.eye.h / art.unit) * 0.95,
+          w: Math.abs(eye.x) * 1.45, h: (art.eye.h / art.unit) * 0.55 },
     catch: {
       x: (art.catch.dx / art.unit) * RADIUS,
       y: (art.catch.dy / art.unit) * RADIUS,
@@ -494,6 +527,22 @@ const spark4 = (s) =>
   `Q${s * 0.12} ${s * 0.12} 0 ${s}` +
   `Q${-s * 0.12} ${s * 0.12} ${-s} 0` +
   `Q${-s * 0.12} ${-s * 0.12} 0 ${-s}z`;
+/** Archimedean spiral, stroked. The dizzy eye. */
+const spiral = (turns, r) => {
+  let d = "M0 0";
+  const steps = turns * 12;
+  for (let i = 1; i <= steps; i++) {
+    const a = (i / steps) * turns * TAU;
+    const k = (i / steps) * r;
+    d += `L${r2(Math.cos(a) * k)} ${r2(Math.sin(a) * k)}`;
+  }
+  return d;
+};
+/** A teardrop, point up. Sweat and tears are the same shape at two sizes. */
+const drop = (s) =>
+  `M0 ${-s}C${s * 0.7} ${-s * 0.1} ${s * 0.8} ${s * 0.35} 0 ${s * 0.85}` +
+  `C${-s * 0.8} ${s * 0.35} ${-s * 0.7} ${-s * 0.1} 0 ${-s}z`;
+
 const heart = (x, y, s) =>
   `M${x} ${y + s * 0.9}c${-s * 1.3} ${-s * 0.9} ${-s * 0.8} ${-s * 1.9} 0 ${-s * 1.1}` +
   `c${s * 0.8} ${-s * 0.8} ${s * 1.3} ${s * 0.2} 0 ${s * 1.1}z`;
@@ -558,43 +607,168 @@ const GLYPHS = {
       return { dx: -26 * u, o: arch(u) };
     }
   },
-  // Three separate sparks rather than one group: staggered phases are what
-  // make it read as twinkling instead of pulsing.
-  sparkA: {
-    at: [104, -108],
-    html: `<path d="${spark4(20)}"/>`,
-    motion: (t) => {
-      const k = twinkle(t, 2.1, 0);
-      return { s: 0.6 + 0.55 * k, r: 12 * k, o: 0.45 + 0.55 * k };
+  // One emitter, three instances. Staggered phases are what make it read as
+  // twinkling rather than pulsing, and the index is what staggers them.
+  sparks: {
+    count: 3,
+    at: (i) => [[104, -108], [140, -76], [76, -134]][i],
+    html: (i) => `<path d="${spark4([20, 12, 9][i])}"/>`,
+    motion: (t, i) => {
+      const k = twinkle(t, [2.1, 2.7, 3.4][i], [0, 2.1, 4.3][i]);
+      return { s: 0.5 + 0.62 * k, r: [12, -16, 20][i] * k, o: 0.35 + 0.65 * k };
     }
   },
-  sparkB: {
-    at: [140, -76],
-    html: `<path d="${spark4(12)}"/>`,
+
+  /* -------- the anime shorthand. Each is a mark, not a state: they layer. */
+
+  /** Awkwardness, in one bead. Slides down the temple and goes. */
+  sweat: {
+    at: [70, -66],
+    html: `<path class="fx-paw-cool" d="${drop(17)}"/>`,
     motion: (t) => {
-      const k = twinkle(t, 2.7, 2.1);
-      return { s: 0.5 + 0.6 * k, r: -16 * k, o: 0.35 + 0.65 * k };
+      const u = cycle(t, 0.5);
+      return { dy: 34 * u, s: 1 - 0.25 * u, o: arch(u) };
     }
   },
-  sparkC: {
-    at: [76, -134],
-    html: `<path d="${spark4(9)}"/>`,
-    motion: (t) => {
-      const k = twinkle(t, 3.4, 4.3);
-      return { s: 0.45 + 0.7 * k, r: 20 * k, o: 0.3 + 0.7 * k };
+  /** The vein pop. Four strokes, and it throbs rather than fades. */
+  angerCross: {
+    at: [54, -84],
+    stroke: true,
+    html: `<path class="fx-paw-hot" d="M-13 -4h26M-13 4h26M-4 -13v26M4 -13v26"/>`,
+    motion: (t) => ({ s: 0.88 + 0.18 * Math.abs(Math.sin(t * 5)) })
+  },
+  /** Vertical gloom down the crown. The one mark that is a colour, not a shape. */
+  despair: {
+    count: 5,
+    behind: false,
+    at: (i) => [-46 + i * 23, -96],
+    stroke: true,
+    html: `<path class="fx-paw-cool" d="M0 0v54"/>`,
+    motion: (t, i) => ({ o: 0.35 + 0.4 * twinkle(t, 1.1, i * 0.9), s: 0.8 + 0.2 * (i % 2) })
+  },
+  /** Overheating. Two columns off the ear tops, curling as they climb. */
+  steam: {
+    count: 4,
+    at: (i) => [(i < 2 ? -1 : 1) * 92, -62],
+    stroke: true,
+    html: `<path d="M0 0c-7 -9 7 -16 0 -25"/>`,
+    motion: (t, i) => {
+      const u = cycle(t + i * 0.31, 0.65);
+      return { dx: (i < 2 ? -1 : 1) * 16 * u, dy: -46 * u, s: 0.6 + 0.7 * u, o: arch(u) * 0.85 };
     }
   },
+  /** Two streams, not two drops. Anime cries in quantity. */
+  tears: {
+    count: 4,
+    onFace: true,
+    at: (i) => [(i < 2 ? -1 : 1) * 41, 18],
+    html: `<path class="fx-paw-cool" d="${drop(9)}"/>`,
+    motion: (t, i) => {
+      const u = cycle(t + i * 0.27, 0.85);
+      return { dy: 70 * u, s: 1 - 0.35 * u, o: arch(u) };
+    }
+  },
+  /** Determination, or rage. Tongues out of step, which is the whole trick. */
+  flame: {
+    count: 6,
+    behind: true,
+    at: (i) => [-56 + i * 22, -96],
+    html: `<path class="fx-paw-hot" d="M0 0c-13 -16 6 -22 0 -44c10 16 16 26 0 44z"/>`,
+    motion: (t, i) => {
+      const k = twinkle(t * 2.1, 3.4, i * 1.7);
+      return { dy: -12 * k, s: 0.55 + 0.75 * k, o: 0.45 + 0.5 * k };
+    }
+  },
+  /** Powering up. Streaks climbing past, behind the head. */
+  aura: {
+    count: 6,
+    behind: true,
+    at: (i) => [(i % 2 ? 1 : -1) * (104 + (i % 3) * 12), 40],
+    stroke: true,
+    html: `<path class="fx-paw-warmline" d="M0 0v-34"/>`,
+    motion: (t, i) => {
+      const u = cycle(t + i * 0.17, 1.25);
+      return { dy: -120 * u, s: 0.7 + 0.5 * (1 - u), o: arch(u) };
+    }
+  },
+  /** The impact star, behind, so the head punches through it. */
+  burst: {
+    behind: true,
+    at: [0, -10],
+    html: `<path class="fx-paw-hot" d="M0 -150L26 -66L104 -104L54 -30L150 -12L54 14L104 96L26 44L0 130L-26 44L-104 96L-54 14L-150 -12L-54 -30L-104 -104L-26 -66z"/>`,
+    motion: (t) => ({ s: 1.05 + 0.45 * Math.exp(-t * 4), o: 0.25 + 0.6 * Math.exp(-t * 1.6), r: t * 12 })
+  },
+  /** Briefly innocent. */
+  halo: {
+    at: [0, -132],
+    stroke: true,
+    html: `<ellipse cx="0" cy="0" rx="34" ry="10"/>`,
+    motion: (t) => ({ dy: Math.sin(t * 1.4) * 4 })
+  },
+  /** Briefly not. */
+  horns: {
+    at: [0, -92],
+    html: `<path class="fx-paw-hot" d="M-58 4C-58 -18 -48 -30 -36 -34C-40 -22 -42 -12 -40 4zM58 4C58 -18 48 -30 36 -34C40 -22 42 -12 40 4z"/>`,
+    motion: (t) => ({ s: 0.94 + 0.06 * Math.sin(t * 3) })
+  },
+  /** Deep sleep, the comedy version: it inflates and it pops. */
+  bubble: {
+    at: [82, -22],
+    stroke: true,
+    html: `<circle cx="0" cy="0" r="16"/>`,
+    motion: (t) => {
+      const u = cycle(t, 0.28);
+      // grows for most of the cycle, then is simply gone -- a pop is an
+      // absence, not a shrink
+      return u > 0.9 ? { o: 0 } : { s: 0.25 + u, o: 0.35 + 0.5 * u };
+    }
+  },
+
+  /* -------- faces: these REPLACE the eyes, so a state sets eyeAlpha 0 */
+
+  /** Knocked sideways. */
+  faceSpiral: {
+    onFace: true,
+    at: [0, 0],
+    stroke: true,
+    html: `<g transform="translate(-41 -6)"><path d="${spiral(2.2, 20)}"/></g>` +
+      `<g transform="translate(41 -6)"><path d="${spiral(2.2, 20)}"/></g>`,
+    motion: (t) => ({ r: Math.sin(t * 1.6) * 6 })
+  },
+  /** Awestruck. Four-point stars where the eyes were. */
+  faceStar: {
+    onFace: true,
+    at: [0, -6],
+    html: `<g transform="translate(-41 0)"><path d="${spark4(26)}"/></g>` +
+      `<g transform="translate(41 0)"><path d="${spark4(26)}"/></g>`,
+    motion: (t) => ({ s: 0.92 + 0.12 * Math.abs(Math.sin(t * 3.2)) })
+  },
+
+  /* -------- and one that sits WITH the eyes rather than instead of them */
+
+  /** Flustered. Two warm ovals under the eyes. */
+  blush: {
+    onFace: true,
+    at: [0, 26],
+    html: `<g class="fx-paw-warm"><ellipse cx="-52" cy="0" rx="17" ry="9"/>` +
+      `<ellipse cx="52" cy="0" rx="17" ry="9"/></g>`,
+    motion: (t) => ({ o: 0.72 + 0.18 * Math.sin(t * 2.2) })
+  },
+
   faceHappy: {
+    onFace: true,
     at: [0, 0],
     html: `<path d="M-51 0q18 -22 36 0M15 0q18 -22 36 0"/>`,
     stroke: true
   },
   faceX: {
+    onFace: true,
     at: [0, 0],
     html: `<path d="M-42 -16l16 16l-16 16M42 -16l-16 16l16 16"/>`,
     stroke: true
   },
   faceLove: {
+    onFace: true,
     at: [0, 0],
     html: `<path class="fx-paw-warm" d="${heart(-33, -10, 15)}${heart(33, -10, 15)}"/>`
   }
@@ -602,12 +776,41 @@ const GLYPHS = {
 
 const GLYPH_IDS = Object.keys(GLYPHS);
 
+/**
+ * A glyph with `count` is an EMITTER: one definition, several instances, each
+ * given its index so it can carry its own phase. Steam, tears and flame are
+ * all the same thing -- a handful of elements doing the same motion out of
+ * step -- and writing them as one glyph each beats writing fifteen.
+ *
+ * Instances are keyed "id#i". A frame names them individually, so the
+ * ephemeral layer adds and removes them like any other glyph.
+ */
+const baseOf = (key) => {
+  const i = key.indexOf("#");
+  return i < 0 ? key : key.slice(0, i);
+};
+const indexOf = (key) => {
+  const i = key.indexOf("#");
+  return i < 0 ? 0 : Number(key.slice(i + 1));
+};
+/** Per-instance values may be plain or a function of the index. */
+const per = (v, i) => (typeof v === "function" ? v(i) : v);
+
+/** One glyph's group, as markup. The same shape draw() builds on demand. */
+function glyphMarkup(key, f) {
+  const g = GLYPHS[baseOf(key)];
+  return `<g class="fx-paw-glyph${g.stroke ? " fx-paw-stroke" : ""}" data-g="${key}"` +
+    ` opacity="${r2(f.o)}" transform="${f.m}">${per(g.html, indexOf(key))}</g>`;
+}
+
 /** Where a glyph sits this frame, as one transform. */
-function glyphTransform(id, t) {
-  const g = GLYPHS[id];
-  const m = g.motion ? g.motion(t) : {};
-  const x = r2(g.at[0] + (m.dx ?? 0));
-  const y = r2(g.at[1] + (m.dy ?? 0));
+function glyphTransform(key, t) {
+  const g = GLYPHS[baseOf(key)];
+  const i = indexOf(key);
+  const m = g.motion ? g.motion(t, i) : {};
+  const at = per(g.at, i);
+  const x = r2(at[0] + (m.dx ?? 0));
+  const y = r2(at[1] + (m.dy ?? 0));
   const rot = m.r ? ` rotate(${r2(m.r)})` : "";
   const sc = m.s != null ? ` scale(${r2(m.s)})` : "";
   return `translate(${x} ${y})${rot}${sc}`;
@@ -616,6 +819,8 @@ function glyphTransform(id, t) {
 /* ------------------------------------------------------------------ poses */
 
 const ear = (angle = 0, lift = 0) => ({ angle, lift });
+/** A mouth. Absent unless a state asks, which is why alpha is an argument. */
+const mouth = (curve = 0, open = 0, w = 1, alpha = 1) => ({ curve, open, w, alpha });
 /**
  * An eye, as multipliers of whatever the drawing's own eye is. States say
  * "a tenth wider", never a size in head half-widths, so one state table
@@ -635,11 +840,20 @@ function basePose(over = {}) {
     splitScale: 1,
     eyes: [eye(), eye()],
     eyeAlpha: 1,
+    /**
+     * The mouth. alpha 0 by default, and on every state written before it
+     * existed, because the Paw is drawn without one and a mascot that always
+     * has a mouth is a different character.
+     */
+    mouth: { curve: 0, open: 0, w: 1, alpha: 0 },
     wander: 1,
     /** bloom strength 0..1; states pulse it, sample() adds a slow breath */
     glow: 0.5,
     /** how much of the rim is spectrum rather than the art's own 0..1 */
     rainbow: 0,
+    /** a flat colour over the rim, 0..1, and the hue it takes */
+    tint: 0,
+    tintHue: 0,
     glyphs: {},
     ...over
   };
@@ -677,14 +891,29 @@ function blendPose(a, b, t) {
     splitScale: lerp(a.splitScale, b.splitScale, t),
     eyes: [lerpEye(a.eyes[0], b.eyes[0], t), lerpEye(a.eyes[1], b.eyes[1], t)],
     eyeAlpha: lerp(a.eyeAlpha, b.eyeAlpha, t),
+    mouth: {
+      curve: lerp(a.mouth.curve, b.mouth.curve, t),
+      open: lerp(a.mouth.open, b.mouth.open, t),
+      w: lerp(a.mouth.w, b.mouth.w, t),
+      alpha: lerp(a.mouth.alpha, b.mouth.alpha, t)
+    },
+    mouth: {
+      curve: lerp(a.mouth.curve, b.mouth.curve, t),
+      open: lerp(a.mouth.open, b.mouth.open, t),
+      w: lerp(a.mouth.w, b.mouth.w, t),
+      alpha: lerp(a.mouth.alpha, b.mouth.alpha, t)
+    },
     wander: lerp(a.wander, b.wander, t),
     glow: lerp(a.glow, b.glow, t),
     rainbow: lerp(a.rainbow, b.rainbow, t),
+    tint: lerp(a.tint, b.tint, t),
+    // Hue by the shorter way round, so red to violet does not sweep the wheel.
+    tintHue: a.tintHue + (((b.tintHue - a.tintHue + 540) % 360) - 180) * t,
     glyphs
   };
 }
 
-/* ------------------------------------------------------------ the 16 states
+/* ------------------------------------------------------------ the states
  * Each is a function of `t`, the seconds elapsed IN that state, so a state
  * can animate on its own (the working shake, the excited bounce) while the
  * engine separately crossfades it against whatever it replaced. */
@@ -878,9 +1107,196 @@ const STATES = {
         eyes: [eye(w, w), eye(w, w)],
         glow: 0.68 + Math.sin(t * 1.6) * 0.14 + beat * 0.28,
         rainbow: 1,
-        glyphs: { sparkA: 1, sparkB: 1, sparkC: 1 }
+        glyphs: { sparks: 1 }
       });
     }
+  },
+
+  /* ---------------------------------------------------------------------
+   * The anime shorthand. Each of these leans on a mark, a tint or a mouth
+   * rather than on eye shape alone, because eye shape is most of what the
+   * first sixteen already had and it was running out.
+   * ------------------------------------------------------------------- */
+
+  /** Caught out. The bead does the work; the pose only gets out of its way. */
+  awkward: {
+    morph: 0.35,
+    blinkIn: true,
+    pose: () => basePose({
+      rot: 0.06,
+      gaze: { yaw: -13, pitch: -3, roll: 3 },
+      ears: { l: ear(0.2), r: ear(0.34) },
+      eyes: [eye(1.05, 0.7), eye(0.9, 0.62)],
+      mouth: mouth(-0.35, 0.05, 0.7),
+      glow: 0.4,
+      glyphs: { sweat: 1 }
+    })
+  },
+
+  /** Irritated, not yet angry. The vein throbs; nothing else has to shout. */
+  annoyed: {
+    morph: 0.3,
+    pose: (t) => basePose({
+      cx: Math.sin(t * 13) * 0.004,
+      ears: { l: ear(0.3), r: ear(0.26) },
+      eyes: [eye(0.95, 0.42, 1, 16), eye(0.95, 0.42, 1, -16)],
+      mouth: mouth(-0.5, 0.02, 0.55),
+      tint: 0.55,
+      tintHue: 12,
+      glow: 0.5,
+      glyphs: { angerCross: 1 }
+    })
+  },
+
+  /** The blue verticals. Everything else drains to match. */
+  gloomy: {
+    morph: 0.6,
+    pose: () => basePose({
+      cy: 0.05,
+      sy: 0.95,
+      gaze: { yaw: 0, pitch: -20, roll: 0 },
+      ears: { l: ear(0.55, -0.05), r: ear(0.55, -0.05) },
+      wander: 0.2,
+      eyes: [eye(0.85, 0.4, 1, -6), eye(0.85, 0.4, 1, 6)],
+      mouth: mouth(-0.6, 0.03, 0.5),
+      tint: 0.5,
+      tintHue: 215,
+      glow: 0.12,
+      glyphs: { despair: 1 }
+    })
+  },
+
+  /** Knocked sideways. The spirals replace the eyes entirely. */
+  dizzy: {
+    morph: 0.35,
+    blinkIn: true,
+    pose: (t) => basePose({
+      rot: Math.sin(t * 2.6) * 0.09,
+      cy: Math.sin(t * 5.2) * 0.012,
+      ears: { l: ear(0.18 + Math.sin(t * 2.2) * 0.1), r: ear(0.22 - Math.sin(t * 2.2) * 0.1) },
+      eyeAlpha: 0,
+      mouth: mouth(-0.2, 0.35, 0.5),
+      glow: 0.35,
+      glyphs: { faceSpiral: 1 }
+    })
+  },
+
+  /** Awestruck. Stars, a blush, and a mouth that cannot stay shut. */
+  starstruck: {
+    morph: 0.3,
+    pose: (t) => basePose({
+      cy: -Math.abs(Math.sin(t * 3.4)) * 0.018,
+      ears: { l: ear(-0.36, 0.05), r: ear(-0.4, 0.05) },
+      eyeAlpha: 0,
+      mouth: mouth(0.7, 0.55, 0.75),
+      glow: 0.8 + Math.sin(t * 4) * 0.15,
+      glyphs: { faceStar: 1, blush: 0.8, sparks: 0.8 }
+    })
+  },
+
+  /** Anime cries in quantity, so the tears are an emitter and not two drops. */
+  crying: {
+    morph: 0.4,
+    pose: (t) => basePose({
+      cy: 0.03 + Math.sin(t * 7) * 0.006,
+      ears: { l: ear(0.6, -0.05), r: ear(0.58, -0.05) },
+      gaze: { yaw: 0, pitch: -8, roll: 0 },
+      eyes: [eye(1.1, 0.3, 1, -12), eye(1.1, 0.3, 1, 12)],
+      mouth: mouth(-0.8, 0.45, 0.7),
+      tint: 0.3,
+      tintHue: 205,
+      glow: 0.3,
+      glyphs: { tears: 1 }
+    })
+  },
+
+  /** Too much load. Steam off both ears and the colour to go with it. */
+  overheated: {
+    morph: 0.4,
+    pose: (t) => basePose({
+      sy: 1 + Math.sin(t * 6) * 0.012,
+      ears: { l: ear(0.14), r: ear(0.1) },
+      eyes: [eye(0.9, 0.34, 1, 8), eye(0.9, 0.34, 1, -8)],
+      mouth: mouth(-0.2, 0.3, 0.6),
+      tint: 0.45,
+      tintHue: 20,
+      glow: 0.6 + Math.sin(t * 5) * 0.12,
+      glyphs: { steam: 1 }
+    })
+  },
+
+  /** Full send. Flame behind, a yell in front. */
+  firedUp: {
+    morph: 0.3,
+    blinkIn: true,
+    pose: (t) => basePose({
+      cy: -0.02 - Math.abs(Math.sin(t * 5)) * 0.012,
+      sy: 1.03,
+      ears: { l: ear(-0.5, 0.05), r: ear(-0.46, 0.05) },
+      eyes: [eye(1.15, 0.55, 1, 14), eye(1.15, 0.55, 1, -14)],
+      mouth: mouth(-0.15, 0.85, 0.85),
+      tint: 0.7,
+      tintHue: 18,
+      glow: 0.9,
+      glyphs: { flame: 1 }
+    })
+  },
+
+  /** Charging. The aura climbs, the glow builds, nothing else moves much. */
+  powering: {
+    morph: 0.55,
+    pose: (t) => basePose({
+      cy: -Math.abs(Math.sin(t * 1.6)) * 0.02,
+      ears: { l: ear(-0.3, 0.05), r: ear(-0.3, 0.05) },
+      eyes: [eye(1.08, 0.95), eye(1.08, 0.95)],
+      wander: 0.2,
+      tint: 0.6,
+      tintHue: 44,
+      glow: 0.75 + Math.sin(t * 2.2) * 0.22,
+      glyphs: { aura: 1 }
+    })
+  },
+
+  /** One frame of impact, then the recoil. The burst is behind the head. */
+  shocked: {
+    morph: 0.12,
+    blinkIn: true,
+    pose: (t) => basePose({
+      cy: 0.03 * Math.exp(-t * 5),
+      sx: 1 + 0.05 * Math.exp(-t * 6),
+      sy: 1 - 0.05 * Math.exp(-t * 6),
+      ears: { l: ear(-0.6, 0.05), r: ear(-0.56, 0.05) },
+      splitScale: 1.06,
+      eyes: [eye(1.35, 0.8), eye(1.35, 0.8)],
+      mouth: mouth(0, 0.9, 0.5),
+      glow: 0.4 + 0.6 * Math.exp(-t * 3),
+      glyphs: { burst: 1 }
+    })
+  },
+
+  /** The smirk. Asymmetry is the whole expression, so nothing here matches. */
+  smug: {
+    morph: 0.4,
+    pose: () => basePose({
+      rot: -0.07,
+      gaze: { yaw: 11, pitch: 5, roll: -4 },
+      ears: { l: ear(-0.2, 0.04), r: ear(0.16) },
+      eyes: [eye(1, 0.42, 1, 15), eye(0.95, 0.72, 1, -4)],
+      mouth: mouth(0.75, 0.06, 0.5),
+      glow: 0.55
+    })
+  },
+
+  /** Jitome: the flat unimpressed eye. No mark at all, which is the joke. */
+  deadpan: {
+    morph: 0.25,
+    pose: () => basePose({
+      ears: { l: ear(0.24), r: ear(0.22) },
+      wander: 0.08,
+      eyes: [eye(1.18, 0.2), eye(1.18, 0.2)],
+      mouth: mouth(-0.1, 0.02, 0.36),
+      glow: 0.3
+    })
   },
 
   listening: {
@@ -1368,12 +1784,25 @@ export class PawEngine {
       }
     }
 
+    // --- mouth ------------------------------------------------------------
+    const mo = pose.mouth;
+    const mouth = mo.alpha > 0.01
+      ? {
+          d: mouthPath(art.mouth.w * mo.w * RADIUS, art.mouth.h * RADIUS, mo.curve, mo.open),
+          at: `translate(${r2((art.mouth.x + cx) * RADIUS)} ${r2((art.mouth.y + cy) * RADIUS)})`,
+          alpha: mo.alpha
+        }
+      : null;
+
     return {
       glow: clamp(pose.glow + (alive ? Math.sin((now / 3.4) * TAU) * 0.08 : 0)),
       rainbow: clamp(pose.rainbow),
+      tint: clamp(pose.tint),
+      tintHue: ((pose.tintHue % 360) + 360) % 360,
       /** Degrees. One turn every 9 s, and a function of `now` like everything else. */
       spectrum: alive ? ((now * 40) % 360) : 0,
       bodyPath,
+      mouth,
       earLPath,
       earRPath,
       eyes,
@@ -1393,8 +1822,17 @@ function glyphFrame(amounts, t) {
   for (const id in amounts) {
     const a = amounts[id];
     if (a <= 0.001) continue;
-    const m = GLYPHS[id].motion ? GLYPHS[id].motion(t) : {};
-    out[id] = { o: clamp(a * (m.o ?? 1)), m: glyphTransform(id, t) };
+    const g = GLYPHS[id];
+    const n = g.count ?? 1;
+    for (let i = 0; i < n; i++) {
+      const key = n === 1 ? id : `${id}#${i}`;
+      const m = g.motion ? g.motion(t, i) : {};
+      const o = clamp(a * (m.o ?? 1));
+      // An instance at nothing is left out entirely: a tear between drops
+      // should not be a node waiting to become one.
+      if (o <= 0.004) continue;
+      out[key] = { o, m: glyphTransform(key, t) };
+    }
   }
   return out;
 }
@@ -1437,14 +1875,17 @@ function template(id, frame, art) {
       .replace(/\b(FILL|RIM|D\d+)\b/g, (k) => gid(k));
 
   const at = (i, k, dflt) => (frame ? (frame.eyes[i] ? frame.eyes[i][k] : dflt) : dflt);
-  const glyph = (k) => {
-    const g = GLYPHS[k];
-    const f = frame ? frame.glyphs[k] : null;
-    return `<g class="fx-paw-glyph${g.stroke ? " fx-paw-stroke" : ""}" data-g="${k}"` +
-      ` opacity="${f ? r2(f.o) : 0}" transform="${f ? f.m : glyphTransform(k, 0)}">${g.html}</g>`;
-  };
-  const marks = GLYPH_IDS.filter((k) => !k.startsWith("face")).map(glyph).join("");
-  const faces = GLYPH_IDS.filter((k) => k.startsWith("face")).map(glyph).join("");
+  // Only what this frame actually shows. Every glyph used to be emitted at
+  // opacity 0 and left there, which is thirteen groups per avatar that paint
+  // nothing -- and the floor glow already taught us that invisible is not the
+  // same as absent. draw() adds and removes them from here on.
+  const shown = frame ? Object.keys(frame.glyphs) : [];
+  const glyph = (k) => glyphMarkup(k, frame.glyphs[k]);
+  // Routed by a flag, not by a name: whether a mark rides the face is a fact
+  // about the mark, and a naming convention is a fact about nothing.
+  const marks = shown.filter((k) => !GLYPHS[baseOf(k)].onFace && !GLYPHS[baseOf(k)].behind).map(glyph).join("");
+  const faces = shown.filter((k) => GLYPHS[baseOf(k)].onFace).map(glyph).join("");
+  const backs = shown.filter((k) => GLYPHS[baseOf(k)].behind).map(glyph).join("");
   const d = frame ? frame.bodyPath : "";
   const eL = frame ? frame.earLPath : "";
   const eR = frame ? frame.earRPath : "";
@@ -1464,7 +1905,6 @@ function template(id, frame, art) {
     <path class="fx-paw-fill" data-part="${key}" d="${dd}" fill="url(#${gid("FILL")})"/>${extra ? `
     <g clip-path="url(#fx-paw-clip-${key}-${id})">${extra}</g>` : ""}
     <path class="fx-paw-rim" data-part="${key}" d="${dd}" fill="none" stroke="url(#${gid("RIM")})"/>
-    <path class="fx-paw-rim fx-paw-rim-spectrum" data-part="${key}" d="${dd}" fill="none" stroke="url(#fx-paw-spectrum-${id})"/>
   </g>`;
 
   return `<div class="fx-paw"><svg class="fx-paw-svg" viewBox="${-art.box} ${-art.box} ${art.box * 2} ${art.box * 2}" aria-hidden="true" focusable="false">
@@ -1483,9 +1923,13 @@ function template(id, frame, art) {
     </linearGradient>
   </defs>
   <g class="fx-paw-ground" fill="none" transform="${art.m}">${localise(art.art.glass.ground)}</g>
+  <g class="fx-paw-back">${backs}</g>
   ${part("earL", eL)}
   ${part("earR", eR)}
   ${part("body", d, `<g fill="none" transform="${art.m}">${localise(art.art.glass.sheen)}</g>`)}
+  <g class="fx-paw-mouth">${frame && frame.mouth
+    ? `<path d="${frame.mouth.d}" transform="${frame.mouth.at}" opacity="${r2(frame.mouth.alpha)}"/>`
+    : ""}</g>
   <g class="fx-paw-face" transform="${shift}">
     ${eye(0)}
     ${eye(1)}
@@ -1539,10 +1983,19 @@ export function mount(el, opts = {}) {
     earR: svg.querySelectorAll('[data-part="earR"]')
   };
   const eyeEls = svg.querySelectorAll(".fx-paw-eye");
+  /** id -> the node currently showing it. Empty until a frame asks. */
   const glyphEls = {};
   for (const g of svg.querySelectorAll(".fx-paw-glyph")) glyphEls[g.dataset.g] = g;
   const face = svg.querySelector(".fx-paw-face");
+  const marks = svg.querySelector(".fx-paw-marks");
+  const back = svg.querySelector(".fx-paw-back");
+  const mouthHost = svg.querySelector(".fx-paw-mouth");
+  let mouthEl = mouthHost.firstElementChild;
   const spectrum = svg.querySelector(".fx-paw-spectrum-def");
+  const spectrumRef = `url(#${spectrum.id})`;
+  const PART_KEYS = ["body", "earL", "earR"];
+  /** part -> its alt rim node, while one exists. */
+  const altRims = {};
 
   /** "0.2,0.8,0.5" or {valence,arousal,attention}; anything else is no mood. */
   const asMood = (m) => {
@@ -1577,6 +2030,38 @@ export function mount(el, opts = {}) {
     // Rotating the gradient rather than recolouring the stops: the travel is
     // one attribute, and the stops loop so the seam never shows.
     if (f.rainbow > 0.01) spectrum.setAttribute("gradientTransform", `rotate(${r2(f.spectrum)})`);
+
+    // The second rim exists only while something is using it. One layer
+    // serves both the spectrum and a flat tint, because they are the same
+    // thing -- a rim that is not the drawing's -- and two layers would mean
+    // one of them idling in every avatar that wants neither.
+    const alt = Math.max(f.rainbow, f.tint);
+    for (const key of PART_KEYS) {
+      let el = altRims[key];
+      if (alt <= 0.01) {
+        if (el) {
+          el.remove();
+          delete altRims[key];
+        }
+        continue;
+      }
+      if (!el) {
+        const host = parts[key][0].parentElement;
+        host.insertAdjacentHTML("beforeend",
+          `<path class="fx-paw-rim fx-paw-rim-alt" d="" fill="none"/>`);
+        el = host.lastElementChild;
+        altRims[key] = el;
+      }
+      el.setAttribute("d", key === "body" ? f.bodyPath : key === "earL" ? f.earLPath : f.earRPath);
+      el.setAttribute("stroke", f.rainbow >= f.tint ? spectrumRef : `hsl(${r2(f.tintHue)} 90% 68%)`);
+      el.setAttribute("opacity", r2(alt));
+    }
+    wrap.style.setProperty("--fx-paw-alt-rim", r2(alt));
+    if (f.tint > 0.01) {
+      wrap.style.setProperty("--fx-paw-glow", `hsl(${r2(f.tintHue)} 85% 62% / ${r2(0.35 + 0.3 * f.tint)})`);
+    } else {
+      wrap.style.removeProperty("--fx-paw-glow");
+    }
     for (const p of parts.body) p.setAttribute("d", f.bodyPath);
     for (const p of parts.earL) p.setAttribute("d", f.earLPath);
     for (const p of parts.earR) p.setAttribute("d", f.earRPath);
@@ -1591,10 +2076,40 @@ export function mount(el, opts = {}) {
       eyeEls[i].setAttribute("transform", e.matrix);
       eyeEls[i].setAttribute("opacity", r2(e.alpha));
     }
+    // The mouth is absent until a state opens one, and gone again after. The
+    // Paw is drawn without one, so for most states this is no node at all.
+    if (f.mouth) {
+      if (!mouthEl) {
+        mouthHost.insertAdjacentHTML("beforeend", `<path d="" />`);
+        mouthEl = mouthHost.lastElementChild;
+      }
+      mouthEl.setAttribute("d", f.mouth.d);
+      mouthEl.setAttribute("transform", f.mouth.at);
+      mouthEl.setAttribute("opacity", r2(f.mouth.alpha));
+    } else if (mouthEl) {
+      mouthEl.remove();
+      mouthEl = null;
+    }
+
+    // Reconcile: a glyph the frame does not mention is REMOVED, not hidden.
+    // The set changes only when a state does, so this is a couple of DOM
+    // writes on a transition and none at all in between.
+    for (const k in f.glyphs) {
+      let el = glyphEls[k];
+      if (!el) {
+            const g = GLYPHS[baseOf(k)];
+        const into = g.onFace ? face : g.behind ? back : marks;
+        into.insertAdjacentHTML("beforeend", glyphMarkup(k, f.glyphs[k]));
+        el = into.lastElementChild;
+        glyphEls[k] = el;
+      }
+      el.setAttribute("opacity", r2(f.glyphs[k].o));
+      el.setAttribute("transform", f.glyphs[k].m);
+    }
     for (const k in glyphEls) {
-      const g = f.glyphs[k];
-      glyphEls[k].setAttribute("opacity", g ? r2(g.o) : 0);
-      if (g) glyphEls[k].setAttribute("transform", g.m);
+      if (f.glyphs[k]) continue;
+      glyphEls[k].remove();
+      delete glyphEls[k];
     }
   }
 
@@ -1607,7 +2122,7 @@ export function mount(el, opts = {}) {
       cycleAt = (cycleAt + 1) % STATE_IDS.length;
       engine.setState(STATE_IDS[cycleAt], now);
     }
-    draw(now);
+    if (onScreen) draw(now);
     raf = requestAnimationFrame(frame);
   }
 
@@ -1684,6 +2199,25 @@ export function mount(el, opts = {}) {
     el.addEventListener("pointerleave", onOut);
   }
 
+  /*
+   * Off-screen avatars keep their clock and stop writing to the DOM.
+   *
+   * The clock has to keep running: sample(t) is a function of time, and a
+   * paused one would scroll back into view frozen in the past and then snap.
+   * What is skipped is the writing, which is all an unseen avatar was ever
+   * contributing. A page with one of these pays nothing for it; a page with
+   * fifty pays for the few you can actually see.
+   */
+  let onScreen = true;
+  let watcher = null;
+  if (!still && typeof IntersectionObserver === "function") {
+    watcher = new IntersectionObserver(
+      ([entry]) => { onScreen = entry.isIntersecting; },
+      { rootMargin: "120px" }
+    );
+    watcher.observe(el);
+  }
+
   if (still) draw(0);
   else raf = requestAnimationFrame(frame);
 
@@ -1713,6 +2247,7 @@ export function mount(el, opts = {}) {
     },
     destroy() {
       cancelAnimationFrame(raf);
+      if (watcher) watcher.disconnect();
       if (tracking) {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("blur", onRelease);
@@ -1739,7 +2274,7 @@ export const meta = {
   needs: [],
   license: "MIT",
   options: {
-    state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, listening." },
+    state: { type: "string", default: "idle", description: "Which state to hold. One of idle, happy, excited, curious, thinking, working, focused, surprised, sleeping, wink, confused, sad, love, celebrating, creative, awkward, annoyed, gloomy, dizzy, starstruck, crying, overheated, firedUp, powering, shocked, smug, deadpan, listening." },
     speed: { type: "number", default: 1, description: "Time multiplier for the whole engine. Clamped to 0.1-10." },
     cycle: { type: "number", default: 0, description: "Seconds per state when walking every state in turn; 0 holds the chosen state." },
     mood: { type: "string", default: "", description: "A point in the mood space instead of a named state: \"valence,arousal,attention\", each -1..1, 0..1, 0..1. Empty means use the state." },
