@@ -854,7 +854,10 @@ no new dependency and no new runtime. The 57 not taken this run, at
 `plaque` `plasma` `plumage` `rainglass` `scales` `scratches` `shatter`
 `spotlight` `thermal` `turing` `waxseal` `wireframe` `woodgrain`
 
-Eight were read closely and their posters opened. Ranked for a future run:
+Eight had their `meta.json` and `shader.frag` read closely; six of those also
+had their posters opened (`suminagashi`, `hologram`, `chrome`, `rainglass`,
+`lightleak`, `obsidian`). `foil` and `damascus` were judged from source alone.
+Ranked for a future run:
 `obsidian` (fractured volcanic glass, dark material), `rainglass` (rain on a
 night window, bokeh behind it — richer than `bokeh-drift` but adjacent to it),
 `lightleak` (anamorphic film flares — adjacent to `god-rays`), `chrome` (liquid
@@ -935,3 +938,31 @@ The fix is one command: **`agent-browser stream disable`**. Runtime streaming
 was enabled (`ws://127.0.0.1:49969`, `Connected: false`), and a screencast
 holding the capture pipeline starves `Page.captureScreenshot`. Check
 `agent-browser stream status` before concluding the tool is broken.
+
+### Contrast is the step that nearly shipped a lie
+
+Both `style.css` files started as clones of `sg-gloam` and `sg-bask`, and the
+clone carried their contrast comment: "measured worst case across four animation
+frames with the copy hidden is recorded in the PR". Nothing had been measured.
+Measuring it found three of the four text runs under the README's 4.5:1 floor:
+`sg-hologram` title 3.52:1 and lede 2.49:1 at the inherited `--fx-scrim: 0.58`,
+`sg-suminagashi` lede 3.03:1 at `0.5`. Both defaults moved, and on both effects
+the scrim alone could not carry the lede without washing the effect out, so
+`--fx-muted` moved a step toward the ink as well. Final: 5.99 / 4.77 and
+7.94 / 4.80.
+
+Two things for the next run. **Do not inherit a measurement comment along with
+the CSS it sits in** — a cloned resting layer is a different composition under
+the same copy, so the number is never transferable. And the new ports rest as
+line work rather than blurred gradient, which is exactly why the numbers came
+out worse: a hairline ring crossing a lede is a hard edge, not a soft field.
+
+The README's method asks for the worst ratio across several animation frames.
+Only one frame was available: headless Chrome ran rAF (120 frames confirmed) but
+would not advance the composite, so four successive screenshots came back
+byte-identical. Whoever gets multiple frames should re-measure, because the roll
+bar on `sg-hologram` and a ring drifting under the copy on `sg-suminagashi` can
+both put a worse pixel there than the frame that was measured.
+
+`scripts/` has no contrast tool, which is why this was done by hand each time.
+Worth writing one if a third light-ground or line-work hero lands.

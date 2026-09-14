@@ -29,9 +29,9 @@
   --fx-c4: #f43f5e;
   --fx-bg: #04050c;
   --fx-ink: #ffffff;
-  --fx-muted: #c9d8e4;
+  --fx-muted: #dbe5ed;
   --fx-speed: 1;
-  --fx-scrim: 0.58;
+  --fx-scrim: 0.76;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -127,9 +127,23 @@
    drifts, the roll bar climbs and a bright ring lattice can cross the content
    column. Held flat across the inner 36% -- the whole column -- then eased out
    over four stops, because a flat core running straight into one linear ramp
-   draws a visible hard-edged ellipse across the hero. Measured worst case
-   across four animation frames with the copy hidden is recorded in the PR;
-   re-measure the same way before lowering --fx-scrim. */
+   draws a visible hard-edged ellipse across the hero.
+
+   MEASURED, and the number moved the default. Live shader, copy hidden, worst
+   ratio between each run's computed ink and any pixel under its box at
+   1280x720: at the 0.58 this started on, the title was 3.52:1 and the lede
+   2.49:1, both under the 4.5:1 floor, because a bright ring gauge crossing the
+   column is far brighter than the dusk the gradient heroes rest on. 0.76 lifts
+   the title to 5.99:1 and the lede to 4.18:1, and no scrim value fixes the lede
+   without washing the projection out, so --fx-muted moved too: #c9d8e4 to
+   #dbe5ed, a third of the way to the ink, which takes the lede to 4.78:1.
+   Re-measure before lowering either.
+
+   One caveat on that measurement, so nobody reads more into it than is there:
+   it is ONE live frame, not the four the README's method asks for. Headless
+   Chrome would not advance the composite between captures, so the four
+   screenshots came back byte-identical. The roll bar and the tears can put a
+   brighter pixel under the copy than the frame that was measured. */
 .fx-holo__scrim {
   position: absolute;
   inset: 0;
