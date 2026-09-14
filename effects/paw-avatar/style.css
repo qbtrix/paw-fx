@@ -56,6 +56,9 @@
 .fx-paw-stroke .fx-paw-cool { stroke: var(--fx-paw-cool, #7fc4ff); fill: none; }
 .fx-paw-stroke .fx-paw-hot { stroke: var(--fx-paw-hot, #ff6a4d); fill: none; }
 .fx-paw-warmline { stroke: var(--fx-paw-warm, #ff8cc4); fill: none; }
+/* A flash is nearly white with a warm cast. Hot red at low opacity on a dark
+ * ground is not a flash, it is a stain. */
+.fx-paw-flash { fill: var(--fx-paw-flash, #ffe4c8); }
 
 .fx-paw-catch {
   fill: #ffffff;

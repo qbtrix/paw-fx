@@ -228,8 +228,12 @@ function mouthPath(w, h, curve, open) {
   const hw = Math.max(w, 0.01) / 2;
   const lift = curve * h * 0.9;
   const depth = Math.max(h * 0.16, open * h);
+  // As it opens, the top edge rises to meet the drop: a flat top over a deep
+  // bottom is a D, and a D is a grin. Shock, a yell and a gasp are all an O,
+  // and an O needs both edges to give.
+  const top = lift - depth * 0.55 * open;
   return (
-    `M${r2(-hw)} 0Q0 ${r2(lift)} ${r2(hw)} 0` +
+    `M${r2(-hw)} 0Q0 ${r2(top)} ${r2(hw)} 0` +
     `Q0 ${r2(lift + depth)} ${r2(-hw)} 0z`
   );
 }
@@ -691,12 +695,20 @@ const GLYPHS = {
       return { dy: -120 * u, s: 0.7 + 0.5 * (1 - u), o: arch(u) };
     }
   },
-  /** The impact star, behind, so the head punches through it. */
+  /**
+   * The impact star, behind, so the head punches through it. It is a FLASH:
+   * pale, huge and almost gone within a second, then a faint hold. A dark
+   * red star sitting there at half opacity read as a stain on the wall.
+   */
   burst: {
     behind: true,
     at: [0, -10],
-    html: `<path class="fx-paw-hot" d="M0 -150L26 -66L104 -104L54 -30L150 -12L54 14L104 96L26 44L0 130L-26 44L-104 96L-54 14L-150 -12L-54 -30L-104 -104L-26 -66z"/>`,
-    motion: (t) => ({ s: 1.05 + 0.45 * Math.exp(-t * 4), o: 0.25 + 0.6 * Math.exp(-t * 1.6), r: t * 12 })
+    html: `<path class="fx-paw-flash" d="M0 -150L26 -66L104 -104L54 -30L150 -12L54 14L104 96L26 44L0 130L-26 44L-104 96L-54 14L-150 -12L-54 -30L-104 -104L-26 -66z"/>`,
+    motion: (t) => ({
+      s: 0.9 + 0.5 * Math.exp(-t * 5),
+      o: 0.18 + 0.82 * Math.exp(-t * 2.4),
+      r: 8 * Math.sin(t * 3)
+    })
   },
   /** Briefly innocent. */
   halo: {
@@ -1268,7 +1280,9 @@ const STATES = {
       ears: { l: ear(-0.6, 0.05), r: ear(-0.56, 0.05) },
       splitScale: 1.06,
       eyes: [eye(1.35, 0.8), eye(1.35, 0.8)],
-      mouth: mouth(0, 0.9, 0.5),
+      mouth: mouth(0, 1, 0.42),
+      tint: 0.6 * Math.exp(-t * 2.2),
+      tintHue: 36,
       glow: 0.4 + 0.6 * Math.exp(-t * 3),
       glyphs: { burst: 1 }
     })
