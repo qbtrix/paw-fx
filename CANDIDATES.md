@@ -966,3 +966,37 @@ both put a worse pixel there than the frame that was measured.
 
 `scripts/` has no contrast tool, which is why this was done by hand each time.
 Worth writing one if a third light-ground or line-work hero lands.
+
+## Solace shaders (HARSHITSHARMA18/shaders) — 14 WebGL effects, cleared to port
+
+Found 2026-09-15 via <https://shaders.solaceui.com/>. MIT, Copyright (c) 2026
+Harshit Sharma, "A WebGL based shaders library under Solace Labs". Next.js 16 /
+React 19 wrapper over raw WebGL + GLSL, shipped as a shadcn registry.
+
+Fourteen: thermal pixel ink, viscous cursor dye, reaction bloom, cellular
+contagion, repulsion lattice, magnetic pixels, chromatic refraction, thermal
+etch burn, particle assembly, refractive lens, exposure grid, black hole
+portal, fluid distortion, specimen index.
+
+**Provenance checked before adding, because the repo credits no upstream and
+several of those names are the most-copied Shadertoy genres there are.** A
+Shadertoy lift would carry CC BY-NC-SA 3.0 -- non-commercial and share-alike,
+which this registry cannot take whatever licence the wrapper claims. Three
+checks, all clean:
+
+1. Zero Shadertoy idioms in the shader sources: no `mainImage(`, `fragCoord`,
+   `iTime`, `iResolution`, `iMouse`, `iChannel`.
+2. Uniform naming is bespoke and semantic -- `u_heat`, `u_pressure`,
+   `u_bandShift`, `u_decay` -- not Shadertoy's `i*` convention.
+3. Seventeen commits across seven weeks, reading prototype -> catalog ->
+   public release. A copied corpus lands finished in one commit.
+
+So: portable under the normal port contract, `origin` pointing at the repo and
+the licence header lint asks for. The React wrapper is rewritten to vanilla
+`mount(el, opts)` the same way the paper-design ports were; the GLSL is what
+carries over.
+
+Pick order when this gets scheduled: the ones with no equivalent on the shelf
+already. `chromatic refraction`, `refractive lens` and `black hole portal` have
+nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+

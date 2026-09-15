@@ -83,6 +83,18 @@
           },
           "description": {
             "type": "string"
+          },
+          "min": {
+            "type": "number",
+            "description": "Lower bound for the gallery's live knob. Optional: an undeclared number option is inferred from its default (0 to four times it, symmetric when negative). Declare this when that range is wrong."
+          },
+          "max": {
+            "type": "number",
+            "description": "Upper bound for the gallery's live knob. See min."
+          },
+          "step": {
+            "type": "number",
+            "description": "Granularity for the gallery's live knob. Optional: inferred at about 200 stops across the range, whole numbers for count-like options."
           }
         }
       }
