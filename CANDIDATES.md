@@ -1000,3 +1000,34 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+### Port status, 2026-09-15
+
+The set is **nine source files, not fourteen** -- the catalogue's fourteen names
+include six that are branches of one shader. Three shapes, checked by grepping
+for `createFramebuffer` and `gl.POINTS` rather than counting `#version` blocks:
+
+| shape | files | status |
+|---|---|---|
+| full-screen quad, single pass | 6 | `solace-field` landed; 5 to go |
+| `gl.POINTS` particle pipeline | 1 | particle-morph -- needs a vertex-buffer runtime |
+| multi-pass, ping-pong FBOs | 2 | thermal-pixel-ink (2 passes), fluid-distortion (8) |
+
+Every one is `#version 300 es`, so none of them can link against
+`_shared/glsl-mount.js`, whose vertex shader is GLSL ES 1.00. That is why
+`_shared/glsl2-mount.js` exists: WebGL2, ES 3.00, typed uniforms (float, vec2,
+vec3 and int -- a float call on an int uniform is a GL error, not a no-op),
+one or two image textures, and upstream's exact pointer model.
+
+Still to port on the quad runtime, and what each one needs beyond `solace-field`:
+
+- `exposure-grid` -- `u_source`, one image. The smallest at 294 lines, so it is
+  the one that proves the texture path.
+- `thermal-etch-burn` -- `u_image`, one image.
+- `blackhole-lensing` -- `u_scene`, one image.
+- `specimen-index` -- `u_source`, one image. 791 lines, the largest.
+- `refractive-lens` -- `u_source` AND `u_mask`, two images.
+
+The image-sampling five need a convention for where the picture comes from
+before any of them is written. `image-repeat-reveal` and the rest of the
+gallery shelf already have one; follow it rather than inventing a second.

@@ -1,0 +1,68 @@
+/* solace-field: the resting state, and the frame the canvas paints into.
+ *
+ * The rest layer is the hero with no JavaScript and no WebGL2 -- three banked
+ * radial pools on upstream's `signal` ground, which is close enough to the
+ * shader's own still frame that the swap is not a flash. --fx-c1..--fx-c4 are
+ * the same four stops the shader takes, so re-theming the section and
+ * re-theming the shader are one edit.
+ */
+.fx-sfield {
+  --fx-c1: #090b0a; /* ground */
+  --fx-c2: #1236ff; /* primary */
+  --fx-c3: #f0432f; /* secondary */
+  --fx-c4: #d8ff2f; /* highlight */
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  min-height: min(100svh, 46rem);
+  padding: clamp(2rem, 6vw, 5rem);
+  background: var(--fx-c1);
+  color: #f4f6f2;
+}
+/* -2 sits under the canvas the runtime prepends at -1. */
+.fx-sfield__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(60% 55% at 22% 68%, color-mix(in oklab, var(--fx-c2) 70%, transparent), transparent 70%),
+    radial-gradient(52% 48% at 78% 34%, color-mix(in oklab, var(--fx-c3) 58%, transparent), transparent 72%),
+    radial-gradient(34% 30% at 58% 76%, color-mix(in oklab, var(--fx-c4) 34%, transparent), transparent 70%),
+    var(--fx-c1);
+}
+/* Reads the copy off the field without dimming the field itself. */
+.fx-sfield__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(70% 60% at 50% 50%, color-mix(in oklab, var(--fx-c1) 62%, transparent), transparent 78%);
+  pointer-events: none;
+}
+.fx-sfield__inner { position: relative; z-index: 1; max-width: 46rem; text-align: center; }
+.fx-sfield__eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 1.25rem;
+  font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .12em; text-transform: uppercase; color: color-mix(in oklab, #f4f6f2 72%, transparent);
+}
+.fx-sfield__dot { width: 7px; height: 7px; border-radius: 99px; background: var(--fx-c4); }
+.fx-sfield__title {
+  margin: 0 0 1rem; font-weight: 600; letter-spacing: -.03em; line-height: 1.05;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+}
+.fx-sfield__lede {
+  margin: 0 auto 2rem; max-width: 40ch; line-height: 1.6;
+  color: color-mix(in oklab, #f4f6f2 78%, transparent);
+}
+.fx-sfield__actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+.fx-sfield__cta {
+  padding: .7rem 1.4rem; border-radius: 99px; text-decoration: none; font-weight: 500;
+  transition: transform .2s ease, background-color .2s ease;
+}
+.fx-sfield__cta:hover { transform: translateY(-1px); }
+.fx-sfield__cta--primary { background: #f4f6f2; color: #0d0f0e; }
+.fx-sfield__cta--ghost {
+  color: #f4f6f2; border: 1px solid color-mix(in oklab, #f4f6f2 30%, transparent);
+}
+@media (prefers-reduced-motion: reduce) { .fx-sfield__cta { transition: none; } }
