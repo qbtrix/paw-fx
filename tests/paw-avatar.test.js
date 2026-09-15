@@ -272,6 +272,20 @@ test("an impulse restarts rather than accumulating", () => {
   expect(Math.abs(e.impulseAt("poke", 0.25))).toBeCloseTo(first, 5);
 });
 
+test("a wink opens again", () => {
+  const e = new PawEngine("wink");
+  const f = (t) => e.sample(t, false);
+  const shut = f(0.2);
+  const open = f(1.5);
+  // arriving winks straight away: the right eye is squashed, its twin is not
+  expect(shut.eyes[1].d).not.toBe(shut.eyes[0].d);
+  // and it opens, which is the half of a wink a held pose never got to
+  expect(open.eyes[1].d).toBe(open.eyes[0].d);
+  // then goes round again, so however long the state is held it reads as a
+  // wink rather than as an eye that is shut
+  expect(f(2.7).eyes[1].d).toBe(shut.eyes[1].d);
+});
+
 test("the spin takes the eyes round the back and lands where it would anyway", () => {
   // Only possible because the eyes ride a sphere: a full turn puts them
   // behind the head and returns them from the other side, and -360 is the
