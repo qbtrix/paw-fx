@@ -213,10 +213,20 @@ test("every effect has a demo page carrying its snippet and its own mount line",
   for (const item of items) {
     const page = readFileSync(join(dir, "gallery", "demo", `${item.name}.html`), "utf8");
     expect(page).toContain(`data-fx="${item.name}"`);
-    // Verbatim, not paraphrased: the demo mounts the way the registry says to.
     const [link, , mount] = item.targets.html.usage.split("\n");
-    expect(page).toContain(mount);
     expect(page).toContain(link);
+    // An effect with options gets the knob panel, and knobs need the handles
+    // mount() hands back -- so those demos drive the same module through their
+    // own script rather than the one-liner. What must never drift is WHICH
+    // module and WHICH selector, since getting either wrong is the failure
+    // this test exists to catch: a page that renders a resting state for ever
+    // and reads as a broken effect. So that is what is asserted either way.
+    if (Object.keys(item.options ?? {}).length) {
+      expect(page).toContain(`from '/_fx/effects/${item.name}/index.js'`);
+      expect(page).toContain(`querySelectorAll('[data-fx="${item.name}"]')`);
+    } else {
+      expect(page).toContain(mount);
+    }
     expect(page).toContain("?reduced=1");
     // target="_top" is what lets the same page serve both readers: on its own
     // it changes nothing, and inside the gallery's stage it is the difference
@@ -224,6 +234,37 @@ test("every effect has a demo page carrying its snippet and its own mount line",
     // inside a 600px frame.
     expect(page).toContain('href="../index.html" target="_top"');
   }
+});
+
+test("every documented option gets a knob, and counts get whole-number ones", () => {
+  let integerRanges = 0;
+  for (const item of items) {
+    const opts = Object.entries(item.options ?? {});
+    const page = readFileSync(join(dir, "gallery", "demo", `${item.name}.html`), "utf8");
+    if (!opts.length) {
+      expect(page).not.toContain("fxd-knobs");
+      continue;
+    }
+    // One control per documented option: the panel is generated from the same
+    // metadata the docs table reads, so an option can never be documented and
+    // untunable, or tunable and undocumented.
+    expect((page.match(/class="fxd-k[ "]/g) || []).length).toBe(opts.length);
+    for (const [name] of opts) expect(page).toContain(`data-k="${name}"`);
+
+    // An inferred range must not offer a number the effect cannot use. This is
+    // the 59.7-rows bug: `rows` defaults to 15, four times that is 60, and two
+    // hundred stops across it put the slider on fractions of a row.
+    for (const [name, o] of opts) {
+      if (o.type !== "number" || !Number.isInteger(o.default) || Math.abs(o.default) < 8) continue;
+      const tag = page.match(new RegExp(`id="k-${name}"[^>]*`))?.[0];
+      expect(tag).toBeTruthy();
+      const step = Number(tag.match(/step="([^"]+)"/)?.[1]);
+      expect(Number.isInteger(step)).toBe(true);
+      integerRanges++;
+    }
+  }
+  // The loop above is only a guard if it actually ran on something.
+  expect(integerRanges).toBeGreaterThan(0);
 });
 
 // Every file an item declares has to be on disk under the gallery root, because

@@ -118,6 +118,161 @@ const filler = (blocks, cls = "") =>
 
 // Both toggle states ship in the markup and CSS shows one, so the control needs
 // no script of its own and works on the first paint.
+/**
+ * Live knobs, built from the item's own `options` metadata.
+ *
+ * The registry has always DOCUMENTED its options in a table. A table tells you
+ * `swirl` defaults to 0.8; it does not tell you what 0.8 looks like, and the
+ * only honest way to pick a number for a shader is to drag it. So every demo
+ * with options gets the panel, generated from the same metadata the docs table
+ * reads -- nothing per-effect to write, and an effect added to effects/ gets
+ * knobs through `bun run gallery` with no edit here.
+ *
+ * Ranges: an option may declare `min`/`max`/`step` and they win. Almost none
+ * do, so an undeclared number is inferred from its default -- 0 to four times
+ * it, which covers "turn it off" through "far too much" for every option in
+ * the registry, and is symmetric around zero for the ones that go negative.
+ * The place to fix a bad range is `min`/`max` in that effect's meta.json.
+ */
+const NUM = (v) => typeof v === "number" && Number.isFinite(v);
+
+function range(o) {
+  const d = NUM(o.default) ? o.default : 0;
+  const lo = NUM(o.min) ? o.min : d < 0 ? d * 4 : 0;
+  const hi = NUM(o.max) ? o.max : d === 0 ? 1 : Math.abs(d) * 4;
+  // ~200 stops, rounded to something a reader recognises as a number.
+  const raw = NUM(o.step) ? o.step : (hi - lo) / 200;
+  const mag = 10 ** Math.floor(Math.log10(raw || 1));
+  let step = NUM(o.step) ? o.step : Math.max(mag, Math.round(raw / mag) * mag);
+  // A count is a count. `rows` defaulting to 15 is fifteen rows, and a slider
+  // offering 59.7 of them is asking for a number the effect cannot draw --
+  // so a whole-number default in the tens gets whole-number stops.
+  if (!NUM(o.step) && Number.isInteger(o.default) && Math.abs(o.default) >= 8) {
+    step = Math.max(1, Math.round(step));
+  }
+  return { lo, hi, step };
+}
+
+const isHex = (v) => typeof v === "string" && /^#[0-9a-f]{3,8}$/i.test(v);
+
+function control(name, o) {
+  const id = `k-${name}`;
+  const label = `<label class="fxd-k__name" for="${esc(id)}">${esc(name)}</label>`;
+  if (o.type === "boolean") {
+    return `<div class="fxd-k" data-k="${esc(name)}" data-kind="boolean">${label}
+      <input class="fxd-k__box" id="${esc(id)}" type="checkbox"${o.default ? " checked" : ""}></div>`;
+  }
+  if (o.type === "string[]" && Array.isArray(o.default) && o.default.every(isHex)) {
+    const swatches = o.default
+      .map((c, i) => `<input class="fxd-k__hex" type="color" value="${esc(c)}" data-i="${i}" aria-label="${esc(name)} stop ${i + 1}">`)
+      .join("");
+    return `<div class="fxd-k fxd-k--wide" data-k="${esc(name)}" data-kind="colors"><span class="fxd-k__name">${esc(name)}</span>
+      <div class="fxd-k__hexes">${swatches}</div></div>`;
+  }
+  if (o.type === "string" && isHex(o.default)) {
+    return `<div class="fxd-k" data-k="${esc(name)}" data-kind="color">${label}
+      <input class="fxd-k__hex" id="${esc(id)}" type="color" value="${esc(o.default)}"></div>`;
+  }
+  if (o.type === "number" && NUM(o.default)) {
+    const { lo, hi, step } = range(o);
+    return `<div class="fxd-k" data-k="${esc(name)}" data-kind="number">${label}
+      <input class="fxd-k__slider" id="${esc(id)}" type="range" min="${lo}" max="${hi}" step="${step}" value="${o.default}">
+      <output class="fxd-k__out">${o.default}</output></div>`;
+  }
+  return `<div class="fxd-k" data-k="${esc(name)}" data-kind="string">${label}
+    <input class="fxd-k__text" id="${esc(id)}" type="text" value="${esc(String(o.default ?? ""))}"></div>`;
+}
+
+function knobs(item) {
+  const rows = Object.entries(item.options ?? {});
+  if (!rows.length) return "";
+  return `<details class="fxd-knobs">
+  <summary class="fxd-knobs__sum">Knobs<span class="fxd-knobs__n">${rows.length}</span></summary>
+  <div class="fxd-knobs__body">
+${rows.map(([n, o]) => "    " + control(n, o)).join("\n")}
+    <div class="fxd-knobs__foot">
+      <code class="fxd-knobs__line" id="fxd-line">mount(el)</code>
+      <button class="fxd-knobs__copy" type="button" id="fxd-copy">Copy</button>
+      <button class="fxd-knobs__reset" type="button" id="fxd-reset">Reset</button>
+    </div>
+  </div>
+</details>`;
+}
+
+/**
+ * The mount, with the knobs wired to it.
+ *
+ * Only options the reader has actually TOUCHED are passed, so an untouched
+ * demo mounts exactly the way the verbatim usage line does -- the panel adds
+ * a way to tune, it does not quietly re-specify the effect. That is also what
+ * makes the copy line honest: it shows your overrides and nothing else.
+ *
+ * Two paths on a change, because `mount` returns `{update, destroy}` and only
+ * some effects implement a real `update`: call it immediately for the ones
+ * that do, and remount 150ms after the drag settles for the ones that do not.
+ * The debounce is not cosmetic -- a remount per input event on a WebGL effect
+ * is a new GL context per event, and browsers keep about sixteen.
+ */
+function knobMount(item) {
+  const n = item.name;
+  return `<script type="module">
+import { mount } from '/_fx/effects/${n}/index.js';
+const els = [...document.querySelectorAll('[data-fx="${n}"]')];
+const opts = {};
+let handles = els.map((el) => mount(el, opts));
+const line = document.getElementById('fxd-line');
+const show = () => {
+  const keys = Object.keys(opts);
+  line.textContent = keys.length
+    ? 'mount(el, ' + JSON.stringify(opts) + ')'
+    : 'mount(el)';
+};
+let timer;
+const remount = () => {
+  for (const h of handles) h?.destroy?.();
+  handles = els.map((el) => mount(el, { ...opts }));
+};
+const changed = () => {
+  for (const h of handles) h?.update?.({ ...opts });
+  clearTimeout(timer);
+  timer = setTimeout(remount, 150);
+  show();
+};
+for (const k of document.querySelectorAll('.fxd-k')) {
+  const name = k.dataset.k;
+  const kind = k.dataset.kind;
+  k.addEventListener('input', () => {
+    if (kind === 'number') {
+      opts[name] = Number(k.querySelector('input').value);
+      k.querySelector('output').textContent = opts[name];
+    } else if (kind === 'boolean') {
+      opts[name] = k.querySelector('input').checked;
+    } else if (kind === 'colors') {
+      opts[name] = [...k.querySelectorAll('input')].map((i) => i.value);
+    } else {
+      opts[name] = k.querySelector('input').value;
+    }
+    changed();
+  });
+}
+document.getElementById('fxd-copy')?.addEventListener('click', async (e) => {
+  await navigator.clipboard.writeText(line.textContent);
+  e.target.textContent = 'Copied';
+  setTimeout(() => { e.target.textContent = 'Copy'; }, 1200);
+});
+document.getElementById('fxd-reset')?.addEventListener('click', () => {
+  for (const k of Object.keys(opts)) delete opts[k];
+  for (const el of document.querySelectorAll('.fxd-knobs input')) {
+    if (el.type === 'checkbox') el.checked = el.defaultChecked;
+    else el.value = el.defaultValue ?? el.getAttribute('value');
+    el.closest('.fxd-k')?.querySelector('output')?.replaceChildren(el.value);
+  }
+  remount();
+  show();
+});
+</` + `script>`;
+}
+
 function bar(item, rewired = false) {
   const two = item.targets.html.demo?.length
     ? `\n  <a class="fxd-bar__extra" href="/${esc(item.targets.html.demo[0].path)}">Two-page demo</a>`
@@ -173,7 +328,8 @@ ${link}
 <body class="fxd">
 ${scroll ? `${filler(FILLER_BEFORE, " fxd-filler--lead")}\n` : ""}${snippet}
 ${scroll ? `${filler(FILLER_AFTER)}\n` : ""}${bar(item, rewired)}
-${mount}
+${knobs(item)}
+${Object.keys(item.options ?? {}).length ? knobMount(item) : mount}
 </body>
 `;
 }
