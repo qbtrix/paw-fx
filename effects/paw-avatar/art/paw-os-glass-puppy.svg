@@ -1,4 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 270" width="640" height="540" fill="none">
+  <!-- The Paw: our own drawing, and licensed separately from the code around
+       it. Art: CC BY 4.0 - use it anywhere with visible credit, "Paw
+       character by qbtrix", linked to https://github.com/qbtrix/paw-mascot.
+       Engine code: MIT. The full split is written up in LICENSES.md. -->
   <defs>
     <!-- Deep translucent glass body -->
     <radialGradient id="bodyFill" cx="0" cy="0" r="1"
