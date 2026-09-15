@@ -265,6 +265,18 @@ three paths and its glass are what `index.js` carries, cast to radial profiles
 at load. `meta.json` declares the whole split under `deviations`, with
 `kind: "ours"`.
 
+That drawing -- the Paw character itself -- carries its own licence, the same
+code/design split upstream draws for its own situation: the effect's CODE is
+MIT, and the CHARACTER (the three paths in `PAW_ART`, the committed SVG, and
+every render of them) is Creative Commons Attribution 4.0. Use the character
+wherever you like, commercially included, with visible credit -- "Paw
+character by qbtrix", linked to <https://github.com/qbtrix/paw-mascot>, where
+the art licence lives as `LICENSE-ART.md`. The registry's `license` field
+stays `MIT` because it describes the code, exactly as bloub's does. The Paw
+name, and the character used as the identity of a product, stay the
+project's; credit says where the art came from, it does not make something an
+official Paw.
+
 The three Vanta ports DO carry upstream code, inlined -- a Vanta effect extends
 `src/_base.js` and this repo's build emits only `index.js` and `style.css` per
 effect, so a shared base module has nowhere to live in a generated site. Each
