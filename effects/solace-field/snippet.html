@@ -1,0 +1,24 @@
+<!-- solace-field section. Finished at rest with CSS alone: the banked colour in
+     .fx-sfield__rest is the hero with JavaScript off, and index.js only covers
+     it with a WebGL2 canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The decorative layers carry aria-hidden; the copy is the
+     only thing a screen reader should reach.
+
+     This one answers the POINTER: move across it and the field drags. Give it
+     a section people will actually mouse over. -->
+<link rel="stylesheet" href="/_fx/effects/solace-field/style.css">
+<section class="fx-sfield" data-fx="solace-field">
+  <div class="fx-sfield__rest" aria-hidden="true"></div>
+  <div class="fx-sfield__scrim" aria-hidden="true"></div>
+  <div class="fx-sfield__inner">
+    <p class="fx-sfield__eyebrow"><span class="fx-sfield__dot" aria-hidden="true"></span>Move your cursor</p>
+    <h1 class="fx-sfield__title">The field knows where you are.</h1>
+    <p class="fx-sfield__lede">Swap this for your own words. Six fields live in one shader, and the knob picks which -- dye that trails, a bloom that spreads, a lattice that pushes back.</p>
+    <div class="fx-sfield__actions">
+      <a class="fx-sfield__cta fx-sfield__cta--primary" href="#">Start here</a>
+      <a class="fx-sfield__cta fx-sfield__cta--ghost" href="#">See the six</a>
+    </div>
+  </div>
+</section>

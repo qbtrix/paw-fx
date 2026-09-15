@@ -1,0 +1,90 @@
+{
+  "name": "solace-field",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "field",
+    "pointer",
+    "interactive",
+    "reaction-diffusion",
+    "cellular",
+    "lattice",
+    "webgl",
+    "shader",
+    "hero",
+    "solace"
+  ],
+  "summary": "Full-bleed hero running Solace's field shader: a reactive colour field the cursor drags, blooms and repels, in six looks from one shader -- viscous dye, reaction bloom, cellular contagion, repulsion lattice, magnetic pixels and chromatic refraction. The one background on the shelf that answers the pointer.",
+  "needs": [],
+  "license": "MIT",
+  "kind": "effect",
+  "origin": {
+    "repo": "HARSHITSHARMA18/shaders",
+    "commit": "2604f67a53a850c7ffc10ff9eaf4d593e2c459d7",
+    "path": [
+      "registry/default/field-shaders/solace-field-shader.tsx"
+    ]
+  },
+  "options": {
+    "variant": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "description": "Which of the six fields: 0 viscous dye, 1 reaction bloom, 2 cellular contagion, 3 repulsion lattice, 4 magnetic pixels, 5 chromatic refraction. One shader, six branches."
+    },
+    "palette": {
+      "type": "string",
+      "default": "signal",
+      "description": "One of signal, acid, ember, glacier, mono. Upstream's own five. Ignored when `colors` is given."
+    },
+    "colors": {
+      "type": "string[]",
+      "default": [],
+      "description": "Four hex stops in place of a named palette: background, primary, secondary, highlight. Empty uses `palette`."
+    },
+    "scale": {
+      "type": "number",
+      "default": 1,
+      "description": "Field zoom. Low is a few broad cells, high is a fine weave."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 1,
+      "description": "How hard the field is pushed into the colours. 0 leaves the background bare."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Rate the field evolves on its own, with no pointer. 0 holds a single still frame."
+    },
+    "distortion": {
+      "type": "number",
+      "default": 0.7,
+      "description": "How far the field is bent out of shape before it is coloured."
+    },
+    "trail": {
+      "type": "number",
+      "default": 0.45,
+      "description": "How much of the pointer's velocity the field keeps behind the cursor."
+    }
+  },
+  "deviations": [
+    {
+      "what": "The React component is not ported, only the GLSL and the pointer model.",
+      "why": "Upstream ships a Next.js client component that owns its own canvas, settings object and rAF loop, and paw-fx effects are vanilla mount(el, opts). shader.frag is upstream's FRAGMENT literal byte for byte and nothing restates it, so the drawing cannot drift. The pointer easing is copied exactly -- eased 0.09 a frame, y flipped, velocity taken as the follower's own per-frame delta -- because that lag is what the dye trails and the wakes are made of, and a snapped pointer would quietly be a different effect.",
+      "kind": "ours"
+    },
+    {
+      "what": "Six upstream catalogue entries land as one effect with a `variant` knob rather than six directories.",
+      "why": "Upstream is ONE fragment shader branching on u_variant; viscous dye, reaction bloom, cellular contagion, repulsion lattice, magnetic pixels and chromatic refraction are its six branches. Six directories sharing one file would be six things to keep in step for no gain, and the gallery's live knobs make the variant a slider you can drag through all six.",
+      "kind": "ours"
+    },
+    {
+      "what": "The CSS resting state is ours; upstream has none.",
+      "why": "Upstream renders nothing until WebGL2 is up. Every paw-fx section has to be finished before any script runs, so a refused context, a browser without WebGL2 or a reader who never moves the pointer gets a designed hero rather than a blank band.",
+      "kind": "ours"
+    }
+  ]
+}
