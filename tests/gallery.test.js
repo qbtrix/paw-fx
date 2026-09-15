@@ -262,6 +262,19 @@ test("every documented option gets a knob, and counts get whole-number ones", ()
       expect(Number.isInteger(step)).toBe(true);
       integerRanges++;
     }
+
+    // Every slider must open ON its own documented default. A range input
+    // clamps `value` to the nearest valid stop, so a default that is not a
+    // whole number of steps from `min` opens at a number the docs never give,
+    // and no drag can return to it.
+    for (const [name, o] of opts) {
+      if (o.type !== "number" || !Number.isFinite(o.default)) continue;
+      const tag = page.match(new RegExp(`id="k-${name}"[^>]*`))?.[0];
+      if (!tag) continue;
+      const at = (k) => Number(tag.match(new RegExp(`${k}="([^"]+)"`))?.[1]);
+      const stops = (at("value") - at("min")) / at("step");
+      expect(Math.abs(stops - Math.round(stops))).toBeLessThan(1e-9);
+    }
   }
   // The loop above is only a guard if it actually ran on something.
   expect(integerRanges).toBeGreaterThan(0);

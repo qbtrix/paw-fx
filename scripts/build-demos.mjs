@@ -140,15 +140,33 @@ function range(o) {
   const d = NUM(o.default) ? o.default : 0;
   const lo = NUM(o.min) ? o.min : d < 0 ? d * 4 : 0;
   const hi = NUM(o.max) ? o.max : d === 0 ? 1 : Math.abs(d) * 4;
-  // ~200 stops, rounded to something a reader recognises as a number.
-  const raw = NUM(o.step) ? o.step : (hi - lo) / 200;
-  const mag = 10 ** Math.floor(Math.log10(raw || 1));
-  let step = NUM(o.step) ? o.step : Math.max(mag, Math.round(raw / mag) * mag);
-  // A count is a count. `rows` defaulting to 15 is fifteen rows, and a slider
-  // offering 59.7 of them is asking for a number the effect cannot draw --
-  // so a whole-number default in the tens gets whole-number stops.
-  if (!NUM(o.step) && Number.isInteger(o.default) && Math.abs(o.default) >= 8) {
-    step = Math.max(1, Math.round(step));
+  // ~200 stops, rounded to something a reader recognises as a number -- but
+  // every slider must open ON its own documented default, because a range
+  // input clamps `value` to the nearest valid stop. A default that is not a
+  // whole number of steps from `min` opens at a number the docs never give,
+  // and no drag can return to it: ascii-matrix's resetChance of 0.985 would
+  // sit at 0.98 for ever. So a pretty step that does not divide gives way.
+  let step;
+  if (NUM(o.step)) {
+    step = o.step;
+  } else {
+    const raw = (hi - lo) / 200;
+    const mag = 10 ** Math.floor(Math.log10(raw || 1));
+    const nice = Math.max(mag, Math.round(raw / mag) * mag);
+    // A count is a count. `rows` defaulting to 15 is fifteen rows, and a
+    // slider offering 59.7 of them is asking for a number the effect cannot
+    // draw -- so a whole-number default in the tens gets whole-number stops,
+    // coarsened down to one that divides. 1 always does.
+    if (Number.isInteger(o.default) && Math.abs(o.default) >= 8) {
+      step = Math.max(1, Math.round(nice));
+      while (step > 1 && (d - lo) % step !== 0) step--;
+    } else {
+      const stops = (d - lo) / nice;
+      // The unrounded step is aligned by construction: hi is four times the
+      // default, so the default sits at exactly 50 stops, or 75 when the
+      // range is symmetric about zero.
+      step = Math.abs(stops - Math.round(stops)) > 1e-9 ? (hi - lo) / 200 : nice;
+    }
   }
   return { lo, hi, step };
 }
@@ -219,7 +237,7 @@ function knobMount(item) {
 import { mount } from '/_fx/effects/${n}/index.js';
 const els = [...document.querySelectorAll('[data-fx="${n}"]')];
 const opts = {};
-let handles = els.map((el) => mount(el, opts));
+let handles = els.map((el) => mount(el, { ...opts }));
 const line = document.getElementById('fxd-line');
 const show = () => {
   const keys = Object.keys(opts);
@@ -256,8 +274,14 @@ for (const k of document.querySelectorAll('.fxd-k')) {
   });
 }
 document.getElementById('fxd-copy')?.addEventListener('click', async (e) => {
-  await navigator.clipboard.writeText(line.textContent);
-  e.target.textContent = 'Copied';
+  // The line is right there and selectable, so a refused clipboard says so
+  // rather than leaving the button looking like it did nothing.
+  try {
+    await navigator.clipboard.writeText(line.textContent);
+    e.target.textContent = 'Copied';
+  } catch {
+    e.target.textContent = 'Select it';
+  }
   setTimeout(() => { e.target.textContent = 'Copy'; }, 1200);
 });
 document.getElementById('fxd-reset')?.addEventListener('click', () => {
