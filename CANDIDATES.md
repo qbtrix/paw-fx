@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-17**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,72 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-09-17 — window 2026-09-14 to 2026-09-17
+
+Three days. Five new things turned up, none of them a section we can port, so
+nothing landed. This entry exists so the next run does not screen the same five
+again.
+
+### Ported
+
+None.
+
+### Rejected
+
+| Candidate | Source | Commit | Licence | Reason |
+|---|---|---|---|---|
+| Elemental Sandbox | `achrefelouafi/LinearAbiltyCastingThreeJS`, Codrops hub 2026-09-16 | `ba61847c` | MIT | A Three.js skillshot game, not a section. Six ability files at 24 to 49 KB each, a character mesh, keyboard casting, `lil-gui` and a Vite build. |
+| Reel Flux | Codrops hub 2026-09-14, demo only (`saurow-reel.vercel.app`) | none | none | Tagged GSAP, and no repo, so no LICENSE to resolve. It was not on the hub when the 09-14 run looked. |
+| MeltGL | `1etu/MeltGL`, GitHub, created 2026-09-12 | `c9a42842` | MIT | Good idea (a real fluid solver melting an image, silhouette and all) in the wrong shape: a strict-TypeScript monorepo under `Packages/*` with no built ES module to pin, and it needs an input image or video. A port would mean transpiling several packages, which is rewriting, not porting. Worth another look if it publishes built JS. |
+| LUMEN light lab | `handsomeZR-netizen/lumen-light-lab`, GitHub, created 2026-09-16 | `dbe8b9ce` | MIT | The only candidate shaped like a section (single 18 KB `index.html`, zero deps, WebGL2 silk bands, film grain, click ripples that refract the headline with a chromatic split). Rejected on provenance. One commit landed all of it finished with a polished bilingual README, and 0 stars. Its own header says it was "inspired by the visual language of OpenShaders", and OpenShaders has published no shader source (see below), so a clean re-derivation cannot be told apart from a lift of the openshaders.com page. Also not a seam-only port: resize, the text-to-texture step, the ripples and the pointer are all in viewport coordinates, and scoping them to a section changes the visual logic. |
+| topowall | `gonzalezerik/topowall`, GitHub, created 2026-09-13 | `71427e39` | MIT | A Rust CLI and web app for wallpapers from real elevation data. Needs the data fetched, and it is a tool, not a section. |
+
+No Shadertoy idioms in LUMEN (`mainImage`, `fragCoord`, `iTime`, `iChannel` all
+absent) and no off-site URLs. Those checks came back clean. The provenance
+problem is the OpenShaders line and the single-commit shape, not the code.
+
+### A source to watch, carefully
+
+`openshaders/openshaders` (MIT, 229 stars, created 2026-09-06, head
+`d565f2c3`) is the shell of a shader platform at openshaders.com. Today it
+ships a README and a header image, no shaders. Its README says the MIT licence
+covers the platform only and each creator picks the licence for their own
+shader. So when shaders land, screen each one on its own licence, never the
+platform's. It is built by the same author as React Bits (a standing hard
+reject) and `DavidHDev/canvas-ui` (rejected 09-14, `NOASSERTION`). That is not
+a reject on its own, but it is a reason to read every licence twice.
+
+### Sources checked and found quiet
+
+- **`shader-gallery/shaders`**: no commits since 2026-09-13. Head is still
+  `4e8d4cb2`, so the 57-shader queue from the 09-14 entry is unchanged and
+  still available. It was not touched this run because none of it is newer
+  than the watermark.
+- **`paper-design/shaders`**: no commits since 2026-09-13.
+- **Vendor releases**: `tsparticles` newest is still v4.4.0 (2026-08-31),
+  `lenis` still v1.3.26 (2026-08-05).
+- **Codrops org repos**: newest is still `RotatingOnScrollAnimations`,
+  2026-06-18.
+- **Codrops articles** 09-14 to 09-16 (Resn, Vivid, House of Yellow) are case
+  studies and Webflow write-ups with no repo.
+- **GitHub topic search** (`webgl`, `shaders`, `glsl`, `css-animation`,
+  `scroll-animation`, `animation`, `canvas-animation`), weighted on `created:`
+  as the last entry suggested, plus keyword searches. Mostly engines, games,
+  fly-brain toys, React/SwiftUI components and zero-star generated landing
+  pages. The five above are everything that was close.
+- **GitHub trending** (weekly JavaScript, GLSL, CSS): nothing effect-shaped.
+- **Solace shaders**: skipped on purpose. PR #34 is porting them.
+
+### CodePen: still closed
+
+`/trending` and `/picks/feed` still return 403 to a browser user-agent.
+`cdpn.io` answers 301, so the asset host the snapshot recipe reads is
+reachable, and a pen URL the captain supplies directly can still be ported.
+Discovery is still what is blocked.
+
+### For the next run
+
+`agent-browser stream status` showed streaming switched back on
+(`Streaming enabled on ws://127.0.0.1:55124`) even though the 09-14 run turned
+it off. It comes back. Run `agent-browser stream disable` at the start of every
+run, before any screenshot.
