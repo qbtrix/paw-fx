@@ -1,0 +1,73 @@
+{
+  "name": "sg-rainglass",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["rain", "glass", "droplets", "bokeh", "night", "refraction", "window", "wet", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's rainglass: rain on a window at night. Behind a fogged pane a dark street of defocused lights glows in soft bokeh discs; on the glass, runners fall in wiggling stalls and darts, leaving beaded trails and wiped streaks where the lights come back into focus, while small beads swell and vanish as a runner passes. Every drop is a lens showing the lit field sharp and inverted, with a dark rim and one tight highlight.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#1d7a94", "#c98a3c", "#0c2a45", "#a3455a"],
+      "description": "Four poles. These are the street lights behind the pane, and they are the whole composition: every bokeh disc and every drop-lens is one of them. Spread them apart to read as a street, cluster them to get a flat wash. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "rain": {
+      "type": "number",
+      "default": 1,
+      "description": "How much water is on the glass; low is a few stray drops, high is a pane streaming with runners. Upstream default, range 0 to 1.5."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Fall speed of the runners and the swell of the beads; 0 freezes the rain. Upstream default, range 0 to 3."
+    },
+    "smear": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How far each drop draws its tail out behind it as it runs; 0 keeps every drop round, high turns a darting drop into a long streak. Upstream default, range 0 to 2."
+    },
+    "fog": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Condensation on the pane; 0 is clear glass with the lights in focus, 1 is a heavily fogged window that only the wiped streaks see through. Upstream default, range 0 to 1."
+    },
+    "refract": {
+      "type": "number",
+      "default": 1,
+      "description": "How strongly each drop bends the field behind it; 0 makes the drops flat, high turns each into a strong inverted lens. Upstream default, range 0 to 2."
+    },
+    "lights": {
+      "type": "number",
+      "default": 1,
+      "description": "Density of the lights behind the glass; low is a sparse dark street, high is a dense city. Upstream default, range 0.2 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["rainglass/shader.frag", "rainglass/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `peacock` preset.",
+      "why": "rainglass/meta.json declares `defaultPalette: \"peacock\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own and declares them. The shader's zero-fallback branch is not the answer either: paletteFor never produces zeros, so that branch is unreachable from paw-fx. Same call sg-gloam, sg-bask and sg-nebula-drift made.",
+      "kind": "ours"
+    },
+    {
+      "what": "The `speed` default is 0.3, taken from rainglass/meta.json, not the 0.5 in the shader's own comment beside `uniform float u_speed`.",
+      "why": "The two pinned upstream files disagree. meta.json `params` is the block upstream's runtime actually feeds the shader, so it is the one the port follows; the comment is documentation that drifted. Same arbitration sg-suminagashi made on `draw`.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.055 at size 1.6, bloom 0.18 at radius 3.5, vignette 0.2, saturation 1.05 and contrast 1.03 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. Bloom is the one that shows most here: upstream's poster spreads every light source at radius 3.5 and ours does not, so our bokeh discs and drop highlights have harder edges than the poster's soft glow.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
