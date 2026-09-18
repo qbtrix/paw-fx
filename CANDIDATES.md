@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-17**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-18**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1069,3 +1069,158 @@ Discovery is still what is blocked.
 (`Streaming enabled on ws://127.0.0.1:55124`) even though the 09-14 run turned
 it off. It comes back. Run `agent-browser stream disable` at the start of every
 run, before any screenshot.
+
+## 2026-09-18 — window 2026-09-17 to 2026-09-18
+
+A one-day window, so discovery was always going to be thin, and it was: nothing
+new survived screening. The run shipped anyway by taking two off the vetted
+`4e8d4cb2` backlog, which is what Step 3.5 is for.
+
+This branch is based on the 2026-09-17 scout branch rather than on `main`, so
+the two runs' log entries stack instead of colliding on this file's tail. If
+that PR is merged first, this one's diff on the watermark line applies cleanly;
+if this one goes first, that one is a subset.
+
+### Ported — from the backlog, not from discovery
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-obsidian` | `shader-gallery/shaders`, `obsidian/shader.frag` + `obsidian/meta.json` | `4e8d4cb2` | MIT | Ranked first on the 09-14 queue. A freshly broken face of black volcanic glass: eight conchoidal fracture shells stacked as planes, ripple ribs and radial hackle, a Fresnel skin reflecting a dim studio, razor edge glints. The shelf's first *material* hero — everything else in `backgrounds` is a field or a gradient. |
+| `sg-rainglass` | `shader-gallery/shaders`, `rainglass/shader.frag` + `rainglass/meta.json` | `4e8d4cb2` | MIT | Ranked second. Rain on a night window: a defocused bokeh street behind a fogged pane, runners falling in stalls and darts, each drop a lens showing the field sharp and inverted. The 09-14 note flagged it as "adjacent to `bokeh-drift`" — it is not, once rendered. `bokeh-drift` is a tsParticles field of drifting discs; this is a refraction effect where the discs are what is being refracted. |
+
+Licence re-verified at the pinned sha rather than trusted from the 09-14 note:
+`contents/LICENSE?ref=4e8d4cb27bfdd662c4b8515eb83334ece40eea10` is MIT,
+Copyright (c) 2026 E. T. Carter.
+
+Both gates green from the worktree. `check`: 103 effects, lint clean, smoke ok,
+427 tests pass. `verify`: 99 pass, 1 warn, 0 fail, 0 error, 3 skipped — both new
+ports PASS with zero warns, and the single WARN is `paw-avatar`'s pre-existing
+one.
+
+### The palette trap on this batch is the OPPOSITE of the 09-14 one
+
+Worth stating plainly, because the 09-14 entry's advice does not apply here and
+a future run following it would be wrong. `suminagashi` and `hologram` declared
+`"palette": null`, so their own fallback colours were recoverable and the port
+was told to pass those exact four as a `seam`. `obsidian` and `rainglass` do
+not: they declare `"defaultPalette": "nocturne"` and `"peacock"`, named presets
+whose table lives in `@shader-gallery/runtime`, which is not vendored and is not
+in the pinned repo. Those are unresolvable, so both ports ship four colours of
+their own and declare them `ours` — the same call `sg-gloam`, `sg-bask` and
+`sg-nebula-drift` already made.
+
+So the rule is: read `meta.json` before assuming which case you are in. `null`
+means go and find the fallback in the shader's `main()`. A preset NAME means
+pick your own and say so.
+
+### The palette is a contrast control, not only a colour choice
+
+The more useful finding, and the one that cost the most time. Both effects
+FAILED the README's 4.5:1 floor on the first measurement, badly:
+
+| | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| `sg-obsidian`, first pass | 2.37 | 3.14 | **1.78** | 6.52 |
+| `sg-rainglass`, first pass | 2.38 | 3.62 | **2.36** | 3.58 |
+
+The instinct is to reach for `--fx-scrim`, and on the gradient heroes that is
+the right knob. It is the wrong *first* knob here. Probing the scrim response on
+`sg-rainglass` showed why: with the scrim at 0 the brightest pixel under the
+lede is `rgb(254,254,226)` — the shader is clipping to white. Both of these
+shaders build their bright regions ADDITIVELY out of the palette (bokeh discs
+summed as light sources; a soft-box reflected through a Fresnel skin), so a hot
+palette saturates and no amount of scrim recovers detail, it only greys the
+whole hero down.
+
+Darkening the four poles first, then raising the scrim, got there with far less
+wash. Final: palettes dropped roughly a third in luminance, `--fx-muted` moved
+a step toward the ink on both, `--fx-scrim` 0.78 on both.
+
+| | eyebrow | title | lede | ghost CTA | worst |
+|---|---|---|---|---|---|
+| `sg-obsidian` | 5.86 | 6.68 | 4.69 | 10.76 | **4.69** |
+| `sg-rainglass` | 5.22 | 6.62 | 5.14 | 6.38 | **5.14** |
+
+Order for the next light-heavy port: palette down, then muted, then scrim.
+
+### Multi-frame contrast is solved — one page LOAD per frame
+
+The 09-14 entry recorded that it could only ever measure ONE frame, because four
+successive screenshots in a session came back byte-identical, and asked whoever
+got multiple frames to re-measure. This run reproduced that freeze and then got
+past it.
+
+The composite does not advance between screenshots *within one page session*.
+It does advance across page LOADS, because the shader's clock starts at mount.
+So: reload the page per frame with a different settle delay, screenshot once
+each. Four loads at 1s / 4s / 8s / 13s gave four genuinely distinct frames
+(distinct sha256), and every number in the tables above is a worst-of-four.
+
+Two supporting details, both of which cost time to rediscover:
+- Read the ink by painting it to a 2D canvas. `getComputedStyle` serialises
+  `color-mix()` as `oklab(...)`, so scraping the first three numbers reads
+  lightness as red — this is in the README and it is still easy to trip over.
+- Hide `.fx-<name>__inner` for the captures so the measured pixels are the
+  background alone, and collect the boxes in a separate pass with it visible.
+
+### The preview recipe needs `.fxd-knobs` hidden now
+
+PR #33 ("Live knobs on every demo") added a `nav.fxd-knobs` panel to every demo
+page. The scout task's capture recipe predates it and hides only `.fxd-bar` and
+`.fxd-filler`, so the first previews captured this run had a "Knobs" panel
+sitting across the bottom right of the thumbnail. The eval wants all three:
+
+    document.querySelectorAll('.fxd-bar,.fxd-filler,.fxd-knobs').forEach(e=>e.style.display='none')
+
+Also confirmed for a second run in a row: `agent-browser stream status` showed
+streaming switched back ON despite the 09-17 run disabling it. It comes back
+every time. Disable it before the first screenshot.
+
+And one correction to the recipe's premise, in its favour: `?reduced=1` does
+NOT capture the CSS resting state on these shaders. `glsl-mount.js` runs
+`resize()` and `draw(0)` before it consults reduced motion, so frame 0 is a real
+shader frame and `data-fx-live` is set. Both previews this run asserted
+`data-fx-live === true` before the shot. Keep asserting it — that is what
+separates a real capture from a silent fallback — but the flag is not the
+problem it looks like.
+
+### Discovery — screened and rejected
+
+| Candidate | Licence | Why |
+|---|---|---|
+| `Pallarium/labs` | **none** | The most frustrating reject of the run: "14 live web demos. Shaders, particles, fluid fields and generative scenes. Single file each, zero dependencies, no build step" is almost a description of paw-fx's own contract. `gh api repos/Pallarium/labs/license` returns 404 — no LICENSE file at all, which is a hard reject with no discretion. Worth re-checking on a later run in case the author adds one. |
+| `hamstirr/fractal-explorer` | MIT | A Mandelbrot / Julia / Burning Ship deep-zoom explorer in one HTML file. Licence is fine; the shape is not. It is an interactive tool whose whole point is the zoom, not a section that rests. |
+| `xymeow/three-ink` | MIT | Three-tone shading, pen outlines and frosted film for Three.js. A render style applied to somebody else's scene, so there is no section here to port — it would need a scene invented around it, which is inventing. |
+| `can4hou6joeng4/Landfall` | MIT | Landing-page generator skill built on GSAP. GSAP is a standing hard reject. |
+| `bruce12-glitch/chaiwala` | none | Three.js + GSAP/ScrollTrigger + Lenis brand page. No licence and GSAP both. |
+| Elemental Sandbox (Codrops hub, 09-16) | MIT | Already screened and rejected by the 09-17 run. Not re-opened. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest item is Elemental Sandbox,
+  2026-09-16, which the 09-17 run already rejected. Nothing published 09-17 or
+  09-18.
+- **`shader-gallery/shaders`.** `commits?since=2026-09-17` is empty. The
+  `4e8d4cb2` backlog is still the whole of what this vendor offers.
+- **`paper-design/shaders`.** Two commits on 09-17, "Paper texture 2.0 (#220)"
+  and a version bump. Checked the changed-file list rather than the title: it
+  touches `CHANGELOG.md`, a docs migration page and two `package.json`s. No new
+  shader source, so there is nothing to port and no reason to move our pin.
+- **GitHub topic search**, `created:>=2026-09-16` across `shaders`,
+  `css-animation`, `webgl`, `scroll-animation`. `css-animation` returned nothing
+  at all. The rest is in the reject table. Using `created:` rather than
+  `pushed:` — which the 09-14 entry asked for — did work better: it surfaced
+  `Pallarium/labs`, which a `pushed:` sort would have buried.
+- **CodePen.** Still 403 behind the bot challenge. Not re-tested beyond one
+  request; see the 09-14 entry for the full account.
+
+### Backlog after this run
+
+55 of the 57 shaders logged at `4e8d4cb27bfdd662c4b8515eb83334ece40eea10`
+remain. `obsidian` and `rainglass` are taken. Next in the recorded ranking:
+`lightleak` (anamorphic film flares, adjacent to `god-rays`), then `chrome`
+(liquid mirror — the 09-14 note asks for a side-by-side against `liquid-metal`
+before committing to it), then `damascus` and `foil`.
+
+The Solace shaders were left alone again on purpose: PR #34 is still open and
+owns them.
