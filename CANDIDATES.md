@@ -1261,6 +1261,18 @@ Everything tried, all of it failing the same way:
 | `--headed` | `requestAnimationFrame` never fires; 0 frames in 1s |
 | `--args "--disable-backgrounding-occluded-windows,--disable-renderer-backgrounding,--disable-background-timer-throttling,--disable-features=CalculateNativeWinOcclusion"` | 0 frames in 1s |
 | Chrome for Testing 150 driven directly, `--headless=new --screenshot=` with `--virtual-time-budget=6000` | hangs until killed |
+| the same binary with `--headless --disable-gpu --enable-unsafe-swiftshader --screenshot=`, on a static HTML page with no WebGL and no script at all | hangs until killed, no file written |
+
+That last row is the one that settles it. A soft-GL Chrome screenshotting a page
+that is nothing but a heading on a grey background still hangs, so the fault is
+in Chrome's capture path on this machine and has nothing to do with the GPU,
+with WebGL, with agent-browser or with any effect in this library. It also rules
+out the fallback recipe that has been carried in notes since 09-14 — driving
+Chrome for Testing directly with `--disable-gpu --enable-unsafe-swiftshader`.
+That recipe is not a way around this particular outage. Whoever picks this up
+should check a trivial page first: if `--screenshot=` cannot capture a static
+heading, no capture work is possible and the run should go straight to a
+log-only PR instead of spending an hour proving it.
 
 Two separate symptoms, and it is worth keeping them apart because they fail
 different things. **`requestAnimationFrame` does not run at all** in the
