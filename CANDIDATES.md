@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-18**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-19**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1224,3 +1224,231 @@ before committing to it), then `damascus` and `foil`.
 
 The Solace shaders were left alone again on purpose: PR #34 is still open and
 owns them.
+
+## 2026-09-19 — window 2026-09-18 to 2026-09-19
+
+Discovery found a real port and it was built. It is **not in this PR**, because
+every screenshot path on this machine is dead and an effect cannot ship without
+a `preview.png` or a passing `smoke`. The port is finished and pushed on its own
+branch; this entry is the watermark plus the handover.
+
+This branch is based on the 2026-09-18 scout branch rather than on `main`, same
+as that one was based on 09-17, so the three runs' entries stack on this file's
+tail instead of colliding. If the earlier PRs merge first, this diff applies
+cleanly; if this one goes first, they are subsets.
+
+### The capture path is broken machine-wide — read this before anything else
+
+`agent-browser screenshot` fails on **every** effect, including ones that
+captured fine on 09-18:
+
+    ✗ Failed to read: Resource temporarily unavailable (os error 35)
+      (after 5 retries - daemon may be busy or unresponsive)
+
+That takes out `bun run smoke`, and with it `bun run check`. It is not the
+wedge the 09-14 entry documents. **`agent-browser stream disable` does not fix
+it** — streaming was already off (`stream status` said so before the first
+command of this run) and disabling it again changed nothing. Do not spend the
+time re-running that recipe.
+
+Everything tried, all of it failing the same way:
+
+| attempt | result |
+|---|---|
+| `stream disable`, then screenshot | streaming already off; screenshot still EAGAIN |
+| kill the daemon, kill headless Chrome, fresh session | EAGAIN on the first screenshot of a fresh daemon |
+| fresh session per shot, one shot only | EAGAIN |
+| `--headed` | `requestAnimationFrame` never fires; 0 frames in 1s |
+| `--args "--disable-backgrounding-occluded-windows,--disable-renderer-backgrounding,--disable-background-timer-throttling,--disable-features=CalculateNativeWinOcclusion"` | 0 frames in 1s |
+| Chrome for Testing 150 driven directly, `--headless=new --screenshot=` with `--virtual-time-budget=6000` | hangs until killed |
+
+Two separate symptoms, and it is worth keeping them apart because they fail
+different things. **`requestAnimationFrame` does not run at all** in the
+agent-browser browser right now — measured at zero callbacks per second on an
+existing effect's demo page, not just on the new one. And **`Page.captureScreenshot`
+hangs or returns EAGAIN**, which is what kills `smoke`. The shared-runtime
+shader ports still set `data-fx-live` without rAF, because `_shared/glsl-mount.js`
+draws frame 0 synchronously; anything that paints on rAF cannot.
+
+The same page renders perfectly in a real browser. Verified in the Claude
+desktop Browser pane: 47 rAF callbacks per second, context up, first frame
+drawn, `data-fx-live` set, no console output. So this is the machine, not the
+library and not the port.
+
+### Ported, gated, and parked — `gobo-light`
+
+On `origin/wip/gobo-light` at `a6708cf`. Everything except the preview and the
+smoke gate is done.
+
+| | |
+|---|---|
+| Upstream | [`thevangelist/tinseltown`](https://github.com/thevangelist/tinseltown) `e31bfc89f22001aa5766eb4032a6d6134b46541b` |
+| Licence | MIT, Copyright (c) 2026 Esa Lahikainen, verified at the pinned sha |
+| Files | `src/tinseltown.js` + `src/shader.js` + `src/optics.js` + `src/options.js` + `src/cookies.js` |
+| Category | backgrounds |
+| Needs | nothing — zero vendored dependencies |
+
+A film crew puts a cut-out — a cucoloris, a cookie, a gobo — in front of the
+lamp, and flat light gets pattern. The shader traces that: an area lamp sampled
+over its own surface, one to three cut-out planes between it and the wall,
+inverse-square falloff, a 12-probe pass that finds the pixels in a penumbra so
+only those pay for all 48 samples, and an optional 16-step haze march. A still
+rig keeps averaging into a half-float buffer for about two dozen frames and
+resolves to roughly a thousand samples. Nineteen presets — venetian blinds, a
+window, french doors, leaves, a palm, a fence, chain link, a ceiling fan, a
+passing train — every one generated in code as an SVG and rasterised in
+process, so the section fetches nothing.
+
+**Gate results, the two that do not need a browser:**
+
+- `bun run verify` — **`gobo-light` PASS, zero warns.** Run-wide: 104 effects,
+  100 pass, 1 warn, 0 fail, 0 error, 3 skipped. The single WARN is
+  `paw-avatar`'s pre-existing one. `numeric-trace` came back clean, which is
+  the result worth noting: every numeric literal in a 41 KB concatenation of
+  five upstream modules traced to a pinned upstream file.
+- `bun test` — 421 pass. The failures are both downstream of the capture fault:
+  `smoke.test.js` errors on the EAGAIN above, and `gallery.test.js` fails
+  `previews 103, expected 104` purely because `gobo-light` has no `preview.png`.
+  The other four suites run 114 pass / 1 fail, that same preview count.
+- `bun run lint` — clean apart from `gobo-light: preview.png missing`.
+- `bun run smoke` — could not run at all. See above.
+
+**Provenance, checked before a line was ported**, because the repo is one day
+old with zero stars, which is the exact shape the 09-17 run rejected LUMEN on.
+LUMEN's discriminators do not apply here and it is worth recording why so this
+is not re-litigated:
+
+1. Fourteen commits across three hours reading as a release arc — 0.1.0, a demo
+   pass, 0.2.0, a fix, 0.3.0 — not one commit landing everything finished.
+2. Published to npm as `tinseltown`, three versions, MIT in the registry
+   metadata as well as in `LICENSE`.
+3. The account dates to 2013 with 175 followers, and the repo carries its own
+   CI, its own test suite and a CHANGELOG.
+4. No Shadertoy idioms anywhere in the GLSL: no `mainImage`, `fragCoord`,
+   `iTime`, `iResolution`, `iMouse`, `iChannel`. Uniform naming is bespoke and
+   semantic — `uCookie`, `uWallNorm`, `uHazeDepth`, `uDistance2`.
+5. No "inspired by" line pointing at an unpublished source, which is the thing
+   that sank LUMEN.
+6. No off-site URL in any source file. The presets are SVG strings built in
+   code; the one photograph in the README is a docs image and never a runtime
+   fetch.
+
+**The six seams**, all declared in `meta.json.deviations`:
+
+1. The five ES modules are concatenated into one `index.js` in dependency
+   order, with sibling `import` lines and `export` keywords stripped and
+   nothing else touched. The build emits one `index.js` per effect, so a shared
+   module has nowhere to live in a generated site. Done by script, not by hand,
+   so the visual logic is upstream's byte for byte — which is what `verify`
+   then confirmed.
+2. `customElements.define` moved out of module scope into `mount()`, under the
+   namespaced tag `fx-gobo-light-backdrop`. The rename is not cosmetic: a page
+   that also loads tinseltown itself would otherwise have two definitions
+   racing for one tag and the loser throws.
+3. The two `matchMedia` queries and the `navigator.getBattery()` probe moved
+   into a `wireOnce()` that `mount()` calls. Bodies unchanged.
+4. The class itself moved into a lazy factory. It read
+   `globalThis.HTMLElement` to choose its base, which lint catches and is right
+   to catch — that is a global read at module evaluation however it is spelled.
+   The body is indented mechanically into `backdropClass()`, not retyped.
+5. `failIfMajorPerformanceCaveat: true` added to the context request, per the
+   repo contract. Upstream's `powerPreference: 'default'` is kept, and for the
+   reason upstream gives: a backdrop must not be why a laptop switches GPU.
+6. Two read-only getters, `live` and `painted`, plus one line that sets the
+   flag behind `painted` after the trace pass draws. paw-fx has a CSS hero
+   underneath that has to be told whether to stay.
+
+### The finding worth keeping: poll with a timer, never with rAF
+
+`mount()` has to wait before it sets `data-fx-live`, because the cookie
+rasterises through `image.decode()` and the first frame is therefore
+asynchronous. The first version polled on `requestAnimationFrame`. That is
+wrong twice over, and the broken machine is what surfaced it:
+
+- rAF is frame-coupled, so the poll starves in exactly the cases where the flag
+  has legitimately not flipped yet — a hidden tab, a throttled compositor, and
+  a section below the fold whose IntersectionObserver is correctly holding
+  rendering off. The observed failure was `painted: true` with `data-fx-live`
+  never set, because the polling frame after the paint never came.
+- On a hero nobody scrolls to, an rAF poll spins sixty times a second forever.
+
+It is a `setInterval(check, 100)` now, cleared the moment the flag flips or
+`destroy()` runs. Any future port whose upstream paints on rAF wants the same
+shape. The shared-runtime ports never hit this because `glsl-mount.js` draws
+synchronously.
+
+One more, smaller: `IntersectionObserver` fired **zero** callbacks in this
+browser, on an element filling the viewport at `scrollY` 0. The element's
+`#visible` starts `true` so it degrades safely, but do not use an IO callback
+as a readiness signal in a capture script.
+
+### To finish this port on a healthy machine
+
+    git fetch origin && git checkout -b feat/gobo-light origin/wip/gobo-light
+    bun run build && bun scripts/build-demos.mjs
+    # serve dist/registry/gallery at a root, then, per the 09-18 correction,
+    # hide all three chrome layers before the shot:
+    #   document.querySelectorAll('.fxd-bar,.fxd-filler,.fxd-knobs')
+    #     .forEach(e=>e.style.display='none')
+    # assert data-fx-live is true, shoot 640x360 into effects/gobo-light/preview.png
+    bun run check && bun run verify
+
+Then measure contrast before opening the PR, and expect to have to move
+something: a lit slat is the brightest thing in the frame by a wide margin, it
+moves when `motion` is set, and the accumulation buffer *sharpens* it over the
+first two dozen frames rather than softening it, so the worst pixel under the
+lede arrives late. Use the 09-18 reload-per-frame method — the composite does
+not advance between screenshots inside one page session, but it does across
+page loads. Order of knobs on this effect: `intensity` down first, then
+`--fx-muted`, then `--fx-scrim`. It currently ships `--fx-scrim: 0.74`,
+unmeasured, and that number should be treated as a guess until somebody
+measures it.
+
+### Discovery — screened and rejected
+
+| Candidate | Licence | Why |
+|---|---|---|
+| `swamoth/globedots` | MIT | The near miss. A dot-matrix globe on WebGL2, 18.4 kB gzipped, no three.js, with markers, arcs, paths and a day-night terminator, and 30 commits across three days so the provenance is fine. Rejected on shape: the source is TypeScript under `src/*.ts` with no built ES module in the repo to pin, and the globe spans `globe.ts` + `sphere.ts` + `markers.ts` + `arcs.ts` + five more. Porting it means transpiling eight modules, which is rewriting, not porting — the same call the 09-17 run made on MeltGL. Worth another look if it ever commits its `dist`. |
+| `claudiu1910/Singularity-Observatory` | MIT | A Next.js 16 app with shadcn components, four routes and an access form. Not a section, and React/Tailwind source is not portable to a vanilla library. |
+| `leandrolalanne/matrix-rain` | MIT | Renders natively on Linux as a desktop wallpaper. Not a web section. |
+| `chuwd19/overprint` | MIT | Risograph separation and halftone screening for photos. A tool, and it needs an input image. |
+| `haplollc/ProcessingField` | MIT | SwiftUI, not web. |
+| `agayushh/lidfx` | MIT | A GNOME Shell extension. |
+| `Julezbeyer/liveog` | MIT | Renders animated Open Graph cards to PNG/MP4/GIF. A build-time tool. |
+| `AiPersonacademy/voicewave-studio` | MIT | A voice-UI animation generator; needs an audio track to be anything. |
+| `alwaysnelson/photoditor-buddy` | MIT | A photo editor. |
+| `hclivess/truewind` | MIT | A sailing simulator. |
+| `RenaudRohlinger/node-webgl` | NOASSERTION | Headless WebGL for Node. Not a section, and the licence is unresolved anyway. |
+| `MengTo/seijaku`, `bruce12-glitch/cluster`, `alexanderantonov/tinkerapp`, `Adhirajsingh2507/engine-ecosystem`, `Shrey0610/PageScape`, `Bebeto04/noctis-perfume`, `SaucesCode/horology-landing` | none | No LICENSE file. Hard reject, no discretion. |
+| `can4hou6joeng4/Landfall` | MIT | Built on GSAP. Standing hard reject. |
+| `kloserock97-tech/nightsail`, `kloserock97-tech/driftfield`, `minatoAI/taclight`, `XuanRuiMu/FengLai` | NOASSERTION | Unresolved licence. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest is still Elemental Sandbox,
+  2026-09-16, rejected by the 09-17 run. Nothing published 09-17 or later.
+- **`shader-gallery/shaders`.** `commits?since=2026-09-17` is empty. Head is
+  still `4e8d4cb2`.
+- **`paper-design/shaders`.** No commits since 2026-09-17.
+- **Codrops org repos.** Newest is still `RotatingOnScrollAnimations`,
+  2026-06-18.
+- **Vendor releases.** `tsparticles` still v4.4.0 (2026-08-31), `lenis` still
+  v1.3.26 (2026-08-05).
+- **GitHub topic search**, `created:>=2026-09-16` across `shaders`, `webgl`,
+  `glsl`, `css-animation`, `scroll-animation`, `animation`, `canvas-animation`,
+  `webgl2`. `css-animation` returned nothing at all. Everything else that was
+  close is in the reject table.
+- **CodePen.** Not re-tested; still 403 behind the bot challenge as of 09-18.
+- **Solace shaders.** Left alone again: PR #34 is still open and owns them.
+- **`Pallarium/labs`.** Still no LICENSE file, so still a hard reject. Worth
+  one `gh api repos/Pallarium/labs/license` on each future run — the shape is
+  almost exactly paw-fx's own contract and it only needs the author to add one.
+
+### Backlog after this run
+
+Unchanged at 55 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`; nothing was taken, because a
+backlog port would have hit the same dead capture path. `obsidian` and
+`rainglass` are still the two taken. Next in the recorded ranking is still
+`lightleak`, then `chrome` (the 09-14 note asks for a side-by-side against
+`liquid-metal` first), then `damascus` and `foil`.
