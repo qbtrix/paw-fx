@@ -1,0 +1,128 @@
+{
+  "name": "gobo-light",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["light", "shadow", "gobo", "cucoloris", "cookie", "blinds", "window", "caustics", "haze", "volumetric", "raytrace", "webgl2", "shader", "hero", "tinseltown"],
+  "summary": "Full-bleed hero that lights the page the way a film crew lights a set: an area lamp, a cut-out between it and the wall, and the pattern that falls out of the two. Nineteen cut-outs ship with it — venetian blinds, a window, french doors, leaves, a palm, a fence, a staircase, chain link, a ceiling fan, a passing train — each drawn in code as an SVG rather than fetched, so the section pulls nothing off-site. The shadows are traced, not faked: the shader samples the lamp's own area, so a small source throws a razor edge and a wide one a broad penumbra, and the falloff comes out of inverse-square rather than a gradient stop. Turn `haze` up and the beam scatters through smoke, which is what turns a pattern on a wall into shafts in the air. A still rig keeps averaging frames for about a second and resolves to a clean picture; a moving one runs live.",
+  "needs": [],
+  "options": {
+    "preset": {
+      "type": "string",
+      "default": "blinds-horizontal",
+      "description": "Which cut-out sits in front of the lamp. One of blinds-horizontal, blinds-vertical, window, french-doors, halftone, breakup, leaves, palm-tree, fence, staircase, bricks, clouds, bars, arched-window, ceiling-fan, chain-link, iris, train, palm. Each is generated as an SVG in code and rasterised in-process, so none of them fetches anything. Upstream default is breakup; this section ships blinds-horizontal because it is the one that reads as a room."
+    },
+    "wall": {
+      "type": "string",
+      "default": "",
+      "description": "The surface the light lands on, as any CSS colour. Empty reads --fx-wall off the section, which is what keeps the traced wall and the CSS resting state on one colour instead of leaving the two clashing at the moment the canvas appears. Upstream's own default is #3a3835."
+    },
+    "lightColor": {
+      "type": "string",
+      "default": "",
+      "description": "A gel on the lamp, as any CSS colour. Empty means the lamp burns at colorTemp instead, which is the more natural of the two: a gel is a flat multiply, a temperature is a real blackbody curve."
+    },
+    "colorTemp": {
+      "type": "number",
+      "default": 3400,
+      "description": "Lamp colour in Kelvin when no gel is set. 3000 is a warm tungsten interior, 4800 a cool window, 5600 daylight. Upstream default 3200, range 1000 to 40000."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 2.2,
+      "description": "Lamp output. Upstream default 2.2, range 0 to 100. Raising it until the lit bands clip to white is what puts copy under 4.5:1, so move this down before reaching for --fx-scrim."
+    },
+    "ambient": {
+      "type": "number",
+      "default": 0.1,
+      "description": "Flat fill on the wall everywhere the beam does not reach; 0 leaves a pitch-black shadow. Upstream default 0.1, range 0 to 10."
+    },
+    "haze": {
+      "type": "number",
+      "default": 0,
+      "description": "Smoke in the air for the beam to scatter through, which is what turns a pattern on a wall into visible shafts. Costs a 16-step march per pixel on top of the lamp sampling, so it is off by default. Upstream default 0, range 0 to 4."
+    },
+    "azimuth": {
+      "type": "number",
+      "default": 140,
+      "description": "Compass bearing of the lamp in degrees, so which side of the frame the light arrives from. Upstream default 140."
+    },
+    "elevation": {
+      "type": "number",
+      "default": 38,
+      "description": "How high the lamp sits in degrees. Low rakes long shadows across the wall, high drops them short and steep. Upstream default 42, range 5 to 90; this section ships 38, which is the value upstream's own window presets use."
+    },
+    "cookieScale": {
+      "type": "number",
+      "default": 2.2,
+      "description": "Size of the cut-out against the frame, so how large the cast pattern reads. Upstream default 3, range 0.05 to 50; 2.2 is upstream's blinds rig."
+    },
+    "cookieDistance": {
+      "type": "number",
+      "default": 1.6,
+      "description": "Gap between the cut-out and the wall. Near the wall is a crisp edge, far from it is a soft one, for the same reason a hand near a table has a sharper shadow than a hand above it. Upstream default 1.5, range 0.01 to 90."
+    },
+    "lightSize": {
+      "type": "number",
+      "default": 0.085,
+      "description": "Radius of the lamp itself, and the real softness control: a point source gives hard edges everywhere, a wide source a broad penumbra that grows with distance. Upstream default 0.15, range 0 to 5."
+    },
+    "motion": {
+      "type": "string",
+      "default": "",
+      "description": "Space-separated tokens from sway, drift, spin, breathe, flicker. Empty is a still rig, which is also the one that refines to the cleanest picture, because a still frame keeps averaging and a moving one starts over. prefers-reduced-motion pins this off whatever it is set to."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "Multiplier on whatever motion is running. Upstream default 1, range 0 to 20."
+    },
+    "samples": {
+      "type": "number",
+      "default": 48,
+      "description": "Lamp samples per pixel per frame, so how smooth the penumbra is. Only pixels in a penumbra pay for all of them: a 12-probe pass finds the ones that see all of the lamp or none of it and stops there. A still rig then averages about two dozen frames on top, reaching roughly a thousand samples. Upstream default 48, range 1 to 256."
+    },
+    "resolution": {
+      "type": "number",
+      "default": 1,
+      "description": "Render scale before the device pixel ratio, which is itself capped at 1.5. Below 1 trades sharpness for frame time; the built-in governor lowers it a step at a time on its own when frames keep running long, and phones start one step down. Upstream default 1, range 0.1 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "thevangelist/tinseltown",
+    "commit": "e31bfc89f22001aa5766eb4032a6d6134b46541b",
+    "path": ["src/tinseltown.js", "src/shader.js", "src/optics.js", "src/options.js", "src/cookies.js"]
+  },
+  "deviations": [
+    {
+      "what": "The five upstream ES modules are concatenated into one index.js, in dependency order, with the sibling `import` lines and the `export` keywords removed and nothing else touched.",
+      "why": "Seam. This repo's build emits one index.js and one style.css per effect, so a shared module has nowhere to live inside a generated site. All five files are cited in origin.path. The GLSL, the rig maths, the option bounds and all nineteen preset SVGs are upstream's, constant for constant.",
+      "kind": "seam"
+    },
+    {
+      "what": "The custom element no longer registers itself when the module is imported. mount() registers it, under the namespaced tag fx-gobo-light-backdrop rather than upstream's tinseltown-backdrop.",
+      "why": "Seam. The repo contract is a module that touches no global at import time, and customElements.define is exactly that. The rename is not cosmetic: a page that also loads tinseltown itself would otherwise have two definitions racing for one tag name, and the loser throws.",
+      "kind": "seam"
+    },
+    {
+      "what": "The two matchMedia queries and the navigator.getBattery() probe moved out of module scope into a wireOnce() that mount() calls. Their bodies are unchanged.",
+      "why": "Seam, same rule as above. A module that reads globals at import time runs that code in any bundler, any server render and any page that merely imports it, which is not what an effect dropped into someone else's site gets to do.",
+      "kind": "seam"
+    },
+    {
+      "what": "The WebGL2 context is requested with failIfMajorPerformanceCaveat: true, and mount() returns the section to its CSS resting state on every failure path.",
+      "why": "The repo contract. A traced hero running on a software rasteriser is slower and worse-looking than the CSS wall underneath it, so it should not start. Upstream's powerPreference: 'default' is kept as-is, and is the right call for the same reason it gives: a backdrop must not be why a laptop switches to its discrete GPU.",
+      "kind": "seam"
+    },
+    {
+      "what": "Two read-only getters were added to the class, `live` and `painted`, and one line sets the flag behind `painted` after the trace pass draws.",
+      "why": "Seam. Upstream's element is self-contained and simply renders nothing when it cannot; paw-fx has a CSS hero underneath that has to be told whether to stay. data-fx-live is set only once both are true, because the cookie rasterises through image.decode() and so the first frame is asynchronous -- fading the resting state out on context creation alone would show an empty canvas for a frame or two, which is the exact failure the flag exists to rule out.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount(el, opts) maps its options onto the element's attributes rather than exposing upstream's full 28-key SCHEMA. Sixteen keys are surfaced; the rest resolve to their upstream defaults underneath.",
+      "why": "Seam. Every key surfaced is an upstream key with upstream's own bounds, and the unsurfaced ones (aimX, aimY, cookieRoll, cookieBlur, threshold, invert, layers, edge, spread, lightDistance, lightShape) are rig-composition controls that belong to whoever authors a preset, not to whoever drops a hero onto a page. Nothing is renamed and no bound is changed.",
+      "kind": "seam"
+    }
+  ]
+}
