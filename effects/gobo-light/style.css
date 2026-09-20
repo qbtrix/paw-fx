@@ -120,13 +120,37 @@
   background-size: 160px 160px;
 }
 
-/* The copy carries its own wash. Read the note in the PR that landed this
-   effect before lowering --fx-scrim: a lit slat is the brightest thing in the
-   frame by a wide margin, it MOVES when `motion` is set, and the accumulation
-   buffer sharpens it over the first two dozen frames rather than softening it,
-   so the worst pixel under the lede arrives late. The wash is held flat across
-   the inner 38% -- the whole content column -- before easing out, rather than
-   peaking at the centre, which would draw a visible ellipse across the hero. */
+/* The copy carries its own wash.
+
+   MEASURED, and the number did NOT move -- 0.74 was carried over from the port
+   as a guess and the measurement cleared it. Copy hidden, boxes recorded before
+   hiding, worst ratio between each run's computed ink and any pixel under its
+   box at 1280x720, four taps two seconds apart, in the three states a visitor
+   can land on:
+
+     state                       title      lede
+     rest, CSS only            18.11:1   13.40:1
+     live, still rig (default) 13.05:1   11.13:1
+     live, motion="sway drift" 12.81:1   11.13:1
+
+   Floor is 4.5:1, so the worst case clears it by about 2.5x. The reason the
+   margin is that wide is worth knowing before anyone spends it: at the default
+   azimuth 140 / elevation 38 the beam lands upper right and NO lit slat crosses
+   the content column, so the brightest pixel under the title is only
+   rgb(68,45,30). The brightest pixel anywhere in the frame is rgb(98,65,38),
+   and even if motion walked that one directly under the title it would still
+   read 9.1:1 against white.
+
+   So there is real headroom here to lower --fx-scrim and let more of the cast
+   through -- that is a taste call, not a legibility one, and it is the captain's.
+   What would spend the margin for real is `intensity`: the knob doc says raising
+   it until the lit bands clip to white is what puts copy under 4.5:1. Re-measure
+   after moving either, and do not inherit these numbers into another effect's
+   CSS -- a cloned resting layer is a different composition under the same copy.
+
+   The wash is held flat across the inner 38% -- the whole content column --
+   before easing out, rather than peaking at the centre, which would draw a
+   visible ellipse across the hero. */
 .fx-gobo__scrim {
   position: absolute;
   inset: 0;
