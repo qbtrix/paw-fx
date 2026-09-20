@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-19**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-20**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1464,3 +1464,195 @@ backlog port would have hit the same dead capture path. `obsidian` and
 `rainglass` are still the two taken. Next in the recorded ranking is still
 `lightleak`, then `chrome` (the 09-14 note asks for a side-by-side against
 `liquid-metal` first), then `damascus` and `foil`.
+
+## 2026-09-20 — window 2026-09-19 to 2026-09-20
+
+One day of discovery, because the 09-19 run moved the watermark to its own
+date. One new candidate, rejected. Two effects shipped anyway: the port 09-19
+parked, and one off the backlog. The run's real result is neither of those —
+it is that the capture path works again, and why.
+
+### READ THIS FIRST — the capture fault is Chrome for Testing, and there is a one-line fix
+
+The 09-19 run lost its port to a dead `agent-browser screenshot`, and diagnosed
+it as "the machine rather than the library". Half right. It is the *browser
+binary agent-browser ships*, not the machine, and swapping it fixes both
+symptoms at once:
+
+```
+export AGENT_BROWSER_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+```
+
+Prefix that on every command that touches agent-browser — including `bun run
+check`, because `smoke` spawns the CLI through `Bun.spawn` and inherits the
+environment. One unprefixed call silently falls back to the broken binary.
+
+Measured on the same static `data:` page, same session, one command apart:
+
+| browser | rAF callbacks/sec | `screenshot` |
+|---|---|---|
+| Chrome for Testing `150.0.7871.24` (agent-browser's own, at `~/.agent-browser/browsers/`) | **0** | `Page.captureScreenshot` times out, then EAGAIN |
+| system Google Chrome `152` (`/Applications/Google Chrome.app`) | **51** | writes the PNG |
+
+The two symptoms are one fault. `Page.captureScreenshot` waits on a composited
+frame; a compositor that never produces one starves it, which is also exactly
+what rAF=0 means. So "rAF does not fire" and "screenshot hangs" were never two
+bugs to chase separately.
+
+What does **not** fix it, all tested this run so nobody re-tests them:
+
+- `agent-browser stream disable`. Streaming *was* on at the start of this run
+  (`ws://127.0.0.1:54683`), so the 09-14 note's fix looked live again — turning
+  it off changed nothing. The 09-14 wedge was a different fault with the same
+  surface.
+- `AGENT_BROWSER_ARGS="--disable-features=CalculateNativeWinOcclusion,--disable-backgrounding-occluded-windows,--disable-renderer-backgrounding"`.
+  The flags *do* reach the renderers (visible in `ps`), and rAF stays at 0.
+- `AGENT_BROWSER_ARGS="--disable-gpu"`. Same, rAF stays at 0.
+- `agent-browser close --all` and a fresh daemon. Same.
+- `agent-browser doctor` is no help here: it reports "Launch test **pass**,
+  headless launch + about:blank in 1.19s". Launching is not the broken part.
+
+Evidence the whole library is fine and it really was the binary: with the
+export set, `bun run check` came back green across the board — lint 105, build
+105, docs 105, **smoke 105**, 431 tests, exit 0 — on a tree whose only new code
+is this run's. `smoke` had not run to completion since 09-17.
+
+Two things for whoever reads this next. This is an environment fix that lives
+in a shell export, so it will evaporate — it belongs in the scheduled task's
+Step 4/5 recipe, which is the captain's call to make, not a scout's to edit.
+And `agent-browser install` / `upgrade` would probably also fix it by pulling a
+newer Chrome for Testing; that downloads a browser binary, so it is the
+captain's call too, not something to run unattended.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `gobo-light` | `thevangelist/tinseltown`, five source modules | `e31bfc8` | MIT | Not a new find — this is the port the 09-19 run built and parked on `origin/wip/gobo-light` at `a6708cf`, finished here now that a screenshot is possible. Cherry-picked rather than rebuilt, so the code is 09-19's; this run added the preview and the contrast measurement. |
+| `sg-lightleak` | `shader-gallery/shaders`, `lightleak/shader.frag` + `lightleak/meta.json` | `4e8d4cb2` | MIT | Top of the recorded backlog ranking. Anamorphic film leak — adjacent to `god-rays`, but that one is volumetric shafts from a source and this is fogged emulsion with full-width flares, which nothing on the shelf does. |
+
+Both gates green, with the export above set: `check` 105 effects (lint, build,
+docs, smoke, 431 tests, exit 0), `verify` 101 pass / 1 warn / 0 fail / 3
+skipped. Both new effects PASS `verify` with zero warns; the single WARN is
+`paw-avatar`'s pre-existing one.
+
+### Contrast, measured twice, and one of them moved the sheet
+
+rAF works again, so for the first time the README's "worst case across several
+animation frames" is a thing a run can actually do rather than approximate from
+one frame. Both ports were measured the same way: copy hidden, boxes recorded
+before hiding, worst ratio between computed ink and any pixel under its box at
+1280x720, four taps two seconds apart.
+
+`gobo-light` — **the guess held.** `--fx-scrim: 0.74` was carried over unverified
+and 09-19 flagged it as such.
+
+| state | title | lede |
+|---|---|---|
+| rest, CSS only | 18.11:1 | 13.40:1 |
+| live, still rig (upstream default) | 13.05:1 | 11.13:1 |
+| live, `motion="sway drift"` | 12.81:1 | 11.13:1 |
+
+Nothing moved. The margin is wide because at the default azimuth 140 /
+elevation 38 no lit slat crosses the content column at all — the brightest
+pixel under the title is rgb(68,45,30), and the brightest pixel *anywhere* in
+the frame, rgb(98,65,38), would still read 9.1:1 against white if motion walked
+it under the copy. So 09-19's warning that "a lit slat is the brightest thing
+in the frame" is true of the frame and not true of the copy. There is real
+headroom to lower that scrim; it is a taste call, left for the captain.
+
+`sg-lightleak` — **the first guess failed.** The sheet shipped 0.72 and
+`--fx-muted: #e8e2da`, and the lede came in at **4.16:1**, under the 4.5:1
+floor.
+
+| scrim | `--fx-muted` | title | lede |
+|---|---|---|---|
+| 0.72 | `#e8e2da` | 5.57:1 | 4.16:1 |
+| 0.80 | `#e8e2da` | 6.85:1 | 5.23:1 |
+| 0.86 | `#e8e2da` | 8.26:1 | 6.31:1 |
+| **0.80** | **`#f6f1ea`** | **6.85:1** | **5.99:1** |
+
+Shipped the last row, splitting the fix between the scrim and the ink the way
+`sg-hologram` and `sg-suminagashi` split theirs — it buys more lede than 0.86
+alone did, for less washing. Worth carrying forward: on this effect the thing
+that crosses the copy is not the leaks, which sit at the frame edges, but the
+anamorphic streaks, which are drawn the **full width** by construction. The
+worst pixel under the lede is rgb(90,92,92) in every run — a flare, never a
+leak.
+
+And the caveat that applies to every number above: four taps is a sample of a
+flickering source, not a bound on it. `lightleak`'s streaks break and flicker
+on their own timers, so a frame nobody sampled can be worse. The margin over
+the floor is the allowance for that, which is why 0.80 was taken over the 0.72
+that also "passed" the title.
+
+### A correction to the 2026-09-14 entry
+
+That entry says the shader.gallery shaders "declare `"palette": null` in their
+upstream `meta.json`", so a port should recover the four colours from the
+shader's own `main()` and treat it as a `seam`. **The field is not `palette`
+and it is not null.** Checked at `4e8d4cb2` across all eight ranked shaders:
+
+```
+obsidian nocturne   rainglass peacock   suminagashi nocturne   hologram midnight
+lightleak daybreak  chrome    nocturne  damascus    mercury    foil     foundry
+```
+
+Every one names a preset, and no preset table exists anywhere in the pinned
+repo. So this family is the *other* case that entry describes — the one where
+"the metas name a palette preset the port genuinely cannot resolve" — and a
+port must ship its own four colours and declare them as `ours`, not `seam`.
+That is what `sg-gloam`, `sg-bask`, `sg-nebula-drift` and `sg-obsidian` already
+do, so the shipped ports are right and only the note was wrong. `sg-lightleak`
+follows them.
+
+One thing that *is* specific to `lightleak` and worth knowing before restyling
+it: the shader does not use the four colours positionally. `warmCool()` reduces
+them to a warm pole and a cool pole by red minus blue, and everything is built
+from those two. The palette's real content is its warm/cool **spread**, not its
+four hues — four warm colours leave the streaks the same colour as the leaks
+and the film stops reading as anamorphic.
+
+### Rejected
+
+| Candidate | Source | Reason |
+|---|---|---|
+| Paper Crumple (VAT) | `item-develop/paper-crumple-demo` `f84648b0`, Codrops hub 2026-09-19 | **MIT, so it clears the licence gate — rejected on shape.** Needs `cannon-es` and four `three/examples/jsm/` addons (lil-gui, EffectComposer, RenderPass, SSAOPass, OutputPass), none of which we vendor; a 1.25 MB `.fbx` mesh and a 1.75 MB `.exr` vertex-animation texture, which need loaders we also do not vendor; and its `index.html` pulls Google Fonts off-site. Same call as globedots (09-19) and MeltGL (09-17): porting it would be rewriting. 20 MB of the repo's 21 MB is a preview mp4. |
+| `twickstrom/holo-card-tilt` | GitHub, `created:>2026-09-18` | MIT and genuinely section-shaped — a tilt/glare/shadow hover card. But it is built to React 19, Next.js 16 and HeroUI v3 conventions, so there is no vanilla source to port, only a rewrite. |
+| `stenlysayd/retrolens` | GitHub, 1★ | MIT, but hand-gesture computer vision off a webcam. Same reject as the 3D Face Mask on 09-14: not a section, and the runtime reaches for a camera. |
+| `ziminglin895-del/shanju-study`, `kevinweiboo/z5ii-3d-camera` | GitHub | No LICENSE / `NO-LICENSE`. Hard reject. |
+| `artemnovichkov/SandValley`, `haplollc/ThinkingOrbs`, `Staberman/splitflap` | GitHub | SwiftUI / Metal. Not web. |
+| `bevancoleman/orbital-engine` | GitHub | react-three-fiber, and an orbital mechanics engine rather than a section. |
+| `copyleftdev/ember`, `rgkdegen/phantom-twist`, `1etu/xmb-test-portfolio`, `1968820297-hue/ai-shot-library`, `CristoXD73/GL.iNet-...` | GitHub | Not effects: an agent simulation, an explainer site, a portfolio, a prompt library, a router screensaver. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest is Paper Crumple, 2026-09-19,
+  rejected above. Elemental Sandbox (09-16) and Reel Flux (09-14) were already
+  screened and rejected by earlier runs and were not re-opened.
+- **Codrops org repos.** Nothing new.
+- **`shader-gallery/shaders`.** Last push 2026-09-09, so `4e8d4cb2` is still
+  the head and the backlog pin is current, not stale.
+- **Vendor releases.** All three predate the watermark: `@tsparticles/slim`
+  4.4.0 (2026-08-31, we vendor 4.3.2), `lenis` 1.3.26 (2026-08-05, vendored),
+  `@paper-design/shaders` 0.0.81 (2026-09-17, screened by the 09-17 run).
+- **GitHub topic search**, `created:>2026-09-18` across `css-animation`,
+  `shaders`, `scroll-animation`, `webgl`, `animation`. `css-animation` and
+  `scroll-animation` returned nothing at all. The rest is in the reject table.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge.
+- **Solace shaders.** Left alone: PR #34 is still open and owns them.
+
+### Backlog after this run
+
+54 of the 57 shaders logged at `4e8d4cb27bfdd662c4b8515eb83334ece40eea10`.
+Taken so far: `obsidian` and `rainglass` (PR #36), `lightleak` (this run).
+Next in the recorded ranking is `chrome` — the 09-14 note asks for a
+side-by-side against `liquid-metal` before committing to it — then `damascus`
+and `foil`.
+
+### One note on stacking
+
+Based on `feat/fx-scout-2026-09-19` rather than `main`, the same way 09-19 was
+based on 09-18 and 09-18 on 09-17. Four scout PRs are now stacked and none has
+merged. If the captain merges them, merge the bases with `--rebase` and not
+`--squash`, or every dependent goes CONFLICTING on duplicate content.
