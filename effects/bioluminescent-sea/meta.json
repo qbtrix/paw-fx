@@ -1,0 +1,74 @@
+{
+  "name": "bioluminescent-sea",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["bioluminescence", "plankton", "sea", "ocean", "night", "fluid", "stable-fluids", "particles", "bloom", "hdr", "interactive", "cursor", "webgl2", "hero"],
+  "summary": "Full-bleed night-sea hero that stays dark until something moves through the water. The water is a real incompressible solver on a coarse grid, and tens of thousands of dinoflagellates drift in it, flashing where the current shears rather than wherever the cursor is, so the light rises at the edges of the eddies a stroke leaves behind and keeps turning after the pointer stops. Each cell spends a luciferin reserve and takes seconds to refill, so a patch stirred over and over tires and relights a while later. Two or three fish swim through and are never drawn: the silhouettes are the plankton lighting up around the water they push. Light is summed in HDR through a two-level bloom, so a dense flash walks from blue to cyan to white instead of clipping flat.",
+  "needs": [],
+  "options": {
+    "fade": {
+      "type": "number",
+      "default": 0.3,
+      "min": 0.05,
+      "max": 2,
+      "description": "Seconds, roughly the half-life of one flash (upstream APAGA). Longer leaves longer glowing wakes behind whatever moved."
+    },
+    "recharge": {
+      "type": "number",
+      "default": 7,
+      "min": 0.5,
+      "max": 30,
+      "description": "Seconds for a cell to refill its luciferin after it flashes (upstream RECARGA). This is what makes the sea tire where you keep stirring and relight a while later."
+    },
+    "vorticity": {
+      "type": "number",
+      "default": 0.55,
+      "min": 0.05,
+      "max": 2,
+      "description": "Vorticity confinement (upstream VORT): how hard the solver holds eddies together. Low values let the water smear to a blur; higher keeps the swirls, and the light, turning after the cursor stops."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "Raflael/ardentia",
+    "commit": "7e1a155474eba09583b6707cf32bd20e2512b7a8",
+    "path": ["index.html"]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is one self-running IIFE in a page. Its lines 60-656 (constants, solver, fish, plankton, shaders, HDR and bloom draw) sit verbatim inside inicia(), called from mount(el, opts); the page chrome (.rotulo, .dica, .nota and textos()) is not carried.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The page labels are upstream's demo copy about itself; snippet.html carries the section's own copy instead.",
+      "kind": "seam"
+    },
+    {
+      "what": "The world is sized from el.clientWidth and el.clientHeight instead of window.innerWidth and innerHeight, a ResizeObserver on the section replaces the window resize listener (same 200 ms debounce), and pointer coordinates are e.clientX and e.clientY minus the section's getBoundingClientRect, with the pointer listeners on the section rather than on window and document.",
+      "why": "Seam. The solver, the fish and the plankton all work in the W by H pixel space they are handed, and upstream already takes that size as a parameter (its larg and alt query keys), so handing it the section instead of the window changes where the sea is, not how it behaves.",
+      "kind": "seam"
+    },
+    {
+      "what": "The context is requested with failIfMajorPerformanceCaveat: true and without preserveDrawingBuffer. A null context, or a shader that throws while compiling, loses the context and returns the section to its CSS rest instead of replacing document.body.innerHTML with an error message.",
+      "why": "The repo contract. A 50k-particle CPU step plus an HDR bloom on a software rasteriser is worse than the resting sea under it. preserveDrawingBuffer was only ever on for upstream's headless capture harness.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's TESTE branch is dropped: the fixed-step headless simulation, the synthetic finger, the frame dump and the stats JSON, all switched on by ?teste in the page's own query string.",
+      "why": "Seam. It is a test harness, not the effect, and a library section must not change behaviour because the host page happens to carry ?teste in its URL.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns at once and the solver never starts. Upstream has no reduced-motion path.",
+      "why": "The repo contract. This sea only lights where the water moves, so there is no honest still frame to hold; the CSS resting state is the reduced-motion picture.",
+      "kind": "ours"
+    },
+    {
+      "what": "An IntersectionObserver stops the requestAnimationFrame loop while the section is off screen and restarts it when it returns. data-fx-live is set only after the first desenha() has drawn to the canvas.",
+      "why": "Ours. Upstream owns the whole window, so it is always on screen; a section below the fold is not, and a 50k-organism step every frame is worth stopping when nobody can see it. The flag waits for a real frame so the resting state never fades out from under an empty canvas.",
+      "kind": "ours"
+    },
+    {
+      "what": "APAGA, RECARGA and VORT are read from the fade, recharge and vorticity options, defaulting to upstream's 0.3, 7 and 0.55, and update() can change them live. A value that is not positive falls back to upstream's.",
+      "why": "Seam. Three of upstream's own constants surfaced as knobs with upstream's defaults, so an unset option renders exactly upstream. The positive guard is there because a zero decay or recharge divides by zero inside the step and fills every buffer with NaN for good.",
+      "kind": "seam"
+    }
+  ]
+}

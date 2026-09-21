@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-20**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-21**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1656,3 +1656,166 @@ Based on `feat/fx-scout-2026-09-19` rather than `main`, the same way 09-19 was
 based on 09-18 and 09-18 on 09-17. Four scout PRs are now stacked and none has
 merged. If the captain merges them, merge the bases with `--rebase` and not
 `--squash`, or every dependent goes CONFLICTING on duplicate content.
+
+## 2026-09-21 — window 2026-09-20 to 2026-09-21
+
+One day. One real find, ported. Nothing taken off the backlog, because Step 3.5
+only runs when discovery comes up empty, and it did not.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `bioluminescent-sea` | `Raflael/ardentia`, `index.html` | `7e1a1554` | MIT | A night sea that stays dark until something moves through it. A real Stable Fluids solver on a coarse CPU grid, ~50k dinoflagellates that flash on *shear* rather than on speed and spend a luciferin reserve that takes seconds to refill, and an HDR sum through a two-level bloom. Fish swim through and are never drawn; the plankton lighting around them is the silhouette. Nothing on the shelf is interactive *and* physical like this: `water` is a shader field, `links-network` and `firefly-swarm` are particles with no medium. Zero dependencies, one 29 KB file upstream. |
+
+Found through GitHub topic search (`webgl2`, `creative-coding`,
+`generative-art`, all `created:>=2026-09-19`). Licence read at the pin, not
+trusted from the API: `contents/LICENSE?ref=7e1a1554` is MIT, Copyright (c)
+2026 Rafael Medeiros.
+
+Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at system Chrome:
+`check` 106 effects (lint, build, docs, smoke, 433 tests, exit 0), `verify`
+102 pass / 1 warn / 0 fail / 3 skipped. The new effect PASSES with zero warns;
+the one WARN is `paw-avatar`'s old one.
+
+### Why this passes provenance when LUMEN (09-17) did not
+
+Worth writing down, because on the surface the two look alike and a reviewer
+should see one standard, not two. Both landed their code in one commit
+(`293a78be` here; the other three commits are a GIF, a README pass and a social
+card) and both had 0 stars. LUMEN was rejected on two things this one does
+not have:
+
+1. **A claimed source with no published code.** LUMEN's header said "inspired
+   by the visual language of OpenShaders", and OpenShaders has shipped no
+   shader source, so a clean re-derivation could not be told apart from a lift.
+   Ardentia credits one thing, a 1999 paper (Stam, *Stable Fluids*), which is an
+   algorithm, not code. No Shadertoy idioms either (`mainImage`, `fragCoord`,
+   `iTime`, `iChannel` all absent) and no off-site URL.
+2. **Viewport coupling that scoping would change.** LUMEN's resize, text
+   texture, ripples and pointer all lived in viewport coordinates. Ardentia's
+   solver, fish and plankton all work in whatever W by H they are handed, and
+   upstream already takes that size as a parameter (its own `larg` and `alt`
+   query keys, for its headless harness). Handing it the section instead of the
+   window is a seam.
+
+The internals also read as the author's own work: Portuguese names throughout
+(`empurra`, `cisalhamento`, `reserva`, `atualizaPlancton`), and a README that
+records three things found while building it (pure blue reads as dust without
+HDR, a wide push draws a ring instead of a fish, the tail undulation came free
+from a chain). That is not proof, but it is the opposite of LUMEN's shape.
+
+### How the port was built — assembled, not retyped
+
+`index.js` is upstream lines 60-656 byte for byte, inside a function, at
+upstream's own indentation, so a diff against the pinned file reads clean. Six
+lines inside that block differ: the three constants that became options
+(`APAGA`, `RECARGA`, `VORT` → `fade`, `recharge`, `vorticity`, upstream
+defaults), one comment, and the two that sized the world from
+`window.innerWidth/innerHeight`. Everything upstream had after line 656 —
+window-bound input, a window resize listener, and a headless test harness that
+switched on from `?teste` in the page's own URL — is replaced by section-bound
+equivalents. Seven deviations are declared in `meta.json`, five `seam` and two
+`ours`.
+
+The two `ours`:
+- **Reduced motion never starts the solver.** Upstream has no such path. This
+  sea only lights where water moves, so there is no honest still frame; the CSS
+  rest is the reduced-motion picture.
+- **An IntersectionObserver pauses the loop off screen.** Upstream owns the
+  window and is always visible. A section below the fold is not, and a
+  50k-organism CPU step per frame is worth stopping.
+
+### The preview is a live frame, and deliberately not `?reduced=1`
+
+The scout recipe captures with `?reduced=1` to pin a resting frame. On this
+effect that would capture the CSS fallback, because reduced motion means the
+solver never starts — and the README says a preview is a real capture with
+`data-fx-live` asserted. So the preview was shot live, at 640x360, about half a
+second after a scripted pointer stroke across the section, with
+`data-fx-live === true` asserted first. Before touching, the live sea is mostly
+black with two fish-shaped glows; the stroke is what the effect is *for*, and
+upstream's own README GIF shows the same thing.
+
+### Contrast
+
+Measured at `--fx-scrim: 0.8` (a guess going in; it held). Copy hidden, boxes
+recorded first, worst ratio between computed ink and any pixel under each box
+at 1280x720. The dangerous frame is not the fish, it is a visitor stirring
+water right under the copy, so strokes went straight through the headline.
+
+| state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| rest, CSS only | 12.59 | 13.86 | 12.59 | 15.43 |
+| live, fish only (4 taps) | 15.74 | 8.11 | 6.92 | 16.08 |
+| live, 3 strokes x 4 taps | 6.69 | **6.56** | 6.90 | 8.66 |
+| live, 8 fast scrubs | 8.19 | 8.22 | 7.85 | 12.31 |
+
+Worst is 6.56:1 on the title, on a wake at rgb(45,97,102). One finding worth
+keeping: **scrubbing hard measures dimmer than one long stroke.** Each cell
+spends its luciferin, so a patch stirred again and again goes dark. The first
+stroke through fresh water is the worst case, not the hundredth. `fade` and
+`recharge` both raise the ceiling (longer wakes, faster refills), so the knob
+docs and the stylesheet comment say to re-measure after moving either.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `uzayrhbusiness-afk/galaxy-hero` | GitHub, first commit 2026-09-15, repo created 2026-09-19 | MIT | **The near miss, and section-shaped.** A WebGL star galaxy that gathers into words and images over a hero. Rejected on provenance, the LUMEN rule: the README says it is "inspired by the hero on higgsfield.ai/gpt-astra", a commercial site whose source is not published. Also a `position: fixed` page layer driven by a `window.GALAXY_CONFIG` global, and its text shapes sample a Google Fonts face fetched off-site. |
+| `wangmiaozero/agent-aura` | GitHub, created 2026-09-20 | MIT | TypeScript under `src/*.ts` with no built ES module committed to pin, so porting means transpiling a dozen modules. Same call as MeltGL (09-17) and globedots (09-19). Also borders and glows for agent UIs, not sections. |
+| `wfdiao/wax-and-water` | GitHub, created 2026-09-19 | MIT | An interactive toy (drop a dive mask into a crayon sea) that needs ~1.8 MB of raster paper and silhouette assets. Not a resting section. |
+| `fushanbobfan/morphogen` | GitHub, created 2026-09-20 | MIT | A reaction-diffusion *lab* with a control UI and an npm layout. Reaction-diffusion as a hero is already queued as `turing` in the `4e8d4cb2` shader backlog. |
+| `Nikhil-creat/anima`, `ZALPRO/framezero` | GitHub | MIT | A Lenia lab and a motion-design studio. Tools, not sections. |
+| `chasestu/frontend-viz-starter` | GitHub | MIT | Particle network background — a duplicate of `links-network`. |
+| `YiweiCreates/magic-folder-animation`, `yfddxwx/Spore-Garden` | GitHub | MIT | A folder-icon animation and a click-to-plant particle toy. Not sections. |
+| `AmiARMiess/fleet-sync`, `yang20040317-svg/cine-memory-portfolio` | GitHub | MIT | Whole landing pages / portfolios, not a portable effect. |
+| `stenlysayd/retrolens`, `ctbot000/face-beautifier` (+ `-auto`) | GitHub | MIT | Webcam and MediaPipe. Same reject as the 09-14 face mask. |
+| `kloserock97-tech/windcrest`, `AventurineDream/lightwell`, `ArielSoliz/oneocean-elements-free` | GitHub | NOASSERTION | Unresolved licence. Not on the allow-list. |
+| `Mohammed-Ashraf-Shaik/singularity-cinematic-universe`, `xnono344/keyboard-3d-pad`, `yanx5433-cmd/rain-as-data`, `Elia-Youssef/fashion-rotunda-web` | GitHub | none | No LICENSE file. Hard reject. |
+
+### Vetted, not ported
+
+| Candidate | Repo | Commit | Path | Licence | Note |
+|---|---|---|---|---|---|
+| `withmehmet/mogp-motion` | `withmehmet/mogp-motion` | `e2db8dd2` | `mogp-motion.css` | MIT | CSS-only scroll-driven reveals (fade, scale-up, slide-up, slide-down) on `animation-timeline: view()`, no JavaScript at all. A real gap: `reveal-stagger` needs anime.js. Not ported because it is a `data-*` attribute *system* rather than a section, it is one commit old, and it would need a demo section invented around it. A candidate for a `scroll` port if the captain wants a zero-JS reveal on the shelf. Full sha `e2db8dd2ab4cc6c55c0f1f8aa8f08952882f33a7`. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest is still Paper Crumple,
+  2026-09-19, rejected by the 09-20 run. Nothing published 09-20 or 09-21.
+- **Codrops org repos.** Newest is still `RotatingOnScrollAnimations`,
+  2026-06-18.
+- **`shader-gallery/shaders`.** No commits since 2026-09-19; last push
+  2026-09-09. `4e8d4cb2` is still the head, so the backlog pin is current.
+- **`paper-design/shaders`.** No commits since 2026-09-19.
+- **Vendor releases.** `tsparticles` still v4.4.0 (2026-08-31), `lenis` still
+  v1.3.26 (2026-08-05).
+- **Solace shaders.** No commits since 2026-09-19; left alone, PR #34 owns
+  them.
+- **`openshaders/openshaders`.** Still a README, a header image and a LICENSE,
+  no shaders. Last push 2026-09-09.
+- **`Pallarium/labs`.** Still no LICENSE file (`/license` is 404).
+- **GitHub topic search**, `created:>=2026-09-19` across `shaders`, `webgl`,
+  `glsl`, `css-animation`, `scroll-animation`, `animation`, `canvas-animation`,
+  `webgl2`, `creative-coding`, `generative-art`, plus keyword searches (`webgl
+  hero`, `shader background`, `zero dependencies animation`, `canvas
+  particles`, `language:GLSL`). `css-animation` returned nothing again.
+  Adding `webgl2`, `creative-coding` and `generative-art` to the topic list is
+  what found today's port; keep them.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge.
+
+### Backlog after this run
+
+Unchanged at 54 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`. Taken so far: `obsidian` and
+`rainglass` (PR #36), `lightleak` (PR #38). Next in the recorded ranking is
+still `chrome` (side-by-side against `liquid-metal` first), then `damascus`
+and `foil`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-20`, like every scout branch since 09-18. Five
+scout PRs are now stacked (09-17 → 09-21) and none has merged. Merge the bases
+with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
+duplicate content.
