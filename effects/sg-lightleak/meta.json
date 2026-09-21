@@ -1,0 +1,79 @@
+{
+  "name": "sg-lightleak",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "light-leak",
+    "film",
+    "anamorphic",
+    "flare",
+    "halation",
+    "bloom",
+    "analog",
+    "cinematic",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's lightleak: a strip of film fogged by light leaking into the camera. Broad soft blooms bleed in from the frame edges, near white against the lip and cooling through the warm pole into the cool one as they feather into a dark emulsion base, their edges torn by a slow domain warp. Across them lie five anamorphic streaks, long thin horizontal flares stretched the full width with bright sources sliding along their length, breaking and flickering as they go, and a halation glow sits under every bright thing so nothing has a hard edge.",
+  "needs": [],
+  "license": "MIT",
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#ff8a3d", "#ffcf9b", "#3fb8c4", "#4a63b5"],
+      "description": "Four poles. The shader does not use them positionally: warmCool() picks the warmest and coolest by red minus blue, then the leaks run hot-white through the warm one into the cool one, and the streaks are the cool one lifted 30% toward white. The warm/cool SPREAD is what carries the look -- four colours that are all warm leave the streaks the same colour as the leaks and the film stops reading as anamorphic. Falls back to --fx-c1..--fx-c4."
+    },
+    "leak": {
+      "type": "number",
+      "default": 1,
+      "description": "Strength of the light bleeding in from the frame edges. 0 leaves only the streaks on dark film. Upstream default 1.0, range 0 to 2."
+    },
+    "streak": {
+      "type": "number",
+      "default": 0.9,
+      "description": "Brightness of the anamorphic horizontal flares and their sources. 0 removes them and leaves a plain fogged frame. These are drawn the full width, so they are also the thing that crosses centred copy -- lower this before reaching for --fx-scrim. Upstream default 0.9, range 0 to 2."
+    },
+    "warmth": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How far the hottest part of each leak burns toward white. Low keeps it saturated colour instead of blowing out. Upstream default 0.6, range 0 to 1."
+    },
+    "spread": {
+      "type": "number",
+      "default": 1,
+      "description": "How deep the leaks reach into the frame. High floods most of it with light, which is the other knob that takes copy under the 4.5:1 floor. Upstream default 1.0, range 0.3 to 2."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Pace of the sweep, breathing and flicker. 0 holds one frame of film. Upstream default 0.3, range 0 to 1.5."
+    }
+  },
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": [
+      "lightleak/shader.frag",
+      "lightleak/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `daybreak` preset.",
+      "why": "lightleak/meta.json declares `defaultPalette: \"daybreak\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own and declares them. The shader's zero-fallback branch is not the answer either: paletteFor never produces zeros, so that branch is unreachable from paw-fx. Same call sg-gloam, sg-bask, sg-nebula-drift and sg-obsidian made. Ours are chosen for warm/cool spread rather than hue, because warmCool() reduces the four to two poles.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.06, vignette 0.18, saturation 1.08, contrast 1.03 and a bloom of 0.15 at radius 3 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster -- and the gap is wider here than on the rest of this family, because a bloom pass is exactly what a light-leak poster leans on. The section's own CSS grain layer covers what the poster's grain was there for, and carries a little more of it (0.07) than the other sg-* ports for the same reason.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
