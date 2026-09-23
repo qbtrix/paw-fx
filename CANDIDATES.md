@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-21**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-23**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1817,5 +1817,245 @@ and `foil`.
 
 Based on `feat/fx-scout-2026-09-20`, like every scout branch since 09-18. Five
 scout PRs are now stacked (09-17 → 09-21) and none has merged. Merge the bases
+with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
+duplicate content.
+
+## 2026-09-23 — window 2026-09-21 to 2026-09-23
+
+Two days. One find, ported. The backlog was not touched, because Step 3.5 only
+fires when discovery comes up empty and it did not.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `wipe-glass` | `Hixly/rain-on-glass`, `index.html` | `4d7bf1f0` | MIT | A fogged pane the visitor clears by dragging across it, onto a rainy street at night. Three surfaces in one pass: beads outside that are each a lens on the street inverted, pinned until they outgrow a critical radius and then sliding in stop-start runs that eat the smaller beads in their path; condensation inside that a stroke wipes, that throws drips which run down and cut channels, and that re-nucleates in patches; and behind both, a street painted once at three blur depths where the fog picks which one you are looking through, so clearing the glass is literally what pulls the city into focus. |
+
+Found through GitHub topic search (`webgl`, `webgl2`, `creative-coding`,
+`created:>=2026-09-20`). Licence read at the pin, not trusted from the API:
+`contents/LICENSE?ref=4d7bf1f0` is MIT, Copyright (c) 2026 Matthew Hixon.
+
+Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at system Chrome:
+`check` 107 effects (lint, build, docs, smoke, 435 tests, exit 0), `verify`
+103 pass / 1 warn / 0 fail / 3 skipped. `wipe-glass` PASSES with zero warns —
+including zero `numeric-trace` warns, so every literal in the port traces to
+the pinned file. The one WARN is `paw-avatar`'s old one.
+
+### The adjacency to `sg-rainglass` is real, and here is the case for it anyway
+
+A reviewer will spot this immediately, so it goes at the top rather than
+buried. `sg-rainglass` (PR #36, 09-18) is also rain on a window at night, and
+nothing else on the shelf is. Two effects, one subject.
+
+The case is that they are the same subject by completely different machinery,
+and the machinery is what a site-builder is choosing between:
+
+- `sg-rainglass` is one fragment shader. Everything in it — the bokeh field,
+  the runners, the beaded trails — is procedural noise evaluated per pixel. It
+  is a picture of rain on glass, and it does not respond to anyone.
+- `wipe-glass` is a CPU simulation feeding textures to a shader. The beads are
+  objects with radii, velocities and pinning state that merge and shed; the
+  street is a real painted scene with a skyline, named neon signs and cars; and
+  the fog is a mutable buffer the visitor writes into.
+
+The differentiator is the last one, and it is not a rain differentiator at all:
+**nothing in the 107 is a surface a visitor clears with a drag that then heals
+behind them.** `cursor-spotlight` reveals under the pointer and forgets the
+moment it moves; this remembers the stroke, throws water off its rim, and
+closes over in patches seconds later. That is a hero mechanic the shelf does
+not have, and the rainy street is the scene it happens to be wearing.
+
+Same call the 09-18 run made taking `lightleak` next to `god-rays`, and the
+09-21 run taking `bioluminescent-sea` next to `water`. Flagged here so the
+captain can overrule it on one read rather than discovering it in the gallery.
+
+### Why this passes the viewport-coupling half of the LUMEN rule
+
+The other thing a reviewer will reach for, because the 09-21 entry rejected
+LUMEN partly on viewport coupling and on the surface this looks the same:
+`VW = innerWidth`, `VH = innerHeight`, pointers in client coordinates, a window
+resize listener, a `position: fixed` cursor.
+
+It is the opposite case, and the reason is one line of upstream's own comment:
+
+    // Rain amounts scale with the real glass area in CSS px (not canvas px),
+    // so every screen, phone or desktop, gets the same density per inch.
+    const AREA = () => VW * VH / (1608 * 926);
+
+Density is normalised per CSS pixel of AREA, not per viewport. The street is
+painted at a scale of `h / 1000`. `WS` clamps at 1.25 for anything 1440 wide or
+over. So handing the code a 1200x600 section instead of a window gives it
+upstream's density at upstream's proportions — the seam changes where the glass
+is, not how it behaves. LUMEN's ripples, text texture and resize were coupled to
+the viewport's SHAPE, where scoping would have changed the picture.
+
+`VW` and `VH` are assigned in exactly one function (`resize`), and upstream's
+own `px`/`py` helpers are `e.clientX * VW / innerWidth`, which is the identity
+while the glass IS the window — so the seam is that same conversion measured
+against the section's box. Provenance is clean on the other half of the rule
+too: the repo publishes its own prompt (`PROMPT.md`), cites no closed
+commercial source, carries zero Shadertoy idioms (`mainImage`, `fragCoord`,
+`iTime`, `iResolution`, `iMouse`, `iChannel` all absent) and fetches nothing
+off-site.
+
+### The sound had to go, and no-ops are how the port stayed byte-identical
+
+Upstream synthesises its own rain bed, taps on the glass, a wiping squeak and
+thunder, all in Web Audio. A section dropped into a client page must not make
+noise, so all of it is gone.
+
+The tempting way to remove it is to edit `spawnDrop` and the lightning block,
+which is where `tap()` and `thunder()` are called from — and both of those sit
+inside the range that is supposed to diff clean against the pinned file.
+Instead `tap()` and `thunder()` stay as empty functions, so the simulation code
+is left exactly as upstream wrote it and the whole removal is one declared
+deviation. Worth copying next time a port carries a subsystem the contract
+forbids: **stub the leaf, do not edit the caller.**
+
+### The knob test is stricter than the schema, and 1.2958 trips it
+
+`bun run check` failed once, on `tests/gallery.test.js`: *every slider must open
+ON its own documented default*. `rain` defaults to upstream's `RATE = 1.2958`,
+and with `min: 0.2, max: 3` the generator's inferred step is `(3-0.2)/200 =
+0.014`, which puts the default at 78.27 stops — so the slider would have opened
+at a number the docs never give and no drag could return to.
+
+The arithmetic is unforgiving with a four-decimal default: `1.2958 - 0.2` is
+`10958e-4`, and `10958 = 2 x 5479` with 5479 prime, so the only steps that
+divide it are 0.0002 and 0.0001 — fourteen thousand stops. Moving `min` to 0
+makes the default `12958e-4 = 2 x 11 x 19 x 31`, and `1.2958 / 100` gives
+`step: 0.012958` exactly (verified in IEEE754, not assumed: the division
+returns exactly 100).
+
+Two things for the next run. **An awkward default is fixed at `min`, not at
+`step`** — the factorisation of `default - min` is what decides whether any
+usable step exists. And the generator has a designed-for path: omit `min` and
+`max` entirely and `hi` becomes four times the default, which puts it at
+exactly 50 stops by construction. That is the escape hatch when no declared
+range factorises.
+
+### Contrast
+
+Measured at `--fx-scrim: 0.78`, one page LOAD per frame per the 09-18 recipe,
+copy hidden for each capture, boxes collected with it visible, ink painted to a
+2D canvas, at 1280x720.
+
+| state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| live, 1s | 9.79 | 9.83 | 9.11 | 14.85 |
+| live, 4s | 10.46 | 8.87 | 8.49 | 13.57 |
+| live, 9s | 11.29 | 8.94 | 8.77 | 11.83 |
+| live, 14s | 10.87 | 9.24 | 8.06 | 12.59 |
+| three strokes through the copy | 11.28 | 6.46 | **4.87** | 11.68 |
+| the same, 7s in | 10.07 | 6.46 | 4.94 | 13.32 |
+| the whole band scrubbed bare | 8.77 | 6.46 | 5.15 | 7.56 |
+
+Worst is 4.87:1 on the lede, on cleared street at rgb(96,73,59). The dangerous
+frame is neither the rain nor the lightning: it is a visitor wiping the glass
+directly under the copy, because the fog is the only thing holding the lit city
+off the lede.
+
+The scrim response is steep and was probed rather than guessed — 0.86 gives
+6.45, 0.78 gives 4.87, 0.72 gives 4.04 and fails. 0.78 is the lowest value that
+clears the 4.5 floor, which matters here because the scrim is also what makes
+the effect visible: at 0.86 the thumbnail was a near-black rectangle.
+
+One finding worth keeping: **scrubbing the whole band measures no worse than
+three strokes** (5.15 against 4.87). A wipe saturates the clear map at `HOLD`,
+so a second pass over the same patch cannot make it clearer — unlike
+`bioluminescent-sea`, where repeated stirring makes the water DIMMER. Neither
+effect rewards scrubbing harder, for opposite reasons.
+
+### The preview shows both halves on purpose
+
+The scout recipe shoots `?reduced=1` to pin a resting frame. This effect returns
+from `mount()` under reduced motion and never starts, so that would have
+captured the CSS fallback. Shot live instead, `data-fx-live` asserted first, at
+640x360.
+
+The first live shot was still a dark rectangle, because the honest resting
+picture of a fogged window at night is a dark rectangle. So the capture wipes
+the left 44% of the pane bare in eleven strokes and leaves the right fogged,
+with one sweep across it: the card then carries the before and the after at
+once, which is the only way a still says "this is a surface you clear".
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `oddurs/rummy` | GitHub, created 2026-09-23, `6725361d` | MIT | **The closest audience fit yet, and still a reject.** "Real-time 3D scenes rendered as ASCII in WebGL2. Built for hero backgrounds" is our brief in one line. It ships `src/*.ts` only — `atlas.ts`, `gl.ts`, `rummy.ts`, `scenes.ts`, `shaders.ts` — with `dist/` uncommitted and built by `tsc` + `vite build`, so there is no ES module at the pin to port or vendor. Same call as MeltGL (09-17), globedots (09-19) and agent-aura (09-21). Re-check it: the roadmap has "publish to npm with provenance" and "a web component and a CDN build" as open items, and either would make it portable. |
+| `ALEXalesha/LiquidGlass` | GitHub, created 2026-09-22, `027cac78` | MIT | The LUMEN rule. "iOS 26 Liquid Glass rebuilt on the web" is a re-derivation of a closed commercial design language whose source is not published, which is the same shape as `galaxy-hero` rejected on 09-21 for citing `higgsfield.ai/gpt-astra`. The licence on the wrapper does not settle what it is a copy of. Also an 8.2 MB repo whose recent history is a Windows desktop-app shell, not a section. |
+| `fushanbobfan/harmonograph` | GitHub, created 2026-09-23, `c72425ec` | MIT | A lab, not a section: `src/gallery.js`, `share.js`, `presets.js`, `playback.js`, a localStorage gallery with thumbnails, and a control panel to tune and export. Same author and same call as `morphogen`, rejected 09-21. |
+| `tonychuhai/Cove` | GitHub, 58★, created 2026-09-21 | AGPL-3.0 | Not on the allow-list. |
+| `sevenevesai/riso-windowseat` | GitHub, 76★, created 2026-09-22 | NOASSERTION | Unresolved licence. The highest-starred thing in the window, and procedural risograph films are genuinely interesting, so worth a re-check if a real LICENSE lands. |
+| `ErionNezha/Lulja-Ime`, `mr-jonam/webgl-fast-track`, `twinstack-studio/sketchify`, `theovarne/GRYMO` | GitHub | NOASSERTION | Unresolved licence. |
+| `aowshad/kinetic-svg` | GitHub, created 2026-09-23 | **none** | "Copy-paste SVG animations that run with zero dependencies" and no LICENSE file. Hard reject with no discretion. |
+| `DexAi3000/scroll-tied-video-section` | GitHub, created 2026-09-22 | **none** | Frame-accurate scroll scrubbing via WebCodecs and explicitly no GSAP or Lenis, which is exactly the shape the `scroll` shelf wants. No LICENSE file, and React + TS on top. Re-check if one appears. |
+| `Babyjupiter96/interactive-3d-hero`, `aeiouvcode/kin-living-pond`, `aeiouvcode/stillwater-harbor`, `simonwong/shader-tab` | GitHub | **none** | No LICENSE file. |
+| `AliYa-chen/vfx-ui-vue` | GitHub, created 2026-09-23 | MIT | Vue components on WebGPU via `vgpu`. A framework target we do not ship and a renderer we do not vendor. |
+| `alexgreensh/anidoodle` | GitHub, 30★ | Apache-2.0 | Licence is fine. It is a toolkit for authoring hand-drawn films from code, not a section with a resting state. |
+| `mmrahmanbappi/100-free-404-pages` | GitHub, created 2026-09-23 | MIT | Page templates, not effects. |
+| `kloserock97-tech/windcrest`, `Mohammed-Ashraf-Shaik/singularity-cinematic-universe`, `xnono344/keyboard-3d-pad` | GitHub | NOASSERTION / none | Already rejected by the 09-21 run and not re-opened. |
+
+### Vetted, not ported
+
+| Candidate | Repo | Commit | Path | Licence | Note |
+|---|---|---|---|---|---|
+| `cosmos-demo` | `absoyak/cosmos-demo` | `a247d9f18aa78d07891d72cc424ea2ee8b165472` | `index.html` | MIT | A GPU N-body universe in one 54 KB HTML file, zero dependencies, WebGL2 GPGPU fragment shaders — the shape is right and the licence is clean. Not ported because it is a NARRATIVE, not a loop: the README's own screenshot names are "star ignites", "age of collisions", "equilibrium", so the thing settles over minutes into a different picture than it started with. A hero has to look like itself at second 3 and at minute 10. Portable if someone wants a hero that visibly evolves, and worth revisiting as a `3d-hero` if that is ever a category we want. |
+| `mogp-motion` | `withmehmet/mogp-motion` | `e2db8dd2ab4cc6c55c0f1f8aa8f08952882f33a7` | `mogp-motion.css` | MIT | Carried forward from 09-21, unchanged and still not ported. CSS-only scroll-driven reveals on `animation-timeline: view()`, no JavaScript at all, which `reveal-stagger` needs anime.js for. Still a `data-*` attribute system rather than a section. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest is still Paper Crumple,
+  2026-09-19, which the 09-20 run rejected. Nothing published 09-20 to 09-23.
+- **Codrops org repos.** Newest is still `RotatingOnScrollAnimations`,
+  2026-06-18.
+- **`shader-gallery/shaders`.** `commits?since=2026-09-21` is empty and
+  `4e8d4cb2` is still the head, so the 54-shader backlog pin is current.
+- **`paper-design/shaders`.** No commits since 2026-09-21.
+- **`HARSHITSHARMA18/shaders` (Solace).** No commits since 2026-09-21. Left
+  alone again: PR #34 is still open and owns them.
+- **`metaory/ascii-lab`.** No commits since 2026-09-21.
+- **`Pallarium/labs`.** Still no LICENSE file (`/license` is 404), four runs
+  running. Its self-description is still almost word for word our own contract,
+  so it stays on the re-check list.
+- **Vendor releases.** `tsparticles` still v4.4.0 (2026-08-31), `lenis` still
+  v1.3.26 (2026-08-05).
+- **GitHub topic search**, `created:>=2026-09-20` across `shaders`, `webgl`,
+  `webgl2`, `glsl`, `css-animation`, `scroll-animation`, `animation`,
+  `canvas-animation`, `creative-coding`, `generative-art`. The 09-21 entry's
+  advice held: `webgl` and `creative-coding` are what surfaced today's port,
+  and `css-animation` returned two items, both unusable. Keep the full list.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge. See the
+  09-14 entry for the full account.
+
+### One observation about the window this search now sees
+
+Worth recording because it changes what a future run should expect rather than
+what it should do. A large share of everything created in these two days is
+model-written and says so in its own description — "Built with Claude Opus
+5.5", "Made with Claude Opus 5.5", "written entirely in code by Claude". Both
+of the last two ports (`bioluminescent-sea`, `wipe-glass`) came out of that
+pool.
+
+It does not change the gates, and it should not. Licence, provenance, shape and
+the two gates decide, exactly as before; today's port was screened against the
+LUMEN rule line by line and passes on published source and a clean
+re-derivation. But the practical consequence is that **star count and repo age
+are now worth even less than the 09-06 survey said.** Today's find had 1 star
+and was 24 hours old. Rank by mechanism and by whether one file can hold it.
+
+### Backlog after this run
+
+Unchanged at 54 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`. Taken so far: `obsidian` and
+`rainglass` (PR #36), `lightleak` (PR #38). Next in the recorded ranking is
+still `chrome` (side-by-side against `liquid-metal` first), then `damascus`
+and `foil`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-21`, like every scout branch since 09-18. Six
+scout PRs are now stacked (09-17 → 09-23) and none has merged. Merge the bases
 with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
 duplicate content.
