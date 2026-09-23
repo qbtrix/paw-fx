@@ -1,0 +1,84 @@
+{
+  "name": "wipe-glass",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["rain", "glass", "condensation", "fog", "wipe", "interactive", "cursor", "night", "city", "street", "lightning", "refraction", "webgl2", "hero"],
+  "summary": "Full-bleed hero looking out of a fogged window onto a rainy street at night, which the visitor clears by dragging across it. The condensation is on the inside: a stroke wipes it, water pushed to the rim of the stroke gathers into drips that run down and cut channels through the fog, and it re-nucleates in patches a few seconds later rather than fading back evenly. Outside, every bead is a lens showing the street inverted behind a dark refractive rim, pinned by its own contact angle until it outgrows a critical radius, then sliding in jerky stop-start runs that swallow the smaller beads in their path and shed a trail of new ones. Behind both, the street is painted once at three blur depths and the fog decides which one you are looking through, so clearing the glass is literally what brings the city into focus: lit windows, sodium lamps pooling on wet asphalt, neon smeared down the road, cars passing in two lanes with their headlights reflected, and lightning that flickers far off and now and then strikes close enough to light the whole scene.",
+  "needs": [],
+  "options": {
+    "rain": {
+      "type": "number",
+      "default": 1.2958,
+      "min": 0.2,
+      "max": 3,
+      "description": "Spawn and cap multiplier for the rain on the outside of the pane (upstream RATE, calibrated so the reference 1608x926 view reproduces exactly). Higher is a heavier storm: more beads, more runners, more of the street hidden."
+    },
+    "refog": {
+      "type": "number",
+      "default": 0.15,
+      "min": 0.02,
+      "max": 1,
+      "description": "How fast a wiped patch steams back up, in clear-map units per second (upstream DECAY). At the default a stroke stays readable for several seconds; at 1 it closes almost as fast as you draw it."
+    },
+    "brush": {
+      "type": "number",
+      "default": 36,
+      "min": 8,
+      "max": 120,
+      "description": "Radius of the wipe, in CSS pixels (upstream BRUSH). This is the size of the hand on the glass, so it also sets how far out the drips are thrown from a stroke."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "Hixly/rain-on-glass",
+    "commit": "4d7bf1f058264af5a28d4c2788a0c1f088ffd930",
+    "path": ["index.html"]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is one self-running IIFE in a page. Its lines 150-503 and 594-762 (utilities, the painted street, the blur fallback, the drop sprite, the water simulation, the clear-map, both shaders and the GL setup) sit verbatim inside inicia(), called from mount(el, opts); the page chrome (.frame, .sill, .hud, .links, #cursor and the hint copy) is not carried as markup.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The page labels are upstream's demo copy about itself; snippet.html carries the section's own copy instead, and style.css redraws the window casing and sill as the section's own CSS.",
+      "kind": "seam"
+    },
+    {
+      "what": "The glass is sized from el.clientWidth and el.clientHeight instead of window.innerWidth and innerHeight, a ResizeObserver on the section replaces the window resize listener (same 200 ms debounce and same 30 percent height deadband), and the pointer helpers read e.clientX and e.clientY minus the section's getBoundingClientRect instead of scaling client coordinates by the window. The pointer, and the blur listener that cancels a stroke, are bound to the section rather than to window and document.",
+      "why": "Seam. Upstream's px and py are the identity while the glass IS the window, so this is the same conversion measured against the right box. Rain density is already normalised per CSS pixel of area (AREA(), calibrated to 1608x926) and the street is painted at a scale of h/1000, so a section gets upstream's density and upstream's proportions rather than a cropped or crowded version of them.",
+      "kind": "seam"
+    },
+    {
+      "what": "The whole Web Audio layer is dropped: initAudio, the pink-noise buffer, the rain bed, the wiping band-pass, tap() and thunder() and the M key that muted them. tap() and thunder() remain as empty functions so the calls to them inside the verbatim block are left exactly as upstream wrote them, and the tapBudget accounting and wipeSpeed gain tracking in the frame loop go with the sound they fed.",
+      "why": "Seam. A library section a site-building agent drops into a client page must not synthesise rain and thunder, and a section does not own the keyboard. Keeping the two call sites as no-ops is what keeps the simulation code byte-identical to upstream instead of editing spawnDrop and the lightning block.",
+      "kind": "seam"
+    },
+    {
+      "what": "The R and H keys are dropped with M, along with the custom cursor (#cursor, its two hand SVGs, the tilt tracking and the body.down / body.away / body.touch classes that drove them) and the first-wipe hint.",
+      "why": "Seam. All three are page chrome for a single-purpose demo. The cursor is position: fixed against the viewport and hides the real pointer document-wide, which a section embedded in a page has no business doing; style.css uses the grab and grabbing cursors over the canvas instead.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's test hooks are dropped: window.__rain (its drop and drip counts, scripted wipe, blurTest and stats), the window.__ff flash override read every frame, and the ?softblur query-string switch that forced the hand-written gaussian.",
+      "why": "Seam. They are a measurement harness, not the effect, and a library section must not change behaviour because the host page happens to carry ?softblur in its URL. The Safari feature detection that picks softBlur is kept; only the override is gone.",
+      "kind": "seam"
+    },
+    {
+      "what": "The context is requested with failIfMajorPerformanceCaveat: true. A null context, or a shader that throws while compiling, loses the context and returns the section to its CSS rest instead of appending an error message to document.body. resize() also returns false on a zero-sized box and mount() returns the resting handle rather than dividing by it.",
+      "why": "The repo contract. A per-frame bead step plus three canvas blur passes on a software rasteriser is worse than the resting pane under it. A zero box is what a section gets inside display: none, and VW or VH of zero reaches makeLayers as a zero-width canvas.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns at once and nothing starts. Upstream has no reduced-motion path.",
+      "why": "The repo contract. The whole subject is water moving down a pane and fog closing over a stroke; a frozen frame of it is not an honest still, so the CSS resting state is the reduced-motion picture.",
+      "kind": "ours"
+    },
+    {
+      "what": "An IntersectionObserver stops the requestAnimationFrame loop while the section is off screen and restarts it when it returns. data-fx-live is set only after the first frame has been drawn to the canvas.",
+      "why": "Ours. Upstream owns the whole window, so it is always on screen; a section below the fold is not, and the bead step and the clear-map sweep run over every cell every frame. The flag waits for a real frame so the resting state never fades out from under an empty canvas.",
+      "kind": "ours"
+    },
+    {
+      "what": "RATE, DECAY and BRUSH are read from the rain, refog and brush options, defaulting to upstream's 1.2958, 0.15 and 36, and update() can change them live. A value that is not positive falls back to upstream's.",
+      "why": "Seam. Three of upstream's own constants surfaced as knobs with upstream's defaults, so an unset option renders exactly upstream. The positive guard is there because a zero rate divides by zero in the bead cap and a zero brush gives stampClear a zero radius to normalise the falloff by.",
+      "kind": "seam"
+    }
+  ]
+}

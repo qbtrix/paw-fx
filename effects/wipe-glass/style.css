@@ -1,0 +1,255 @@
+/* wipe-glass: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, under reduced motion (where index.js never
+   starts the simulation), or after a refused WebGL2 context sends mount() back
+   to rest, this is what a visitor sees.
+
+   The live effect is a fogged pane onto a rainy street, so the resting layer is
+   that pane before anyone has touched it: upstream's own ground colour
+   (#040507), its sky ramp down through #0b1020 and #1d1c2c to the warm
+   #43302f band at the horizon, the sodium-orange street lamps it repeats every
+   .21 of the width, its three neon signs in the colours it names
+   (255,61,154 / 55,224,255 / 255,154,60), and over all of it the milky
+   condensation the shader mixes in, thicker toward the cold bottom of the
+   glass. Two soft diagonal streaks sit where a hand has already been, which is
+   the one thing the still has to say: this surface is wipeable.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-wipe__rest    the resting pane, covered once the canvas paints
+     -1  <canvas>          inserted by index.js
+      0  .fx-wipe__frame   the window bevel and sill, over whichever layer shows
+      0  .fx-wipe__scrim   legibility wash
+      1  .fx-wipe__inner   the copy */
+.fx-wipe {
+  --fx-bg: #040507;
+  --fx-lamp: #ffaf5f;
+  --fx-neon: #ff3d9a;
+  --fx-cool: #37e0ff;
+  --fx-frame: #16120e;
+  --fx-ink: #f2ece2;
+  --fx-muted: #d6cec2;
+  --fx-scrim: 0.86;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows the viewport by exactly
+     its own padding. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The resting pane, painted from the top down: two wipe streaks, the neon
+   signs, the lamp row, the fog veil, the wet street, then the sky ramp. The
+   streaks are listed first so they sit above the fog -- a cleared patch is a
+   hole in the condensation, not a highlight on top of it. */
+.fx-wipe__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(38% 20% at 34% 46%, color-mix(in oklab, var(--fx-lamp) 16%, transparent), transparent 70%),
+    radial-gradient(26% 13% at 62% 60%, color-mix(in oklab, var(--fx-cool) 12%, transparent), transparent 72%),
+    radial-gradient(3% 2% at 18% 50%, color-mix(in oklab, var(--fx-neon) 70%, transparent), transparent 70%),
+    radial-gradient(3% 2% at 70% 45%, color-mix(in oklab, var(--fx-cool) 60%, transparent), transparent 70%),
+    radial-gradient(2% 4% at 90% 56%, color-mix(in oklab, var(--fx-lamp) 60%, transparent), transparent 70%),
+    radial-gradient(7% 9% at 9.5% 49%, color-mix(in oklab, var(--fx-lamp) 44%, transparent), transparent 68%),
+    radial-gradient(7% 9% at 30.5% 49%, color-mix(in oklab, var(--fx-lamp) 44%, transparent), transparent 68%),
+    radial-gradient(7% 9% at 51.5% 49%, color-mix(in oklab, var(--fx-lamp) 44%, transparent), transparent 68%),
+    radial-gradient(7% 9% at 72.5% 49%, color-mix(in oklab, var(--fx-lamp) 44%, transparent), transparent 68%),
+    radial-gradient(7% 9% at 93.5% 49%, color-mix(in oklab, var(--fx-lamp) 44%, transparent), transparent 68%),
+    linear-gradient(180deg, rgba(20, 22, 26, .52) 0%, rgba(24, 26, 30, .62) 58%, rgba(30, 31, 34, .76) 100%),
+    linear-gradient(180deg, rgba(255, 150, 90, .10) 75.5%, rgba(0, 0, 0, 0) 100%),
+    linear-gradient(180deg, #04060c 0%, #0b1020 30%, #1d1c2c 52%, #43302f 63%, #1a1213 69%, #0d0b0d 76%, #060608 100%);
+  transition: opacity 600ms ease;
+}
+
+/* Where a hand has been: the fog is gone, so the street behind reads sharper
+   and warmer. Two strokes at different angles, because one alone reads as a
+   lens flare rather than as something a person did. */
+.fx-wipe__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(107deg, transparent 22%, rgba(255, 196, 132, .12) 30%, rgba(255, 210, 160, .16) 38%, transparent 47%),
+    linear-gradient(78deg, transparent 54%, rgba(214, 226, 240, .07) 62%, transparent 70%);
+}
+
+/* index.js sets data-fx-live only once a frame is on the canvas. Every failure
+   path leaves it unset and destroy() removes it, so this rule is also the
+   proof that teardown worked. */
+.fx-wipe[data-fx-live] .fx-wipe__rest {
+  opacity: 0;
+}
+
+/* grab, not crosshair: the gesture is dragging a hand across a surface. */
+.fx-wipe__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.fx-wipe:active .fx-wipe__canvas {
+  cursor: grabbing;
+}
+
+/* Upstream's .frame and .sill, thinned to a section's proportions: a painted
+   casing, a hard inner reveal line, the dark that gathers in the corners of a
+   window at night, and a deeper board along the bottom. It sits over the
+   canvas so the glass runs under it the way real glass runs under a frame. */
+.fx-wipe__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border: clamp(8px, 1.1vw, 16px) solid var(--fx-frame);
+  border-bottom-width: clamp(16px, 2.4vw, 34px);
+  box-sizing: border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 200, .07),
+    inset 0 0 0 4px #0a0806,
+    inset 0 0 0 5px rgba(255, 255, 255, .035),
+    inset 0 10px 30px 6px rgba(0, 0, 0, .55),
+    inset 0 -6px 40px 10px rgba(0, 0, 0, .5);
+}
+
+.fx-wipe__frame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(16px, 2.4vw, 34px);
+  background: linear-gradient(180deg, #2a2119 0%, #1b1510 30%, #120e0a 100%);
+  box-shadow: 0 -1px 0 rgba(255, 225, 190, .12), 0 -8px 18px rgba(0, 0, 0, .5);
+}
+
+/* The copy carries its own wash, held flat across the content column before
+   easing out so it does not draw a visible ellipse across the hero.
+   MEASUREMENT PENDING -- replace this block with the recorded numbers. */
+.fx-wipe__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    106% 94% at 50% 50%,
+    color-mix(in oklab, var(--fx-bg) 88%, transparent) 0%,
+    color-mix(in oklab, var(--fx-bg) 88%, transparent) 38%,
+    color-mix(in oklab, var(--fx-bg) 60%, transparent) 55%,
+    color-mix(in oklab, var(--fx-bg) 32%, transparent) 71%,
+    color-mix(in oklab, var(--fx-bg) 10%, transparent) 87%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+/* Pointer events on the copy bubble up to the section, where index.js
+   listens, so a stroke across the headline still clears the glass. */
+.fx-wipe__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 58rem;
+  text-align: center;
+}
+
+.fx-wipe__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-wipe__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-lamp);
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--fx-lamp) 60%, transparent);
+}
+
+.fx-wipe__title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.3rem, 6.4vw, 4.9rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, var(--fx-bg) 80%, transparent);
+}
+
+.fx-wipe__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.24rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-wipe__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-wipe__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-wipe__cta--primary {
+  background: var(--fx-ink);
+  color: #17110c;
+}
+
+.fx-wipe__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-wipe__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-wipe__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-wipe__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
