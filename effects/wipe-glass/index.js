@@ -769,7 +769,7 @@ export const meta = {
   needs: [],
   license: "MIT",
   options: {
-    rain: { type: "number", default: 1.2958, min: 0.2, max: 3, description: "Spawn and cap multiplier for the rain on the outside of the pane (upstream RATE, calibrated so the reference 1608x926 view reproduces exactly). Higher is a heavier storm: more beads, more runners, more of the street hidden." },
+    rain: { type: "number", default: 1.2958, min: 0, max: 3, step: 0.012958, description: "Spawn and cap multiplier for the rain on the outside of the pane (upstream RATE, calibrated so the reference 1608x926 view reproduces exactly). Higher is a heavier storm: more beads, more runners, more of the street hidden. Zero is not an off switch: a non-positive value falls back to upstream's, because a zero rate empties the bead cap." },
     refog: { type: "number", default: 0.15, min: 0.02, max: 1, description: "How fast a wiped patch steams back up, in clear-map units per second (upstream DECAY). At the default a stroke stays readable for several seconds; at 1 it closes almost as fast as you draw it." },
     brush: { type: "number", default: 36, min: 8, max: 120, description: "Radius of the wipe, in CSS pixels (upstream BRUSH). This is the size of the hand on the glass, so it also sets how far out the drips are thrown from a stroke." },
   },

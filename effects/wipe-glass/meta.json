@@ -9,9 +9,10 @@
     "rain": {
       "type": "number",
       "default": 1.2958,
-      "min": 0.2,
+      "min": 0,
       "max": 3,
-      "description": "Spawn and cap multiplier for the rain on the outside of the pane (upstream RATE, calibrated so the reference 1608x926 view reproduces exactly). Higher is a heavier storm: more beads, more runners, more of the street hidden."
+      "step": 0.012958,
+      "description": "Spawn and cap multiplier for the rain on the outside of the pane (upstream RATE, calibrated so the reference 1608x926 view reproduces exactly). Higher is a heavier storm: more beads, more runners, more of the street hidden. Zero is not an off switch: a non-positive value falls back to upstream's, because a zero rate empties the bead cap."
     },
     "refog": {
       "type": "number",
