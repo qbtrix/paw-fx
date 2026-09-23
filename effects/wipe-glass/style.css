@@ -27,7 +27,7 @@
   --fx-frame: #16120e;
   --fx-ink: #f2ece2;
   --fx-muted: #d6cec2;
-  --fx-scrim: 0.86;
+  --fx-scrim: 0.78;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -137,7 +137,31 @@
 
 /* The copy carries its own wash, held flat across the content column before
    easing out so it does not draw a visible ellipse across the hero.
-   MEASUREMENT PENDING -- replace this block with the recorded numbers. */
+
+   MEASURED at 0.78. Copy hidden for each capture, boxes recorded before hiding,
+   ink painted to a 2D canvas, worst ratio between each run's ink and any pixel
+   under its box at 1280x720. One page LOAD per frame, because the composite
+   does not advance between screenshots inside one session.
+
+   The dangerous frame is not the rain and it is not the lightning: it is a
+   visitor clearing the glass straight under the copy, because the fog is the
+   only thing holding the lit city off the lede.
+
+     state                       eyebrow  title   lede  ghost CTA
+     live, 1s / 4s / 9s / 14s       9.79   9.83   9.11      14.85
+                                   10.46   8.87   8.49      13.57
+                                   11.29   8.94   8.77      11.83
+                                   10.87   9.24   8.06      12.59
+     three strokes through it      11.28   6.46   4.87      11.68
+     the same, 7s in               10.07   6.46   4.94      13.32
+     the whole band scrubbed        8.77   6.46   5.15       7.56
+
+   Floor is 4.5:1; worst case is the lede at 4.87, on cleared street at
+   rgb(96,73,59). Scrubbing the whole band measures no worse than three
+   strokes: one pass already saturates the clear map at HOLD, so there is no
+   clearer state to reach. `refog` is the knob that moves this -- a slower
+   refog leaves the street bare for longer under the copy -- so re-measure
+   after lowering it. */
 .fx-wipe__scrim {
   position: absolute;
   inset: 0;
