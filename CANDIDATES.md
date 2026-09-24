@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-23**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-24**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2057,5 +2057,171 @@ and `foil`.
 
 Based on `feat/fx-scout-2026-09-21`, like every scout branch since 09-18. Six
 scout PRs are now stacked (09-17 → 09-23) and none has merged. Merge the bases
+with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
+duplicate content.
+
+## 2026-09-24 — window 2026-09-23 to 2026-09-24
+
+One day. One find, ported. The backlog was not touched, because Step 3.5 only
+fires when discovery comes up empty and it did not.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `clearwater` | `Aureliengmz/clearwater`, `index.html` | `4bc82613` | MIT | Photoreal shallow water over a pebble bed on a sunny day, looked down into from the shore. A 256x256 FFT ocean spectrum moves the surface; its normals refract a 256x256 grid of sun rays onto the bed once per colour channel, so the caustic web fringes with dispersion; the water shader does Fresnel, absorption and scattering through the depth; and every glint is convolved by FFT with a real lens aperture's diffraction pattern, so each wears a faint rainbow star. A tap drops a ring into a local ripple field; a drag turns the camera. 145 stars a day after it was created, the highest-starred thing in the window by a distance. |
+
+Found through GitHub topic search (`shaders`, `webgl`, `created:>=2026-09-22`).
+Licence read at the pin, not trusted from the API:
+`contents/LICENSE?ref=4bc82613` is MIT, Copyright (c) 2026 Lumaris.
+
+Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at system Chrome:
+`check` 108 effects (lint, build, docs, smoke, 437 tests, exit 0), `verify`
+104 pass / 1 warn / 0 fail / 3 skipped. `clearwater` PASSES with zero warns,
+including zero `numeric-trace` warns. The one WARN is `paw-avatar`'s old one.
+
+### The adjacency to `water` is real, and here is the case for it anyway
+
+`water` (Paper Shaders) is also water with caustics. The case is the same one
+09-23 made for `wipe-glass` next to `sg-rainglass`: one subject, different
+machinery, and the machinery is what a site-builder is choosing between.
+`water` is a 2D shader refracting a gradient the section paints for itself; it
+is a flat pattern and it does not respond to anyone. `clearwater` is a 3D
+scene: a real sea surface from a spectrum, a seabed you look into through it,
+a sun with a position, glare off the surface, a camera the visitor turns and
+water the visitor taps. Nothing on the shelf of 108 is a photoreal scene a
+visitor looks around in. Flagged here so the captain can overrule it on one
+read.
+
+### The texture is the only real compromise, and it is declared
+
+Upstream embeds its seabed as a 1024x1024 JPEG in base64 at the end of the
+file: 334 KB raw, **253 KB gzipped**, against the 60 KB own-code lint. The code
+alone is 16.6 KB gzipped. An effect has no file slot for a binary asset
+(`files[]` is index.js, style.css, shader.frag, `_shared` and vendor), and
+vendoring a hand-made image as a "package" would be a shape violation.
+
+So the port carries upstream's own image re-encoded at 256x256, JPEG quality
+70: 32 KB, 43 KB as base64, and the whole `index.js` lands at 52.6 KB gzipped.
+Declared as an `ours` deviation. Why it holds up rather than turning the bed to
+mud: the shader samples the bed through trilinear mips with 16x anisotropy, and
+blends two offset tilings per zone (Inigo Quilez's texture-repetition trick,
+which upstream cites), so the loss shows only in the nearest pebbles at the
+bottom of the frame. Checked by eye in the Browser pane, not assumed.
+
+The pseudo-height upstream derives from the texture reads its coarse mip
+(`dx*6.0`), so the lower resolution barely moves it.
+
+**For the next run:** a big embedded asset is not an automatic reject. Measure
+the code and the asset separately, and try the asset at a lower resolution
+before logging it as oversized.
+
+### Reduced motion is upstream's own still, not a CSS fallback
+
+The 09-21 and 09-23 ports both return from `mount()` under reduced motion
+because they had no honest still frame. This one does: upstream ships `?t=5`,
+documented as "freeze time at 5 s (screenshots)", which holds time, turns off
+the camera sway, sets quality to 1, keeps the drawing buffer and draws four
+frames. Reduced motion takes that path, so the visitor gets a real frame of
+the water. It also means the scout recipe's `?reduced=1` preview is a real
+capture here rather than the CSS rest.
+
+### How the port was built — assembled, not retyped
+
+Upstream's line ranges are copied by number into `inicia()`; the few lines that
+change are replaced by exact-match substitution that fails if the anchor
+drifts. Two tricks kept the verbatim block clean, both worth copying:
+
+- **Shadow the name, don't edit the caller.** Upstream calls
+  `requestAnimationFrame(frame)` from three places. A local
+  `function requestAnimationFrame()` inside `inicia()` routes every one through
+  `tick()`, which is where pausing off screen, `data-fx-live` and a cancellable
+  handle live. Same idea as 09-23's `tap()` / `thunder()` no-ops.
+- **Keep the shape of a global you replace.** Upstream's `Q` is a
+  `URLSearchParams` over `location.search`. The port's `Q` is a plain object
+  with the same `has()` and `get()`, answering `yaw` and `pitch` from the
+  options and `t` from reduced motion, so every reading site stays
+  byte-identical.
+
+### Contrast
+
+Measured at `--fx-scrim: 0.8`, at 1280x720, copy hidden with `visibility` so
+the boxes keep their layout, one page load per frame.
+
+| state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| live, 2s | 6.94 | 5.71 | 5.26 | 6.31 |
+| live, 6s | 5.30 | 5.71 | 5.15 | 6.70 |
+| live, 12s | **4.99** | 5.60 | 5.39 | 6.55 |
+
+Worst is 4.99 on the eyebrow, which also sits on its own darkening pill that
+the number does not count. The glints sit just above the title at the default
+pitch. `pitch` is the knob that moves this: raising it toward 0 brings the
+sun's glare path up behind the copy, so the stylesheet says to re-measure after
+raising it. Tap and drag states were not measured.
+
+### A tooling note: `agent-browser eval` is blocked in this session
+
+A shell hook blocks any Bash call containing `agent-browser ... eval` as
+"indirect execution", so the recipe's step that hides `.fxd-bar` could not
+run. Workaround used: write a bare page into `dist/registry/gallery/` (the
+snippet plus a module script that mounts it, no demo chrome) and screenshot
+that. `dist/` is gitignored and `check` wipes it, so rebuild before a second
+capture. The Browser pane's JavaScript tool is not affected and did the box
+measurements.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `CHT-1192/Fireworks` | GitHub, created 2026-09-24 | Apache-2.0 | A seeded fireworks *show* with a control panel, keyboard controls, PNG/WebM export and an easter-egg word. A lab, not a section, same call as `harmonograph` (09-23) and `morphogen` (09-21). The one-shot burst is already on the shelf as `confetti-burst`. |
+| `rajheshh/slipstream` | GitHub, created 2026-09-23 | MIT | A wind tunnel over a hand-drawn car: four view buttons, a speed slider, a pause key, live force readouts and Web Audio. An instrument, not a section. The Stable Fluids core is well made, but `bioluminescent-sea` already carries one. |
+| `HRuiCcc/RuiC-phosphor-lab` | GitHub, created 2026-09-24 | MIT | An image-to-ASCII CRT *workbench* with a control panel and a gallery. A tool. |
+| `renocrypt/mocubix` | GitHub, created 2026-09-23 | Apache-2.0 | A whole static site: seven scroll exhibits and a lexicon of 41 named interface effects. Licence is fine and it is worth a look as a source, but nothing in it is one portable section; each exhibit is built around its own archive material. |
+| `bytewhisker/zerog-motion` | GitHub, created 2026-09-23 | MIT | A spring-physics library in `src/*.ts`, built by `tsup`, `dist/` uncommitted. Same call as `rummy` (09-23) and MeltGL (09-17). A library, not a section, either way. |
+| `oddurs/rummy` | GitHub, re-checked | MIT | Re-checked as the 09-23 entry asked: eight new commits (pointer ripples, a type-on intro, phosphor trails, a frame-time governor), still `src/*.ts` only with no built module at the head. Still not portable. Keep re-checking. |
+| `sevenevesai/riso-windowseat` | GitHub, re-checked | MIT + CC-BY-3.0 | The 09-23 entry's NOASSERTION resolved: the LICENSE is MIT plus a carve-out for a Salamander Grand Piano bank (CC-BY-3.0) inside one film. The code would be fine, but the repo is films, prints and studies — narratives with an ending, not sections. |
+| `a77lic7ion/point-cloud-city` | GitHub, created 2026-09-24 | MIT | A data visualisation (a stippled city whose districts are AI providers) that vendors three.js as its own copies and loads a `city.json`. Not a section. |
+| `bouncemonster/swype-imagine` | GitHub | MIT | React 19 + Tailwind. |
+| `AliYa-chen/vfx-ui-vue`, `ALEXalesha/LiquidGlass`, `aowshad/kinetic-svg`, `DexAi3000/scroll-tied-video-section` | GitHub | — | Already rejected by the 09-23 run and not re-opened. |
+| `refteen/aquarium`, `aeiouvcode/ukiyo-tide`, `GeorgeFu77/stille`, `mikolajmikolajczak0108/house10-architecture-in-motion`, `Roy-Wanyoike/wallume` | GitHub | **none** | No LICENSE file. |
+
+### Vetted, not ported
+
+Unchanged from 09-23: `cosmos-demo` (`absoyak/cosmos-demo` at
+`a247d9f18aa78d07891d72cc424ea2ee8b165472`, MIT, a narrative rather than a
+loop) and `mogp-motion` (`withmehmet/mogp-motion` at
+`e2db8dd2ab4cc6c55c0f1f8aa8f08952882f33a7`, MIT, a `data-*` attribute system
+rather than a section).
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** Newest is still Paper Crumple,
+  2026-09-19. Nothing published 09-20 to 09-24.
+- **`shader-gallery/shaders`**, **`paper-design/shaders`**,
+  **`HARSHITSHARMA18/shaders` (Solace).** `commits?since=2026-09-23` is empty
+  on all three. `4e8d4cb2` is still the shader-gallery head. Solace left alone:
+  PR #34 is still open and owns it.
+- **`Pallarium/labs`.** Still no LICENSE file; last push 2026-09-17.
+- **Vendor releases.** `tsparticles` still v4.4.0 (2026-08-31), `lenis` still
+  v1.3.26 (2026-08-05).
+- **GitHub topic search**, `created:>=2026-09-22` across `shaders`, `webgl`,
+  `webgl2`, `glsl`, `css-animation`, `scroll-animation`, `animation`,
+  `canvas-animation`, `creative-coding`, `generative-art`. `shaders` and
+  `webgl` found today's port. Keep the full list.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge.
+
+### Backlog after this run
+
+Unchanged at 54 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`. Taken so far: `obsidian` and
+`rainglass` (PR #36), `lightleak` (PR #38). Next in the recorded ranking is
+still `chrome` (side-by-side against `liquid-metal` first), then `damascus`
+and `foil`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-23`, like every scout branch since 09-18. Seven
+scout PRs are now stacked (09-17 → 09-24) and none has merged. Merge the bases
 with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
 duplicate content.

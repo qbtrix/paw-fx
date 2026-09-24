@@ -87,9 +87,23 @@
 }
 
 /* The copy carries its own wash, held flat across the content column before
-   easing out so it does not draw a visible ellipse across the hero. Not
-   measured yet at the time this comment was written; see the value below and
-   the scout log for the contrast table. */
+   easing out so it does not draw a visible ellipse across the hero.
+
+   MEASURED at 0.8, at 1280x720 with the default yaw and pitch. Copy hidden
+   with visibility (so the boxes keep their layout), boxes recorded from the
+   same page, worst ratio between each run's computed ink and any pixel under
+   its box. One page LOAD per frame.
+
+     state          eyebrow  title   lede  ghost CTA
+     live, 2s          6.94   5.71   5.26       6.31
+     live, 6s          5.30   5.71   5.15       6.70
+     live, 12s         4.99   5.60   5.39       6.55
+
+   Floor is 4.5:1; worst case is the eyebrow at 4.99, and the eyebrow and the
+   ghost CTA also sit on their own darkening pill, which this does not count.
+   The glints sit just above the title at the default pitch. `pitch` is the
+   knob that moves this: raising it toward 0 brings the sun's glare path up
+   into the frame and behind the copy, so re-measure after raising it. */
 .fx-clearwater__scrim {
   position: absolute;
   inset: 0;

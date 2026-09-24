@@ -34,14 +34,16 @@
 // rainbow star. A tap drops a ring into a local wave-equation ripple field; a
 // drag turns the camera.
 //
-// Upstream lines 59-60, 64-342, 349-790 and 792-916 sit inside inicia() below
-// verbatim, at upstream's own column, so a diff against the pinned file reads
-// clean. Inside that block exactly six lines differ, each a seam listed in
-// meta.json.deviations: the context request, the pebble texture's size and
-// source, the canvas size in alloc(), the drag sensitivity, the tap's screen
-// position, and the frame counter of the frozen-time path. Everything after
-// "paw-fx seams" replaces upstream's error overlay, the window resize
-// listener, the hint pill, the debug readout and the unconditional start.
+// Upstream lines 59-60, 64-347, 349-790, 792-834, 839-856, 858-869 and
+// 871-916 sit inside inicia() below verbatim, at upstream's own column, so a
+// diff against the pinned file reads clean. The lines inside that block that
+// differ are each a seam listed in meta.json.deviations: the context request
+// (plus one line keeping its handle for the catch), the pebble texture's size
+// and source, the canvas size in alloc(), the drag sensitivity, the tap's
+// screen position, the frame counter of the frozen-time path, the debug
+// readout (null) and the hint pill (an empty hideHint). Everything after
+// "paw-fx seams" replaces upstream's window resize listener and its
+// unconditional start.
 
 const DEFAULTS = { yaw: 0, pitch: -0.72 };
 const fin = (v, d) => (Number.isFinite(+v) ? +v : d);
