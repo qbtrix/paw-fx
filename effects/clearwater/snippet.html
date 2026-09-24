@@ -1,0 +1,21 @@
+<!-- clearwater section. Finished at rest with CSS alone: .fx-clearwater__rest
+     is sunlit shallows over a pebble bed with a caustic web on it, and
+     index.js only covers it once the canvas has drawn a real frame. The _fx
+     paths are root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The
+     decorative layers carry aria-hidden; the copy is the only thing a screen
+     reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/clearwater/style.css">
+<section class="fx-clearwater" data-fx="clearwater">
+  <div class="fx-clearwater__rest" aria-hidden="true"></div>
+  <div class="fx-clearwater__scrim" aria-hidden="true"></div>
+  <div class="fx-clearwater__inner">
+    <p class="fx-clearwater__eyebrow"><span class="fx-clearwater__dot" aria-hidden="true"></span>Low tide</p>
+    <h1 class="fx-clearwater__title">Water clear enough to count the stones.</h1>
+    <p class="fx-clearwater__lede">Swap this for your own words. Tap the water and a ring spreads out through the light on the bed; drag to look along the shore.</p>
+    <div class="fx-clearwater__actions">
+      <a class="fx-clearwater__cta fx-clearwater__cta--primary" href="#">Book a stay</a>
+      <a class="fx-clearwater__cta fx-clearwater__cta--ghost" href="#">See the bay</a>
+    </div>
+  </div>
+</section>
