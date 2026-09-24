@@ -2123,8 +2123,9 @@ because they had no honest still frame. This one does: upstream ships `?t=5`,
 documented as "freeze time at 5 s (screenshots)", which holds time, turns off
 the camera sway, sets quality to 1, keeps the drawing buffer and draws four
 frames. Reduced motion takes that path, so the visitor gets a real frame of
-the water. It also means the scout recipe's `?reduced=1` preview is a real
-capture here rather than the CSS rest.
+the water, and the scout recipe's `?reduced=1` would capture a real frame
+here rather than the CSS rest. (The committed `preview.png` was shot live from
+a bare page instead; see the tooling note below.)
 
 ### How the port was built — assembled, not retyped
 
