@@ -203,6 +203,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | gobo-light | MIT | [thevangelist/tinseltown](https://github.com/thevangelist/tinseltown) `e31bfc8`, `src/tinseltown.js` + `src/shader.js` + `src/optics.js` + `src/options.js` + `src/cookies.js` |
 | bioluminescent-sea | MIT | [Raflael/ardentia](https://github.com/Raflael/ardentia) `7e1a155`, `index.html` |
 | wipe-glass | MIT | [Hixly/rain-on-glass](https://github.com/Hixly/rain-on-glass) `4d7bf1f`, `index.html` |
+| clearwater | MIT | [Aureliengmz/clearwater](https://github.com/Aureliengmz/clearwater) `4bc8261`, `index.html` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
