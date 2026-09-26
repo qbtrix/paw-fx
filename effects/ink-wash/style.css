@@ -1,0 +1,228 @@
+/* ink-wash: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, under reduced motion (where index.js never
+   starts the solver), or after a refused WebGL2 context sends mount() back to
+   rest, this is what a visitor sees.
+
+   The live effect is a sheet of rice paper an invisible hand paints a
+   landscape onto, so the resting layer is that sheet with a landscape already
+   on it, laid out the way upstream's generator lays one out: pale far hills
+   across the middle, the main peak left of centre and darkest, a second peak
+   to the right, a near bank bottom left, and a cinnabar sun high on the right.
+   The colours are upstream's light theme: paper #ECE8DD and #DCD5C4, ink
+   #17181B, cinnabar #B03A2A.
+
+   index.js reads --fx-paper, --fx-paper-2, --fx-ink and --fx-cinnabar off
+   this section to colour the simulation, and it only parses six-digit hex, so
+   keep them in that form when restyling.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-ink__rest    the resting sheet, covered once the canvas paints
+     -1  <canvas>         inserted by index.js
+      0  .fx-ink__ghost   upstream's brush-position ring, inserted by index.js
+      1  .fx-ink__inner   the copy, on its own paper-coloured veil */
+.fx-ink {
+  --fx-paper: #ece8dd;
+  --fx-paper-2: #dcd5c4;
+  --fx-ink: #17181b;
+  --fx-cinnabar: #b03a2a;
+  --fx-muted: #57544c;
+  --fx-veil: 0.88;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows the viewport by exactly
+     its own padding. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: start;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6.5rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-paper);
+  color: var(--fx-ink);
+  font-family: "Songti SC", "STSong", Georgia, "Times New Roman", serif;
+}
+
+/* The resting sheet, painted front to back: the sun, the near bank, the two
+   peaks, the far hills, then a faint mottle of the paper itself. */
+.fx-ink__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(4.2% 7.4% at 73% 21%, color-mix(in oklab, var(--fx-cinnabar) 88%, transparent) 0%, color-mix(in oklab, var(--fx-cinnabar) 80%, transparent) 70%, transparent 100%),
+    radial-gradient(22% 16% at 10% 100%, color-mix(in oklab, var(--fx-ink) 62%, transparent), transparent 72%),
+    radial-gradient(9% 46% at 35% 76%, color-mix(in oklab, var(--fx-ink) 58%, transparent), transparent 70%),
+    radial-gradient(7% 30% at 45% 82%, color-mix(in oklab, var(--fx-ink) 40%, transparent), transparent 70%),
+    radial-gradient(7% 26% at 25% 84%, color-mix(in oklab, var(--fx-ink) 36%, transparent), transparent 70%),
+    radial-gradient(8% 28% at 74% 86%, color-mix(in oklab, var(--fx-ink) 38%, transparent), transparent 70%),
+    radial-gradient(34% 16% at 20% 62%, color-mix(in oklab, var(--fx-ink) 12%, transparent), transparent 70%),
+    radial-gradient(30% 14% at 62% 60%, color-mix(in oklab, var(--fx-ink) 10%, transparent), transparent 70%),
+    radial-gradient(28% 13% at 92% 63%, color-mix(in oklab, var(--fx-ink) 11%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 70% 30%, color-mix(in oklab, var(--fx-paper-2) 70%, transparent), transparent 80%),
+    radial-gradient(50% 50% at 50% 50%, var(--fx-paper), var(--fx-paper-2) 140%);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live only once a frame is on the canvas. Every failure
+   path leaves it unset and destroy() removes it, so this rule is also the
+   proof that teardown worked. */
+.fx-ink[data-fx-live] .fx-ink__rest {
+  opacity: 0;
+}
+
+/* crosshair is upstream's own cursor for the brush. touch-action: none is
+   upstream's too; it is what lets a finger paint instead of scrolling. */
+.fx-ink__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* Upstream's .ghost, which follows the invisible hand. index.js moves it with
+   a transform measured from the canvas's top-left, so it sits at the section's
+   top-left rather than the viewport's. */
+.fx-ink__ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 1px solid var(--fx-ink);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.fx-ink__ghost.on {
+  opacity: 0.4;
+}
+
+/* The copy sits on a paper-coloured veil, not the dark scrim the other heroes
+   use: the copy is dark ink on light paper, and what threatens it is ink. A
+   corner wash is not enough here, because the generator fills the left half
+   of the sheet (main peak, near bank, pines) and a visitor can drag a stroke
+   straight through the copy. So the veil is upstream's own toolbar idiom --
+   rgba(236,232,221,.8) over a 10px backdrop blur, a hairline border, 3px
+   corners -- as a panel behind the copy block.
+
+   MEASURED at 0.88. Text hidden for each capture (the panel kept, since it
+   is the legibility layer), boxes recorded with it visible, worst ratio
+   between each run's ink and any pixel under its box at 1280x720, one page
+   load per frame, each after the hand finished painting. Strokes are four
+   slow drags across the copy block, which is the dangerous frame: slow is
+   where the brush lays its heaviest ink.
+
+     seed  state        eyebrow  title   lede  ghost CTA
+        7  painted         6.13  12.47   5.16      12.47
+        7  + strokes       6.07  11.88   5.06      11.64
+       21  painted         6.11  12.35   5.16      12.35
+       21  + strokes       6.07  11.88   5.01      11.76
+      300  painted         6.11  12.47   5.21      12.97
+      300  + strokes       6.07  11.77   5.06      11.76
+      512  + strokes, 6s   6.07  11.88   5.06      11.76
+
+   Floor is 4.5:1; worst case is the lede at 5.01, on a blurred stroke at
+   rgb(214,210,201). The lede is --fx-muted (upstream's --ink-soft), so it
+   is the run with the least margin: lowering --fx-veil or lightening
+   --fx-muted eats it, so re-measure after either. Without the panel the
+   lede measured 1.0 to 1.4 on the same seeds, so it is not optional. */
+.fx-ink__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 29rem;
+  padding: clamp(1.1rem, 2.2vw, 1.9rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 14%, transparent);
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--fx-paper) calc(var(--fx-veil) * 100%), transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.fx-ink__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-ink__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 1px;
+  background: var(--fx-cinnabar);
+}
+
+.fx-ink__title {
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.fx-ink__lede {
+  margin: 1.2rem 0 0;
+  max-width: 26rem;
+  font-size: clamp(0.98rem, 1.4vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-ink__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+.fx-ink__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-ink__cta--primary {
+  background: var(--fx-ink);
+  color: var(--fx-paper);
+}
+
+.fx-ink__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-paper) 70%, transparent);
+  color: var(--fx-ink);
+}
+
+.fx-ink__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-ink__cta--ghost:hover {
+  border-color: color-mix(in oklab, var(--fx-ink) 55%, transparent);
+}
+
+.fx-ink__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
