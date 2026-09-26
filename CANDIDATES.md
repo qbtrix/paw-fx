@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-24**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-26**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2225,4 +2225,192 @@ and `foil`.
 Based on `feat/fx-scout-2026-09-23`, like every scout branch since 09-18. Seven
 scout PRs are now stacked (09-17 → 09-24) and none has merged. Merge the bases
 with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
+duplicate content.
+
+## 2026-09-26 — window 2026-09-24 to 2026-09-26
+
+Two days (there is no 09-25 scout branch). One find, ported. The backlog was not
+touched, because Step 3.5 only fires when discovery comes up empty and it did
+not.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `ink-wash` | `axtonliu/moyun`, `index.html` | `eb488acf` | MIT | A sheet of rice paper an invisible hand paints a Chinese ink landscape onto, stroke by stroke, a moment after it appears: far hills, the main peak's outline, texture strokes and washes, moss dots, pines, ripples, a boat, birds, a cinnabar sun. The ink is simulated, not drawn: a Navier-Stokes solver in WebGL2 carries a four-channel dye (free ink, cinnabar, water, settled ink), water bleeds along procedural paper fibres and evaporates, and dried ink settles. The visitor can paint too: slow strokes wet and heavy, fast ones thin and dry, each stroke one dip of ink that runs out into flying-white. It is the shelf's first light-ground *interactive* hero, and the first where the effect paints a picture rather than a field. Zero dependencies, one 55 KB file upstream. |
+
+Found through GitHub topic search (`webgl`, `creative-coding`,
+`created:>=2026-09-24`), 15 stars at the time. Licence read at the pin, not
+trusted from the API: `LICENSE` at `eb488acf` is MIT, Copyright (c) 2026 Axton
+Liu. Full sha `eb488acf811122bb9a574d87fb148ffa42ed4c23`.
+
+Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at system Chrome:
+`check` 109 effects (lint, build, docs, smoke, 439 tests, exit 0), `verify`
+105 pass / 1 warn / 0 fail / 3 skipped. `ink-wash` PASSES with zero warns,
+including zero `numeric-trace` warns. The one WARN is `paw-avatar`'s old one.
+
+### The adjacency to `sg-suminagashi` is real, and here is the case for it anyway
+
+Same shape as the 09-23 and 09-24 cases. `sg-suminagashi` is also ink on
+paper. It is one fragment shader: procedural marbling rings that drift and
+never respond to anyone. `ink-wash` is a fluid simulation with a brush and a
+landscape generator on top of it. It paints a composition, and it takes the
+visitor's strokes into the same simulated ink. One subject, different
+machinery; flagged so the captain can overrule it on one read.
+
+### Provenance: the "inspired by" line points at published MIT code
+
+A reviewer will see the README's acknowledgement and reach for the LUMEN rule
+(09-17), so it goes here. The README credits Pavel Dobryakov's
+`PavelDoGreat/WebGL-Fluid-Simulation` for "the shader layout" of the solver
+pipeline. That repo is published and MIT, the opposite of LUMEN's case, where
+the claimed source had no published code at all. The solver passes (curl,
+vorticity, divergence, Jacobi pressure, gradient, advection) follow that
+well-known layout, as every WebGL fluid does. The parts that make this effect
+what it is are moyun's own: the four-channel dye, the paper-fibre bleed, the
+evaporation and settling, the brush model with its flying-white cut, and the
+seeded landscape generator. The README also says the whole file was written
+by Claude Opus 5.5 in one session; the 09-23 entry already covered why that
+changes nothing about the gates.
+
+Other checks, all clean: three commits (the code, a README pass, a recording
+fix), an account from 2017 with 411 followers, no Shadertoy idioms (`mainImage`,
+`fragCoord`, `iTime`, `iResolution`, `iMouse`, `iChannel` all absent). The only
+off-site fetch is the Google Fonts link for the poem, which the port drops.
+
+### How the port was built: assembled, not retyped
+
+`index.js` is upstream's lines copied by number into `inicia()`, at upstream's
+own indentation, with five exact-match substitutions that fail if an anchor
+drifts: the theme reader looks at the section and at `--fx-` names, the seed
+can be fixed, the tool is an option. Everything else in those ranges is byte
+for byte. The three proven tricks all came into play:
+
+- **Stub the leaf** (09-23). The guqin is gone, but `ensureAudio()`, `play()`,
+  `note()` and `whoosh()` stay as empty functions, so the brush, the hand and
+  the landscape call them unchanged. Same for `showPoem()`, `stampSeal()` and
+  `hidePoem()`: the poem needed a brush face from Google Fonts.
+- **Shadow the name** (09-24). A local `requestAnimationFrame` inside
+  `inicia()` routes upstream's `frame()` through `pulso()`, where pausing off
+  screen, `data-fx-live` and a cancellable handle live. Do not name it `tick`:
+  upstream already has a `tick` counter in the same scope, and the first build
+  died on the redeclaration.
+- **Keep the shape of a global you replace** (09-24). Upstream looks up its
+  chrome by id. The port's `$` returns the real ghost ring for `'ghost'` and a
+  detached node for everything else, so `setPaintBtn`, the fps readout in
+  `frame()` and the sheet check in `pointerdown` write into nothing and stay
+  verbatim.
+
+One new one: **`fallback()` throws.** Upstream calls it and then `return`s from
+the IIFE on three failure paths (no WebGL2, a shader that will not compile, no
+half-float render targets). Making the one function throw sends all three to
+`mount()`'s catch, which loses the context and returns the resting handle,
+without touching any of the three call sites.
+
+### Contrast is inverted on this one, and a corner wash was not enough
+
+Every earlier port is light copy on a dark effect with a dark scrim. This is
+dark ink copy on light paper, and what threatens it is ink. The first layout
+put the copy top left, the corner upstream leaves empty for its poem, over a
+paper-coloured radial wash from that corner. It failed badly: **lede 1.0 to
+1.4:1, title 2.2 to 3.7:1**. The generator fills the left half of the sheet
+(main peak, near bank, pines), and the wash had faded out by the lede.
+
+The fix is upstream's own toolbar idiom as a panel behind the copy: paper at
+0.88 over a 10 px backdrop blur, hairline border, 3 px corners. The blur is
+what does the work on strokes: a black stroke under the panel reaches the copy
+as a soft grey band.
+
+Measured on four seeds, painted and with four slow drags straight through the
+copy block (slow is where the brush lays its heaviest ink), at 1280x720, text
+hidden with the panel kept, one page load per frame:
+
+| seed | state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|---|
+| 7 | painted | 6.13 | 12.47 | 5.16 | 12.47 |
+| 7 | + strokes | 6.07 | 11.88 | 5.06 | 11.64 |
+| 21 | painted | 6.11 | 12.35 | 5.16 | 12.35 |
+| 21 | + strokes | 6.07 | 11.88 | **5.01** | 11.76 |
+| 300 | painted | 6.11 | 12.47 | 5.21 | 12.97 |
+| 300 | + strokes | 6.07 | 11.77 | 5.06 | 11.76 |
+| 512 | + strokes, 6 s later | 6.07 | 11.88 | 5.06 | 11.76 |
+
+Worst is 5.01 on the lede, which is `--fx-muted` (upstream's `--ink-soft`) and
+so the run with the least margin. The strokes were synthetic `PointerEvent`s
+dispatched on the canvas at 16 ms intervals, which is what a real drag
+started beside the copy and carried across it does under pointer capture.
+
+The `seed` option exists partly for this. Upstream's generator is already
+seeded; only its first seed is random. Fixing it made the table reproducible.
+
+### The preview is a 1280x720 shot scaled down
+
+At a 640x360 viewport the copy panel covers nearly the whole section, so a
+native-size capture was a thumbnail of the copy, not the effect. The committed
+`preview.png` is the section at 1280x720 (seed 21, after the hand finished,
+`data-fx-live` asserted) scaled to 640x360 with `sips -z 360 640`. The panel
+was also tightened (29 rem wide, title capped at 3.5 rem) so more of the main
+peak shows, and the table above is from after that change.
+
+Captured from a bare page (the snippet plus a module mount) served out of
+`dist/registry/gallery/`, as 09-24 recommended, because the recipe's
+`?reduced=1` would capture the CSS rest (reduced motion returns before
+anything starts) and `agent-browser eval` is still hook-blocked.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| Custom-Shaped Cursor Trail with Three.js and TSL | `BertovDev/cursor-shader-trail`, Codrops hub 2026-09-24 | MIT | React Three Fiber, TSL and the WebGPU renderer. No vanilla source, and a renderer we do not vendor. |
+| `ZhaoAndy821/dsh-motion-background` | GitHub, created 2026-09-26 | MIT | A plugin for another app's WebUI. Its one shader (`mods/meteor/fragment.glsl`, a meteor shower) is written to that host's `u_colorFront`/`u_colorBack` contract, not `glsl-mount.js`'s, and it has one day of history. Worth a look if more shaders land in `mods/`. |
+| `ToaruPen/hirakubo-live` | GitHub, created 2026-09-24 | MIT | A pixel-art lighthouse wallpaper whose 143 KB `hirakubo_live.js` is generated by a Python build. The source is the Python, not the JS. |
+| `jeiel85/pamun-ripple-tank` | GitHub, created 2026-09-25 | MIT | A ripple-tank *instrument* (drop height is pitch) in a 167 KB file with Web Audio at its core. Not a section. |
+| `fushanbobfan/sandsong` | GitHub, created 2026-09-25 | MIT | A Chladni-plate toy split across `src/*.js` with a tone sweep driving it. An instrument, and the same author's `morphogen` and `harmonograph` were labs too. |
+| `MonsterOne1/seasons-lake` | GitHub, created 2026-09-25 | MIT | Several MB of webp textures and mp3 music. |
+| `reactivepixels/riffle` | GitHub, created 2026-09-25 | MIT | A TypeScript monorepo with a docs app and adapters. Same call as MeltGL (09-17) and `rummy` (09-23). |
+| `cclank/neural-garden` | GitHub, created 2026-09-25 | MIT | Needs pretrained weight files (`public/flow/*.bin`) and a build. |
+| `kraewon7422/hyperslice` | GitHub, created 2026-09-25 | MIT | A 4D-object raymarcher with versioned `index_v1/v2.html` files and a Python helper. A maths toy, not a section. |
+| Claude-skill repos (`kiselas/every-frame-is-code`, `klsoen/opus-js-animations`, `danielyerushalmi/alive-web`, `UrvaSuthar/playable-landing-pages`, `benjatestaferri7/motion-reel`) | GitHub | MIT / Apache-2.0 | Agent skills and video pipelines, not effects. |
+| `Kenton-GMI/sakuragaoka-station`, `mike007jd/voxel-musou`, `Token-Gremlin/gremlin-church`, `JesusGalindez/threejs-ocean-simulator-skills` | GitHub | MIT | Walkable scenes and games on three.js. Not sections. |
+| `devcode90/gargantua`, `refteen/aquarium`, `Ishant6565/KAGE-JAPANESE`, `FrancescoPierfederici/luce-3d-landing`, `SamuelcCouto/Orva-Premium` | GitHub | **none** | No LICENSE file. `Orva-Premium` is GSAP ScrollTrigger as well. |
+| `Muhammad112233-creator/k2-the-ascent`, `lintsinghua/paint-mv-skills`, `arielaizn/motion-forge-plugin`, `dylan-eck/genuary-2026` | GitHub | NOASSERTION | Unresolved licence. |
+
+### Vetted, not ported
+
+Unchanged from 09-23: `cosmos-demo` (`absoyak/cosmos-demo` at
+`a247d9f18aa78d07891d72cc424ea2ee8b165472`, MIT, a narrative rather than a
+loop) and `mogp-motion` (`withmehmet/mogp-motion` at
+`e2db8dd2ab4cc6c55c0f1f8aa8f08952882f33a7`, MIT, a `data-*` attribute system
+rather than a section).
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub, all demos.** One new item, the cursor trail above
+  (09-24). Nothing since.
+- **`shader-gallery/shaders`**, **`paper-design/shaders`**,
+  **`HARSHITSHARMA18/shaders` (Solace)**, **`openshaders/openshaders`.**
+  `commits?since=2026-09-24` is empty on all four. `4e8d4cb2` is still the
+  shader-gallery head. Solace left alone: PR #34 is still open and owns it.
+- **`Pallarium/labs`.** Still no LICENSE file (`/license` is 404).
+- **Vendor releases.** `tsparticles` still v4.4.0 (2026-08-31), `lenis` still
+  v1.3.26 (2026-08-05).
+- **GitHub topic search**, `created:>=2026-09-24` across `shaders`, `webgl`,
+  `webgl2`, `glsl`, `css-animation`, `scroll-animation`, `animation`,
+  `canvas-animation`, `creative-coding`, `generative-art`, `threejs`. Keep the
+  full list.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge.
+
+### Backlog after this run
+
+Unchanged at 54 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`. Taken so far: `obsidian` and
+`rainglass` (PR #36), `lightleak` (PR #38). Next in the recorded ranking is
+still `chrome` (side-by-side against `liquid-metal` first), then `damascus`
+and `foil`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-24`, like every scout branch since 09-18.
+Eight scout PRs are now stacked (09-17 → 09-26) and none has merged. Merge the
+bases with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
 duplicate content.
