@@ -84,8 +84,8 @@
 }
 
 /* The copy sits bottom left, below the disk's band, over a wash rising from
-   that corner. MEASURED: see CANDIDATES.md 2026-09-27 for the table; raise
-   --fx-scrim if a smaller distance brings the disk down over the copy. */
+   that corner, so the panel's edges fade into dark sky rather than cutting a
+   hard line through the stars. The panel below carries the contrast. */
 .fx-horizon__scrim {
   position: absolute;
   inset: 0;
@@ -97,10 +97,35 @@
   opacity: var(--fx-scrim);
 }
 
+/* The disk is the brightest thing on screen and its band crosses the middle
+   of the frame at every distance, so a wash alone cannot hold the copy (the
+   first layout measured 1.00:1 on the title, white-hot disk behind white
+   ink). The copy sits on its own smoked-glass panel: --fx-panel of black over
+   a 14 px blur, which turns the disk behind it into a dim amber glow.
+
+   MEASURED at --fx-panel 0.62, 1280x720, copy made transparent with the
+   panel and pills kept, one page load per frame, worst pixel under each box:
+
+     state              eyebrow  title  lede  ghost CTA
+     live, 2s            14.34   6.23   9.88   19.11
+     live, 6s            14.40   6.29   9.47   19.11
+     live, 12s           14.41   6.30   9.14   19.14
+     after a drag right  13.54   6.41   9.45   18.98
+     after a drag left   13.72   7.13   8.92   19.01
+
+   At 0.8 the title measured 12.10. Lowering --fx-panel, or a distance option
+   below the default 26, brings more disk under the copy: re-measure. */
 .fx-horizon__inner {
+  --fx-panel: 0.62;
   position: relative;
   z-index: 1;
-  max-width: 34rem;
+  max-width: 32rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .fx-horizon__eyebrow {
