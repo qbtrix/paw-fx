@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-27**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-28**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2595,3 +2595,129 @@ Based on `feat/fx-scout-2026-09-26`, like every scout branch since 09-18. Nine
 scout PRs are now stacked (09-17 → 09-27) and none has merged. Merge the bases
 with `--rebase`, not `--squash`, or each dependent goes CONFLICTING on
 duplicate content.
+
+## 2026-09-28 — window 2026-09-27 to 2026-09-28
+
+One day. One find, ported. Discovery landed, so Step 3.5 did not fire and the
+backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `particle-breath` | `bimohxh/limot-particle-breath`, `src/geometry.js` + `src/index.js` + `examples/index.html` | `a979ee86` | MIT | A soft, folded volume of 8500 Canvas 2D dots breathing in place. The points are fixed samples on a sphere that never re-scatter; each frame a ripple, a diagonal saddle fold and a twist deform them, twelve depth buckets fade the back, and eighteen strays orbit just off the surface. The shelf's other particle backgrounds are drifting fields (`bokeh-drift`, `starfield`, `firefly-swarm`, `links-network`); nothing is a single breathing volume, and it is the first calm, monochrome, dependency-free one. Two small ES modules, no WebGL. |
+
+Found through GitHub topic search (`generative-art`, `created:>=2026-09-27`).
+Licence read at the pin: `LICENSE` at `a979ee86` is MIT, Copyright (c) 2026
+Limot (https://limot.dev). Full sha
+`a979ee861763c4abc3c33d8a20db3b8e8dc03c5b`. The repo is one commit, a
+standalone release of an effect from the author's own background library; the
+README says it preserves that effect's geometry, ranges and defaults.
+
+Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at system Chrome:
+`check` 111 effects (lint, build, docs, smoke, 443 tests, exit 0), `verify`
+107 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit 0. `particle-breath`
+PASSES with zero warns. The one WARN is `paw-avatar`'s old one.
+
+### How the port was built
+
+`src/geometry.js` is pasted first and `src/index.js` follows it, both verbatim
+apart from their import and export lines. Upstream already ships the paw-fx
+shape: `mountParticleBreath(canvas, provider)` reads a config provider every
+frame and returns a stop function. So `mount()` makes the canvas, hands
+upstream a provider over a local `cfg`, `update()` merges into `cfg`, and
+`destroy()` calls upstream's stop. The seams, all in `meta.json`:
+
+- An IntersectionObserver stops upstream's loop off screen and starts a fresh
+  one on return (the clock restarts from zero while nobody is looking).
+- The provider sets `data-fx-live` on its second call, after the first frame.
+- Upstream throws on a refused 2D context; `mount()` catches it, removes the
+  canvas and returns the resting handle.
+- Reduced motion: the provider returns `speed: 0`, which is exactly what
+  upstream's own `examples/index.html` does. That is why the example page is in
+  `origin.path`. The section holds upstream's frame at time zero rather than a
+  CSS imitation of it.
+
+The first `check` failed one gallery test: `particleCount`'s default 8500 was
+not on the inferred knob grid (0.33 of a stop off). Every number option now
+declares an explicit `step` (`particleCount` 500, `scale` and `breathStrength`
+1, `speed` and `particleSize` 0.05, `opacity` 0.01), and the rerun was green.
+
+### Contrast
+
+The volume sits dead centre and runs under the copy on a phone, so the copy is
+on a smoked panel (`--fx-panel: 0.72`, 12 px blur), the event-horizon pattern.
+Measured live at 1280x720, copy made transparent with the panel and pills
+kept, one page load per frame, worst pixel under each box:
+
+| state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| live, 2 s | 11.76 | 15.98 | 11.46 | 17.00 |
+| live, 6 s | 11.85 | 15.67 | 11.36 | 17.00 |
+| live, 12 s | 11.66 | 16.30 | 11.46 | 17.00 |
+
+Worst is 11.36 on the lede.
+
+### The preview is a live 1280x720 shot scaled down
+
+Shot from a bare page (snippet plus a module mount) served out of
+`dist/registry/gallery/`, then `sips -z 360 640`. Chrome was system Chrome
+through `AGENT_BROWSER_EXECUTABLE_PATH`. A 375x812 shot was also checked by eye:
+the volume sits above the panel and the copy fits.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `chathurabuddi/mouse-scroll-cue` | GitHub | CC-BY-4.0 | Outside the allow-list. |
+| `adambiggs/blorbo` at `be1a75e4` | GitHub | Apache-2.0 | A 40 KB library (`src/core.js`) with MIDI, pointer, scroll and page-text inputs and an npm build. A framework, not a section. |
+| `souranyp-stack/koi-pond-garden` at `18213ec5` | GitHub, 17★ | MIT | A 562 KB one-file walkable scene. A scene, and far over the 60 KB lint. |
+| `zeeli-dev/agent-avatar` | GitHub | MIT | A web-component avatar set. A component, and adjacent to `paw-avatar`. |
+| `bytepatterns/motion-lab`, `cyborggirl963/opus-5.5-music-video-art-styles`, `ravipurohit1991/MathLoop-Studio`, `eneskirca/raw-motion` | GitHub | MIT | Films and motion-graphics engines, not loops or sections. |
+| `Appllama/liquid-glass-chat-ui` | GitHub, 111★ | MIT | A chat UI demo app, not an effect. |
+| `mahdi-salmanzade/sun-ray-lab`, `bdeeps/cgiclear`, `bdeeps/anim3dclear`, `TomCallan/mech`, `adamholter/little-blue-world` | GitHub | MIT | Explainers, labs and toys. |
+| `AallynReed/PopcornFX-Web` | GitHub | MIT | A player for a proprietary particle format. |
+| `nefayran/protocell-genesis` | GitHub | MIT | WebGPU simulation, not a section. |
+| `theAbdoSabbagh/deepseek-motion-graphics`, `cesartevisual/threejs-japanese-floating-diorama`, `Rahul-K-Jha/glassdoro`, `heyparsadev/delta`, `yihui-dev/awesome-opus5-5-videos` | GitHub | **none** | No LICENSE file. |
+| `guanmo-ai/awesome-ai-motion`, `Normansrule/artful-drawing`, `shangshang21/feng-ye-wen-rou` | GitHub | NOASSERTION | Unresolved licence. |
+| `arigatodon/dojo`, `obdegirmenci/live-for-gear` | GitHub | GPL-3.0 / GPL-2.0 | Outside the allow-list. |
+| Games and scenes (`tanuu5/tanuki-rush`, `yanzaocheng/strike-zone`, `yanzaocheng/kart-rush`, `Nmick1995/battlespace`, `krabduke/blockhaven`, `phildani7/clear-stream`) | GitHub | MIT | Games. |
+| `wave2234/emoji-rain-eggs`, `Sun-sh902/silent-meridian` | GitHub | — | Already rejected by the 09-27 run and not re-opened. |
+
+### Vetted, not ported
+
+| Candidate | Repo | Commit | Path | Licence | Note |
+|---|---|---|---|---|---|
+| `perlin-flow-field` | `uahz/perlin-flow-field` | `9dd05d821bfb4682cb9746519c7ccd24e66fe13a` | `index.html` | MIT | A single 17 KB page: Perlin-noise particles tracing a flow field over a colour ramp, with adaptive particle density. Not the same machinery as `sg-laminar` (a real cylinder streamfunction), so it is not a duplicate. The page carries its own UI (regenerate, save PNG, seed), which a port drops. Worth a read side by side with `canvas-trails` first. |
+| `stardust` | `majiayu000/ephemera` | `8322873e1b94245debaa39bf9448a5187c434a97` | `stardust.html`, `shared/glkit.js` | MIT | Carried forward from 09-27 unchanged, still first in line. |
+
+Also carried forward unchanged: `cosmos-demo` and `mogp-motion` (see 09-27).
+
+### Sources checked and found quiet
+
+- **`shader-gallery/shaders`**, **`paper-design/shaders`**,
+  **`openshaders/openshaders`**, **`majiayu000/ephemera`.**
+  `commits?since=2026-09-27` is empty on all four.
+- **`HARSHITSHARMA18/shaders` (Solace).** No commits since 09-27. PR #34 still
+  owns it.
+- **Vendor releases.** `tsparticles` still v4.4.0, `lenis` still v1.3.26.
+- **GitHub topic search**, `created:>=2026-09-27` across `shaders`, `webgl`,
+  `webgl2`, `glsl`, `css-animation`, `scroll-animation`, `animation`,
+  `canvas-animation`, `creative-coding`, `generative-art`, `threejs`.
+  `generative-art` found today's port.
+- **Codrops Creative Hub, all demos.** Newest is still the cursor trail
+  (09-24), rejected by the 09-26 run.
+- **CodePen.** Not re-tested; assumed still behind the bot challenge.
+
+### Backlog after this run
+
+Unchanged at 54 of the 57 shaders logged at
+`4e8d4cb27bfdd662c4b8515eb83334ece40eea10`. Order if the next discovery window
+is empty: `stardust`, then `perlin-flow-field`, then the shader-gallery queue
+(`chrome`, `damascus`, `foil`).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-27`. Ten scout PRs are now stacked
+(09-17 → 09-28) and none has merged. Merge the bases with `--rebase`, not
+`--squash`.
