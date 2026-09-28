@@ -1,0 +1,213 @@
+/* event-horizon: the CSS half of the effect. With JavaScript off, under
+   reduced motion (where index.js never starts), or after a refused WebGL2
+   context sends mount() back to rest, this is the whole hero.
+
+   The resting layer is upstream's own picture, drawn flat: a black hole in
+   the middle of the frame, the accretion disk as a flattened ring running hot
+   white-gold inside and orange outside (the shader's tint ramp, vec3(1,.85,.6)
+   to vec3(1,.32,.06)), the lensed far side of the disk arching over the top,
+   the nebula wash from sky() (vec3(.35,.12,.5) and vec3(.05,.15,.3)), a
+   scatter of stars, and upstream's corner vignette.
+
+   Stacking:
+     -2  .fx-horizon__rest    the resting picture, covered once a frame draws
+     -1  <canvas>             inserted by index.js
+      0  .fx-horizon__scrim   legibility wash behind the copy
+      1  .fx-horizon__inner   the copy, bottom left, off the disk's band */
+.fx-horizon {
+  --fx-bg: #000;
+  --fx-hot: #ffd99a;
+  --fx-warm: #ff520f;
+  --fx-nebula: #591f80;
+  --fx-ink: #fbf4ea;
+  --fx-muted: #e2d6c6;
+  --fx-scrim: 0.85;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-horizon__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    /* the shadow, then the photon ring round it */
+    radial-gradient(circle at 50% 46%, #000 0 8.5vmin, transparent 8.8vmin),
+    radial-gradient(circle at 50% 46%, transparent 8.6vmin, color-mix(in oklab, var(--fx-hot) 85%, transparent) 9.2vmin, transparent 11vmin),
+    /* the far side of the disk, lensed up over the hole */
+    radial-gradient(15vmin 13vmin at 50% 50%, transparent 70%, color-mix(in oklab, var(--fx-warm) 55%, transparent) 82%, transparent 100%),
+    /* the near disk: hot inside, cooling to orange at the rim */
+    radial-gradient(44vmin 6vmin at 50% 50%, color-mix(in oklab, var(--fx-hot) 90%, transparent) 0%, color-mix(in oklab, var(--fx-warm) 70%, transparent) 45%, transparent 100%),
+    /* stars, three co-prime tilings so they do not read as a grid */
+    radial-gradient(1px 1px at 20% 30%, #fff9, transparent 2px) 0 0 / 97px 83px,
+    radial-gradient(1px 1px at 73% 81%, #cfe0ff88, transparent 2px) 0 0 / 151px 127px,
+    radial-gradient(1px 1px at 61% 12%, #ffe3c888, transparent 2px) 0 0 / 223px 191px,
+    /* the nebula wash from sky() */
+    radial-gradient(60% 50% at 78% 22%, color-mix(in oklab, var(--fx-nebula) 45%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 18% 70%, #0d264d55, transparent 70%),
+    var(--fx-bg);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live once a frame has drawn; every failure path and
+   destroy() clear it, so this rule is also the proof teardown worked. */
+.fx-horizon[data-fx-live] .fx-horizon__rest {
+  opacity: 0;
+}
+
+/* pan-y: a horizontal drag orbits, a vertical one still scrolls the page, so
+   a phone can get past a full-height hero. Upstream owned the whole page and
+   set touch-action: none on body. */
+.fx-horizon__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.fx-horizon__canvas:active {
+  cursor: grabbing;
+}
+
+/* The copy sits bottom left, below the disk's band, over a wash rising from
+   that corner, so the panel's edges fade into dark sky rather than cutting a
+   hard line through the stars. The panel below carries the contrast. */
+.fx-horizon__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 75% at 0% 100%, var(--fx-bg) 0%, color-mix(in oklab, var(--fx-bg) 80%, transparent) 45%, transparent 80%),
+    linear-gradient(to top, var(--fx-bg) 0%, color-mix(in oklab, var(--fx-bg) 60%, transparent) 28%, transparent 50%);
+  opacity: var(--fx-scrim);
+}
+
+/* The disk is the brightest thing on screen and its band crosses the middle
+   of the frame at every distance, so a wash alone cannot hold the copy (the
+   first layout measured 1.00:1 on the title, white-hot disk behind white
+   ink). The copy sits on its own smoked-glass panel: --fx-panel of black over
+   a 14 px blur, which turns the disk behind it into a dim amber glow.
+
+   MEASURED at --fx-panel 0.62, 1280x720, copy made transparent with the
+   panel and pills kept, one page load per frame, worst pixel under each box:
+
+     state              eyebrow  title  lede  ghost CTA
+     live, 2s            14.34   6.23   9.88   19.11
+     live, 6s            14.40   6.29   9.47   19.11
+     live, 12s           14.41   6.30   9.14   19.14
+     after a drag right  13.54   6.41   9.45   18.98
+     after a drag left   13.72   7.13   8.92   19.01
+
+   At 0.8 the title measured 12.10. Lowering --fx-panel, or a distance option
+   below the default 26, brings more disk under the copy: re-measure. */
+.fx-horizon__inner {
+  --fx-panel: 0.62;
+  position: relative;
+  z-index: 1;
+  max-width: 32rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.fx-horizon__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.2rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-bg) 55%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-horizon__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-hot);
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--fx-warm) 60%, transparent);
+}
+
+.fx-horizon__title {
+  margin: 0;
+  font-size: clamp(2.1rem, 5vw, 3.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  text-shadow: 0 1px 30px color-mix(in oklab, var(--fx-bg) 85%, transparent);
+}
+
+.fx-horizon__lede {
+  margin: 1.2rem 0 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+  text-shadow: 0 1px 20px var(--fx-bg);
+}
+
+.fx-horizon__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.fx-horizon__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-horizon__cta--primary {
+  background: var(--fx-ink);
+  color: #120a02;
+}
+
+.fx-horizon__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-bg) 55%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-horizon__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-horizon__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
