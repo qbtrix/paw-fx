@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-28**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-29**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2720,4 +2720,114 @@ is empty: `stardust`, then `perlin-flow-field`, then the shader-gallery queue
 
 Based on `feat/fx-scout-2026-09-27`. Ten scout PRs are now stacked
 (09-17 → 09-28) and none has merged. Merge the bases with `--rebase`, not
+`--squash`.
+
+## 2026-09-29 — window 2026-09-28 to 2026-09-29
+
+One day. Discovery found nothing portable, so Step 3.5 fired and the backlog's
+first entry, `stardust`, is ported. `perlin-flow-field` was left for the next
+run so the PR stays one port.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `stardust` | `majiayu000/ephemera`, `stardust.html` + `shared/glkit.js` | `8322873e` | MIT | A million GPU points with no vertex buffers, cycling a spiral galaxy, a banded sphere, a trefoil knot and a word, bursting and regathering between them. Pointer repels, a tap morphs, a drag turns. Queued since 09-27. |
+
+Licence re-read at the pin: `LICENSE` at `8322873e` is MIT, Copyright (c) 2026
+majiayu000. Both gates green with `AGENT_BROWSER_EXECUTABLE_PATH` pointed at
+system Chrome: `check` 112 effects (lint, build, smoke, 445 tests, exit 0),
+`verify` 108 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit 0.
+`stardust` PASSES with zero warns; the one WARN is still `paw-avatar`'s.
+
+### How the port was built
+
+The `event-horizon` recipe on the same repo and pin: glkit's methods as a
+local object inside `inicia()`, upstream's VS, FS and `textTexture()`
+verbatim, a shadowed `requestAnimationFrame` driving `frame()` through
+`pulso()` (IntersectionObserver pause, `data-fx-live` after the first frame),
+`fail()` throws to the CSS rest. Two options, both flagged in the 09-27 note:
+
+- `count` is upstream's `N` (default `1 << 20`), rounded to whole 1024-wide
+  texture rows, clamped to `1 << 16 .. 1 << 20`, `step` declared up front.
+- `text` is upstream's `TEXT` (default `炫酷`). A machine with no CJK font
+  draws boxes for it; the option description says so and suggests a Latin
+  word. `update()` rebuilds the text texture through upstream's own
+  `textTexture()` and keeps the old one if the new word samples empty.
+
+The hover repel normalises by the section's box, not the window.
+
+### Contrast
+
+Copy on a smoked panel (`--fx-panel: 0.7`, 14 px blur), bottom left, the
+`event-horizon` pattern: the galaxy spans most of the frame and bursts
+outward on every morph. Measured live at 1280x720, copy made transparent,
+one page load per frame, worst pixel under each box:
+
+| state | eyebrow | title | lede | ghost CTA |
+|---|---|---|---|---|
+| live, 2 s | 13.97 | **8.16** | 12.09 | 9.54 |
+| live, 6 s | 13.97 | 8.13 | 11.75 | 9.54 |
+| live, 12 s | 13.97 | 12.71 | 11.76 | 9.54 |
+
+Worst is 8.13 on the title. The eyebrow is measured over its text only; the
+whole pill box reads 0.97 because it contains the decorative core-coloured
+dot.
+
+### The preview is a live 1280x720 shot scaled down
+
+Bare page (snippet plus a module mount) served out of
+`dist/registry/gallery/`, `[data-fx-live]` asserted visible, `sips -z 360
+640`. The galaxy is the first shape, so the preview shows it with the copy
+panel over its left half.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `howardc38/motion-fx-lab` | GitHub | 0BSD | Outside the allow-list (0BSD is not BSD-2-Clause). 36 effects plus a recorder anyway: a lab. |
+| `PG-Momik/dither-art` | GitHub | MIT | A TypeScript package (`src/*.ts`) with no built module committed, and a still-image generator rather than a motion section. Same call as `dotmorph` (09-28). |
+| `gig3m/glyphfield` | GitHub | MIT | A Python terminal screensaver, not a web effect. |
+| `sundyme/event-horizon` | GitHub | MIT | A second ray-traced black hole; `event-horizon` (09-27) already ships one. |
+| `7893/suizhou`, `GarfieldHuang/sakura-river`, `vitalio-sh/pocket-weather-world`, `zrt219/cosmo-flow`, `yazicmert/LS19` | GitHub | Apache-2.0 / MIT | Scenes, sims and apps with builds, not sections. |
+| `NJ-0803/swap_da_skill`, `JakeB-5/motion-graphic-skill`, `fiston-user/apple-style-motion-skill`, `Leo309/claude-prompt-films`, `tanuu5/natsu-no-yume`, `tanuu5/ai-history-reel` | GitHub | MIT | Agent skills and films, not effects. |
+| `hoshuko/*`, `ArchDityaa/editorial-dark`, `Bedirhanelcik/blazing-energy-showcase`, `mohamedosamaai/elitk-8` | GitHub | NOASSERTION | Unresolved licence. |
+| `Clemens865/to_the_power_of_y`, `OmarArgenes/portfolio-showcase`, `cesartevisual/threejs-japanese-floating-diorama` | GitHub | **none** | No LICENSE file. |
+| `danish-devx/HAGANE-Handforged-Katana-Web` | GitHub | none | GSAP and React, and no LICENSE. |
+| Games (`AgainstEntropy/sekiro-threejs`, `Jujeongmin/*`, `emilsvfx/dead-fog`, `brepre109/cinderbanner`, `freaxnx01/game-rhyflitzer`, and others) | GitHub | mixed | Games. |
+
+### Seen, not resolved
+
+- **Codrops "Wide" by BL/S** (article 2026-09-28,
+  `tympanus.net/codrops/2026/09/28/wide-template/`). The newest Codrops hub
+  item, ahead of the 09-24 cursor trail. Per search results it is a grid page
+  template with an optional WebGL overlay shader (a directional blur sampled
+  twenty times toward the pointer, toggled by a key), and the code is on
+  CodePen. Tympanus timed out on every fetch this run (curl and WebFetch), so
+  the pen id and its licence were not confirmed. Next run: resolve the pen,
+  confirm MIT on its details page, and judge whether the shader stands alone
+  as an effect or only works as a whole page template.
+
+### Sources checked and found quiet
+
+- **`shader-gallery/shaders`**, **`paper-design/shaders`**,
+  **`openshaders/openshaders`**, **`majiayu000/ephemera`**,
+  **`HARSHITSHARMA18/shaders`**, **`uahz/perlin-flow-field`.**
+  `commits?since=2026-09-28` is empty on all six.
+- **Vendor releases.** `tsparticles` still v4.4.0, `lenis` still v1.3.26.
+- **GitHub topic search**, `created:>=2026-09-28` across the same eleven
+  topics. Nothing portable.
+- **CodePen.** Not re-tested.
+
+### Backlog after this run
+
+`stardust` is taken. Order if the next discovery window is empty:
+`perlin-flow-field` (`uahz/perlin-flow-field` at `9dd05d82`, MIT), then the
+shader-gallery queue (`chrome`, `damascus`, `foil`). Carried forward
+unchanged: `cosmos-demo` and `mogp-motion` (see 09-27).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-28`. Eleven scout PRs are now stacked
+(09-17 → 09-29) and none has merged. Merge the bases with `--rebase`, not
 `--squash`.
