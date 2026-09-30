@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-29**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-09-30**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2830,4 +2830,86 @@ unchanged: `cosmos-demo` and `mogp-motion` (see 09-27).
 
 Based on `feat/fx-scout-2026-09-28`. Eleven scout PRs are now stacked
 (09-17 → 09-29) and none has merged. Merge the bases with `--rebase`, not
+`--squash`.
+
+## 2026-09-30 — window 2026-09-29 to 2026-09-30
+
+One day. Discovery found one portable effect, so the backlog is untouched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `particle-type` | `jackthecoder17/particle-type`, `index.html` | `474de3f7` | MIT | A headline drawn by up to 9000 Canvas 2D particles that spring into the word's lit pixels, trail in one of four additive palettes, swirl from the cursor and shatter on a click. One 15 KB file, zero deps, pushed 2026-09-30. |
+
+Licence read from `LICENSE` at the pin: MIT, Copyright (c) 2026
+jackthecoder17. Gates: `check` 113 effects (lint, build, smoke, 447 tests,
+exit 0); `verify` 109 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit 0.
+`particle-type` passes with zero warns; the one WARN is still `paw-avatar`'s.
+
+**Not a duplicate of `stardust`.** `stardust` is a WebGL2 point cloud where a
+fixed word is one of four 3D shapes. `particle-type` is Canvas 2D, `text`
+category, and the word *is* the section: any heading text, swappable with
+`update({ text })` or cycled with `words`, stirred by the cursor.
+
+### How the port was built
+
+Upstream's script kept in order; the seams are the section box for the stage
+(ResizeObserver, canvas-local pointer coordinates), the heading as the text
+source, and the dock, swatches, stats line and Space key dropped. The Google
+Fonts link is not shipped; `--fx-display` keeps upstream's own fallback stack.
+Reduced motion returns the resting handle (upstream's reduced path still
+animates). `layoutLines()` and `sampleTargets()` shadow `H` with the band
+above the copy panel, so the word is fitted above it without editing either
+function's body.
+
+### Contrast
+
+The only copy besides the word is a lede and two CTAs on a smoked panel
+(`--fx-panel: 0.72`, 14 px blur), bottom centre. Measured at 1280x720, copy
+made transparent, worst pixel under each box: lede 11.71, ghost CTA 11.33, at
+2 s, 6 s and after a click burst. Bound with solid `#fff` behind the panel:
+lede 4.82, ghost CTA 7.05, so no frame can drop below 4.5.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `xaviersonski/wildflower-meadow` | GitHub | MIT | A 1.9 MB texture atlas behind a 39 KB built bundle; the atlas alone is past the 60 KB budget and it is a TypeScript build. |
+| `fushanbobfan/lampyrid` | GitHub | MIT | A Kuramoto-model teaching app (charts, sweeps, theory panels) across eleven modules, not a section. Parked as an idea: fireflies syncing would make an ambient background if a lean upstream turns up. |
+| `evoluteur/zen-garden`, `quitran97/luma-atelier`, `Elijah-Lin-Dancer/Jelly-Fish-childen-game` | GitHub | MIT | Playgrounds and games with their own UI, not sections. |
+| `CJ10110425/logo-intro` | GitHub | MIT | A node video-export pipeline for brand intros, not a web section. |
+| `charleswest775/MMM-Harmonograph` | GitHub | MIT | A MagicMirror module; the harmonograph drawing is a candidate idea, but the module shape is not. |
+| `OmarMota/shader-studio`, `OmarMota/frame-lab` | GitHub | MIT | Studios and exporters, not effects. |
+| `Pachin1919/*` (three motion previews), `lucasligenza/lucas-ligenza-portfolio`, `efealtiparmakoglu/wavecraft` | GitHub | **none** | No LICENSE file. |
+| `yash262626/Everest-Summit`, `abhisingh-001/itzfizz-assignment` | GitHub | NOASSERTION / none | GSAP, and no usable licence. |
+| `SHADE-glitch/burn-my-windows`, `literallylara/ShadeVk`, `Null-K/PlayerDoll` | GitHub | GPL-3.0 | Outside the allow-list. |
+| Games, sims and agent skills (`ChaseHendrick/after-the-sirens`, `Daily-AC/motion-reel`, `flash-hero/GOATED-UI-SKILL`, and the rest of the topic search) | GitHub | mixed | Not effects. |
+
+### Seen, not resolved
+
+- **Codrops "Wide" by BL/S** (2026-09-28). `tympanus.net/codrops/hub/all/`
+  returned 403 to curl this run (09-29 it timed out). Still unresolved: find
+  the pen id and confirm MIT on its details page.
+
+### Sources checked and found quiet
+
+- `commits?since=2026-09-29` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `majiayu000/ephemera`,
+  `HARSHITSHARMA18/shaders`, `uahz/perlin-flow-field`.
+- Vendor releases: `tsparticles` still v4.4.0, `lenis` still v1.3.26.
+- GitHub topic search, `created:>=2026-09-29` across eleven topics: the
+  table above.
+- CodePen: not tested.
+
+### Backlog after this run
+
+Unchanged: `perlin-flow-field` (`uahz/perlin-flow-field` at `9dd05d82`, MIT),
+then the shader-gallery queue (`chrome`, `damascus`, `foil`); `cosmos-demo`
+and `mogp-motion` carried forward.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-29`. Twelve scout PRs are now stacked
+(09-17 → 09-30) and none has merged. Merge the bases with `--rebase`, not
 `--squash`.
