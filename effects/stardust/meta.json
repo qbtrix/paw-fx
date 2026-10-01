@@ -1,0 +1,66 @@
+{
+  "name": "stardust",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "gpu", "million", "galaxy", "sphere", "trefoil-knot", "text", "morph", "burst", "repel", "drag", "webgl2", "hero"],
+  "summary": "Full-bleed hero with a million GPU points and no vertex buffers: each point hashes its own vertex id into a place on two shapes and bursts outward and regathers between them on a staggered clock. It cycles a four-arm spiral galaxy with a warm core, a banded sphere, a trefoil knot and a word, holding each for a few seconds. Colour walks a cosine palette over time, the pointer pushes nearby points aside and lights them up, a tap morphs to the next shape, and a sideways drag turns the whole thing with inertia.",
+  "needs": [],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 1048576,
+      "min": 65536,
+      "max": 1048576,
+      "step": 65536,
+      "description": "How many points are drawn (upstream's N, 1 << 20). Rounded to whole rows of the 1024-wide text texture and clamped to 65536..1048576. Lower it for phones: every point is a vertex-shader run and an additive blend, every frame."
+    },
+    "text": {
+      "type": "string",
+      "default": "炫酷",
+      "description": "The word the fourth shape spells (upstream's TEXT, 炫酷, \"dazzling\"). Drawn in \"PingFang SC\", \"Heiti SC\", then the system sans-serif, so a machine with no CJK font draws boxes for the default; pass a Latin word for a site without one. A word no font can draw keeps the previous shape."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "majiayu000/ephemera",
+    "commit": "8322873e1b94245debaa39bf9448a5187c434a97",
+    "path": ["stardust.html", "shared/glkit.js"]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is a page script over a window.glkit global. The VS and FS shaders and textTexture() are verbatim; glkit's methods sit inside inicia() as a local glkit object and the page script follows them, so every glkit.context, glkit.program, glkit.uniforms and glkit.drag call site is upstream's. The page caption (#t) and its particle count (#n) are not carried, and glkit's FULLSCREEN_VS, which stardust never uses, is left out.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The caption is upstream's demo copy about itself; snippet.html carries the section's own copy.",
+      "kind": "seam"
+    },
+    {
+      "what": "glkit.context sizes the canvas from el.clientWidth and el.clientHeight through a ResizeObserver instead of innerWidth, innerHeight and a window resize listener, requests the context with failIfMajorPerformanceCaveat: true, and no longer sets canvas.style width and height (style.css sizes it). glkit.drag normalises by the section instead of the window and also ends a drag on pointercancel. The hover listener that feeds the repel uniform M normalises by the section's getBoundingClientRect instead of innerWidth and innerHeight. Every listener is removed on destroy.",
+      "why": "Seam. Upstream owns the whole window; a section does not. A million additive points on a software rasteriser is worse than the CSS rest, and pointercancel is what a browser sends when a vertical swipe on a touch screen turns into a page scroll.",
+      "kind": "seam"
+    },
+    {
+      "what": "glkit.fail throws instead of painting a pre element over document.body. The throw lands in mount()'s catch, which loses the context, removes the canvas and returns the resting handle.",
+      "why": "The repo contract. A section must fall back to its CSS rest on failure and must never write into the host page's body.",
+      "kind": "seam"
+    },
+    {
+      "what": "N and TEXT are let bindings read from the count and text options (defaults 1 << 20 and 炫酷, upstream's constants) instead of const. count is rounded to a multiple of 1024 and clamped to 65536..1048576 (1 << 16 .. 1 << 20). update() rebuilds the text texture through upstream's own textTexture() when either changes, and keeps the old texture, N and TEXT if the new word samples empty.",
+      "why": "Ours. A million points every frame is heavy on a phone, so the count is the one knob worth adding; the word is the one piece of upstream's copy baked into a shape, and 炫酷 draws as boxes on a machine with no CJK font.",
+      "kind": "ours"
+    },
+    {
+      "what": "A local requestAnimationFrame shadows the global inside inicia(), so upstream's frame() runs unchanged through pulso(), which stops while an IntersectionObserver reports the section off screen and sets data-fx-live after the first drawn frame. webglcontextlost tears down to the CSS rest.",
+      "why": "Ours. A million points every frame is worth stopping when nobody can see them, and the flag waits for a real frame so the resting state never fades out from under an empty canvas.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns at once and no context is created. Upstream has no reduced-motion path.",
+      "why": "The repo contract. The time uniform drives the spin, the shimmer and the morph clock together, so there is no still mode upstream to hold; the CSS resting state is the reduced-motion picture.",
+      "kind": "ours"
+    },
+    {
+      "what": "touch-action is pan-y on the canvas (style.css), not none on the body.",
+      "why": "Ours. A full-height hero that swallows vertical touch strands a phone visitor above the rest of the page. Taps still morph and horizontal drags still turn.",
+      "kind": "ours"
+    }
+  ]
+}

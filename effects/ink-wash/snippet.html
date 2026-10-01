@@ -1,0 +1,22 @@
+<!-- ink-wash section. Finished at rest with CSS alone: .fx-ink__rest is the
+     sheet of rice paper with a landscape already washed onto it -- pale far
+     hills, a darker main peak, a near bank and a cinnabar sun -- and index.js
+     only covers it once the canvas has painted a frame. The copy sits top left,
+     which is the corner upstream's own composition leaves empty for its poem;
+     the sun takes the top right. The _fx paths are root-absolute because a site
+     always sits at the origin root, and "./_fx/..." would break on a nested
+     page such as /blog/post.html. The decorative layers carry aria-hidden; the
+     copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/ink-wash/style.css">
+<section class="fx-ink" data-fx="ink-wash">
+  <div class="fx-ink__rest" aria-hidden="true"></div>
+  <div class="fx-ink__inner">
+    <p class="fx-ink__eyebrow"><span class="fx-ink__dot" aria-hidden="true"></span>Studio notes</p>
+    <h1 class="fx-ink__title">Every piece starts as an empty sheet.</h1>
+    <p class="fx-ink__lede">Swap this for your own words. A hand you cannot see paints the landscape behind this text, a new one each visit, and anyone can pick up the brush and add to it.</p>
+    <div class="fx-ink__actions">
+      <a class="fx-ink__cta fx-ink__cta--primary" href="#">See the work</a>
+      <a class="fx-ink__cta fx-ink__cta--ghost" href="#">About us</a>
+    </div>
+  </div>
+</section>
