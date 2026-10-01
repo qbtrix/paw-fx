@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-30**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-01**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2912,4 +2912,86 @@ and `mogp-motion` carried forward.
 
 Based on `feat/fx-scout-2026-09-29`. Twelve scout PRs are now stacked
 (09-17 → 09-30) and none has merged. Merge the bases with `--rebase`, not
+`--squash`.
+
+## 2026-10-01 — window 2026-09-30 to 2026-10-01
+
+One day. Discovery found nothing portable, so this run took the top of the
+backlog.
+
+### Ported (from the backlog)
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `perlin-flow-field` | `uahz/perlin-flow-field`, `index.html` | `9dd05d82` | MIT | Thousands of Canvas 2D particles trace a seeded Perlin flow field in an eight-stop sunset ramp, trails decaying under `destination-out`, with a glow, vignette and grain layer on top. One 17 KB file, zero deps. Taken from the backlog; it leaves the queue. |
+
+Licence re-read from `LICENSE` at the pin: MIT, Copyright (c) 2026 uahz.
+Gates: `check` 114 effects (lint, build, smoke, 449 tests, exit 0); `verify`
+110 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit 0. `perlin-flow-field`
+passes with zero warns; the one WARN is still `paw-avatar`'s.
+
+**Not a duplicate of `canvas-trails`.** `canvas-trails` is anime.js tweening
+dots that are re-targeted to random points on arrival, under a 10% black fill.
+`perlin-flow-field` has no tweens and no targets: every particle reads its
+heading from a 3D noise field each frame, so the picture is streamlines that
+drift as the field's z moves. Different machinery, different look (silk vs.
+sparks).
+
+### How the port was built
+
+Upstream's script kept in order; the seams are the section box for the stage
+(`clientWidth`/`clientHeight`, ResizeObserver), the seed as a string option
+(`update({ seed })` reuses upstream's 1.2 s cross-fade), and the brand header,
+stats panel, buttons, R/S keys and PNG export dropped. `adapt()`, the FPS-led
+density logic, is kept. Reduced motion returns the resting handle (upstream's
+reduced path still animates, only slower). The CSS rest repeats `drawFX()`'s
+glow and vignette stops as radial gradients.
+
+### Contrast
+
+The copy sits on a smoked panel modelled on upstream's `.panel` (72% of
+`#130e1e`, 16 px blur). Bound with solid `#fff` behind the panel: lede 5.0
+(after lightening `--fx-muted` to `#d3cde2`; upstream's tone gave 4.49),
+title 6.37, ghost CTA 5.45; primary CTA is a solid gradient, 6.45. No frame
+can drop below 4.5.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `niklasp/gpuslider` | GitHub | MIT | A full carousel library (core, plugins, WebGPU and WebGL 2 layers, 40+ effect and transition modules), not one effect. Possible future vendor key once its npm release is past the 7-day age rule; a port would have to be the library. |
+| `Katechnology/thunder-meow-holo-card` | GitHub | MIT | The card's textures and SDF masks come from an offline node art pipeline and are not in the repo; the artwork itself is not distributed. |
+| `fushanbobfan/tendril`, `ProBurakElci/namestamp`, `Zhenghong-Liu/spacetime-gravity-well`, `Dotoryman/christmas_village`, `johnhuasheng/gesture-particle-planet`, `iadithyan479-wq/Gravitas` | GitHub | MIT | Apps, tools and sandboxes with their own UI (gesture planet needs a webcam), not sections. |
+| `129kkkl/*` (nine voxel scenes), `supsad/lumicells`, `LiteFun007/synkopa-showcase`, `prince-panwar/photon-sphere`, `victorloux/breathing-light-animation` | GitHub | **none** | No LICENSE file. |
+| `liceses/motion-kit` | GitHub | PolyForm Noncommercial | Outside the allow-list. |
+| `iraagarg/itzfizz-hero-animation`, `brambati/gsap-scrolltrigger-demo`, `HeinessPremium/portfolio` | GitHub | none | GSAP, and no licence. |
+| Games, skills, sims and tools (the rest of the topic search) | GitHub | mixed | Not effects. |
+
+### Seen, not resolved
+
+- **Codrops hub** returned 403 to WebFetch this run too. "Wide" by BL/S
+  (2026-09-28) is still unresolved.
+- No new `codrops/*` repos created since 2026-09-25.
+
+### Sources checked and found quiet
+
+- `commits?since=2026-09-30` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `HARSHITSHARMA18/shaders`,
+  `uahz/perlin-flow-field`, `darkroomengineering/lenis`.
+  `majiayu000/ephemera` has one commit (`3becec09`, an SEO fix, no new demo).
+- Vendor releases: `tsparticles` latest release still v4.4.0 (9 commits on
+  the default branch, no release); `lenis` still v1.3.26.
+- GitHub topic search, `created:>=2026-09-30` across eleven topics: the
+  table above.
+- CodePen: not tested.
+
+### Backlog after this run
+
+`perlin-flow-field` is taken. Next: the shader-gallery queue (`chrome`,
+`damascus`, `foil`); `cosmos-demo` and `mogp-motion` carried forward.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-09-30`. Thirteen scout PRs are now stacked
+(09-17 → 10-01) and none has merged. Merge the bases with `--rebase`, not
 `--squash`.

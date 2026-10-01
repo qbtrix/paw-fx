@@ -209,6 +209,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | stardust | MIT | [majiayu000/ephemera](https://github.com/majiayu000/ephemera) `8322873`, `stardust.html`, `shared/glkit.js` |
 | particle-breath | MIT | [bimohxh/limot-particle-breath](https://github.com/bimohxh/limot-particle-breath) `a979ee8`, `src/geometry.js`, `src/index.js`, `examples/index.html` |
 | particle-type | MIT | [jackthecoder17/particle-type](https://github.com/jackthecoder17/particle-type) `474de3f`, `index.html` |
+| perlin-flow-field | MIT | [uahz/perlin-flow-field](https://github.com/uahz/perlin-flow-field) `9dd05d8`, `index.html` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
