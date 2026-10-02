@@ -1,0 +1,18 @@
+<!-- particle-breath section. Finished at rest with CSS alone:
+     .fx-breath__rest is the particle volume drawn as a dotted ellipse, and
+     index.js only covers it once the canvas has drawn a frame. The _fx paths
+     are root-absolute because a site always sits at the origin root.
+     Decorative layers carry aria-hidden. -->
+<link rel="stylesheet" href="/_fx/effects/particle-breath/style.css">
+<section class="fx-breath" data-fx="particle-breath">
+  <div class="fx-breath__rest" aria-hidden="true"></div>
+  <div class="fx-breath__inner">
+    <p class="fx-breath__eyebrow">Slow down for a second</p>
+    <h1 class="fx-breath__title">Calm software, built to last.</h1>
+    <p class="fx-breath__lede">Swap this for your own words. Behind it, a few thousand points fold and breathe in place, and never scatter.</p>
+    <div class="fx-breath__actions">
+      <a class="fx-breath__cta fx-breath__cta--primary" href="#">Get started</a>
+      <a class="fx-breath__cta fx-breath__cta--ghost" href="#">Read more</a>
+    </div>
+  </div>
+</section>

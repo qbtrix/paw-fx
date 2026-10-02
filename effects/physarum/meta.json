@@ -1,0 +1,74 @@
+{
+  "name": "physarum",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "physarum",
+    "slime-mould",
+    "agents",
+    "simulation",
+    "network",
+    "generative",
+    "webgl2",
+    "webgl",
+    "glow",
+    "organic",
+    "pointer",
+    "interactive",
+    "dark",
+    "hero"
+  ],
+  "summary": "Full-bleed dark hero where a slime mould grows a glowing transport network, in raw WebGL2 with no library. Up to 262 144 agents live in a float texture and follow Jones' three rules (sense the trail ahead, left and right and turn toward it; deposit; let the trail blur and fade), with crowding so the network keeps branching instead of collapsing into a few fat tubes. Trail density maps to cyan, magenta and orange with white-hot cores. The pointer is food: the network reroutes toward it, press and hold for a feast, and left alone the meal wanders by itself. Four temperaments (veins, lace, coral, storm) and a hue turn are options. Under reduced motion the network is grown once and moves only when the visitor does. With no script, no WebGL2 or no float render targets, the section rests on a black ground with faint glows.",
+  "needs": [],
+  "options": {
+    "kind": {
+      "type": "string",
+      "default": "veins",
+      "description": "Temperament (upstream's keys 1 to 4): veins, lace, coral or storm. Each sets the sensor angle, sensor distance, turn angle, step and how much trail survives a step. veins grows a branching network, lace a fine mesh, coral thick rounded growth, storm a fast churn. Changes through update() regrow from the network already there."
+    },
+    "hue": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "description": "Turns the cyan, magenta, orange palette round its wheel, in sixths (upstream's H key, one press per step). 0 is upstream's starting palette."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "RonanCamus/physarum",
+    "commit": "3c68aa631ab112e42775e97fa8d24286f8110d7d",
+    "path": [
+      "physarum.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The stage is the section's box: the canvas is created and inserted into the section instead of read by id, fit() takes el.clientWidth and el.clientHeight instead of innerWidth and innerHeight, and a ResizeObserver on the section replaces the window resize listener. The canvas is position absolute instead of fixed.",
+      "why": "Seam. Upstream owns the whole window; a paw-fx effect is one section of a page.",
+      "kind": "seam"
+    },
+    {
+      "what": "pointermove, pointerdown, pointerup and pointercancel listen on the section, and touch() maps the pointer through the section's getBoundingClientRect() instead of innerWidth and innerHeight. The keydown handler is dropped: keys 1 to 4 become the kind option and H becomes the hue option (sixths of the wheel), both applied by configure(); space (pause) and R (restart) have no option.",
+      "why": "Seam. A section cannot take keys from the whole page, and the pointer math assumed the canvas filled the window.",
+      "kind": "seam"
+    },
+    {
+      "what": "getContext adds failIfMajorPerformanceCaveat: true. A missing context, a missing EXT_color_buffer_float, a failed link or an incomplete float framebuffer returns the resting handle instead of adding no-gl to the body or throwing. The on-page kind and agent-count labels, the console.error and the window.__physarum debug hook are dropped; index.html's canvas fade-in (opacity, 1200ms ease) moves to style.css keyed on data-fx-live.",
+      "why": "Seam. The contract falls back to the CSS rest on a refused context, the section brings its own copy, and an effect touches no globals.",
+      "kind": "seam"
+    },
+    {
+      "what": "An IntersectionObserver replaces the visibilitychange listener and pauses the frame loop off screen, data-fx-live is set after the first show(), and destroy() cancels the frame, disconnects both observers, removes the listeners, loses the context and removes the canvas.",
+      "why": "Ours. Three passes over a quarter of a million agents sixty times a second should not run for a section nobody can see, and teardown must give the context back.",
+      "kind": "ours"
+    },
+    {
+      "what": "The rest state is CSS: a #050505 ground (upstream's page colour) with faint cyan and magenta radial glows, and the copy on a .fx-physarum__inner smoked panel.",
+      "why": "Ours. The section has to look finished with no script, and the network runs under the copy, so it needs a plate.",
+      "kind": "ours"
+    }
+  ]
+}
