@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-01**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-02**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -2995,3 +2995,107 @@ can drop below 4.5.
 Based on `feat/fx-scout-2026-09-30`. Thirteen scout PRs are now stacked
 (09-17 → 10-01) and none has merged. Merge the bases with `--rebase`, not
 `--squash`.
+
+## 2026-10-02 — window 2026-10-01 to 2026-10-02
+
+One day, and discovery delivered for once: two ports from the same author,
+both fresh, both MIT, both small. The backlog was not touched.
+
+### Ported (from discovery)
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `meduse` | `RonanCamus/meduse`, `meduse.js` + `index.html` | `9c0c1c8f` | MIT | A school of jellyfish in raw WebGL2, about 200 lines with the shaders. One bell mesh beats from apex to rim, fourteen screen-space strands sway and lag, all additive on black. The lead follows the pointer, a click startles the school. Nothing like it on the shelf: the shelf's other `3d-hero` items are objects or spaces, not creatures. |
+| `physarum` | `RonanCamus/physarum`, `physarum.js` + `index.html` | `3c68aa63` | MIT | A slime mould in raw WebGL2: up to 262 144 agents in an `RGBA32F` texture run Jones' sense-turn-deposit rules over a wrapping `R16F` trail and grow a glowing network that reroutes toward the pointer. Not a duplicate of `perlin-flow-field` (particles read a noise field, no feedback) or `links-network` (tsParticles proximity lines): here the agents write the field they read. |
+
+Licences read from `LICENSE` at each pin: MIT, Copyright (c) 2026 Ronan Camus.
+Gates: `verify` 112 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit 0; both
+new ports PASS with zero warns. `check`: lint, build, docs and smoke ok on 116
+effects; `bun test` 452 pass / 1 fail, the fail being a 5 s timeout in
+`tests/docs.test.js` ("the served site puts the gallery...") at load average
+27. The base branch fails it identically under that load, and the full suite
+is 453 / 0 with `--timeout 120000`. `check` ran ungated: two 30-minute
+`scripts/gate` waits expired behind another session's pytest run.
+
+### Why these passed provenance when LUMEN (09-17) did not
+
+Both repos are single-commit, 0 stars, created the same morning (2026-10-01).
+That is the shape the 09-17 run rejected LUMEN on, so the difference is
+written down here:
+
+- No "inspired by" line pointing at a platform with unpublished source.
+- A real author: GitHub account since 2015, eleven public repos, and the
+  README's live demo (`ronancamus.github.io/meduse/`) and home page
+  (`ronancamus.com`) both answer 200. The README says the code was written
+  for that site.
+- `physarum` credits its algorithm to Jones (2010), a published paper, not
+  somebody's shader. An algorithm is not a licence problem.
+- Zero Shadertoy idioms in either file (`mainImage`, `fragCoord`, `iTime`,
+  `iResolution`, `iChannel`) and no off-site URLs.
+
+### How the ports were built
+
+Both scripts kept in order; the seams are the section box (canvas inserted,
+`clientWidth`/`clientHeight`, ResizeObserver), pointer events on the section
+mapped through `getBoundingClientRect()`, keys turned into options (`meduse`:
+keys 1-9 → `count`; `physarum`: 1-4 → `kind`, H → `hue` in sixths; pause and
+restart dropped), `failIfMajorPerformanceCaveat`, an off-screen pause, and a
+teardown that loses the context. Both keep upstream's own reduced-motion path:
+`meduse` draws one still frame, `physarum` grows the network 400 steps once and
+then moves only on pointer input. Every number option declares `step`.
+
+`physarum` needs `EXT_color_buffer_float`. The capture Chrome had it and went
+live (`data-fx-live` asserted before both shots). Without it the effect returns
+the resting handle and the CSS rest shows.
+
+### Contrast
+
+Both use the same smoked panel (74% of `#0a0d10`, 16 px blur). Bound with
+solid `#fff` behind the panel, which no frame can beat: title 7.95, lede 6.07,
+eyebrow 5.90, ghost CTA 6.71. The primary CTA is a solid plate, 11.3.
+
+### Previews
+
+Shot from a scratchpad bare page (snippet + module mount) served by
+`python3 -m http.server`, 1280x720, then `sips -z 360 640`. No `eval` needed.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `D-OneXXX/aurora` | GitHub | MIT | A 963 KB built single file with three.js inlined, plus a 35 KB generation prompt. The source (`src/app.js`, 34 KB) needs its own build. `aurora-css` already covers the look. |
+| `sandypjoshi/komorebi-light` | GitHub | MIT (API says NOASSERTION; the `LICENSE` file is MIT) | Leaf light on paper, but it ships a 4.3 MB mp3, four fallback JPEGs and five woff2 fonts, and needs a build. Not a section. |
+| `zhenmoran/ink-shan-shui` | GitHub | MIT | One-stroke ink landscape. A drawing tool (draw a stroke, mountains grow), and `ink-wash` already sits on the shelf. |
+| `JISHU-GHOSH/my-portfolio` | GitHub | MIT | A personal portfolio page, not an effect. |
+| `NadirAliOfficial/clockclock-24`, `NadirAliOfficial/split-flap-board`, `Yash-Awasthi/portfolio`, `bhattji007/pahari-scroll`, `helenamoisme/fire-on-grass` | GitHub | **none** | No LICENSE file. |
+| `MiddleSugar7000/lumen-saas-landing-page-template`, `MiddleSugar7000/volt-arc-landing-page-template`, `Chanduchandan2810/itzfizz-scroll-animation`, `Muhammad112233-creator/orvelle-immersive-house` | GitHub | mixed | GSAP. |
+| `tsuyatt/rollshade`, `Uuuuutori/orbita`, `agata-c/szopka`, `Ringmast4r/Lively-Wallpapers` | GitHub | NOASSERTION | Outside the allow-list as published. |
+| `lucasmarkes/hairline`, `vjymisal0/inkwire` | GitHub | MIT | React components. |
+| Games, tools, skills, sims and music videos (the rest of the topic search) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- `commits?since=2026-10-01` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `HARSHITSHARMA18/shaders`,
+  `tsparticles/tsparticles`. `majiayu000/ephemera` has one commit
+  (`cd445b52`, gallery docs, no new demo); `lenis` one (`bc152f90`,
+  CODEOWNERS).
+- `Pallarium/labs` still has no LICENSE.
+- No new `codrops/*` repos; newest is still `RotatingOnScrollAnimations`
+  (2026-06-18). Codrops hub not retried (403 the last three runs).
+- GitHub topic search, `created:>=2026-10-01` across eleven topics
+  (`webgl`, `shaders`, `glsl`, `css-animation`, `scroll-animation`,
+  `animation`, `canvas-animation`, `generative-art`, `threejs`, `particles`,
+  `creative-coding`): the tables above.
+- CodePen: not tested.
+
+### Backlog after this run
+
+Unchanged: shader-gallery `chrome`, `damascus`, `foil`; `cosmos-demo` and
+`mogp-motion` carried forward. `RonanCamus` has nine other public repos; worth
+a look next run for more of the same shape.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-01`. Fourteen scout PRs stacked (09-17 →
+10-02), none merged.
