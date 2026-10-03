@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-02**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-03**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3099,3 +3099,125 @@ a look next run for more of the same shape.
 
 Based on `feat/fx-scout-2026-10-01`. Fourteen scout PRs stacked (09-17 →
 10-02), none merged.
+
+## 2026-10-03 — window 2026-10-02 to 2026-10-03
+
+One day. Discovery found one portable repo and it duplicated yesterday's port,
+so this run took the top two of the backlog.
+
+### Ported (from the backlog)
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-chrome` | `shader-gallery/shaders`, `chrome/shader.frag` + `chrome/meta.json` | `4e8d4cb2` | MIT | The whole frame is one sheet of liquid metal, a domain-warped height field shaded as a mirror of a studio (hard horizon, dark floor, three strip lights, two rim lights). Next in the recorded ranking. Taken; it leaves the queue. |
+| `sg-damascus` | `shader-gallery/shaders`, `damascus/shader.frag` + `damascus/meta.json` | `4e8d4cb2` | MIT | Pattern-welded steel: contour bands that bunch into ladder rungs and ring around raindrop dimples, an etched step on every band edge, a satin sweep. Nothing like it on the shelf; the closest, `sg-contour`, is thin glowing isolines on black with no material. Taken. |
+
+Licence re-read from `LICENSE` at the pin: MIT, Copyright (c) 2026 E. T.
+Carter. Gates: `verify` 114 pass / 1 warn / 0 fail / 0 error / 3 skipped, exit
+0; both new ports PASS with zero warns, and the one WARN is still
+`paw-avatar`'s. `check` exit 0: lint ok and smoke ok on 118 effects, `bun test`
+457 pass / 0 fail. `check` ran **ungated**: the `scripts/gate` lock had been
+held for about 12 hours by another session's pocketpaw pytest run (started
+21:58 the night before), so the queued wait was dropped rather than left to
+expire.
+
+**The `chrome` vs `liquid-metal` side-by-side the 09-14 note asked for.**
+Done, and they are different effects. `liquid-metal` is Paper Shaders' single
+chrome shard folding through itself, off-centre on black, with the copy beside
+it. `sg-chrome` has no object: the metal is the ground, edge to edge, and what
+you read is the studio reflected in the swells. One is a product shot, the
+other is a material.
+
+### How the ports were built
+
+The `sg-lightleak` / `sg-obsidian` shape, unchanged: `shader.frag` byte-equal
+to upstream (sha1 checked after the copy), a thin `index.js` over
+`_shared/glsl-mount.js`, upstream's param defaults off each `meta.json`, and
+three deviations each (our palette for the unresolvable preset — `nocturne`
+for chrome, `mercury` for damascus — no post chain, the runtime seam). The
+post-chain deviation names each shader's own values (chrome carries an
+`aberration: 0.002` the others do not), so `deviations-real` matches real
+tokens.
+
+Three notes worth keeping:
+
+- **Damascus never reads `c1`** (`--fx-c2`). It only reaches the all-zero
+  palette check in `main()`. The colors description says so, so nobody tunes a
+  knob that does nothing.
+- **`layers` is an integer.** It declares upstream's own `min: 12, max: 96,
+  step: 1`, so the slider opens on 36 at 24 clean stops instead of offering
+  36.4 layers. The float options declare no range, as `sg-obsidian` does.
+- `sg-chrome`'s `mouseInfluence` is carried for parity and is inert: the
+  shared runtime holds `u_mouse` at (0,0), same as `sg-obsidian`.
+
+### Contrast
+
+Both put the copy on a smoked panel, not a wash. Chrome's strips are drawn as
+`c2 * 1.2 + 0.7` with plain-white speculars on top, so crests clip to white
+anywhere they roll; damascus's nickel layers are a ~0.44 grey the sweep pushes
+up, and mid-grey is the worst ground for white text. Bound with solid `#fff`
+behind the panel, computed and then rendered (the two agree to 0.1):
+
+| | title | lede | eyebrow | ghost CTA |
+|---|---|---|---|---|
+| `sg-chrome` (panel 74% of `#070a12`) | 9.00 | 6.78 | 5.50 | 7.51 |
+| `sg-damascus` (panel 76% of `#090b10`) | 9.57 | 7.35 | 5.95 | 7.98 |
+
+The primary CTA is a solid plate. No frame can drop below these.
+
+### Previews
+
+Shot live (`data-fx-live` asserted by `agent-browser is visible`) from a
+scratchpad bare page served by `python3 -m http.server`, system Chrome via
+`AGENT_BROWSER_EXECUTABLE_PATH`, 1280x720, then `sips -z 360 640`. No `eval`.
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `hosseinb1111/ember-drift` | GitHub, created 2026-10-02 | Apache-2.0 | The one clean fit: a single 35 KB `index.html`, vanilla Canvas 2D, no deps. But it is particles in a Perlin vector field, which is `perlin-flow-field` (PR #47) again. What it would add is interaction: cursor attract/repel, click bursts, shooting stars, a binary-glyph mode. Worth a second look only if the shelf wants a cursor-reactive flow field. |
+| "Wide: Grid Layout With a WebGL Shader", BL/S | Codrops hub 2026-09-28 → CodePen `blacklead-studio/pen/01a0d773-dab5-744d-bc5e-3f11d4f2262e` | MIT (on the pen's details page) | **Resolved and closed.** It is a fashion-magazine grid page template, not a section. It is also a CodePen 2.0 pen (UUID id): `cdpn.io/<user>/fullpage/<uuid>` returns only the wrapper, and the real page sits on `*.codepen.dev` behind a Cloudflare human check, which this run did not touch. So the snapshot recipe does not work for v2 pens at all. Not carried forward. |
+| `scoobynko/afterglow` | GitHub, created 2026-10-02 | MIT | Grainy WebGL2 gradients, but shipped as TypeScript for React (`src/*.ts`, `Afterglow.tsx`) with no built module at the pin. Same call as `rummy` (09-24). |
+| `michaelcrosato/2d-webgpu-demo-2` | GitHub | MIT | A 40-effect WebGL2 field guide, but TypeScript + Vite, no ES module to port. Could be a source if it ever publishes one. |
+| `baney75/afterlight` | GitHub | MIT | A playable app (three worlds, sound, share links, save image, Vite), not a section. |
+| `saimalshafi/somewhere` | GitHub | MIT | Procedural watercolour paintings, but a ~400 KB multi-module engine with its own UI. |
+| `funsaized/cr4wler` | GitHub | MIT | A browser extension (a spider that walks Chrome), not a section. |
+| `zeyniyoimiya-art/abisal-museo-bioluminiscente` | GitHub | MIT | React + TSX app. |
+| `mlf631666711-cloud/remotion-gallery` | GitHub | MIT | Data-video demos (a market-cap race), not effects. |
+| `larrybuckalew/neural-hero` | GitHub | MIT | R3F + GSAP. |
+| `yogeshhrathod/qivi` | GitHub | MIT | A React component. |
+| `ElvijsCoder/Chladni_Sky`, `Genz000/heaterium`, `mohammadtakali/harry-potter-book-animation`, `Syed-Muhammad-Ali-Raza/Procedural-Terrain-Explorer`, `adeebali1405-art/trail-cursor` | GitHub | **none** | No LICENSE file. `heaterium` (SVG-filter thermal text) and `Chladni_Sky` (cymatics sand) are both interesting; re-check if a licence lands. |
+| `Brightwav3/agent-face`, `MKAbuMattar/sarab` | GitHub | GPL-3.0 | Outside the allow-list. |
+| `Uuuuutori/orbita`, `hoshuko/uko-mascot`, `tekano/shoreline` | GitHub | NOASSERTION | Outside the allow-list as published. |
+| Games, tools, skills, Home Assistant cards, lyric films and sims (the rest of the topic search) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- **Codrops hub — reachable again, through the Browser pane.** WebFetch still
+  gets 403, but the desktop app's built-in browser loads
+  `tympanus.net/codrops/hub/all/` and `get_page_text` reads it. Newest item is
+  still "Wide" (09-28). Use the pane next run instead of skipping the hub.
+- No new `codrops/*` repos; newest is still `RotatingOnScrollAnimations`.
+- `commits?since=2026-10-02` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `HARSHITSHARMA18/shaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`. `Pallarium/labs` still has no LICENSE.
+- `RonanCamus`: the other nine public repos are a caption tool, libraries, a
+  NestJS fork and a CV theme. No more effects there.
+- GitHub topic search, `created:>=2026-10-02` across twelve topics (the eleven
+  from 10-02 plus `webgpu`), and keyword search (`hero background`, `shader
+  background`, `webgl effect`, `canvas effect`, `text effect`, `cursor
+  effect`): the table above.
+- CodePen picks: 403 to WebFetch; v2 pens sit behind a human check (see Wide).
+
+### Backlog after this run
+
+`chrome` and `damascus` are taken. Next: `foil` — a different section shape
+from the rest of the family: an emblem in the left third with the right two
+thirds kept quiet for a wordmark, so it wants left-aligned copy, not a centred
+panel. Then `cosmos-demo` and `mogp-motion`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-02`. Fifteen scout PRs stacked (09-17 →
+10-03), none merged. Merge the bases with `--rebase`, not `--squash`.
