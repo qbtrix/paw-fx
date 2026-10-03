@@ -1,0 +1,23 @@
+<!-- sg-rainglass section. Finished at rest with CSS alone: the defocused street
+     lights and the runner streaks in .fx-rainglass__rest are the hero with
+     JavaScript off, and index.js only covers them with a WebGL canvas once it
+     has the shader, a context and a linked program. The _fx paths are
+     root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The three
+     decorative layers carry aria-hidden; the copy is the only thing a screen
+     reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-rainglass/style.css">
+<section class="fx-rainglass" data-fx="sg-rainglass">
+  <div class="fx-rainglass__rest" aria-hidden="true"></div>
+  <div class="fx-rainglass__scrim" aria-hidden="true"></div>
+  <div class="fx-rainglass__grain" aria-hidden="true"></div>
+  <div class="fx-rainglass__inner">
+    <p class="fx-rainglass__eyebrow"><span class="fx-rainglass__dot" aria-hidden="true"></span>Open late</p>
+    <h1 class="fx-rainglass__title">Still on, whatever the weather is doing.</h1>
+    <p class="fx-rainglass__lede">Swap this for your own words. The headline takes one line or three, and the rain keeps running down the glass either way.</p>
+    <div class="fx-rainglass__actions">
+      <a class="fx-rainglass__cta fx-rainglass__cta--primary" href="#">Find a table</a>
+      <a class="fx-rainglass__cta fx-rainglass__cta--ghost" href="#">Tonight's menu</a>
+    </div>
+  </div>
+</section>

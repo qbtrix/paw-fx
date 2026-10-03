@@ -1,0 +1,19 @@
+<!-- stardust section. Finished at rest with CSS alone: .fx-stardust__rest is
+     upstream's spiral galaxy drawn flat, and index.js only covers it once the
+     million points have drawn a frame. The _fx paths are root-absolute
+     because a site always sits at the origin root. Decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/stardust/style.css">
+<section class="fx-stardust" data-fx="stardust">
+  <div class="fx-stardust__rest" aria-hidden="true"></div>
+  <div class="fx-stardust__scrim" aria-hidden="true"></div>
+  <div class="fx-stardust__inner">
+    <p class="fx-stardust__eyebrow"><span class="fx-stardust__dot" aria-hidden="true"></span>A million points</p>
+    <h1 class="fx-stardust__title">Scatter it. It finds its shape again.</h1>
+    <p class="fx-stardust__lede">Swap this for your own words. Tap the stars to morph them from a galaxy to a sphere to a knot to a word, and drag sideways to turn them.</p>
+    <div class="fx-stardust__actions">
+      <a class="fx-stardust__cta fx-stardust__cta--primary" href="#">Get started</a>
+      <a class="fx-stardust__cta fx-stardust__cta--ghost" href="#">See how</a>
+    </div>
+  </div>
+</section>
