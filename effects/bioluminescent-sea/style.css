@@ -1,0 +1,229 @@
+/* bioluminescent-sea: the CSS half of the effect. This file is the whole hero
+   on its own -- with JavaScript off, under reduced motion (where index.js never
+   starts the solver), or after a refused WebGL2 context sends mount() back to
+   rest, this is what a visitor sees.
+
+   The live sea is black water with light only where something moved, so the
+   resting layer is that picture caught mid-swim: upstream's own ground colour
+   (#01040a), a few soft wakes in the luciferase blue the shader emits
+   (vec3(0.10, 0.55, 1.0), about 475 nm), and a scatter of faint single-cell
+   sparks, which is what upstream's calm sea shows between flashes.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-sea__rest      the resting sea, covered once the canvas paints
+     -1  <canvas>           inserted by index.js
+      0  .fx-sea__vignette  upstream's .vinheta, over whichever layer shows
+      0  .fx-sea__scrim     legibility wash
+      1  .fx-sea__inner     the copy */
+.fx-sea {
+  --fx-bg: #01040a;
+  --fx-glow: #1a8cff;
+  --fx-spark: #7fd4ff;
+  --fx-ink: #f2f9ff;
+  --fx-muted: #cfe6f5;
+  --fx-scrim: 0.8;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows the viewport by exactly
+     its own padding. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The resting sea. Three wakes, each an elongated glow along the way a fish
+   or a hand would cross the frame, over a faint lift toward the bottom, plus
+   one-pixel sparks so the dark reads as water with something living in it
+   rather than as a flat fill. The sparks are three tilings of co-prime size
+   with two cells in each tile; one tiling alone reads as a dot grid. */
+.fx-sea__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(1px 1px at 20% 30%, color-mix(in oklab, var(--fx-spark) 55%, transparent), transparent 2px) 0 0 / 97px 83px,
+    radial-gradient(1px 1px at 73% 81%, color-mix(in oklab, var(--fx-spark) 35%, transparent), transparent 2px) 0 0 / 97px 83px,
+    radial-gradient(1px 1px at 61% 12%, color-mix(in oklab, var(--fx-spark) 45%, transparent), transparent 2px) 0 0 / 151px 127px,
+    radial-gradient(1px 1px at 8% 66%, color-mix(in oklab, var(--fx-spark) 30%, transparent), transparent 2px) 0 0 / 151px 127px,
+    radial-gradient(1px 1px at 38% 52%, color-mix(in oklab, var(--fx-spark) 40%, transparent), transparent 2px) 0 0 / 223px 191px,
+    radial-gradient(1px 1px at 88% 90%, color-mix(in oklab, var(--fx-spark) 28%, transparent), transparent 2px) 0 0 / 223px 191px,
+    radial-gradient(22% 5% at 18% 72%, color-mix(in oklab, var(--fx-glow) 48%, transparent), transparent 72%),
+    radial-gradient(9% 3% at 26% 70%, color-mix(in oklab, var(--fx-spark) 42%, transparent), transparent 70%),
+    radial-gradient(18% 4% at 80% 26%, color-mix(in oklab, var(--fx-glow) 38%, transparent), transparent 72%),
+    radial-gradient(14% 6% at 86% 82%, color-mix(in oklab, var(--fx-glow) 34%, transparent), transparent 72%),
+    radial-gradient(120% 70% at 50% 115%, #041a33, transparent 62%),
+    var(--fx-bg);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live only once the solver has drawn a frame to the
+   canvas. Every failure path leaves it unset and destroy() removes it, so this
+   rule is also the proof that teardown worked. */
+.fx-sea[data-fx-live] .fx-sea__rest {
+  opacity: 0;
+}
+
+.fx-sea__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* Upstream's .vinheta, unchanged. */
+.fx-sea__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 50%, rgba(0, 0, 0, .6));
+}
+
+/* The copy carries its own wash, held flat across the content column before
+   easing out so it does not draw a visible ellipse across the hero.
+
+   MEASURED at 0.8. Copy hidden, boxes recorded before hiding, worst ratio
+   between each run's computed ink and any pixel under its box at 1280x720.
+   The dangerous frame is not the fish: it is a visitor stirring the water
+   right under the copy, so three long sine strokes through the headline were
+   each shot four times over the next few seconds, plus eight fast scrubs
+   straight across the title and the lede.
+
+     state                     eyebrow  title   lede   ghost CTA
+     rest, CSS only             12.59   13.86  12.59   15.43
+     live, fish only (4 taps)   15.74    8.11   6.92   16.08
+     live, after a stroke        6.69    6.56   6.90    8.66
+     live, fast scrubs           8.19    8.22   7.85   12.31
+
+   Floor is 4.5:1; worst case is the title at 6.56, on a wake at
+   rgb(45,97,102). Scrubbing measures DIMMER than one long stroke, because
+   each cell spends its luciferin and a patch stirred hard goes dark -- the
+   first stroke through fresh water is the worst case, not the hundredth.
+   `fade` and `recharge` both raise it: longer wakes and faster refills put
+   more light under the copy at once, so re-measure after moving either. */
+.fx-sea__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    108% 96% at 50% 52%,
+    color-mix(in oklab, var(--fx-bg) 86%, transparent) 0%,
+    color-mix(in oklab, var(--fx-bg) 86%, transparent) 38%,
+    color-mix(in oklab, var(--fx-bg) 58%, transparent) 55%,
+    color-mix(in oklab, var(--fx-bg) 30%, transparent) 71%,
+    color-mix(in oklab, var(--fx-bg) 10%, transparent) 87%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+/* Pointer events on the copy bubble up to the section, where index.js
+   listens, so a stroke across the headline still stirs the sea. */
+.fx-sea__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  text-align: center;
+}
+
+.fx-sea__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-sea__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-spark);
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--fx-glow) 60%, transparent);
+}
+
+/* Upstream sets its own words in Georgia, so the headline does too. */
+.fx-sea__title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.4rem, 6.8vw, 5.2rem);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, var(--fx-bg) 80%, transparent);
+}
+
+.fx-sea__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.24rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-sea__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-sea__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-sea__cta--primary {
+  background: var(--fx-ink);
+  color: #031226;
+}
+
+.fx-sea__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-sea__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-sea__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-sea__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}

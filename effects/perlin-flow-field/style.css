@@ -1,0 +1,123 @@
+/* perlin-flow-field: the CSS half of the effect. With JavaScript off, under
+   reduced motion (where index.js never starts), or before the first frame,
+   this is the whole hero: upstream's #0d0a14 ground with its warm glow and
+   vignette re-drawn as CSS gradients (the same stops drawFX() paints), and the
+   copy on its own smoked panel.
+
+   Upstream is single-theme by choice (additive sunset strokes need a dark
+   ground), so --fx-bg is the literal its PNG export fills with, not a knob.
+
+   Stacking:
+     0  .fx-perlin-flow-field__art   trails, inserted by index.js
+     1  .fx-perlin-flow-field__fx    glow + vignette + grain, inserted by index.js
+     2  .fx-perlin-flow-field__inner the copy, bottom left, on its panel */
+.fx-perlin-flow-field {
+  --fx-bg: #0d0a14;
+  --fx-ink: #ece7f6;
+  /* 5.0:1 on the panel even with pure white behind it (worst case) */
+  --fx-muted: #d3cde2;
+  --fx-line: rgba(255, 255, 255, 0.09);
+  --fx-coral: #ff6e62;
+  --fx-amber: #ffb347;
+  --fx-panel: 0.72;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 3.5rem);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(6, 3, 12, 0) 38%, rgba(6, 3, 12, 0.26) 75%, rgba(4, 2, 10, 0.66) 100%),
+    radial-gradient(circle at 50% 44%, rgba(255, 122, 72, 0.16) 0%, rgba(232, 80, 158, 0.07) 32%, rgba(0, 0, 0, 0) 72%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.fx-perlin-flow-field__art,
+.fx-perlin-flow-field__fx {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.fx-perlin-flow-field__art { z-index: 0; }
+.fx-perlin-flow-field__fx { z-index: 1; }
+
+/* Strokes run over the whole frame and add up toward #ffe8b0, so the copy
+   sits on a smoked panel (upstream's own .panel treatment) rather than a wash. */
+.fx-perlin-flow-field__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 34rem;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem) clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 14px;
+  background: color-mix(in oklab, #130e1e calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.fx-perlin-flow-field__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.fx-perlin-flow-field__lede {
+  margin: 0.85rem 0 0;
+  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-perlin-flow-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.fx-perlin-flow-field__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.fx-perlin-flow-field__cta--primary {
+  background: linear-gradient(135deg, var(--fx-coral), var(--fx-amber));
+  color: #2a1206;
+  box-shadow: 0 6px 18px rgba(255, 110, 80, 0.28);
+}
+
+.fx-perlin-flow-field__cta--ghost {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fx-ink);
+}
+
+.fx-perlin-flow-field__cta:hover { transform: translateY(-1px); }
+
+.fx-perlin-flow-field__cta:focus-visible {
+  outline: 2px solid var(--fx-amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-perlin-flow-field__cta { transition: none; }
+}

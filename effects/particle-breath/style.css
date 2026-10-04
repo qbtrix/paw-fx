@@ -1,0 +1,148 @@
+/* particle-breath: the CSS half of the effect. With JavaScript off, or when
+   a 2D context is refused and mount() backs out, this is the whole section.
+
+   The resting layer draws upstream's picture flat: a dotted, slightly tilted
+   volume in the middle of upstream's #111 ground, sized from upstream's own
+   Math.min(w * 0.205, h * 0.32), denser at the core and thinning to the rim.
+
+   Stacking:
+     -2  .fx-breath__rest     the resting picture, covered once a frame draws
+     -1  <canvas>             inserted by index.js
+      1  .fx-breath__inner    the copy, bottom left, on a smoked panel */
+.fx-breath {
+  --fx-bg: #111111;
+  --fx-dot: #e0dfd8;
+  --fx-ink: #f4f3ee;
+  --fx-muted: #cfcdc4;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-breath__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--fx-bg);
+  transition: opacity 600ms ease;
+}
+
+/* The volume: a dot lattice cut to a tilted ellipse, fading at the rim the
+   way upstream's back buckets fade to 0.2 alpha. */
+.fx-breath__rest::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(58vw, 88vh);
+  height: min(40vw, 60vh);
+  translate: -50% -50%;
+  rotate: -14deg;
+  background: radial-gradient(circle, var(--fx-dot) 0.9px, transparent 1.4px) 0 0 / 7px 7px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 20%, rgb(0 0 0 / 0.45) 70%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 20%, rgb(0 0 0 / 0.45) 70%, transparent 100%);
+  opacity: 0.75;
+}
+
+/* index.js sets data-fx-live once a frame has drawn; destroy() clears it. */
+.fx-breath[data-fx-live] .fx-breath__rest {
+  opacity: 0;
+}
+
+.fx-breath__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* The volume sits dead centre and on a phone it runs under the copy, so the
+   copy carries its own smoked panel rather than trusting open ground. */
+.fx-breath__inner {
+  --fx-panel: 0.72;
+  position: relative;
+  z-index: 1;
+  max-width: 32rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fx-breath__eyebrow {
+  margin: 0 0 1.1rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-breath__title {
+  margin: 0;
+  font-size: clamp(2.1rem, 5vw, 3.6rem);
+  font-weight: 560;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.fx-breath__lede {
+  margin: 1.1rem 0 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-breath__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+.fx-breath__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.fx-breath__cta--primary {
+  background: var(--fx-ink);
+  color: var(--fx-bg);
+}
+
+.fx-breath__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  color: var(--fx-ink);
+}
+
+.fx-breath__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-breath__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}

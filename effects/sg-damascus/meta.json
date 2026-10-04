@@ -1,0 +1,80 @@
+{
+  "name": "sg-damascus",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "damascus",
+    "steel",
+    "metal",
+    "pattern-welded",
+    "etched",
+    "satin",
+    "material",
+    "contour",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's damascus: a slab of pattern-welded steel, etched and satin finished, filling the frame. Dozens of forged layers cut the ground surface as tight contour bands that bunch into ladder rungs, ring around raindrop dimples and flow like wood grain between them. The dark carbon layers sit a hair below the bright nickel ones, so every band edge catches a lit step, while a tall satin highlight sweeps the slab and the contours slowly crawl.",
+  "needs": [],
+  "license": "MIT",
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#c08a52", "#7d8896", "#cdd6df", "#1b2230"],
+      "description": "Four poles. c1 is the temper-colour fringe on the satin sheen, c3 tints the bright nickel layers, c4 bleeds into the dark carbon layers and the edge vignette. c2 only reaches the shader's all-zero palette check, so it changes nothing. The steel is built as greys and only tinted, so these move its cast, not its value. Falls back to --fx-c1..--fx-c4."
+    },
+    "layers": {
+      "type": "number",
+      "default": 36,
+      "min": 12,
+      "max": 96,
+      "step": 1,
+      "description": "How many steel layers the billet holds; low is a few broad bands, high is a fine dense contour map. Upstream default and range."
+    },
+    "ladder": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Depth of the pressed cross-grooves; 0 is plain random grain, high bunches the bands into hard ladder rungs. Upstream default, range 0 to 1.5."
+    },
+    "raindrop": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Depth of the drilled dimples; 0 removes the concentric rings, high makes them deep bullseyes. Upstream default, range 0 to 1.5."
+    },
+    "sheen": {
+      "type": "number",
+      "default": 1,
+      "description": "Strength of the sweeping satin highlight; 0 is a flat matte etch. Upstream default, range 0 to 2."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Speed of the light sweep and the contour crawl; 0 freezes the slab. Upstream default, range 0 to 2."
+    }
+  },
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["damascus/shader.frag", "damascus/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `mercury` preset.",
+      "why": "damascus/meta.json declares `defaultPalette: \"mercury\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own and declares them. The shader's zero-fallback branch is not the answer either: paletteFor never produces zeros, so that branch is unreachable from paw-fx. Same call sg-gloam, sg-bask, sg-nebula-drift, sg-obsidian and sg-lightleak made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.12, saturation 1.05 and contrast 1.03 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The shader already seats the slab with its own edge vignette, so the gap is small; the section's own CSS grain layer covers what the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
