@@ -202,6 +202,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | sg-lightleak | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `lightleak/shader.frag` |
 | sg-chrome | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `chrome/shader.frag` |
 | sg-damascus | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `damascus/shader.frag` |
+| sg-foil | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `foil/shader.frag` |
 | gobo-light | MIT | [thevangelist/tinseltown](https://github.com/thevangelist/tinseltown) `e31bfc8`, `src/tinseltown.js` + `src/shader.js` + `src/optics.js` + `src/options.js` + `src/cookies.js` |
 | bioluminescent-sea | MIT | [Raflael/ardentia](https://github.com/Raflael/ardentia) `7e1a155`, `index.html` |
 | wipe-glass | MIT | [Hixly/rain-on-glass](https://github.com/Hixly/rain-on-glass) `4d7bf1f`, `index.html` |
@@ -214,6 +215,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | perlin-flow-field | MIT | [uahz/perlin-flow-field](https://github.com/uahz/perlin-flow-field) `9dd05d8`, `index.html` |
 | meduse | MIT | [RonanCamus/meduse](https://github.com/RonanCamus/meduse) `9c0c1c8`, `meduse.js`, `index.html` |
 | physarum | MIT | [RonanCamus/physarum](https://github.com/RonanCamus/physarum) `3c68aa6`, `physarum.js`, `index.html` |
+| capsule-nav | MIT | [ningqi24/deepseek-style-floating-navbar](https://github.com/ningqi24/deepseek-style-floating-navbar) `bac85cf`, `glass-navbar.js`, `glass-navbar.css` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
@@ -246,20 +248,21 @@ which the build does automatically from the `paper` key's `licenseFiles`. Each
 `index.js` still carries the Apache-2.0 header comment and the "Powered by Paper
 Shaders" attribution the upstream project asks for.
 
-The twenty-four shader.gallery ports vendor nothing. Their GLSL ships as
+The twenty-five shader.gallery ports vendor nothing. Their GLSL ships as
 `effects/sg-<name>/shader.frag`, byte-identical to the upstream file, SPDX header
 and all, and that header travels into every site because the whole file does.
 `index.js` repeats the same SPDX lines, so the MIT notice is present whether a
 reader opens the module or the shader. Seventeen are pinned at `cd06eee`; the
-seven added since, `sg-hologram` and `sg-suminagashi` from the 2026-09-14 survey,
+eight added since, `sg-hologram` and `sg-suminagashi` from the 2026-09-14 survey,
 `sg-obsidian` and `sg-rainglass` from 2026-09-18, `sg-lightleak` from
-2026-09-20, and `sg-chrome` and `sg-damascus` from 2026-10-03, are pinned at
+2026-09-20, `sg-chrome` and `sg-damascus` from 2026-10-03, and `sg-foil` from
+2026-10-04, are pinned at
 `4e8d4cb`, the head after the 59-shader expansion of 2026-09-08/09. Nothing was
 re-pinned: a commit is a coordinate, not a version, and the seventeen still
 resolve at theirs.
 
 Both families' `meta.json` carries a `deviations` list. For the shader.gallery
-twenty-four it is load-bearing rather than bookkeeping: their palettes and their poster
+twenty-five it is load-bearing rather than bookkeeping: their palettes and their poster
 post chain (bloom, grain, vignette, dither) live in `@shader-gallery/runtime`, a
 package paw-fx does not vendor, so the palettes here are ours and the output does
 not match the upstream posters. Both are declared per effect, with `kind: "ours"`.

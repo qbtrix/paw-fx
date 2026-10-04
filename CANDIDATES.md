@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-03**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-04**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3221,3 +3221,90 @@ panel. Then `cosmos-demo` and `mogp-motion`.
 
 Based on `feat/fx-scout-2026-10-02`. Fifteen scout PRs stacked (09-17 →
 10-03), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-04 — window 2026-10-03 to 2026-10-04
+
+One day. Discovery found two portable repos; one was ported, the other is
+held on a precedent question (below). The backlog gave the second port.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `capsule-nav` | `ningqi24/deepseek-style-floating-navbar`, `glass-navbar.js` + `glass-navbar.css` | `bac85cfb` | MIT | Discovery. A floating capsule header: edge to edge and transparent at the top of the page, then past 80px it springs (stiffness 180, damping 28, mass 1, integrated in rAF rather than a CSS transition, so a change of direction mid-scroll keeps its velocity) to a narrower, thinner frosted pill. Zero deps, two files, every size a CSS variable the script reads once. First `menu` port since the Codrops survey that is a header rather than a reveal. Seams: wrapper and auto-init removed, the two throws become the resting handle, `--gnav-*` is `--fx-*`, the `data-gnav-*` overrides are mount options, and the 180vh demo section around it is ours. Scroll source stays `window`. Every numeric literal in `index.js` traces to upstream. |
+| `sg-foil` | `shader-gallery/shaders`, `foil/shader.frag` + `foil/meta.json` | `4e8d4cb2` | MIT | Backlog, next in the recorded ranking. A foil-stamped emblem debossed into dark card, lit by one lamp off the upper right and a slow light sweep. Different section shape from the rest of the family: the mark sits in the left third and the copy goes left-aligned in the right two thirds (`grid-template-columns: 1fr 2fr`, stacked under 760px). Palette is ours (upstream names the `foundry` preset, unresolvable); c2 is unused by the shader and the description says so. |
+
+Gates: `check` exit 0 (lint ok, smoke ok on 120 effects, `bun test` 461
+pass / 0 fail), run through `scripts/gate` with system Chrome via
+`AGENT_BROWSER_EXECUTABLE_PATH`. `verify` 116 pass / 1 warn / 0 fail / 0
+error / 3 skipped, exit 0; both new ports PASS with zero warns, and the one
+WARN is still `paw-avatar`'s.
+
+### Contrast
+
+`sg-foil`: smoked panel at 76% of `#090b10`, bound over solid `#fff`: title
+9.51, lede and eyebrow 7.32. `capsule-nav`: link ink `#1b1d26` at opacity .92
+over the pill (45% white) over the lightest ground stop `#faf8f3`: 12.90;
+over pure white 13.35. Dark scheme about 13.
+
+### Previews
+
+Shot live (`data-fx-live` asserted by `agent-browser is visible`) from
+scratchpad bare pages served by `python3 -m http.server`, system Chrome,
+1280x720 then `sips -z 360 640`. `capsule-nav` is shot scrolled to 240px, the
+frosted-pill state, with the colour scheme pinned light because the machine
+is in dark mode. No `eval`.
+
+### Run notes
+
+Two implementer sub-agents built the two ports in parallel in the same
+worktree (disjoint effect dirs, no git, no `build`/`check`, previews from
+scratchpad pages); the lead ran the gates once at the end. One bug caught by
+a resting shot: a `.fx-cnav-page > *` rule set `position: relative` on the
+fixed header, so it scrolled away; now `:not(.fx-cnav)`.
+
+### Held, not ported — a question for the captain
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `ossianravn/pigment-drift-generator` | GitHub, created 2026-10-03, author on GitHub since 2017 | MIT | The best thing found in weeks: a watercolour "pigment drift" hero background, one WebGL2 fragment shader (domain-warped washes mixed in OKLab, a lifted current, granulation, brush relief, a seamless loop), with a ~10 KB embed whose own API is `mount(el, config) -> {update, destroy}`. Nothing on the shelf is like it; `ink-wash` is sumi on rice paper, not wet colour. Held because it is the same shape three earlier runs rejected (`rummy` 09-24, `afterglow` and `2d-webgpu-demo-2` 10-03): TypeScript source under Vite with no built module committed at the pin. Here the TS is only annotations on plain DOM code, so the port would be a type-strip plus the mount seam, and `verify` would still pin, path-check and licence-check it (the GLSL lives in a template literal in `shader.ts`, so `copied-glsl` does not fire; only `numeric-trace` covers the shader). **The question:** is a type-strip a seam, or a rewrite? If yes, port at pin `8496b1081b7de3963b41947c927f06ec566db2f1`, paths `src/embed/pigment-drift.ts`, `src/engine/renderer.ts`, `src/engine/shader.ts`, `src/engine/params.ts`, `src/engine/color.ts`; defaults are `DEFAULT_CONFIG` in `params.ts` (seed 4127, paper `#fdf1e3`, five pigments, 22 numeric ranges with min/max/step already declared). Top of the backlog. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `Starvixhub/404-Neon-City` | GitHub, created 2026-10-03 | MIT | Vanilla, three files, a cyberpunk 404 page: rain spans generated by JS, CSS fog, flickering neon signs, cursor sparks. But it is a page illustration, not a section: half the CSS draws a character and a car out of divs, the button navigates to `/`, and the rain and fog alone would be a cherry-pick, which is invention by subtraction. |
+| `RNA4219/motion-atlas` | GitHub, created 2026-10-04 | MIT | 200 motion samples with a player, compare mode and lab, vanilla JS, no runtime deps. A catalogue app, not a section. Could be a source if a single sample is worth lifting; none screened this run. |
+| `240000000/anabasis` | GitHub, created 2026-10-03 | MIT | 60 000 three.js particles morphing between four forms, an image and text. That is `stardust` (PR #45) again, in an 88 KB single file with 20 MB of media. |
+| `nurkenkidir/pace-cs641-animated-op-art` | GitHub, created 2026-10-03 | MIT | Coursework: a canvas op-art illusion driven by the accelerometer, built around a committed photograph. |
+| `AmiARMiess/aurora` | GitHub | MIT | A whole landing page (three.js, no build), not a section. |
+| `ningqi24/deepseek-style-floating-navbar` | GitHub, created 2026-10-03 | MIT | **Ported** as `capsule-nav`; see above. Provenance note: the repo name cites DeepSeek's site as the design reference, and the README states it is an independent implementation with none of DeepSeek's code, CSS, assets or marks. The port drops the brand from the name. |
+| `Romainlg29/afterburner`, `larrybuckalew`-style R3F work, `PlugFox/g1455` (Flutter), `enavermate/react-native-splitflap`, `flohoeller/affectui-components` (React/shadcn), `xAmirHamza77/zomotion` (React) | GitHub | MIT | Framework or non-web code. |
+| `4daystocome/infinite-scroll-effect`, `vaikashhari/Radhimaa`, `anywaylupin/Lupin`, `framebudget/core` | GitHub | **none** | No LICENSE file. |
+| `DerKezorm/nexcanvas`, `venkatarangan/facemango` (AGPL), `NLboom0258`, `Zaxaerith`, `optative-visuals` (GPL) | GitHub | copyleft | Outside the allow-list. |
+| Games, films, tools, explainers, sims, wallpapers, music-video engines (the rest of the topic and keyword search) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops hub (read through the Browser pane, as the 10-03 note says): newest
+  item is still "Wide" (09-28). No new `codrops/*` repos; newest is still
+  `RotatingOnScrollAnimations`.
+- `commits?since=2026-10-03` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `HARSHITSHARMA18/shaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`.
+- GitHub topic search, `created:>=2026-10-03` across twelve topics, and the
+  six keyword searches: the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+`foil` is taken. Next: `pigment-drift` on the captain's word (held table
+above). Carried forward unchanged: `cosmos-demo` (`absoyak/cosmos-demo` at
+`a247d9f1`, a narrative not a loop) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`, an attribute system not a section).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-03`. Sixteen scout PRs stacked (09-17 →
+10-04), none merged. Merge the bases with `--rebase`, not `--squash`.
