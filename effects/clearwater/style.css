@@ -1,0 +1,227 @@
+/* clearwater: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before the pebble bed has decoded, or after a
+   refused WebGL2 context sends mount() back to rest, this is what a visitor
+   sees. (Reduced motion is NOT one of those: index.js renders upstream's own
+   frozen-time frame there, so that still is real water.)
+
+   The live effect looks down from the shore into sunlit shallows, so the
+   resting layer is that view before it moves: grey-brown pebbles tinted green
+   by the water column, deepening to teal toward the top of the frame where
+   the bed falls away, with a loose web of warm caustic light over them and a
+   sun glint off to the upper right, where upstream puts its sun (6 degrees
+   east of the view axis, 31 degrees up).
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-clearwater__rest   the resting water, covered once the canvas paints
+     -1  <canvas>               inserted by index.js
+      0  .fx-clearwater__scrim  legibility wash
+      1  .fx-clearwater__inner  the copy */
+.fx-clearwater {
+  --fx-bg: #0d2a2a;
+  --fx-shallow: #6f8a6c;
+  --fx-deep: #1f5a5e;
+  --fx-light: #fff3d6;
+  --fx-ink: #f6f8f4;
+  --fx-muted: #dfe7e2;
+  --fx-scrim: 0.8;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows the viewport by exactly
+     its own padding. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Painted from the top down: the sun glint, the caustic web, the pebbles,
+   then the depth ramp. The caustics are thin bright rings rather than soft
+   blobs, because that net of focused lines is what reads as water at all. */
+.fx-clearwater__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(4% 3% at 78% 8%, rgba(255, 255, 255, .85), transparent 70%),
+    radial-gradient(22% 12% at 78% 8%, color-mix(in oklab, var(--fx-light) 35%, transparent), transparent 70%),
+    radial-gradient(9% 7% at 22% 70%, transparent 62%, color-mix(in oklab, var(--fx-light) 30%, transparent) 70%, transparent 78%),
+    radial-gradient(11% 8% at 41% 82%, transparent 60%, color-mix(in oklab, var(--fx-light) 26%, transparent) 69%, transparent 77%),
+    radial-gradient(8% 6% at 63% 74%, transparent 62%, color-mix(in oklab, var(--fx-light) 28%, transparent) 70%, transparent 78%),
+    radial-gradient(10% 7% at 84% 86%, transparent 60%, color-mix(in oklab, var(--fx-light) 24%, transparent) 69%, transparent 77%),
+    radial-gradient(7% 5% at 34% 55%, transparent 62%, color-mix(in oklab, var(--fx-light) 20%, transparent) 70%, transparent 78%),
+    radial-gradient(8% 5% at 70% 52%, transparent 62%, color-mix(in oklab, var(--fx-light) 18%, transparent) 70%, transparent 78%),
+    radial-gradient(circle at 30% 30%, rgba(200, 196, 180, .18) 0 18%, transparent 19%) 0 0 / 46px 38px,
+    radial-gradient(circle at 70% 60%, rgba(40, 44, 38, .22) 0 20%, transparent 21%) 11px 17px / 53px 41px,
+    linear-gradient(180deg, var(--fx-deep) 0%, color-mix(in oklab, var(--fx-deep) 55%, var(--fx-shallow)) 38%, var(--fx-shallow) 78%, color-mix(in oklab, var(--fx-shallow) 80%, #a39a86) 100%);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live only once a frame is on the canvas. Every failure
+   path leaves it unset and destroy() removes it, so this rule is also the
+   proof that teardown worked. */
+.fx-clearwater[data-fx-live] .fx-clearwater__rest {
+  opacity: 0;
+}
+
+/* grab, as upstream: the gesture is turning your head. pan-y leaves a
+   vertical swipe to the page, so a phone can still scroll past the hero. */
+.fx-clearwater__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.fx-clearwater__canvas:active {
+  cursor: grabbing;
+}
+
+/* The copy carries its own wash, held flat across the content column before
+   easing out so it does not draw a visible ellipse across the hero.
+
+   MEASURED at 0.8, at 1280x720 with the default yaw and pitch. Copy hidden
+   with visibility (so the boxes keep their layout), boxes recorded from the
+   same page, worst ratio between each run's computed ink and any pixel under
+   its box. One page LOAD per frame.
+
+     state          eyebrow  title   lede  ghost CTA
+     live, 2s          6.94   5.71   5.26       6.31
+     live, 6s          5.30   5.71   5.15       6.70
+     live, 12s         4.99   5.60   5.39       6.55
+
+   Floor is 4.5:1; worst case is the eyebrow at 4.99, and the eyebrow and the
+   ghost CTA also sit on their own darkening pill, which this does not count.
+   The glints sit just above the title at the default pitch. `pitch` is the
+   knob that moves this: raising it toward 0 brings the sun's glare path up
+   into the frame and behind the copy, so re-measure after raising it. */
+.fx-clearwater__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    100% 90% at 50% 50%,
+    color-mix(in oklab, var(--fx-bg) 90%, transparent) 0%,
+    color-mix(in oklab, var(--fx-bg) 90%, transparent) 36%,
+    color-mix(in oklab, var(--fx-bg) 62%, transparent) 54%,
+    color-mix(in oklab, var(--fx-bg) 30%, transparent) 70%,
+    color-mix(in oklab, var(--fx-bg) 8%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-clearwater__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 58rem;
+  text-align: center;
+}
+
+.fx-clearwater__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-bg) 40%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-clearwater__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-light);
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--fx-light) 60%, transparent);
+}
+
+.fx-clearwater__title {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.3rem, 6.4vw, 4.9rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 40px color-mix(in oklab, var(--fx-bg) 85%, transparent);
+}
+
+.fx-clearwater__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.24rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+  text-shadow: 0 1px 24px color-mix(in oklab, var(--fx-bg) 85%, transparent);
+}
+
+.fx-clearwater__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-clearwater__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-clearwater__cta--primary {
+  background: var(--fx-ink);
+  color: #0d2a2a;
+}
+
+.fx-clearwater__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-bg) 45%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-clearwater__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-clearwater__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-bg) 60%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 45%, transparent);
+}
+
+.fx-clearwater__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-clearwater__rest,
+  .fx-clearwater__cta {
+    transition: none;
+  }
+}

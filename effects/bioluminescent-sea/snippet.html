@@ -1,0 +1,22 @@
+<!-- bioluminescent-sea section. Finished at rest with CSS alone: .fx-sea__rest
+     is the night sea with a few wakes already lit, and index.js only covers it
+     once the solver has drawn a frame to its canvas. The _fx paths are
+     root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The
+     decorative layers carry aria-hidden; the copy is the only thing a screen
+     reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/bioluminescent-sea/style.css">
+<section class="fx-sea" data-fx="bioluminescent-sea">
+  <div class="fx-sea__rest" aria-hidden="true"></div>
+  <div class="fx-sea__vignette" aria-hidden="true"></div>
+  <div class="fx-sea__scrim" aria-hidden="true"></div>
+  <div class="fx-sea__inner">
+    <p class="fx-sea__eyebrow"><span class="fx-sea__dot" aria-hidden="true"></span>Night swim</p>
+    <h1 class="fx-sea__title">The sea lights up wherever something moves through it.</h1>
+    <p class="fx-sea__lede">Swap this for your own words. Draw a finger through the water and the plankton flashes blue along the current you made, then keeps turning after you stop.</p>
+    <div class="fx-sea__actions">
+      <a class="fx-sea__cta fx-sea__cta--primary" href="#">Wade in</a>
+      <a class="fx-sea__cta fx-sea__cta--ghost" href="#">How it works</a>
+    </div>
+  </div>
+</section>
