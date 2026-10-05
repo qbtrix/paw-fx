@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-04**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-05**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3308,3 +3308,98 @@ above). Carried forward unchanged: `cosmos-demo` (`absoyak/cosmos-demo` at
 
 Based on `feat/fx-scout-2026-10-03`. Sixteen scout PRs stacked (09-17 →
 10-04), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-05 — window 2026-10-04 to 2026-10-05
+
+One day. Discovery found two portable repos and both were ported; the
+backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `reaction-diffusion` | `evoluteur/reaction-diffusion`, `js/rd.js` + `index.html` + `css/rd.css` | `26206449` | MIT | Discovery (GitHub topic search, created 2026-10-05; the author's account dates from 2011). The Gray-Scott model on the GPU in raw WebGL2: two chemicals on a 512 x 512 wrapping dish grow coral, spots, a labyrinth, worms or waves depending on the feed and kill rates, with a five-stop colour ramp and a relief light; the pointer paints chemical B and a probe stops the computation once nothing moves. Seams: the whole script wrapped in `mount()`, the square dish CSS-covered over the section with the pointer mapped through the crop, the panel, feed/kill map, sliders, hash, PNG download and keys dropped in favour of five options (preset, palette, speed, brush, relief), `failIfMajorPerformanceCaveat` with a resting fallback, reduced motion as a dish grown once, an off-screen pause and a teardown. Nothing on the shelf grows a Turing pattern. |
+| `paper-marbling` | `fushanbobfan/ebru`, `src/marble.js`, `src/pack.js`, `src/patterns.js`, `src/replay.js`, `src/gpu.js`, `src/tools.js`, `src/render.js`, `src/share.js`, `src/main.js`, `index.html` | `01b83abd` | MIT | Discovery (created 2026-10-05; the author's account dates from 2022). Ebru, Turkish paper marbling: every drop, rake, swirl and wave is an exact area-preserving map of the tray, and the GPU renders by walking the inverse maps backwards from each pixel, so it is exact at any size. On mount the seeded gelgit pattern grows in the way upstream replays a marbling (drops swell, combs slide in), then the visitor drags a stylus through the ink. Distinct from `sg-suminagashi`, which is a noise shader imitating floating ink; this is the real maps with real interaction. Seams: the pure modules concatenated verbatim with `import`/`export` lines stripped, the mount lifted from `main.js` (panel, keyboard, share hash, PNG save, undo, overlay and the CPU path dropped), the square tray CSS-covered with the pointer mapped through the crop, `failIfMajorPerformanceCaveat`, reduced motion as one still render. Defaults are upstream's `DEFAULT_STATE` (gelgit, seed 1, istanbul). |
+
+Gates: `check` exit 0 (lint ok on 122 effects, smoke ok on 122, `bun test`
+465 pass / 0 fail), run through `scripts/gate` with system Chrome via
+`AGENT_BROWSER_EXECUTABLE_PATH`. `verify` 118 pass / 1 warn / 0 fail / 0
+error / 3 skipped, exit 0; both new ports PASS with zero warns, and the one
+WARN is still `paw-avatar`'s.
+
+### Contrast
+
+`reaction-diffusion`: smoked panel `#0a0d10` at 74% over solid `#fff`:
+title 8.06, lede 6.43, eyebrow 4.96 (the eyebrow had to move off the
+palette's `#f2a65a`, which measured 4.27, to `#f7b874`; the CTA keeps
+`#f2a65a` with dark ink at 8.54). `paper-marbling`: paper veil `#fbf7ee` at
+82%, bound over the darkest ink of every palette: title 10.71, lede and
+eyebrow 5.60 (sumi black, the worst); rendered after the playback: eyebrow
+6.10, title 11.43, lede 6.28.
+
+### Previews
+
+Shot live (`data-fx-live` asserted by `agent-browser is visible`) from
+scratchpad bare pages served by `python3 -m http.server`, system Chrome,
+colour scheme pinned light, 1280x720 then `sips -z 360 640`. The marbling
+shot waited out the 7.3 s playback first. No `eval`.
+
+### Run notes
+
+Two implementer sub-agents again built the two ports in parallel in the same
+worktree (disjoint effect dirs, no git, no `build`/`check`, own ports and
+browser sessions); the lead added both `LICENSES.md` rows afterwards so the
+two agents never edited one file, and ran the gates once. One thing worth
+knowing about the marbling port: the default playback redraws the full
+2048 x 2048 tray at 2x supersampling every frame for about seven seconds,
+exactly as upstream does, and upstream has no cheaper GPU path to port.
+Fine on this machine; heavy on a weak iGPU. `paper-marbling`'s first
+`origin.path` list missed `src/share.js`, where the defaults come from; it
+is listed now.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `egezamb/wine-pour-parallax` | GitHub, created 2026-10-05, `4f3d7865` | MIT | A scroll-driven sticky scene, zero deps: as the track scrolls an SVG bottle is uncorked, tilted and poured, the glass fills in four layers, captions fade on separate parallax planes, with a pure `timeline.js` mapping progress to state. A real `scroll` section and a clean port. Held because its value is one brand's bottle illustration (the SVG, the label text, the winery copy), which is the page-illustration precedent (`404-Neon-City`, 10-04): a winery would take it as is, nobody else would. Port it if a client ever wants a pour. |
+| `siyuhuh/threelight` | GitHub, created 2026-10-04, `ce3140ad` | MIT | A volumetric-light study in three.js with original GLSL (tube and spotlight emitters, scattering along the view ray, dust sprites), three atmosphere presets. Held: it imports `three/addons/controls/OrbitControls.js`, which the vendored `three` does not ship, pins three 0.182 against our 0.185.1, and the module is a control-panel app around a procedural scene. README states it is a separate implementation inspired by `cullenwebber/three-volumetric-light`. A hero would be the Gallery preset with the orbit dropped; possible, not this run. |
+| `arslanagayev/delete-file-animation`, `otp-verify-animation`, `send-file-animation` | GitHub, created 2026-10-04 | MIT | Three vanilla micro-interactions (a bin that swallows a file, OTP digits that orbit into a spinner, a send button that becomes a paper plane). Clean, but each is one control's state change, not a section. |
+| `mlf631666711-cloud/animated-title-templates` | GitHub, created 2026-10-04 | MIT | A 71 MB gallery of twenty-odd single-file HTML title animations (`liqchr`, `neon`, `vinyl`, `cyber`...). Possibly a source for a `text` port; none screened individually this run. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `robvagin/*` (`metaballs`, `particles-3d`, `orb-atom`, `thinking-sphere`, `spheregen`, `line-engine`, `halftone-cloud`, `motion-primer`, `particle-dance`, `ellipse-sphere`, `voronoi`, `motion-pad`, `murmur-vj`, `chart-3d`, `hexbin`, `xyz-cube`, `image-shuffler`, `logomachine`) | GitHub, eighteen repos created 2026-10-04, account from 2026-03 | MIT | One-file no-dependency tools, each an app with a control panel, presets and PNG/SVG/JSON export (50 KB to 1 MB of HTML; `thinking-sphere` and `spheregen` embed assets). Tools, not sections, and the README says Claude Code wrote them for the designer. `particles-3d` (WebGL2, 300 000 particles), `metaballs` and `orb-atom` are possible single-file sources if a run wants to carve a section out of one; not done. |
+| `13inf/particle-hero-skill` | GitHub, created 2026-10-05 | MIT | A Codex skill bundle: the effect is a React `.tsx` plus a built demo page. React source. |
+| `AR13X3/halation` | GitHub | AGPL-3.0 | Outside the allow-list. |
+| `lekandigital/ink-water`, `billpwchan/halcyon`, `Pipbaby/seventh-leaf`, `Charonyuu/cute-lab` | GitHub | NOASSERTION | Outside the allow-list as published. |
+| `reyrove/*-Generative-Art` (twenty-one repos) | GitHub | MIT | Seed-based static generative art in one HTML file each; stills, not motion. `Matrix-Rain` is `ascii-matrix` again. |
+| `jojin1709/melon-jelly-webgpu`, `shakthi-sagar/artificial-life`, `evoluteur`'s other repos | GitHub | MIT | A soft-body toy, a lab app, unrelated. |
+| `GlazyKahito/ember-glazy`, `cpointis96-hue/scrollscrub`, `by-Inderjit/image-change-transition-3d-effect-on-scroll`, `moralejadesign/backgrounds`, `frozenology/frosty-icicle-effect`, `ioryskb/Auto-Text-Effect-Animation` | GitHub | **none** | No LICENSE file (and `scrollscrub` is GSAP). |
+| Games, films, portfolios, desktop recreations, Swift and Flutter packages, Minecraft shaders, MCP servers (the rest of the topic and keyword search) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops hub, read through the Browser pane: newest item is still "Wide"
+  (09-28). No new `codrops/*` repos; newest is still
+  `RotatingOnScrollAnimations`.
+- `commits?since=2026-10-04` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `HARSHITSHARMA18/shaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`.
+- GitHub topic search, `created:>=2026-10-04` across twelve topics, and the
+  eight keyword searches: the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`). New soft entries above:
+`wine-pour-parallax` and `threelight` if a run wants them.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-04`. Seventeen scout PRs stacked (09-17 →
+10-05), none merged. Merge the bases with `--rebase`, not `--squash`.
