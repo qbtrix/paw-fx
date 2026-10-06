@@ -1,0 +1,100 @@
+{
+  "name": "split-flap",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "text",
+    "split-flap",
+    "departure-board",
+    "flip",
+    "solari",
+    "canvas",
+    "monospace",
+    "dark",
+    "headline"
+  ],
+  "summary": "A departures board whose words turn letter by letter: every [data-fx-flap] line in the section is drawn on a 2D canvas by upstream's player, and each cell flips on a hinge (or rolls a drum, or flickers) through its alphabet into the next letter, staggered left to right. The first words roll in from a blank board the first time the section is seen, then every line turns to its next word every few seconds while it stays on screen. The real text stays in the DOM for screen readers, search and copying; the canvas is hidden from them. Font, size, colour and letter spacing come from the line's CSS, and flaps are painted on the line's own tile colour. Transition (flip, reel, roll, scramble), timing, cell width and direction are options. Under reduced motion, or with no script, the board rests on its first words.",
+  "needs": [],
+  "options": {
+    "transition": {
+      "type": "string",
+      "default": "flip",
+      "description": "How each letter changes: flip (hinged flaps), reel (a drum rolling through the alphabet), roll or scramble. Upstream's transition."
+    },
+    "interval": {
+      "type": "number",
+      "default": 3200,
+      "min": 1200,
+      "max": 12000,
+      "step": 100,
+      "description": "Milliseconds each word stays up before every line turns to its next word. Ours: upstream turns on a new text, a section has nobody to set one."
+    },
+    "duration": {
+      "type": "number",
+      "default": 650,
+      "min": 150,
+      "max": 3000,
+      "step": 50,
+      "description": "Milliseconds one cell takes to land. Upstream's DEFAULT_DURATION_MS."
+    },
+    "stagger": {
+      "type": "number",
+      "default": 40,
+      "min": 0,
+      "max": 400,
+      "step": 10,
+      "description": "Milliseconds between neighbouring cells starting. Upstream's DEFAULT_STAGGER_MS."
+    },
+    "cellWidth": {
+      "type": "string",
+      "default": "uniform",
+      "description": "uniform gives every cell the same width, a station board's fixed cells; natural lets each cell take its letter's width (reel and roll only, as upstream resolves it)."
+    },
+    "direction": {
+      "type": "string",
+      "default": "down",
+      "description": "Which way the letters turn: down, up or random. Upstream's direction."
+    },
+    "surfaceColor": {
+      "type": "string",
+      "default": "",
+      "description": "Colour a flap is painted on. Empty reads the line's own background, as upstream does; it must be opaque."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "enavermate/splitflap",
+    "commit": "730ce0391e054c74082292d4812854af32edfc2d",
+    "path": [
+      "dist/chunk-6QR3BTCU.js",
+      "dist/chunk-L4NHPYXD.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The repo publishes no source tree, only its built ES modules. dist/chunk-6QR3BTCU.js (the planner: glyph splitting, alphabets, transition plans) and dist/chunk-L4NHPYXD.js (the canvas player, SplitflapBoard) are concatenated verbatim into index.js in dependency order, with only the planner's export block and the player's import and export blocks removed. dist/element.js (the <split-flap> custom element and its attribute parsing), the React wrapper and the empty shared chunk are not ported.",
+      "why": "Seam. A paw-fx effect is one module with no bare or sibling imports; the custom element is a second mount path the section does not need.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount() finds every [data-fx-flap] element in the section and, the first time an IntersectionObserver sees the section, constructs one SplitflapBoard per line with the line's text as its first word, so upstream's animateOnMount rolls the words in from a blank board. Each line's words come from its data-fx-words attribute, split on |. The transition, duration, stagger, cellWidth, direction and surfaceColor options pass straight through to the board.",
+      "why": "Seam. Upstream mounts on an element and takes options; a section has several lines and should not play before anyone can see it.",
+      "kind": "seam"
+    },
+    {
+      "what": "A setInterval (the interval option, 3200 ms by default) turns every line to its next word with board.update(), and runs only while the section is on screen. update() re-applies changed options to every board and restarts the interval when it changes.",
+      "why": "Ours. Upstream turns when its host is handed a new text; a marketing section has nobody to hand it one, so the board cycles its own list.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion: reduce, or with mount(null) or no document, no board is constructed and the markup's first words stay as they are. Boards are created with reduceMotion: never, since the check already happened. data-fx-live is set once the boards exist. destroy() stops the interval, disconnects the observer, calls each board's destroy(), and puts back each line's original markup and inline style, then removes data-fx-live.",
+      "why": "Seam. Upstream's system mode still swaps the words instantly every few seconds, which is motion; the contract asks for the resting state. Restoring the original markup leaves the section as the snippet wrote it rather than on whichever word was up.",
+      "kind": "seam"
+    },
+    {
+      "what": "The rest state is CSS: a dark section (#0f1012) with a soft amber glow, each flap line on an opaque tile (#1d1e22) in amber (#f2c230) bold monospace, a headline line and a three-row board of time, destination and status.",
+      "why": "Ours. The section has to look finished with no script, and the flaps need an opaque colour under them to paint on.",
+      "kind": "ours"
+    }
+  ]
+}

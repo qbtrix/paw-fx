@@ -1,0 +1,68 @@
+{
+  "name": "meduse",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": [
+    "jellyfish",
+    "webgl2",
+    "webgl",
+    "3d",
+    "additive",
+    "glow",
+    "underwater",
+    "organic",
+    "pointer",
+    "interactive",
+    "dark",
+    "hero",
+    "ambient"
+  ],
+  "summary": "Full-bleed dark hero with a school of jellyfish drawn in light, in raw WebGL2 with no library, texture or model. Each bell is one mesh whose contraction travels from apex to rim, with ribs, a Fresnel edge and a slight iridescence; fourteen strands hang from it, swaying and lagging behind, with beads running down them. Everything adds light on black. The lead follows the pointer across the section, a click startles the whole school. Under reduced motion it draws one still frame, as upstream does. With no script or no WebGL2 the section rests on a black ground with a faint cyan glow.",
+  "needs": [],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 5,
+      "min": 1,
+      "max": 9,
+      "step": 1,
+      "description": "How many jellyfish in the school (upstream's keys 1 to 9). Left unset it is upstream's own pick: 5, or 3 on a touch screen. The first one is the lead: biggest, nearest, and the one that follows the pointer hardest. Changing it through update() adds or drops jellyfish from the back of the school."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "RonanCamus/meduse",
+    "commit": "9c0c1c8f782943fceadd846e3c1fc827b892bcbd",
+    "path": [
+      "meduse.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The stage is the section's box: the canvas is created and inserted into the section instead of read by id, measure() takes el.clientWidth and el.clientHeight instead of innerWidth and innerHeight and returns early when they are unchanged, and a ResizeObserver on the section replaces the window resize listener. The canvas is position absolute instead of fixed.",
+      "why": "Seam. Upstream owns the whole window; a paw-fx effect is one section of a page.",
+      "kind": "seam"
+    },
+    {
+      "what": "pointermove, pointerdown and pointerleave listen on the section, and point() subtracts the section's getBoundingClientRect() left and top so px and py stay in -1..1 across the section. The keydown handler for keys 1 to 9 is dropped; the count option calls the same spawn() and defaults to upstream's coarse ? 3 : 5 when unset.",
+      "why": "Seam. A section cannot take keys from the whole page, and the pointer math assumed the canvas filled the window.",
+      "kind": "seam"
+    },
+    {
+      "what": "getContext adds failIfMajorPerformanceCaveat: true, and a missing context or a failed compile returns the resting handle instead of adding no-gl to the body. The page chrome from index.html (title, links, the no-WebGL2 note) is dropped; its canvas fade-in (opacity, 1200ms ease) moves to style.css keyed on data-fx-live.",
+      "why": "Seam. The contract falls back to the CSS rest on a refused context, and the section brings its own copy.",
+      "kind": "seam"
+    },
+    {
+      "what": "An IntersectionObserver pauses the frame loop off screen, data-fx-live is set after the first render(), and destroy() cancels the frame, clears pending startle timeouts, disconnects both observers, removes the listeners, loses the context and removes the canvas.",
+      "why": "Ours. A WebGL loop should not run for a section nobody can see, and teardown must leave the section as it found it and give the context back.",
+      "kind": "ours"
+    },
+    {
+      "what": "The rest state is CSS: a #050505 ground (upstream's clear colour) with a faint cyan radial glow, and the copy on a .fx-meduse__inner smoked panel.",
+      "why": "Ours. The section has to look finished with no script, and additive tints run under the copy, so it needs a plate.",
+      "kind": "ours"
+    }
+  ]
+}

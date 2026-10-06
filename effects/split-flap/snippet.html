@@ -1,0 +1,21 @@
+<!-- split-flap section. Finished at rest with CSS alone: every
+     [data-fx-flap] line shows its first word on a tile. index.js turns each
+     line into a canvas board when the section first comes on screen, rolls the
+     first word in, then turns every line to its next data-fx-words entry while
+     the section stays in view. The text stays in the DOM for screen readers.
+     Keep words short: a line narrower than its word ends in an ellipsis.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/split-flap/style.css">
+<section class="fx-split-flap" data-fx="split-flap">
+  <div class="fx-split-flap__inner">
+    <p class="fx-split-flap__eyebrow">Departures</p>
+    <h2 class="fx-split-flap__title">Now boarding: <span data-fx-flap data-fx-words="IDEAS|LAUNCHES|RELEASES|TEAMS">IDEAS</span></h2>
+    <p class="fx-split-flap__lede">Replace this copy with your own. Each tile turns letter by letter to its next word, the way a station board does.</p>
+    <ul class="fx-split-flap__board">
+      <li class="fx-split-flap__row"><span class="fx-split-flap__time">09:40</span><span data-fx-flap data-fx-words="LISBON|KYOTO|MONTREAL">LISBON</span><span data-fx-flap data-fx-words="ON TIME|BOARDING|DEPARTED">ON TIME</span></li>
+      <li class="fx-split-flap__row"><span class="fx-split-flap__time">10:15</span><span data-fx-flap data-fx-words="OSLO|NAIROBI|SANTIAGO">OSLO</span><span data-fx-flap data-fx-words="BOARDING|GATE 12|CLOSED">BOARDING</span></li>
+      <li class="fx-split-flap__row"><span class="fx-split-flap__time">11:05</span><span data-fx-flap data-fx-words="SEOUL|DUBLIN|LIMA">SEOUL</span><span data-fx-flap data-fx-words="DELAYED|ON TIME|GATE 4">DELAYED</span></li>
+    </ul>
+  </div>
+</section>
