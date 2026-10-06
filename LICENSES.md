@@ -218,6 +218,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | capsule-nav | MIT | [ningqi24/deepseek-style-floating-navbar](https://github.com/ningqi24/deepseek-style-floating-navbar) `bac85cf`, `glass-navbar.js`, `glass-navbar.css` |
 | reaction-diffusion | MIT | [evoluteur/reaction-diffusion](https://github.com/evoluteur/reaction-diffusion) `2620644`, `js/rd.js`, `index.html`, `css/rd.css` |
 | paper-marbling | MIT | [fushanbobfan/ebru](https://github.com/fushanbobfan/ebru) `01b83ab`, `src/marble.js`, `src/pack.js`, `src/patterns.js`, `src/replay.js`, `src/gpu.js`, `src/tools.js`, `src/render.js`, `src/share.js`, `src/main.js`, `index.html` |
+| split-flap | MIT | [enavermate/splitflap](https://github.com/enavermate/splitflap) `730ce03`, `dist/chunk-6QR3BTCU.js`, `dist/chunk-L4NHPYXD.js` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |

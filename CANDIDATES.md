@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-05**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-06**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3403,3 +3403,71 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-04`. Seventeen scout PRs stacked (09-17 →
 10-05), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-06 — window 2026-10-05 to 2026-10-06
+
+One day. Discovery found one portable repo and it was ported; the backlog was
+not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `split-flap` | `enavermate/splitflap`, `dist/chunk-6QR3BTCU.js` + `dist/chunk-L4NHPYXD.js` | `730ce039` | MIT | Discovery (GitHub topic search, created 2026-10-05; the author's account dates from 2013, the package is on npm as `@enavermate/splitflap`). Departure-board text: a canvas player that flips each cell on a hinge, rolls a drum or flickers it through its alphabet into the next letter, with the real text kept in the DOM for screen readers. The repo publishes no source tree, only its built ES modules, so the committed `dist/` JavaScript is the upstream; this is not the TypeScript-source case held at `pigment-drift` (10-04). The planner and player chunks are concatenated verbatim with their import and export lines removed. Seams: one `SplitflapBoard` per `[data-fx-flap]` line, started by an IntersectionObserver so upstream's `animateOnMount` rolls the words in when the section is seen, no board at all under reduced motion, a teardown that restores the markup. Ours: a `setInterval` that turns each line to its next `data-fx-words` entry while the section is on screen. Nothing on the shelf flips cells; `scramble` and `letter-shuffle-menu` change DOM characters. |
+
+Gates: see the PR body for the `check` and `verify` output.
+
+### Previews
+
+Shot live (`data-fx-live` asserted by `agent-browser is visible`) from a
+scratchpad bare page served by `python3 -m http.server`, system Chrome,
+colour scheme pinned light, 1280x720 then `sips -z 360 640`, 2.2 s after
+mount so the roll-in has settled. No `eval`. The bare page needs
+`body .fx-split-flap{min-height:100svh}`: a plain `.fx-split-flap` override
+loses to the effect's stylesheet, which loads after it.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `fushanbobfan/fivefold` | GitHub, created 2026-10-06, `src/*.js` | MIT | Penrose tilings (kites and darts, rhombi) by substitution, plain ES modules, same author as `ebru`. Held: the page is a still viewer the visitor steps through by hand; it has no animation, so any hero motion would be ours. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `deity6/softlab` | GitHub, created 2026-10-05, 45★ | MIT (repo), with exceptions | `THIRD_PARTY.md` says the project is not for commercial use and asks that no part be used commercially; Cloud Train's `scene.frag` has no redistribution licence upstream, Canvas Lab re-implements a Commons Clause project, Soft Matter's upstream has no LICENSE. A no-redistribution clause is a hard reject. The rest is TypeScript and React. |
+| `sutheimernico/showroom` | GitHub, created 2026-10-05 | MIT | `designs/08-particle-morph` imports GSAP and ScrollTrigger, plus three's WebGPU/TSL build and `three/addons` from a CDN import map. GSAP is a hard reject. |
+| `r3al1tym/tenfold` | GitHub, created 2026-10-05 | MIT | Ten Canvas 2D posters of one fixed phrase. The flip-dot sign is the closest to a section, but its 5x7 bitmap font covers only the phrase's own letters and the layout is fitted to a 1080x1350 portrait; any other text would need an invented font. |
+| `rishsadh/heliograph` | GitHub | MIT | A one-page fictional observatory site, an illustration rather than a section. |
+| `tahabakri/kintsugi-webgpu`, `PSCactux/fluid-particles` | GitHub | MIT | TypeScript apps (a WebGPU fracture simulator, a fluid and boids lab). |
+| `BuruCebe/unvibe`, `ptu14/liquid-glass`, `viberdy-dev/ui`, `Ripdiegozz/damped` | GitHub | MIT / other | React or TypeScript component packages. |
+| `arslanagayev/payment-receipt-animation`, `download-button-animation`, `deploy-button-animation` | GitHub | MIT | More of the 10-05 micro-interactions: one button's state change each, not a section. |
+| `13inf/particle-hero-skill` | GitHub | MIT | Already rejected 10-05 (React source). |
+| Games, portfolios, simulators, desktop pets, Minecraft and Unity tools (the rest of the twelve topic searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops hub, read through the Browser pane: newest item is still "Wide"
+  (09-28). The three `codrops/*` repos updated 10-04 are old demos touched
+  the same second; nothing new.
+- `commits?since=2026-10-05` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `darkroomengineering/lenis`, `majiayu000/ephemera`; `tsparticles` has only
+  dependency bumps.
+- GitHub topic search, `created:>=2026-10-05` across twelve topics: the tables
+  above. Ten keyword searches (`text effect`, `hero background`,
+  `shader background` and so on) found only `PSCactux/fluid-particles`.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`. New soft entry: `fivefold`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-05`. Eighteen scout PRs stacked (09-17 →
+10-06), none merged. Merge the bases with `--rebase`, not `--squash`.
