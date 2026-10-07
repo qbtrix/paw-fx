@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-06**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-07**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3471,3 +3471,76 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-05`. Eighteen scout PRs stacked (09-17 →
 10-06), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-07 — window 2026-10-06 to 2026-10-07
+
+One day. Discovery found one strong portable repo and it was ported; the
+backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `gradient-backdrop` | `nonlineartom/gradient-backdrops`, `assets/backdrop.js` + `examples/hero.html` | `ddad93da` | MIT | Discovery (GitHub topic and keyword search, created 2026-10-06 by a user account, 0 stars at survey). One dependency-free WebGL file: fifteen gradient styles (flow, mesh, aurora, silk, sky, waves, mist, bars, prism, rings, glow, stripes, forms, watercolor, swirl) and 29 presets, OKLab mixing, dithered output, a grain layer, off-screen pause, a reduced-resolution path for soft styles. The upstream IIFE body is kept verbatim inside `gradientBackdrops(global)`, called once and lazily from `mount()`; removed are the IIFE call line, the `DOMContentLoaded` `autoInit()` call and the `globalThis` assignment (now a return), plus one reworded header-comment line the registry build read as an import. Added `failIfMajorPerformanceCaveat`. Defaults and the CSS rest come from upstream's `examples/hero.html` (fluid preset, grain 0.14, its two-wash static fallback). Overlap, said plainly: `mesh-gradient`, `static-mesh-gradient`, `grain-gradient` and `aurora-css` already cover the mesh, grain and aurora looks; the default here is `flow`, which the shelf does not have, and the 29 presets ride along as one option. README credits feralui.dev's gallery as inspiration for the colourways and states the implementation is original. |
+
+Gates: see the PR body for the `check` and `verify` output.
+
+### Previews
+
+Shot from the built demo page (`?reduced=1`, `set media reduced-motion`,
+`.fxd-bar`, `.fxd-filler` and `.fxd-knobs` hidden by `eval`) served by
+`python3 -m http.server`, system Chrome through
+`AGENT_BROWSER_EXECUTABLE_PATH`, viewport 640x360 at scale 1. Under reduced
+motion upstream draws one frame and holds it, so the shot is the real shader,
+not the CSS rest; `data-fx-live` and the `.gb-canvas` were asserted first. The
+demo page now carries a knobs panel (`.fxd-knobs`); the task recipe's `eval`
+only hides `.fxd-bar` and `.fxd-filler`, so hide `.fxd-knobs` too or it lands
+in the thumbnail.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `Andrey20Allyson/liquid-glass` | GitHub, created 2026-10-06, `41dd1851` | MIT | Vanilla `src/*.js` + `src/shaders/*.glsl`, no deps: iOS-26-style liquid glass, two modes (SVG + `backdrop-filter` glass on any DOM element, and a WebGL stage of merging glass blobs over an image or canvas). Portable, unlike the React `ptu14/liquid-glass` rejected 10-06. Held: the shelf has `capsule-nav`, `wipe-glass`, `glass-transition` and `sg-rainglass` already, the DOM mode's SVG displacement filter is Chromium-only in `backdrop-filter`, and the WebGL stage is a six-module port that deserves its own run. Next candidate if a run wants glass. |
+| `maxliebscher/BlitzText` | GitHub, created 2026-10-06, `15cc4c43` | MIT (code), OFL (fonts) | Lightning strikes a wordmark, sparks rain, an aurora ignites under it; Canvas 2D + WebGL, no deps, every frame a pure function of time. A real `text` hero. Held: `src/engine.js` (40 KB) sits inside an app (panel, i18n, URL state, recorder); carving the strike out of `engine.js` + `bolts.js` + `aurora.js` is a careful port, not this run. |
+| `kud/inkblot` | GitHub, created 2026-10-06, `af22d144` | MIT | A turbulence-edged ink circle that spills from the click point as a page transition. TypeScript source (`src/spill.ts`, `src/styles.ts`) with a tsup build and no committed dist: the `pigment-drift` TypeScript-source case (10-04), held the same way. |
+| `yelmartinezseo/tyel-tear-test` | GitHub, created 2026-10-06, `b74c78d2` | MIT | A tear-off calendar sheet on its own Verlet cloth in WebGL, vanilla. Held: one calendar page is a page illustration, not a section (the `404-Neon-City` precedent). |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `mahmoudfarouq/livewall` | GitHub, `a3479d2b` | MIT | A Swift CLI for macOS wallpapers; the presets are 50 to 130 KB single-file HTML scenes (illustrations, not sections). |
+| `shmidtqq65/singularity` | GitHub, `a00c0a4c` | MIT | A bookmarklet and browser extension that eats the current page; not a section, and `event-horizon` covers the black hole. |
+| `seiner69/web-interaction-lab`, `Kartikpanchal123/itz-fizz-hero`, `nimje81/scroll-driven-hero-animation`, `456rtyfgh/ulam-spiral-301-3fu`, `aurangzeb002/*` | GitHub | **none** | No LICENSE file. Hard reject (and the scroll heroes are GSAP). |
+| `karimsaif0/Cloud-Sky-Interaction-Framer-Component-` | GitHub | **none** | No LICENSE file, and a Framer component. |
+| `YPAAAAAAAAAAAAA/point-morph` | GitHub | NOASSERTION | A mirror of someone else's repo; outside the allow-list as published. |
+| `kevin-john-mathew/shaders-playmusic`, `Deji-Techh/25-unique-loaders` | GitHub | GPL-3.0 | Outside the allow-list. |
+| `jukrapopk/shardlight`, `rbbydotdev/photocn`, `OliviaR13/react-micro-interactions`, `BuruCebe/unvibe` | GitHub | MIT / NOASSERTION | React or TypeScript packages (`unvibe` already rejected 10-06). |
+| `VisualxIntelligence/motion-tools-and-skills`, `lscottart/animation-library` | GitHub | MIT | GSAP-based. Hard reject. |
+| `ZniKDK/landing-*` (five) | GitHub | MIT | Whole landing pages for one fictional business each. |
+| Games, films, portfolios, simulators, desktop pets, Unreal and Swift tools (the rest of the twelve topic searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops hub, read through the Browser pane: newest item is still "Wide"
+  (09-28).
+- `commits?since=2026-10-06` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`. No `codrops/*` repo pushed since 10-06.
+- GitHub topic search, `created:>=2026-10-06` across twelve topics, and ten
+  keyword searches: the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`. New soft entries: `liquid-glass`, `BlitzText`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-06`. Nineteen scout PRs stacked (09-17 →
+10-07), none merged. Merge the bases with `--rebase`, not `--squash`.
