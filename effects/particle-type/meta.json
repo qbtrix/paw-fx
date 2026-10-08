@@ -1,0 +1,95 @@
+{
+  "name": "particle-type",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "particles",
+    "typography",
+    "headline",
+    "canvas",
+    "canvas-2d",
+    "interactive",
+    "cursor",
+    "glow",
+    "hero",
+    "dark",
+    "morph"
+  ],
+  "summary": "Full-bleed dark hero where the headline is drawn by thousands of glowing Canvas 2D particles. They spring into the lit pixels of the word, wobble in place, leave short additive trails in one of four palettes, swirl away from the cursor and shatter on a click, then find the word again. Set the word in the heading, or pass a |-separated list to cycle through words. Under reduced motion, or with no script, the heading shows as gradient text.",
+  "needs": [],
+  "options": {
+    "text": {
+      "type": "string",
+      "default": "",
+      "description": "The word the particles spell. Empty reads the section's own .fx-particle-type__word heading, which stays in the page for screen readers."
+    },
+    "words": {
+      "type": "string",
+      "default": "",
+      "description": "Optional |-separated list to cycle through, as upstream's demo does (for example \"hello | build in public\"). One word or none holds the heading's word."
+    },
+    "interval": {
+      "type": "number",
+      "default": 3600,
+      "min": 1200,
+      "max": 10000,
+      "step": 100,
+      "description": "Milliseconds between words when words cycles (upstream's 3600)."
+    },
+    "palette": {
+      "type": "string",
+      "default": "ember",
+      "description": "One of upstream's four palettes: ember, aurora, tide, candy."
+    },
+    "trails": {
+      "type": "boolean",
+      "default": true,
+      "description": "Short motion trails (upstream's Trails toggle). Off clears every frame."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "jackthecoder17/particle-type",
+    "commit": "474de3f7e46dedc823792e49c9624efe249ec3a9",
+    "path": [
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The stage is the section's box: W and H come from el.clientWidth and el.clientHeight, pointer coordinates are made local with the canvas getBoundingClientRect, and a ResizeObserver on the section replaces the window resize listener (same 150 ms debounce).",
+      "why": "Seam. Upstream owns the whole window; a paw-fx effect is one section of a page.",
+      "kind": "seam"
+    },
+    {
+      "what": "layoutLines() and sampleTargets() shadow H with textH(), the height of the band above the .fx-particle-type__inner copy panel, so the word is fitted and centred above the panel; the particles still fly across the whole section.",
+      "why": "Ours. Upstream has no copy under the word; without this the panel covers the bottom line of a two-line word.",
+      "kind": "ours"
+    },
+    {
+      "what": "The word comes from opts.text or the section's .fx-particle-type__word heading instead of the input dock; update() re-runs setText. The dock, palette swatches, Trails and Demo buttons, the stats line and the Space-to-scatter window key handler are dropped, and palette, trails, words and interval are options instead.",
+      "why": "Seam. A hero section is not a playground, and a section cannot take the Space key from the whole page.",
+      "kind": "seam"
+    },
+    {
+      "what": "The Google Fonts link is not shipped. The font stack is upstream's own (\"Unbounded\", \"Arial Black\", system-ui) read from --fx-display on the section instead of --display on the document, and the canvas ground is read from --fx-bg.",
+      "why": "Seam. style.css fetches nothing off-site, and custom properties are --fx- prefixed.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns the resting handle and the heading stays as CSS gradient text; reduced is a constant false after that return, so upstream's reduced ? ... expressions are kept but never take the reduced branch.",
+      "why": "Ours. Upstream's reduced path still flies every particle into place, and the contract is to stay at rest.",
+      "kind": "ours"
+    },
+    {
+      "what": "The demo cycle walks opts.words (split on |) instead of upstream's fixed DEMO list, only when there are two or more, and the interval is clamped to at least 1200 ms.",
+      "why": "Ours. Upstream's demo words are about the demo itself; a site brings its own, and a very short interval never lets the word form.",
+      "kind": "ours"
+    },
+    {
+      "what": "An IntersectionObserver pauses the loop off screen, data-fx-live is set after the first frame, the fps meter is dropped, and destroy() cancels the frame, clears both timers, disconnects both observers, removes the listeners and the canvas and clears data-fx-live.",
+      "why": "Ours. Up to 9000 particles a frame should not run for a section nobody can see, the CSS rest must not fade from under an empty canvas, and teardown must leave the section as it found it.",
+      "kind": "ours"
+    }
+  ]
+}

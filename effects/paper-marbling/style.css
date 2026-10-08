@@ -1,0 +1,164 @@
+/* paper-marbling: the CSS half of the effect. On its own this file is the
+   whole hero -- with JavaScript off, before the section scrolls into view,
+   or after a refused WebGL2 context sends mount() back to rest.
+
+   The live effect is ebru: ink dropped on a bath of size and combed, drawn
+   exactly on the GPU. So the resting layer is the bath of the default palette
+   (upstream's istanbul: bath #efe6d2, inks #1f3a68, #b5302b, #e0a526) with a
+   few soft drops of those inks at low alpha, so it reads as paper with ink
+   on it rather than a blank wall.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-marbling          the resting bath, painted in its background
+     -1  .fx-marbling__gl      the square GPU tray, inserted by index.js and
+                               CSS-covered over the section (index.js maps the
+                               pointer through this same cover crop)
+      1  .fx-marbling__inner   the copy, on a paper-coloured veil panel
+
+   The copy is dark ink on a light ground and what threatens it is ink: a
+   drop of #1f3a68 can land straight under the title, and the visitor can drag
+   a stroke through the copy. A corner wash measured 1.0:1 on a light-ground
+   hero before, so the copy sits on a panel: --fx-paper at --fx-panel over a
+   10px backdrop blur. Worst case is the muted lede over the panel over the
+   darkest ink; re-measure after lowering --fx-panel or lightening --fx-muted. */
+.fx-marbling {
+  --fx-bath: #efe6d2;
+  --fx-paper: #fbf7ee;
+  --fx-ink: #1b1d26;
+  --fx-muted: #4a4a52;
+  --fx-blue: #1f3a68;
+  --fx-red: #b5302b;
+  --fx-gold: #e0a526;
+  --fx-panel: 0.82;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6.5rem) clamp(1.25rem, 6vw, 5rem);
+  color: var(--fx-ink);
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  cursor: crosshair;
+  touch-action: pan-y;
+  background:
+    radial-gradient(18% 24% at 78% 28%, color-mix(in oklab, var(--fx-blue) 34%, transparent), transparent 72%),
+    radial-gradient(14% 20% at 62% 70%, color-mix(in oklab, var(--fx-red) 30%, transparent), transparent 72%),
+    radial-gradient(12% 16% at 88% 72%, color-mix(in oklab, var(--fx-gold) 40%, transparent), transparent 72%),
+    radial-gradient(10% 14% at 24% 22%, color-mix(in oklab, var(--fx-blue) 22%, transparent), transparent 72%),
+    radial-gradient(9% 12% at 14% 78%, color-mix(in oklab, var(--fx-red) 20%, transparent), transparent 72%),
+    radial-gradient(16% 22% at 46% 40%, color-mix(in oklab, var(--fx-gold) 24%, transparent), transparent 72%),
+    var(--fx-bath);
+}
+
+/* The tray is square and the section is not, so the canvas covers the
+   section and the crop is centred; index.js maps the pointer through the
+   same crop. It fades in once index.js has drawn a first frame. */
+.fx-marbling__gl {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live only once a frame is on the canvas. Every
+   failure path leaves it unset and destroy() removes it. */
+.fx-marbling[data-fx-live] .fx-marbling__gl {
+  opacity: 1;
+}
+
+.fx-marbling__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 30rem;
+  padding: clamp(1.1rem, 2.2vw, 1.9rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 14%, transparent);
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--fx-paper) calc(var(--fx-panel) * 100%), transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  cursor: auto;
+}
+
+.fx-marbling__eyebrow {
+  margin: 0 0 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-marbling__title {
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.fx-marbling__lede {
+  margin: 1.2rem 0 0;
+  max-width: 27rem;
+  font-size: clamp(0.98rem, 1.4vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-marbling__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+.fx-marbling__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-marbling__cta--primary {
+  background: var(--fx-ink);
+  color: var(--fx-paper);
+}
+
+.fx-marbling__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, var(--fx-paper) 70%, transparent);
+  color: var(--fx-ink);
+}
+
+.fx-marbling__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-marbling__cta--ghost:hover {
+  border-color: color-mix(in oklab, var(--fx-ink) 55%, transparent);
+}
+
+.fx-marbling__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-marbling__gl,
+  .fx-marbling__cta {
+    transition: none;
+  }
+}

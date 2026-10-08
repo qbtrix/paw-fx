@@ -1,0 +1,44 @@
+/* gradient-backdrop: an animated WebGL gradient behind the section's content.
+
+   The resting state is upstream's own static fallback from
+   examples/hero.html: two soft radial washes (aqua top left, pink bottom
+   right) on a pale blue ground, which is the fluid preset's palette. With the
+   script blocked, reduced motion before the first frame, or no WebGL, this is
+   the hero. index.js prepends a canvas (z-index -1) and a grain layer inside
+   the section; position: relative and isolation: isolate are set here so
+   upstream never has to write them inline, and the copy stays above both. */
+.fx-gradient-backdrop {
+  --fx-ink: #1F2547;
+  --fx-ground: #F6F9FF;
+  --fx-wash-1: #9BE0E8;
+  --fx-wash-2: #F8B8D9;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--fx-ink);
+  background:
+    radial-gradient(80% 70% at 20% 20%, var(--fx-wash-1), transparent 60%),
+    radial-gradient(80% 70% at 80% 80%, var(--fx-wash-2), transparent 60%),
+    var(--fx-ground);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-gradient-backdrop *,
+.fx-gradient-backdrop *::before,
+.fx-gradient-backdrop *::after { box-sizing: border-box; }
+
+.fx-gradient-backdrop__title {
+  margin: 0;
+  font: 400 clamp(56px, 11vw, 168px)/0.9 "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  letter-spacing: -0.03em;
+}
+.fx-gradient-backdrop__lede {
+  max-width: 36ch;
+  margin: 18px auto 0;
+  opacity: 0.8;
+}

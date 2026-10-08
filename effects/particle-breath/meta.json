@@ -1,0 +1,51 @@
+{
+  "name": "particle-breath",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["particles", "dots", "volume", "breathing", "calm", "minimal", "monochrome", "canvas", "canvas-2d", "generative", "hero", "dark"],
+  "summary": "Full-bleed dark section with a soft, folded volume of 8500 dots breathing slowly in the middle of the frame. The dots are fixed samples on a sphere that never re-scatter; each frame a ripple, a diagonal saddle fold and a twist deform the same points, twelve depth buckets fade the back of the volume, and a few strays orbit just off the surface. Canvas 2D, no WebGL, no dependencies. Under reduced motion it holds a still frame, as upstream's own demo does.",
+  "needs": [],
+  "options": {
+    "backgroundColor": { "type": "string", "default": "#111111", "description": "Canvas ground. Set --fx-bg to match so the CSS resting state agrees." },
+    "dotColor": { "type": "string", "default": "#e0dfd8", "description": "Particle colour. Set --fx-dot to match." },
+    "scale": { "type": "number", "default": 100, "min": 40, "max": 125, "step": 1, "description": "Size of the volume, in percent of upstream's default." },
+    "particleSize": { "type": "number", "default": 1, "min": 0.5, "max": 2, "step": 0.05, "description": "Dot radius multiplier." },
+    "particleCount": { "type": "number", "default": 8500, "min": 1500, "max": 16000, "step": 500, "description": "How many particles sample the surface. Changing it re-samples them." },
+    "opacity": { "type": "number", "default": 1, "min": 0, "max": 1, "step": 0.01, "description": "Opacity of the whole graphic over the ground, composited once so overlaps do not double up." },
+    "speed": { "type": "number", "default": 1, "min": 0, "max": 3, "step": 0.05, "description": "Breathing speed. 0 holds a still frame." },
+    "breathStrength": { "type": "number", "default": 75, "min": 0, "max": 150, "step": 1, "description": "How far the surface ripples and twists as it breathes." }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "bimohxh/limot-particle-breath",
+    "commit": "a979ee861763c4abc3c33d8a20db3b8e8dc03c5b",
+    "path": ["src/geometry.js", "src/index.js", "examples/index.html"]
+  },
+  "deviations": [
+    {
+      "what": "src/geometry.js and src/index.js are pasted into one module, geometry first, with their import and export lines removed. The functions are upstream's, unchanged.",
+      "why": "Seam. An item ships one index.js and no sibling modules, and the repo contract exports only mount and meta.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount() creates the canvas inside the section and drives upstream's own mountParticleBreath() with a config provider, which is upstream's live-controls API. update() merges into the object that provider returns; destroy() calls upstream's returned stop function, removes the canvas and clears data-fx-live.",
+      "why": "Seam. The repo contract is mount(el, opts) returning { update, destroy }, and upstream already has exactly that shape.",
+      "kind": "seam"
+    },
+    {
+      "what": "An IntersectionObserver stops upstream's loop when the section leaves the viewport and starts a fresh one when it returns, so the breathing clock restarts from zero off screen.",
+      "why": "Ours. Upstream's loop never pauses, and a section nobody can see does not need 8500 particles a frame.",
+      "kind": "ours"
+    },
+    {
+      "what": "The provider sets data-fx-live on its second call, after the first frame has drawn, and a refused 2D context (upstream's throw) removes the canvas and returns the resting handle.",
+      "why": "Ours. The CSS rest must not fade out from under an empty canvas, and a failed mount must leave the section finished.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion the provider returns speed 0, so the canvas holds upstream's frame at time zero instead of the section returning at once.",
+      "why": "Upstream's own answer: examples/index.html passes speed 0 when reduced motion matches. The still frame is the effect at rest, which beats a CSS imitation of it.",
+      "kind": "ours"
+    }
+  ]
+}

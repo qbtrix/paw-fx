@@ -1,0 +1,86 @@
+{
+  "name": "ink-wash",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["ink", "ink-wash", "sumi-e", "shanshui", "landscape", "paper", "fluid", "navier-stokes", "painting", "interactive", "cursor", "generative", "webgl2", "hero", "light"],
+  "summary": "Full-bleed hero on a sheet of rice paper that an invisible hand paints a Chinese ink landscape onto, stroke by stroke, a moment after it appears: far hills in pale ink, the main peak's outline, texture strokes and washes, moss dots, pines on the near bank, ripples, a fishing boat, three birds and a cinnabar sun. Every painting is new. The ink is simulated rather than drawn: a real fluid solver carries it, water bleeds along the paper's fibres and evaporates, and ink that dries settles in place. The visitor can paint too. Slow strokes are wet and heavy, fast ones thin and dry, and each stroke is one dip of ink that runs out into flying-white streaks.",
+  "needs": [],
+  "options": {
+    "autopaint": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the invisible hand starts painting a landscape 700 ms after mount (upstream's own delay). Off leaves a blank sheet for the visitor to paint on. Switching it on live starts a painting; switching it off stops the hand mid-stroke and leaves what it has painted."
+    },
+    "tool": {
+      "type": "string",
+      "default": "ink",
+      "description": "What the visitor's brush carries: ink (upstream's default), cinnabar (the red of the sun and seal) or water, a clear brush that stirs the ink already on the sheet. Upstream's three-button toolbar, as one option. Anything else reads as ink."
+    },
+    "seed": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 900,
+      "step": 1,
+      "description": "Which landscape the hand paints. 0 is a fresh random painting on every mount, as upstream does; any positive whole number paints that same landscape every time. Changing it live washes the sheet and paints the new one."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "axtonliu/moyun",
+    "commit": "eb488acf811122bb9a574d87fb148ffa42ed4c23",
+    "path": ["index.html"]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is one self-running IIFE in a page. Its lines 167-170, 179-448, 451-547, 656-840, 862-884, 889, 894 and 901-965 (the shaders, the fluid solver, the splat queue, the brush, the invisible hand, the landscape generator, the controls' state and the pointer brush) sit verbatim inside inicia(), called from mount(el, opts). The canvas is created by mount and inserted into the section instead of looked up by id; the page chrome (.mast, .hint, .corner, the .bar toolbar and the about .sheet) is not carried as markup, and $ hands the verbatim block a detached node for each of those ids so its writes to them land nowhere.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The title, hint and toolbar are upstream's page talking about itself; snippet.html carries the section's own copy instead. Detached nodes are what keep setPaintBtn, the fps readout in frame() and the sheet check in pointerdown byte-identical to upstream.",
+      "kind": "seam"
+    },
+    {
+      "what": "The whole Web Audio layer is dropped: the Karplus-Strong string buffers, the harmonic buffers, the procedural reverb, ensureAudio, setSound and the sound button. ensureAudio(), play(), note() and whoosh() remain as empty functions so every call to them inside the verbatim block is left exactly as upstream wrote it.",
+      "why": "Seam. A library section a site-building agent drops into a client page must not play a guqin under the visitor's pointer. Stubbing the leaf rather than editing brushSeg, emitAlong, ghostTick and the pointer handlers is what keeps the simulation code byte-identical.",
+      "kind": "seam"
+    },
+    {
+      "what": "The poem and seal are dropped: showPoem(), stampSeal() and hidePoem() are empty functions, and the Google Fonts link (Ma Shan Zheng, Noto Serif SC, IBM Plex Mono) goes with them. POEMS and the two queue entries in buildLandscape that call the functions are kept verbatim.",
+      "why": "Seam. The poem is set in a brush face fetched from fonts.googleapis.com, and style.css may fetch nothing off-site. It is also copy about the painting, laid over the painting, where the section's own copy has to sit.",
+      "kind": "seam"
+    },
+    {
+      "what": "readTheme() reads --fx-paper, --fx-paper-2, --fx-ink and --fx-cinnabar from the section (getComputedStyle(el)) instead of --paper, --paper-2, --ink and --cinnabar from the document root, and the prefers-color-scheme listener and the MutationObserver on the root's data-theme are dropped. style.css declares upstream's light values, as six-digit hex because cssColor only parses that form.",
+      "why": "Seam. Custom properties are --fx- prefixed by contract, and a section reads its own box rather than watching the host page's document. The dark theme (night paper, moonlight ink) is not carried: a section's colours are set by the site through the four variables.",
+      "kind": "seam"
+    },
+    {
+      "what": "The tool is the tool option instead of the three toolbar buttons (ink, cinnabar, water), and update() can change it live. An unknown value reads as ink, upstream's default.",
+      "why": "Seam. Upstream's own let tool = 'ink' surfaced as a knob with upstream's default, so an unset option renders exactly upstream. A section does not carry a toolbar.",
+      "kind": "seam"
+    },
+    {
+      "what": "The seed option fixes seedCounter, which upstream always starts at (Math.random() * 1e9) | 0. At the default 0 it still does. update() with a new positive seed calls upstream's startPainting(), which washes the sheet and paints that landscape.",
+      "why": "Ours. Upstream's generator is already seeded; only its first seed is random. Fixing it makes a painting reproducible, which a site wants for a hero it has signed off on, and which a contrast measurement needs.",
+      "kind": "ours"
+    },
+    {
+      "what": "The autopaint option gates upstream's setTimeout(startPainting, 700); the handle is kept so destroy() can clear it. The eight-second timeout that fades the hint is dropped with the hint, and so is the Escape key that closed the about sheet.",
+      "why": "Seam. The delay and the call are upstream's; the option lets a site ship a blank sheet for the visitor instead. The hint and the sheet are page chrome.",
+      "kind": "seam"
+    },
+    {
+      "what": "The context is requested with failIfMajorPerformanceCaveat: true, and fallback(), which appended an apology to document.body and removed the canvas, now throws. mount() catches it (a missing WebGL2 context, a shader that will not compile, or half-float render targets the GPU refuses), loses the context and returns the resting handle.",
+      "why": "The repo contract. Thirty-odd full-screen passes a frame on a software rasteriser is worse than the resting sheet under it, and a library section must not write into the host page's body.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns at once and nothing starts. Upstream's reduced-motion path paints five times faster (ghost.speed = 5) but still runs the solver and moves ink across the page for several seconds.",
+      "why": "The repo contract is rest, not faster motion, so the CSS resting sheet is the reduced-motion picture.",
+      "kind": "ours"
+    },
+    {
+      "what": "A local requestAnimationFrame shadows the global inside inicia(), so upstream's frame() and its calls to it are unchanged but route through pulso(). An IntersectionObserver stops the loop while the section is off screen and restarts it when it returns, and data-fx-live is set only after the first frame has been drawn.",
+      "why": "Ours. Upstream owns the whole window, so it is always on screen; a section below the fold is not, and the solver runs 24 Jacobi iterations plus a dozen other full-screen passes every frame. The flag waits for a real frame so the resting sheet never fades out from under an empty canvas.",
+      "kind": "ours"
+    }
+  ]
+}
