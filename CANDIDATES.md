@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-07**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-08**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3544,3 +3544,89 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-06`. Nineteen scout PRs stacked (09-17 →
 10-07), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-08 — window 2026-10-07 to 2026-10-08
+
+One day. Discovery found two portable repos and both were ported; the backlog
+was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `upstream-streaks` | `AmunM9/upstream-fx`, `dist/upstream.global.js` | `355b663a` | MIT | Discovery (GitHub topic search, created 2026-10-07, 7 stars at survey, the author's account dates from 2021). Hundreds of hairline WebGL streaks fan upward from below the frame and part in a rounded gap around the cursor; zero deps, two draw calls a frame, pauses off screen, survives context loss, one still frame under reduced motion. The source is TypeScript, but the repo commits its own plain-HTML build, `dist/upstream.global.js`, and its README points CDN users at that file, so the built bundle is the upstream here: the `split-flap` case (10-06), not the `pigment-drift` one (10-04). The minified bundle is kept verbatim inside `upstreamFx(e)`; removed are the IIFE head and call and the `$()` that registered `<upstream-fx>` at load; added is `failIfMajorPerformanceCaveat`. `mount()` calls upstream's own `createUpstream(canvas, opts)`. Nothing on the shelf parts around the cursor like this; `god-rays` and `warp` are the nearest looks. |
+| `curly-kumo` | `ayalan/curlykumojs`, `curlykumo.js` + `examples/scroll.html` | `eb8d8535` | MIT | Discovery (GitHub topic search, created 2026-10-07, the author's account dates from 2011). Procedural clouds in the style of the kumo on hanafuda cards, grown lobe by lobe from a seed as they scroll into view and folded away when they leave. One file, no deps, no build. The UMD factory body is kept verbatim inside `curlyKumo()`; the wrapper lines and the load-time `defineElement()` call are removed and `mount()` calls `defineElement()` instead. Each `[data-fx-kumo]` slot gets one upstream `<curly-kumo>` tag; the resting state is upstream's own `toSVG()` output for seeds 5 and 13 (the seeds of `examples/scroll.html`) baked into the snippet. Nothing on the shelf draws illustrated SVG that grows. |
+
+Gates: `check` green (lint 126, smoke 126, 473 tests); `verify` 122 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped, both new ports PASS
+with no WARN.
+
+### Previews
+
+Shot from the built demo page (`?reduced=1`, `set media reduced-motion`,
+`.fxd-bar`, `.fxd-filler` and `.fxd-knobs` hidden by `eval`) served by
+`python3 -m http.server`, system Chrome through
+`AGENT_BROWSER_EXECUTABLE_PATH`, viewport 640x360 at scale 1, after asserting
+`[data-fx-live]`. Under reduced motion `upstream-streaks` draws one real frame
+and holds it, and `curly-kumo` shows its clouds fully grown, so both shots are
+the live effect, not the CSS rest.
+
+### Contrast
+
+Measured live, text made transparent, worst ratio between each text run's
+ink and every pixel under its box, over six frames, at 1280x720 and 375x812.
+`upstream-streaks`: the first scrim (a radial gradient) left the headline at
+2.87:1 on desktop and 1.08:1 on a phone, because lit heads crossed the text
+box corners; a blurred dark plate (`--fx-scrim`, a `::before` with
+`filter: blur`) fixed it, worst now 13.8:1 (h1) and 10.9:1 (lede).
+`curly-kumo`: static once grown, 17.98:1 / 9.80:1 at both sizes; the clouds
+sit in the corners and never under the copy.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `hacimertgokhan/geomotion` | GitHub, created 2026-10-07, `88c1c1c4`, `src/embed.js` + `src/core/*.js` + `src/presets/*.js` | MIT | Hand-drawn morphing line animations: tapered, boiling ink strokes between a few poses, as a `<geo-motion>` web component over plain ES modules with no deps. Portable. Held: the presets are small spot illustrations (a sunrise, a success tick), closer to icons than to a section; a run that wants drawn-line motion should start here. |
+| `molchalih/skye` | GitHub, created 2026-10-07, `1a013792` | MIT | A zero-dependency WebGL2 sky renderer. TypeScript source with no committed build: the `pigment-drift` case (10-04), held the same way. |
+| `cijjas/page-turn-book` | GitHub, created 2026-10-07, `f5c9b27c`, `src/*.js` | MIT | A three.js book whose pages curl under the pointer, as a web component. Plain JS. Held: it is a component that shows the visitor's own images, not a section, and its paper textures carry their own `CREDITS.md` to read first. |
+| `mbenhard/lalia` | GitHub, created 2026-10-07, `8df1cb0f` | MIT | Audio-reactive WebGL orbs for voice agents. TypeScript source, no committed build. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `codrops/interlude` | Codrops, created 2026-10-06, `3f1a9ce2` | MIT | Astro page-transition starter built on GSAP. GSAP is a hard reject. |
+| `codrops/isle-thorne-collective` | Codrops, created 2026-10-07, `80d8a89a` | MIT | An Astro + Tailwind shop template, not a section. |
+| `Manraj10/unmelt` | GitHub, `34c2b654` | MIT | Liquid-chrome logo melt on an MLS-MPM fluid sim; WebGPU only, so smoke and previews cannot see it in the headless browser, and `liquid-metal` covers the look. |
+| `whhmmm/mandala-wallpaper`, `dougbristor/lotus_flame` | GitHub | MIT | A full-screen desktop wallpaper page and a fractal-flame viewer app; illustrations, not sections. |
+| `bas3line/ascii` | GitHub, 242 stars, `fcb64440` | MIT | TypeScript (`src/*.ts`, Astro and React wrappers), and the shelf already carries eight ASCII effects. |
+| `sushilburagute/glyphfill`, `noahvisualsx/noah-motion`, `Miiduoa/motionbench` | GitHub | MIT | TypeScript packages or tools, not effects. |
+| `BinHPdev/DaGuanYuan`, `Charleeh/ecorche`, `wyfirstname/manim-ui` | GitHub | NOASSERTION | Outside the allow-list as published. |
+| `Sheggyb/AnimStudio`, `slophighwaydev/slophighway` | GitHub | AGPL-3.0 | Outside the allow-list. |
+| `4nri/bb-mobile-background-shader`, `FlareAlizer/fokin-portfolio`, `Keda251/Auto-Text-Effect-Animation` and the rest of the unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| Games, 3D model viewers, CAD tools, Unreal and Unity plugins, desktop pets, landing pages (the rest of the twelve topic and twelve keyword searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-07` gives the two repos above, both
+  rejected. The Codrops hub page was not re-read this run.
+- `commits?since=2026-10-07` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`.
+- GitHub topic search, `created:>=2026-10-07` across twelve topics, and twelve
+  keyword searches: the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`. New soft entry:
+`geomotion`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-07`. Twenty scout PRs stacked (09-17 →
+10-08), none merged. Merge the bases with `--rebase`, not `--squash`.

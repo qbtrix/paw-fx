@@ -220,6 +220,8 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | paper-marbling | MIT | [fushanbobfan/ebru](https://github.com/fushanbobfan/ebru) `01b83ab`, `src/marble.js`, `src/pack.js`, `src/patterns.js`, `src/replay.js`, `src/gpu.js`, `src/tools.js`, `src/render.js`, `src/share.js`, `src/main.js`, `index.html` |
 | split-flap | MIT | [enavermate/splitflap](https://github.com/enavermate/splitflap) `730ce03`, `dist/chunk-6QR3BTCU.js`, `dist/chunk-L4NHPYXD.js` |
 | gradient-backdrop | MIT | [nonlineartom/gradient-backdrops](https://github.com/nonlineartom/gradient-backdrops) `ddad93d`, `assets/backdrop.js`, `examples/hero.html` |
+| upstream-streaks | MIT | [AmunM9/upstream-fx](https://github.com/AmunM9/upstream-fx) `355b663`, `dist/upstream.global.js` |
+| curly-kumo | MIT | [ayalan/curlykumojs](https://github.com/ayalan/curlykumojs) `eb8d853`, `curlykumo.js`, `examples/scroll.html` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
