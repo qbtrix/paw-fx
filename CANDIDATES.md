@@ -3643,7 +3643,10 @@ ported, the rest held or rejected. The backlog was not touched.
 | `pixel-trail` | `miguelclavel/pixel-trail`, `index.html` | `8c36e4d3` | MIT | Discovery (GitHub topic search, created 2026-10-08, the author's account dates from 2018). A canvas behind the hero split into about a hundred columns of squares; the pointer charges the squares near it, each keeps the brightest it has been (so the trail holds its shape), bright squares paint in the ink colour and dim ones scatter into four accents, and nothing is ever drawn over the copy. One inline script, no deps. Kept verbatim inside `mount()`; seams are the three ids, `--fx-ink` read off the section instead of the root's `--ink`, the URL switches as options (`?demo` is the `demo` option), and teardown. Ours: `touch-action: pan-y` (upstream's one-screen page sets `none`, which would trap a finger in a scrolling page). Nothing on the shelf is grid-quantised: `canvas-trails` is free dots, `cursor-follow` and `cursor-gooey` follow the pointer with one shape. |
 | `pixel-dissolve` | `miguelclavel/pixel-dissolve`, `index.html` | `12e6605c` | MIT | Discovery (same author, created 2026-10-08). A light panel comes apart in 24px squares as the dark panel scrolls up into view, bottom rows first with a third of noise, accents along the leading edge; tied to the arriving panel and reversible. One fixed canvas shown only during the handover. Same seams as `pixel-trail` (`#from`/`#to`/`#wipe`, `--fx-page`, `?at` as the `at` option, teardown). Under reduced motion `run()` calls `draw(0)` to hide the wipe where upstream returns early; the visible result is the same. Nearest on the shelf is `curtain-transition`, which is one curved SVG sweep, not a pixel grid tied to scroll. |
 
-Gates: `check` green (lint 128, smoke 128, 477 tests). `verify`: see the PR body.
+Gates: `check` green (lint 128, smoke 128, 477 tests); `verify` 124 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped, both new ports PASS
+with no WARN. The first cold `verify` hit a connection reset fetching
+`sg-louver`'s shader (an ERROR, not ours); the warm re-run was clean.
 
 ### Previews
 
