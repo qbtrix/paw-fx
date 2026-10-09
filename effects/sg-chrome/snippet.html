@@ -1,0 +1,21 @@
+<!-- sg-chrome section. Finished at rest with CSS alone: the studio reflection
+     in .fx-chrome__rest is the hero with JavaScript off, and index.js only
+     covers it with a WebGL canvas once it has the shader, a context and a
+     linked program. The _fx paths are root-absolute because a site always sits
+     at the origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The decorative layers carry aria-hidden; the copy is the
+     only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-chrome/style.css">
+<section class="fx-chrome" data-fx="sg-chrome">
+  <div class="fx-chrome__rest" aria-hidden="true"></div>
+  <div class="fx-chrome__grain" aria-hidden="true"></div>
+  <div class="fx-chrome__inner">
+    <p class="fx-chrome__eyebrow"><span class="fx-chrome__dot" aria-hidden="true"></span>Poured, not pressed</p>
+    <h1 class="fx-chrome__title">Everything we make reflects the room it is in.</h1>
+    <p class="fx-chrome__lede">Swap this for your own words. The headline takes one line or three, and the metal keeps rolling under the panel either way.</p>
+    <div class="fx-chrome__actions">
+      <a class="fx-chrome__cta fx-chrome__cta--primary" href="#">See the finish</a>
+      <a class="fx-chrome__cta fx-chrome__cta--ghost" href="#">How it is cast</a>
+    </div>
+  </div>
+</section>

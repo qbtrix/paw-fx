@@ -1,0 +1,193 @@
+/* stardust: the CSS half of the effect. With JavaScript off, under reduced
+   motion (where index.js never starts), or after a refused WebGL2 context
+   sends mount() back to rest, this is the whole hero.
+
+   The resting layer is upstream's first shape drawn flat: the four-arm
+   spiral galaxy seen at the shader's .35 rad tilt, a warm core (the
+   vec3(1,.82,.55) the shader mixes in near the centre), arms in the cosine
+   palette pal() walks (.55+.45*cos(...)), and a dust of points round it.
+
+   Stacking:
+     -2  .fx-stardust__rest    the resting picture, covered once a frame draws
+     -1  <canvas>              inserted by index.js
+      0  .fx-stardust__scrim   legibility wash behind the copy
+      1  .fx-stardust__inner   the copy, bottom left, on its own panel */
+.fx-stardust {
+  --fx-bg: #000;
+  --fx-core: #ffd18c;
+  --fx-arm-a: #f2708c;
+  --fx-arm-b: #6f8cf5;
+  --fx-arm-c: #7de0b0;
+  --fx-ink: #f6f3fb;
+  --fx-muted: #d8d2e6;
+  --fx-scrim: 0.85;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-stardust__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    /* the core */
+    radial-gradient(9vmin 5vmin at 50% 50%, color-mix(in oklab, var(--fx-core) 95%, transparent), transparent 100%),
+    /* the arms, as a tilted swirl of palette colour round the core */
+    conic-gradient(from 20deg at 50% 50%,
+      transparent 0deg, color-mix(in oklab, var(--fx-arm-a) 55%, transparent) 40deg, transparent 90deg,
+      color-mix(in oklab, var(--fx-arm-b) 55%, transparent) 130deg, transparent 180deg,
+      color-mix(in oklab, var(--fx-arm-c) 45%, transparent) 220deg, transparent 270deg,
+      color-mix(in oklab, var(--fx-arm-a) 45%, transparent) 310deg, transparent 360deg),
+    /* grain of points, three co-prime tilings so they do not read as a grid */
+    radial-gradient(1px 1px at 20% 30%, #fffb, transparent 2px) 0 0 / 37px 29px,
+    radial-gradient(1px 1px at 73% 81%, #cfe0ffaa, transparent 2px) 0 0 / 53px 41px,
+    radial-gradient(1px 1px at 61% 12%, #ffd8e4aa, transparent 2px) 0 0 / 79px 67px,
+    var(--fx-bg);
+  /* the conic swirl and the grain are held inside the disc's ellipse */
+  -webkit-mask: radial-gradient(62vmin 30vmin at 50% 50%, #000 40%, #0006 70%, transparent 100%);
+  mask: radial-gradient(62vmin 30vmin at 50% 50%, #000 40%, #0006 70%, transparent 100%);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live once a frame has drawn; every failure path and
+   destroy() clear it, so this rule is also the proof teardown worked. */
+.fx-stardust[data-fx-live] .fx-stardust__rest {
+  opacity: 0;
+}
+
+/* pan-y: a horizontal drag turns the shape, a vertical one still scrolls the
+   page, so a phone can get past a full-height hero. Upstream owned the whole
+   page and set touch-action: none on body. */
+.fx-stardust__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.fx-stardust__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 75% at 0% 100%, var(--fx-bg) 0%, color-mix(in oklab, var(--fx-bg) 80%, transparent) 45%, transparent 80%),
+    linear-gradient(to top, var(--fx-bg) 0%, color-mix(in oklab, var(--fx-bg) 60%, transparent) 28%, transparent 50%);
+  opacity: var(--fx-scrim);
+}
+
+/* The shapes fill the middle of the frame and burst outward on every morph,
+   so a wash alone cannot hold the copy. The copy sits on its own smoked-glass
+   panel (the event-horizon pattern): --fx-panel of black over a 14 px blur.
+   Measured contrast is in the PR that landed this effect; lowering
+   --fx-panel brings more of the bright core under the copy, so re-measure. */
+.fx-stardust__inner {
+  --fx-panel: 0.7;
+  position: relative;
+  z-index: 1;
+  max-width: 32rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.fx-stardust__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.2rem;
+  padding: 0.4rem 0.9rem 0.4rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-bg) 55%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-stardust__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-core);
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--fx-arm-a) 60%, transparent);
+}
+
+.fx-stardust__title {
+  margin: 0;
+  font-size: clamp(2.1rem, 5vw, 3.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  text-shadow: 0 1px 30px color-mix(in oklab, var(--fx-bg) 85%, transparent);
+}
+
+.fx-stardust__lede {
+  margin: 1.2rem 0 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+  text-shadow: 0 1px 20px var(--fx-bg);
+}
+
+.fx-stardust__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.fx-stardust__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-stardust__cta--primary {
+  background: var(--fx-ink);
+  color: #0c0814;
+}
+
+.fx-stardust__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-bg) 55%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-stardust__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-stardust__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
