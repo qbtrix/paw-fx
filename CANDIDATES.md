@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-08**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-09**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3630,3 +3630,103 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-07`. Twenty scout PRs stacked (09-17 →
 10-08), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-09 — window 2026-10-08 to 2026-10-09
+
+One day. Discovery found one author's batch of single-file effects; two were
+ported, the rest held or rejected. The backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `pixel-trail` | `miguelclavel/pixel-trail`, `index.html` | `8c36e4d3` | MIT | Discovery (GitHub topic search, created 2026-10-08, the author's account dates from 2018). A canvas behind the hero split into about a hundred columns of squares; the pointer charges the squares near it, each keeps the brightest it has been (so the trail holds its shape), bright squares paint in the ink colour and dim ones scatter into four accents, and nothing is ever drawn over the copy. One inline script, no deps. Kept verbatim inside `mount()`; seams are the three ids, `--fx-ink` read off the section instead of the root's `--ink`, the URL switches as options (`?demo` is the `demo` option), and teardown. Ours: `touch-action: pan-y` (upstream's one-screen page sets `none`, which would trap a finger in a scrolling page). Nothing on the shelf is grid-quantised: `canvas-trails` is free dots, `cursor-follow` and `cursor-gooey` follow the pointer with one shape. |
+| `pixel-dissolve` | `miguelclavel/pixel-dissolve`, `index.html` | `12e6605c` | MIT | Discovery (same author, created 2026-10-08). A light panel comes apart in 24px squares as the dark panel scrolls up into view, bottom rows first with a third of noise, accents along the leading edge; tied to the arriving panel and reversible. One fixed canvas shown only during the handover. Same seams as `pixel-trail` (`#from`/`#to`/`#wipe`, `--fx-page`, `?at` as the `at` option, teardown). Under reduced motion `run()` calls `draw(0)` to hide the wipe where upstream returns early; the visible result is the same. Nearest on the shelf is `curtain-transition`, which is one curved SVG sweep, not a pixel grid tied to scroll. |
+
+Gates: `check` green (lint 128, smoke 128, 477 tests). `verify`: see the PR body.
+
+### Previews
+
+Shot from the built demo page (`?reduced=1`, `set media reduced-motion`,
+`.fxd-bar`, `.fxd-filler` and `.fxd-knobs` hidden by `eval`) served by
+`python3 -m http.server`, system Chrome through
+`AGENT_BROWSER_EXECUTABLE_PATH`, viewport 640x360 at scale 1, after asserting
+`[data-fx-live]`. Both effects rest on a plain page colour, so the shots turn
+on upstream's own README-picture switches through the knobs panel:
+`pixel-trail` with `demo` ticked (upstream's held loop; 71,987 lit canvas
+pixels confirmed before the shot, and the browser was in dark scheme, so the
+shot is the dark palette), `pixel-dissolve` with `at` at 0.4.
+
+`agent-browser stream status` read `Streaming enabled` at the start of this
+run again; `stream disable` first, then the shots worked. The first `check`
+died in smoke on `sg-bask` with `os error 35` because
+`AGENT_BROWSER_EXECUTABLE_PATH` was not exported for it; export it for
+`check` too, not just for the preview shots.
+
+### Contrast
+
+Not measured live. Both effects draw nothing under the copy at rest, and
+`pixel-trail` keeps an 18px box around the copy clear by construction
+(upstream's keep-out), so the copy always sits on the flat page colour.
+Computed from upstream's colours: `pixel-trail` 11.9:1 / 5.35:1 light,
+17.6:1 / 7.6:1 dark; `pixel-dissolve` 16.0:1 / 5.35:1 light panel,
+17.6:1 / 7.6:1 dark panel. The dissolve's wipe is flat page colour over the
+whole screen for the length of the handover, which hides the copy rather than
+sitting under it.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `miguelclavel/scroll-into-header` | GitHub, created 2026-10-08, `5ee03592`, `index.html` | MIT | A big centred name that travels as one object into a fixed header bar as you scroll, eased. Portable. Held: the effect owns a `position: fixed` header, which collides with any site's own header; it is a page-shell piece, not a section. Overlaps the stacked `capsule-nav`. |
+| `miguelclavel/wave-line` | GitHub, created 2026-10-08, `6f191958`, `index.html` | MIT | A divider that bends toward the pointer and springs back like a plucked string. Portable and tiny. Held: a divider rule, not a section (the buttons precedent). A run that wants a small cursor detail could take it. |
+| `miguelclavel/name-hover` | GitHub, created 2026-10-08, `0f16e36f`, `index.html` | MIT | Every letter of a name gets its own hover animation. Held: the shelf is already heavy on per-letter text hovers (`letter-shuffle-menu`, `scramble`, `dual-wave-text`). |
+| `miguelclavel/sticker-burst` | GitHub, created 2026-10-08, `51316534`, `index.html` | MIT | Click a heading and it bursts into spinning stickers. Held: a click micro-interaction next to `confetti-burst`. |
+| `miguelclavel/curve-carousel` | GitHub, created 2026-10-08, `7894a191`, `index.html` | MIT | Case-study cards riding the top of a huge circle. Held: the demo is the author's portfolio cards and screenshots, and it sits next to `rotate-scroll-gallery` and `loop-scroll-gallery`. |
+| `Benjaminnespou/moving-parts-free` | GitHub, created 2026-10-08, `13d375b9` | MIT (this repo only) | Five components from a commercial library; `NOTICE.md` says the MIT grant covers only the copies in this repo, and the rest of the library is under a site licence that forbids republishing. `dot-repel`, `text-scramble` and `pixel-ribbon` are MIT and GSAP-free per that notice, so they are screenable; held because the brand's other components are no-republish and a reviewer should read the notice before any port. `button-01` and `velocity-marquee` need GSAP: rejected. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `DopamineStd/dopamine-fx` | GitHub, created 2026-10-08 | NOASSERTION | "22 free effects for Webflow": outside the allow-list, and a Webflow no-code library. |
+| `Benjaminnespou/moving-parts-free` `button-01`, `velocity-marquee` | GitHub | MIT | Play with GSAP 3. Hard reject. |
+| `dukxa/goo-button` | GitHub, created 2026-10-08 | MIT | One button's hover state, not a section. |
+| `talbs/tiny-tells` | GitHub, created 2026-10-08 | MIT | Six status characters in a `<tiny-tell>` element; app UI, not a section. |
+| `8533502-dev/image-particle-fx` | GitHub | NOASSERTION | Outside the allow-list, and an app with AI depth and video export. |
+| `Appash14/kepler-9`, `Usman552/nexora-3D-website`, `farshadrp/front-end-portfolio` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject (`kepler-9` is GSAP as well). |
+| `Olalall/own-ui` | GitHub | MIT | React + TypeScript component kit. |
+| `zgyk4167/ascii-motion`, `impossible87/frontend-studio`, `joonsp/threejs-skills`, `maxliebscher/optimize-three` | GitHub | MIT | Agent skills, not effects. |
+| Games, 3D viewers, wallpapers, Unity and Unreal tools, video pipelines, portfolios (the rest of the twelve topic searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-08` returns nothing. The Codrops
+  hub page was not re-read this run.
+- `commits?since=2026-10-08` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`.
+- GitHub topic search, `created:>=2026-10-08` across twelve topics
+  (`animation`, `webgl`, `css-animation`, `shaders`, `scroll-animation`,
+  `glsl`, `canvas`, `generative-art`, `text-animation`, `hero-section`,
+  `shader`, `webgpu`): the tables above. `miguelclavel/interaction-recipes`
+  (created 2026-10-08) indexes twenty more of the author's interactions; a
+  future run should read it before re-searching that account.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`. New soft
+entries: `wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-08`, as every run since 09-17 has been, though
+the task text says `origin/main`: basing on main would drop the twenty
+unmerged logs from the dedup set and conflict on this file. Twenty-one scout
+PRs stacked (09-17 → 10-09), none merged. Merge the bases with `--rebase`, not
+`--squash`.
