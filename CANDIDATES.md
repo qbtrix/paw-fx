@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-09**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-10**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3733,3 +3733,94 @@ the task text says `origin/main`: basing on main would drop the twenty
 unmerged logs from the dedup set and conflict on this file. Twenty-one scout
 PRs stacked (09-17 → 10-09), none merged. Merge the bases with `--rebase`, not
 `--squash`.
+
+## 2026-10-10 — window 2026-10-09 to 2026-10-10
+
+One day. Discovery found one portable repo and it was ported; three more were
+vetted and held. The backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `isoline-scene` | `JuPicker/isoline`, `isoline.min.js` + `examples/basic.html` | `77c1da57` | MIT | Discovery (GitHub topic search, created 2026-10-09). Small isometric worlds drawn in SVG hairlines that move on their own and answer the pointer: fourteen scenes, the default here being `examples/basic.html`'s self-typing mechanical keyboard with an orange accent on a fading grid floor. One vanilla file, no deps, no WebGL. GitHub reads the licence as NOASSERTION because `LICENSE` holds two MIT notices: Isoline's own and the one for `lucasmarkes/hairline`, whose line language it adapts (that repo was rejected 10-02 as React; Isoline is the vanilla descendant). `detectSpdx` reads MIT and `verify` passes. The README points script-tag users at the committed `isoline.min.js`, so that build is the upstream (the `upstream-streaks` case): kept verbatim inside `isolineLib(t)`, with the IIFE head and call and the `module.exports`/`window.Isoline` assignments removed. `isoline.js` (unminified) is 69.8 KB gzipped, over the 60 KB own-code cap; the min build is 47.4 KB. Upstream's own `toSVG()` frame was measured as a baked resting state and dropped: +10.5 KB gzipped crosses the cap. The rest is a CSS iso grid under an accent glow. Nothing on the shelf is isometric line illustration. |
+
+Gates: `check` green (lint 129, smoke 129, 479 tests); `verify` 125 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped, `isoline-scene` PASS
+with no WARN.
+
+### Previews
+
+Shot from the built demo page (`?reduced=1`, `set media reduced-motion`,
+`.fxd-bar`, `.fxd-filler` and `.fxd-knobs` hidden by `eval`) served by
+`python3 -m http.server`, system Chrome through
+`AGENT_BROWSER_EXECUTABLE_PATH`, after asserting `[data-fx-live]`. Shot at
+1280x720 scale 1 and scaled to 640x360 with `sips`, because at a 640 viewport
+the split hero stacks and the frame falls below the fold. Under reduced motion
+upstream holds a readable pose (it advances six steps first), so the shot is
+the live scene. `agent-browser stream status` read `Streaming enabled` again;
+`stream disable` first.
+
+### Contrast
+
+Not measured live: the copy never sits on line work. Desktop is a split (copy
+beside the frame), and under 760px the frame stacks below the copy, so the text
+always sits on the flat plate `#08090a`. Computed: `#f2f4f7` headline 18.1:1,
+`#a9afba` lede 9.0:1.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `mosaddiqdev/nijimi` | GitHub, created 2026-10-09, `js/main.js` (86 KB) | MIT | An endless ink-and-wash landscape that paints itself as you scroll: six parallax planes, day and night, weather. Zero deps, vanilla canvas. Held: it is a full-page app (menu, keyboard shortcuts, `localStorage`, odometer, page scroll as the walk), so the seams would be large, and the stacked `ink-wash` already covers the look. |
+| `Ollibolli8/meniscus` | GitHub, created 2026-10-09, `src/*.ts` + committed `docs/main.js` | MIT | A word floating in a live WebGL2 pool with caustics, shadow and a wake; drag it or type. Held: the source is TypeScript and the committed `docs/main.js` is the GitHub Pages demo build, not a library build the README points users at (it points at `src/meniscus.ts`), so this is closer to `pigment-drift` (10-04) than `split-flap`. It also needs a specific variable font loaded first. A reviewer should call which case it is. |
+| `suz62063-jpg/liquid-glass` | GitHub, created 2026-10-09, `liquid-glass.js` + `liquid-glass.css` | Apache-2.0 | Vanilla liquid-glass panels. Held: the shelf has four glass effects, and `Andrey20Allyson/liquid-glass` (10-06) is already queued ahead of it for a glass run. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `codrops/atelier-north` | Codrops, created 2026-10-09 | none | Astro + GSAP landing page template. GSAP is a hard reject, and no LICENSE file. |
+| `miguelclavel/portfolio-details` | GitHub, created 2026-10-09 | MIT | A viewed badge, a summary line and a selection colour; portfolio details, not sections. |
+| `Happyuky7/Black-Hole-Web-Interstellar-Style` | GitHub | MIT | A ray-traced black hole; the stacked `event-horizon` covers it. |
+| `c0le0ni/loaders`, `jatinbansalwork-commits/spinkit-react`, `loktar00/burstfx` | GitHub | MIT | TypeScript or React loaders and particle bursts, not sections. |
+| `mo-hawary/text-strip` | GitHub | MIT | TypeScript announcement bar, page chrome. |
+| `kaihong66/driftcha`, `robinsadeghpour/webcam-dust`, `PYTHONRETARDE/hyperbolic-particle-life`, `Arthur031221/*` | GitHub | MIT | A CAPTCHA, a webcam toy, a simulation app and photo tools; not sections. |
+| `heinergiehl/fluid-depth-scroll`, `GianneAngely/flower-fist`, `amanxdev0/helios` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| `BestGuo2020/solar-terms-ds`, `fevnem/where-you-are`, `kyan9400/*-3d` | GitHub | NOASSERTION | TypeScript sites and an explainer, not effects; licence text not opened. |
+| Games, 3D viewers, Blender and Maya tools, agent skills, video pipelines, portfolios (the rest of the twelve topic and sixteen keyword searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-09` gives `atelier-north` only,
+  rejected. The Codrops hub page (`/codrops/hub/all/`) returned 403 to
+  WebFetch this run; treat it as unreachable without a human check, like
+  CodePen.
+- `commits?since=2026-10-09` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`.
+- GitHub topic search, `created:>=2026-10-09` across the same twelve topics as
+  10-09, and sixteen keyword searches (`shader background`, `hero effect`,
+  `scroll effect`, `text effect`, `cursor effect`, `webgl effect`,
+  `css effect`, `background animation`, `particles`, `gradient`, `ascii`,
+  `glitch`, `marquee`, `parallax`, `liquid`, `noise`): the tables above.
+- `miguelclavel`: nothing new since 10-08 except `portfolio-details`
+  (rejected); `interaction-recipes` now lists thirteen recipes, all already
+  screened or page-shell pieces.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`,
+`wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`). New soft
+entry: `meniscus` (pending the TS-source call).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-09`, as every run since 09-17 has been, though
+the task text says `origin/main`. Twenty-two scout PRs stacked (09-17 →
+10-10), none merged. Merge the bases with `--rebase`, not `--squash`.

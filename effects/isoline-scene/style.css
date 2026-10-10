@@ -1,0 +1,76 @@
+/* isoline-scene: a split hero, the copy beside one of Isoline's isometric
+   hairline scenes.
+
+   Resting state (ours): the frame shows a faint isometric grid (lines at the
+   iso angles, upstream's mid tone on upstream's plate) under an orange glow in
+   the accent of examples/basic.html, so with the script blocked the section
+   reads as a lit drafting table, not an empty box. index.js appends a stage
+   div to the frame; upstream fills it, paints its own plate as the background
+   and so covers the rest. Upstream injects its own <style data-isoline> for
+   the scene's lines; nothing here styles the SVG. */
+.fx-isoline-scene {
+  --fx-ink: #f2f4f7;
+  --fx-ink-soft: #a9afba;
+  --fx-plate: #08090a;
+  --fx-grid: #3e3e44;
+  --fx-accent: #ff6a3d;
+  box-sizing: border-box;
+  position: relative;
+  /* Upstream's svg is overflow: visible (the keyboard's cable runs off the
+     frame); clip at the section so a phone never scrolls sideways. */
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  padding: clamp(24px, 5vw, 80px);
+  color: var(--fx-ink);
+  background: var(--fx-plate);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-isoline-scene *,
+.fx-isoline-scene *::before,
+.fx-isoline-scene *::after { box-sizing: border-box; }
+
+.fx-isoline-scene__title {
+  margin: 0 0 16px;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.fx-isoline-scene__lede {
+  margin: 0;
+  max-width: 44ch;
+  font-size: clamp(16px, 1.4vw, 19px);
+  color: var(--fx-ink-soft);
+}
+
+.fx-isoline-scene__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background:
+    radial-gradient(40% 45% at 55% 55%, color-mix(in srgb, var(--fx-accent) 22%, transparent), transparent 70%),
+    repeating-linear-gradient(30deg, transparent 0 27px, color-mix(in srgb, var(--fx-grid) 70%, transparent) 27px 28px),
+    repeating-linear-gradient(-30deg, transparent 0 27px, color-mix(in srgb, var(--fx-grid) 70%, transparent) 27px 28px),
+    var(--fx-plate);
+  -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent);
+  mask-image: radial-gradient(closest-side, #000 60%, transparent);
+}
+/* Live: upstream's stage covers the frame, so the rest's fade mask goes. */
+.fx-isoline-scene[data-fx-live] .fx-isoline-scene__frame {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.fx-isoline-scene__stage {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 760px) {
+  .fx-isoline-scene {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+  }
+}

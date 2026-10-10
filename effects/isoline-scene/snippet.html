@@ -1,0 +1,14 @@
+<!-- isoline-scene section. Finished at rest with CSS alone: the copy beside a
+     faint isometric grid under an orange glow. index.js puts Isoline's
+     animated hairline scene (a self-typing keyboard by default) in the frame;
+     it moves on its own and answers the pointer.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/isoline-scene/style.css">
+<section class="fx-isoline-scene" data-fx="isoline-scene">
+  <div class="fx-isoline-scene__copy">
+    <h1 class="fx-isoline-scene__title">Your headline here</h1>
+    <p class="fx-isoline-scene__lede">Swap this for your own words. The scene keeps working on its own; point at it and it answers.</p>
+  </div>
+  <div class="fx-isoline-scene__frame"></div>
+</section>
