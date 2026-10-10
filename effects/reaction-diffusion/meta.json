@@ -1,0 +1,98 @@
+{
+  "name": "reaction-diffusion",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "reaction-diffusion",
+    "gray-scott",
+    "turing",
+    "simulation",
+    "generative",
+    "webgl2",
+    "webgl",
+    "organic",
+    "coral",
+    "pointer",
+    "interactive",
+    "paint",
+    "dark",
+    "hero"
+  ],
+  "summary": "Full-bleed hero where Turing patterns grow live under the copy, in raw WebGL2 with no library. Two chemicals on a 512 x 512 wrapping dish follow the Gray-Scott rule (A + 2B -> 3B, A fed in, B removed) and, depending on the feed and kill rates, grow coral, spots, a labyrinth, worms, waves or dividing cells; the amount of B maps to a five-stop colour ramp with an optional relief light. The pointer paints B: press and drag to seed a new colony, shift or right-button to erase. Ten presets, six palettes, the steps per frame, the brush radius and the relief are options. A probe stops the computation once nothing moves and a stroke or an option change wakes it. Under reduced motion the dish is grown once and then only changes under a stroke. With no script, no WebGL2 or no float render targets, the section rests on the coral palette's deep blue ground with soft teal and amber washes.",
+  "needs": [],
+  "options": {
+    "preset": {
+      "type": "string",
+      "default": "coral",
+      "description": "Feed and kill rates by name (upstream's preset select): coral, mitosis, spots, stripes, fingerprint, worms, holes, waves, chaos or uskate. A change through update() reseeds the dish with fresh drops, as upstream's select does."
+    },
+    "palette": {
+      "type": "string",
+      "default": "coral",
+      "description": "Five-stop colour ramp from no B to all B (upstream's palette select): ink, coral, ember, ocean, moss or mono."
+    },
+    "speed": {
+      "type": "number",
+      "default": 12,
+      "min": 1,
+      "max": 40,
+      "step": 1,
+      "description": "Simulation steps per frame (upstream's speed slider). More is faster growth and more GPU work."
+    },
+    "brush": {
+      "type": "number",
+      "default": 10,
+      "min": 2,
+      "max": 40,
+      "step": 1,
+      "description": "Radius of the pointer's brush in cells of the 512-cell dish (upstream's brush slider). Press and drag to seed B; shift or the right button erases."
+    },
+    "relief": {
+      "type": "boolean",
+      "default": true,
+      "description": "Lights the pattern as a bumped surface (upstream's relief checkbox); off is the flat colour ramp."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "evoluteur/reaction-diffusion",
+    "commit": "2620644993f13042847f21bf7e29c26538b8f57d",
+    "path": [
+      "js/rd.js",
+      "index.html",
+      "css/rd.css"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The stage is the section's box: the canvas is created and inserted as the section's first child instead of read by id. The dish stays upstream's SIM = 512 square (canvas.width and height = SIM, textures wrap), and CSS covers the section with it (position absolute, inset 0, 100% by 100%, object-fit: cover), so a 16:9 section shows a centre-cropped band of the dish with square cells rather than stretched ones.",
+      "why": "Seam. Upstream shows the dish as a square in its own box; a paw-fx effect fills whatever section it is given.",
+      "kind": "seam"
+    },
+    {
+      "what": "pointerdown, pointermove, pointerup, pointercancel and contextmenu listen on the section instead of the canvas, and toCell() undoes the cover crop: section coordinates are divided by max(width, height) / SIM and offset by half the hidden margin, so a stroke lands where the pointer is. The trail interpolation, the erase on shift or right button, the per-stroke seed and the pointer capture are upstream's; pointerdown and contextmenu stand aside over links, buttons and form fields in the copy. The control panel (omg.js), the feed/kill map, the feed/kill/speed/brush sliders, the hash read and write, the PNG download, the space key, the step-count label and the analytics are dropped; the map uniform is always false (the shader keeps its branch).",
+      "why": "Seam. A section has no panel and no URL of its own, and the pointer math assumed the canvas was shown square.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's preset select, palette select, speed and brush sliders and relief checkbox become the preset, palette, speed, brush and relief options, applied by configure(): an unknown preset or palette falls back to coral, speed is clamped to 1..40 and brush to 2..40 (ours: upstream's sliders have no range the script reads). A preset change through update() runs upstream's setPreset with a reseed (fresh drops); the other four just set state. Every update() wakes the probe.",
+      "why": "Seam. Options replace the on-page controls.",
+      "kind": "seam"
+    },
+    {
+      "what": "getContext adds failIfMajorPerformanceCaveat: true to upstream's preserveDrawingBuffer and antialias flags. A missing context, a missing EXT_color_buffer_float, a shader or link failure (program() is wrapped in try/catch) or an incomplete float framebuffer returns the resting handle instead of writing a no-gl message, and mount(null) or no document returns it too. The canvas fade-in moves to style.css keyed on data-fx-live.",
+      "why": "Seam. The contract falls back to the CSS rest on a refused context, and an effect touches no globals.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the dish is seeded and stepped 1500 times once (STILL_STEPS, ours), drawn, and then only stepped by one frame's worth (speed steps) per pointer event during a stroke; there is no frame loop. An IntersectionObserver pauses the loop off screen, data-fx-live is set after the first draw(), and destroy() cancels the frame, disconnects the observer, removes the listeners, loses the context and removes the canvas. The settled flag no longer resets the step label (lastShown is gone with the label).",
+      "why": "Ours. Twelve full-dish passes a frame should not run for a section nobody can see or for a visitor who asked for less motion, and teardown must give the context back.",
+      "kind": "ours"
+    },
+    {
+      "what": "The rest state is CSS: the coral palette's #06223a ground with two soft radial washes of its #0d5c75 and #f2a65a stops, and the copy on a .fx-rd__inner smoked panel (color-mix of #0a0d10 at --fx-panel over transparent, blurred).",
+      "why": "Ours. The section has to look finished with no script, and the pattern's light stops run under the copy, so it needs a plate.",
+      "kind": "ours"
+    }
+  ]
+}

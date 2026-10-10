@@ -1,0 +1,93 @@
+{
+  "name": "gradient-backdrop",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "gradient",
+    "webgl",
+    "shader",
+    "oklab",
+    "flow",
+    "aurora",
+    "silk",
+    "mesh",
+    "grain",
+    "hero",
+    "light",
+    "presets"
+  ],
+  "summary": "Full-bleed hero on an animated WebGL gradient from gradient-backdrops: one dependency-free renderer with fifteen styles (flow, mesh, aurora, silk, sky, waves, mist, bars, prism, rings, glow, stripes, forms, watercolor, swirl) and 29 named presets, colours mixed in OKLab so complements never pass through grey, every frame dithered so there is no banding, an optional film-grain layer. The default is upstream's hero: the fluid preset, a pale iridescent domain-warped field, under light grain. The canvas sits behind the section's own copy, pauses off screen, renders soft styles at reduced resolution, and freezes on one frame under reduced motion. With no script or no WebGL the section rests on upstream's static two-wash fallback.",
+  "needs": [],
+  "options": {
+    "preset": {
+      "type": "string",
+      "default": "fluid",
+      "description": "A named look: style, colours and params together. fluid, iridescent-cloud, lagoon, solar-flare, orchid (flow); soft-signal, any-words (mesh); night-swim, violet-veil (aurora); amethyst, pearl-silk (silk); blue-sky, start-here (sky); tidal (waves); field-notes (mist); after-hours (bars); citron, glacier (prism); ambient (rings); edge, moons (glow); gather (stripes); solstice, petal, with-love, celtics, bloom (forms); verdant (swirl); paper-garden (watercolor). Upstream's presets."
+    },
+    "style": {
+      "type": "string",
+      "default": "",
+      "description": "One of the fifteen styles, overriding the preset's. Empty keeps the preset's style. Colours keep the preset's, and colour order matters per style (see upstream's README)."
+    },
+    "colors": {
+      "type": "string[]",
+      "default": [],
+      "description": "Two to six CSS colours (hex, rgb(), hsl(), oklch(), names) replacing the preset's palette, in the style's order. Empty keeps the preset's."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 4,
+      "step": 0.05,
+      "description": "Animation speed multiplier; 0 freezes the field. Upstream default."
+    },
+    "grain": {
+      "type": "number",
+      "default": 0.14,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "description": "Film-grain overlay opacity, 0 to 1. 0.14 is upstream's hero example; its library default is 0."
+    },
+    "seed": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "description": "Varies the composition without changing the look. Upstream default."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "nonlineartom/gradient-backdrops",
+    "commit": "ddad93da04280f83f3cf25898a1f1cbdf001385e",
+    "path": [
+      "assets/backdrop.js",
+      "examples/hero.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The upstream file is one classic-script IIFE, (function (global) { ... })(globalThis). Its body (upstream lines 15 to 1182: every shader, preset, colour helper, the renderer, the frame loop and createBackdrop) is kept verbatim inside a named function gradientBackdrops(global), which mount() calls once, the first time it runs, with window. The IIFE call line, the DOMContentLoaded autoInit() call and the globalThis.GradientBackdrop assignment are removed; that object is returned instead. One line of upstream's header comment, which quoted a side-effect import of ./backdrop.js, is reworded, because the registry build reads a quoted path after import as a real one.",
+      "why": "Seam. A paw-fx module touches no global at import time; the IIFE reads globalThis and registers a media-query listener the moment it loads, and its autoInit would mount every [data-backdrop] on the host page.",
+      "kind": "seam"
+    },
+    {
+      "what": "The WebGL context is requested with failIfMajorPerformanceCaveat: true. When it is refused, upstream's fallback paints a CSS mesh on the element; mount() sees fallbackApplied, destroys the instance, puts the section's inline style back and leaves the section on its own CSS rest.",
+      "why": "Seam. The contract asks WebGL effects to refuse a software context and fall back to the designed resting state.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount(el, opts) calls upstream's createBackdrop(el, {preset: \"fluid\", grain: 0.14, ...opts}) with empty options dropped, so upstream's resolve() fills style, colours and params from the preset. update(next) is upstream's set(next). destroy() is upstream's destroy() plus restoring the section's inline style and removing data-fx-live, which is set once the first frame is drawn. Reduced motion is upstream's: the field draws one frame and holds it.",
+      "why": "Seam. The preset and grain defaults are upstream's examples/hero.html, the library's own canonical hero.",
+      "kind": "seam"
+    },
+    {
+      "what": "The resting state is upstream's static fallback from examples/hero.html, the two radial washes on #F6F9FF, as --fx- variables, with position: relative and isolation: isolate set in CSS. The headline is Instrument Serif when the page already has it and a system serif otherwise, since a section fetches nothing off-site.",
+      "why": "Ours. The section has to look finished with no script, and upstream's example loads its fonts from Google Fonts.",
+      "kind": "ours"
+    }
+  ]
+}

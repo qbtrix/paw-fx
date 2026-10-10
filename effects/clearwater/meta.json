@@ -1,0 +1,94 @@
+{
+  "name": "clearwater",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "water",
+    "caustics",
+    "refraction",
+    "sun",
+    "glare",
+    "ripples",
+    "interactive",
+    "photoreal",
+    "fft",
+    "webgl2",
+    "hero",
+    "light"
+  ],
+  "summary": "Full-bleed hero looking down from the shore into clear, shallow water over a pebble bed on a sunny day. It is computed rather than filmed: an FFT ocean spectrum moves the surface, its normals refract a grid of sun rays onto the bed once per colour channel so the caustic web fringes with dispersion, the water shader handles Fresnel, absorption and scattering through the depth, and every sun glint wears a faint rainbow diffraction star convolved from a real lens aperture. A tap drops a ring into a local ripple field and a drag turns the camera. Under reduced motion it renders upstream's own frozen-time frame, so the still is real water rather than a painted fallback.",
+  "needs": [],
+  "options": {
+    "yaw": {
+      "type": "number",
+      "default": 0,
+      "min": -3.14,
+      "max": 3.14,
+      "step": 0.0314,
+      "description": "Which way the camera faces across the water, in radians (upstream's ?yaw). 0 looks out along the shore with the sun just off to the right; the scene is a periodic patch, so every heading is water. The visitor can still drag the view away from it."
+    },
+    "pitch": {
+      "type": "number",
+      "default": -0.72,
+      "min": -1.44,
+      "max": 0.36,
+      "step": 0.009,
+      "description": "How far the camera looks down, in radians (upstream's ?pitch, clamped to its -1.45..0.35). The default looks down into the shallows at the caustics on the bed; toward 0 the view flattens out over the glare to the headland on the horizon."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "Aureliengmz/clearwater",
+    "commit": "4bc826134321043a25df3c2b6fed16fb7b9241e8",
+    "path": [
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is one classic script in a page. Its lines 59-60, 64-342, 349-790 and 792-916 (the GL helpers, the FFT spectrum, the ripple simulation, the caustics, the water shader, the post chain, the lens diffraction glare, the camera and the frame loop) sit verbatim inside inicia(), called from mount(el, opts); the page chrome (#hint, #credit, #dbg, #err) is not carried as markup.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The credit pill links the author's X profile and studio from the demo page; the credit is kept in the licence header, LICENSES.md and meta.origin instead of as a link inside a client's hero.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's Q, a URLSearchParams over location.search, is replaced by an object with the same has() and get() that answers yaw and pitch from the mount options and t from prefers-reduced-motion. Every other key upstream asks for (debug, noglare, view, tap, frames) answers absent, which is upstream's default for each.",
+      "why": "Seam. A library section must not change because its host page's URL happens to carry ?view=caus or ?t. Keeping the has()/get() shape is what leaves every reading site in the verbatim block byte-identical.",
+      "kind": "seam"
+    },
+    {
+      "what": "The seabed texture is upstream's own 1024x1024 pebble JPEG re-encoded at 256x256 (JPEG quality 70), carried as the PEBBLES string constant; the pebble texture is allocated at 256x256 instead of 1024x1024, and the image is decoded from that constant at once instead of from a <script id=\"pebbles-texture\"> block on DOMContentLoaded.",
+      "why": "Ours. The 1024 original is 253 KB gzipped against the library's 60 KB own-code cap, and an effect has no file slot for a binary asset. The shader samples the bed through trilinear mips with 16x anisotropy and blends two offset tilings per zone, so the lost detail shows only on the nearest pebbles at the bottom of the frame.",
+      "kind": "ours"
+    },
+    {
+      "what": "The context is requested with failIfMajorPerformanceCaveat: true, and fail() throws instead of appending to an on-page error panel. A null context, a missing float-render extension, a shader that will not compile or a zero-sized section all return the resting handle with the context lost and the canvas removed; the window error listener is dropped.",
+      "why": "The repo contract. Upstream runs FFTs, a 256x256 caustic mesh drawn nine times per channel and an FFT convolution every frame; on a software rasteriser that is worse than the resting CSS under it, and a client page must never grow a red error box.",
+      "kind": "seam"
+    },
+    {
+      "what": "The canvas is sized from el.clientWidth and el.clientHeight instead of innerWidth and innerHeight, in alloc() and in the drag sensitivity; a ResizeObserver on the section replaces the window resize listener; and tapToDrop measures the tap against the canvas's getBoundingClientRect instead of the window.",
+      "why": "Seam. Each of those reads is the identity while the canvas IS the window. The camera's field of view and the ripple window are defined in world metres, so a section gets upstream's scene at the section's aspect rather than a crop of a window-sized one.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion the effect takes upstream's own frozen-time path (?t=5): time held at 5 s, camera sway off, quality 1, preserveDrawingBuffer on, four frames drawn and then the loop stops. Its frame counter is a local instead of window.__frames, and a resize or update() draws the four frames again.",
+      "why": "Seam. Upstream built this path for screenshots, which is exactly what a reduced-motion still is, so the still is a real frame of the water rather than a CSS approximation. The global counter would leak onto the host page and survive a remount.",
+      "kind": "seam"
+    },
+    {
+      "what": "requestAnimationFrame is shadowed inside inicia() by a function that schedules tick(), which skips the frame while an IntersectionObserver says the section is off screen, keeps the handle destroy() cancels, and sets data-fx-live once the pebble bed has loaded and a frame has been drawn.",
+      "why": "Ours. Upstream owns the whole window, so it is always visible; a section below the fold is not, and a frame here is two FFTs, the caustic mesh and a convolution. Routing through the name upstream already calls from three places keeps the loop body byte-identical.",
+      "kind": "ours"
+    },
+    {
+      "what": "The hint pill (#hint, its six-second timer and the pointerup that hides it) is dropped; hideHint() stays as an empty function so the pointerup handler in the verbatim block is left as upstream wrote it. The canvas is touch-action: pan-y instead of the page's touch-action: none, so a vertical swipe on a phone scrolls the page and only a horizontal one turns the camera.",
+      "why": "Ours. A hero must not trap the page's scroll on touch, which upstream can do because it is the page. The hint is instructions about upstream's demo; the section's copy is the site's.",
+      "kind": "ours"
+    },
+    {
+      "what": "yaw and pitch are read from the options of the same names, defaulting to upstream's 0 and -0.72, and update() can move the camera live (pitch clamped to upstream's -1.45..0.35).",
+      "why": "Seam. Upstream's own ?yaw and ?pitch query keys surfaced as knobs with upstream's defaults, so an unset option renders exactly upstream.",
+      "kind": "seam"
+    }
+  ]
+}

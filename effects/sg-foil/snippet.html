@@ -1,0 +1,23 @@
+<!-- sg-foil section. Finished at rest with CSS alone: the card and the ringed
+     emblem in .fx-foil__rest are the hero with JavaScript off, and index.js
+     only covers them with a WebGL canvas once it has the shader, a context and
+     a linked program. The emblem is pressed in the left third and the copy
+     sits in the quiet right two thirds, left-aligned. The _fx paths are
+     root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The
+     decorative layers carry aria-hidden; the copy is the only thing a screen
+     reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-foil/style.css">
+<section class="fx-foil" data-fx="sg-foil">
+  <div class="fx-foil__rest" aria-hidden="true"></div>
+  <div class="fx-foil__grain" aria-hidden="true"></div>
+  <div class="fx-foil__inner">
+    <p class="fx-foil__eyebrow"><span class="fx-foil__dot" aria-hidden="true"></span>Hot-stamped, one pass</p>
+    <h1 class="fx-foil__title">Pressed once. Read for years.</h1>
+    <p class="fx-foil__lede">Swap this for your own words. The mark stays in the left third and the copy keeps its lane on the right, so the sweep can cross the sheet without crossing the headline.</p>
+    <div class="fx-foil__actions">
+      <a class="fx-foil__cta fx-foil__cta--primary" href="#">Order a proof</a>
+      <a class="fx-foil__cta fx-foil__cta--ghost" href="#">How the die is cut</a>
+    </div>
+  </div>
+</section>
