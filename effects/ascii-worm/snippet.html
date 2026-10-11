@@ -1,0 +1,52 @@
+<!-- ascii-worm section. Finished at rest with CSS alone: the block inside
+     <pre> is a real frame of the worm, the 100x30 text frame upstream's
+     terminal version prints when its output is not a terminal, so a blocked
+     script or prefers-reduced-motion leaves a worm in the panel rather than an
+     empty box. index.js draws into [data-fx-stage] on two canvases and hides
+     the frame once the first one is up.
+     The art is decorative and carries aria-hidden; the eyebrow, headline,
+     lede and the spec list stay real text.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/ascii-worm/style.css">
+<section class="fx-ascii-worm" data-fx="ascii-worm">
+  <div class="fx-ascii-worm__inner">
+    <div class="fx-ascii-worm__copy">
+      <p class="fx-ascii-worm__eyebrow">Shaded in text</p>
+      <h2 class="fx-ascii-worm__title">A creature made of punctuation.</h2>
+      <p class="fx-ascii-worm__lede">Replace this with your own words. Every character inside the body knows which way its surface faces, light from the upper left picks the glyph, and a depth buffer decides what is in front where the worm crosses itself.</p>
+      <ul class="fx-ascii-worm__spec">
+        <li><span>Shading ramp</span><b>:-=+*#%@</b></li>
+        <li><span>Draw calls per row</span><b>one per colour</b></li>
+        <li><span>Dependencies</span><b>none</b></li>
+      </ul>
+    </div>
+    <div class="fx-ascii-worm__stage" data-fx-stage>
+      <pre class="fx-ascii-worm__rest" aria-hidden="true">
+
+
+
+
+
+
+                                                                 *#***#++*+==
+                                                              ##*%%*#*#*+**++*=-
+                                                            *%%%**%*+*#++*++#*+++=
+                                                           @##%##*+*+====+=**+##++=--
+                                                        ####%%*+++=-:=+++*+=+++*##+=:==-
+                                                      **#@%##*++=-:==-=--=-=+=*+*##*=*+=--
+                                                     *%%*#%%#*==-:             =*+*+=:+*+=-
+                                                   #%%#*%%%#+==-::                %#=:#++==-
+                                                  *#**#*+###*+=-::                @#=*%%#+=-:
+                                                  @@%#*+-%%%#*+=-:                #+:*##**+=-
+                                                 ###**+=-***+++=--                %= *##*+=--:
+                                                 @@%#*=-::%%#*+=-=-:             @+  #%%##+=-:
+                                                #%#*+==-: +*+#*++=-=--          #=  *%%%#*=-:
+                                               %#*++=-:     **+++*+==----      #-  *#%#+++=-:
+                                              %%#+=:         ++#*+=++==+==+===++*#*#**+=+=::
+                                                               ==*+++=*+==+=++=*+**+=+=---
+                                                                  ==*+++=+==++=*+==+=---
+                                                                      =++==++==+=-==-:</pre>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,138 @@
+/* ascii-worm: a 3D worm drawn in text, crawling around a black panel set
+   beside the copy.
+
+   The panel is the worm's whole world: upstream fills the window, here the
+   panel is the window, so the worm turns at the panel's edges and the copy
+   never sits under it. index.js puts two canvases inside [data-fx-stage]: the
+   frame, and under it a blurred copy that makes each worm glow in its own
+   colour (upstream's #glow: blur 4px, opacity 0.7).
+
+   The resting state is a real frame: the <pre> holds the 100x30 text frame
+   upstream's terminal version prints when its output is not a terminal, so a
+   blocked script or reduced motion leaves a worm in the panel rather than an
+   empty box. The type is scaled so 100 monospace columns fill the panel's
+   width (--fx-advance is a monospace glyph's advance as a fraction of its
+   size, 0.6 on ui-monospace, Menlo and SF Mono), and the line height is
+   twice the advance, upstream's ASPECT. The panel is 5:3, the frame's own
+   shape. Once the canvases draw, [data-fx-live] hides the <pre>. */
+.fx-ascii-worm {
+  --fx-bg: #08080a;
+  --fx-panel: #000;
+  --fx-rule: #1c1c22;
+  --fx-ink: rgb(245, 30, 60);
+  --fx-text: #f2f4f8;
+  --fx-muted: #9a9aa6;
+  --fx-cols: 100;
+  --fx-advance: 0.6;
+  --fx-glow-blur: 4px;
+  --fx-glow-opacity: 0.7;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  min-height: 80svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1rem, 5vw, 4rem);
+  background:
+    radial-gradient(60% 55% at 72% 50%, color-mix(in oklab, var(--fx-ink) 8%, transparent), transparent 70%),
+    var(--fx-bg);
+  color: var(--fx-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-ascii-worm *,
+.fx-ascii-worm *::before,
+.fx-ascii-worm *::after { box-sizing: border-box; }
+
+.fx-ascii-worm__inner {
+  width: 100%;
+  max-width: 72rem;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+}
+
+.fx-ascii-worm__eyebrow {
+  margin: 0 0 1rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  /* Lifted off the worm's red: small type on the glow needs the margin. */
+  color: color-mix(in oklab, var(--fx-ink) 70%, #fff);
+}
+.fx-ascii-worm__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.4vw, 3.4rem);
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.fx-ascii-worm__lede {
+  margin: 1.1rem 0 0;
+  max-width: 34rem;
+  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+}
+.fx-ascii-worm__spec {
+  margin: 1.8rem 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: 26rem;
+  font-size: 0.86rem;
+}
+.fx-ascii-worm__spec li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--fx-rule);
+  color: var(--fx-muted);
+}
+.fx-ascii-worm__spec b {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 500;
+  color: var(--fx-text);
+  white-space: pre;
+}
+
+/* The panel: the worm's screen. */
+.fx-ascii-worm__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  overflow: hidden;
+  border: 1px solid var(--fx-rule);
+  border-radius: 14px;
+  background: var(--fx-panel);
+  container-type: inline-size;
+}
+.fx-ascii-worm__rest {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: calc(100cqw / (var(--fx-cols) * var(--fx-advance)));
+  line-height: calc(var(--fx-advance) * 2);
+  color: var(--fx-ink);
+  user-select: none;
+}
+.fx-ascii-worm__glow,
+.fx-ascii-worm__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.fx-ascii-worm__glow {
+  filter: blur(var(--fx-glow-blur));
+  opacity: var(--fx-glow-opacity);
+}
+.fx-ascii-worm[data-fx-live] .fx-ascii-worm__rest { visibility: hidden; }
+
+@media (max-width: 760px) {
+  .fx-ascii-worm__inner { grid-template-columns: minmax(0, 1fr); }
+}

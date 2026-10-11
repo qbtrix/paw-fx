@@ -1,0 +1,78 @@
+{
+  "name": "ascii-worm",
+  "version": "1.0.0",
+  "category": "text",
+  "tags": [
+    "ascii",
+    "text",
+    "3d",
+    "canvas",
+    "monospace",
+    "creature",
+    "glow",
+    "dark",
+    "red"
+  ],
+  "summary": "Split hero with upstream's 3D worm made of text crawling around a black panel beside the copy. The body is a lit tube: every character cell inside it gets a surface normal, light from the upper left picks a glyph from the :-=+*#%@ ramp, rings run along the body, the head and tail taper, a depth buffer sorts the loops where it crosses itself, and a blurred copy of the frame makes it glow in its own colour. The head follows a slow Lissajous point and turns hard before an edge, so the whole worm always stays in the panel. One to three worms, any colours, finer or coarser type. Plain 2D canvas, no dependency; it stops crawling off screen. With no script or under reduced motion the panel rests on upstream's own 100x30 text frame of the worm.",
+  "needs": [],
+  "options": {
+    "worms": {
+      "type": "number",
+      "default": 1,
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "description": "How many worms share the panel. With 2 or 3 each one is thinner and roams its own lane. Upstream's ?worms= (MAX_WORMS is 3)."
+    },
+    "colors": {
+      "type": "string",
+      "default": "red,purple,cyan",
+      "description": "One colour per worm, comma separated; a short list repeats. red, orange, yellow, green, cyan, blue, purple, pink, white or a hex like ff8800. Upstream's ?color= and DEFAULT_COLORS."
+    },
+    "fontSize": {
+      "type": "number",
+      "default": 14,
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "description": "Character size in CSS pixels. Smaller is a finer, more detailed worm; the worm itself always scales to the panel. Upstream's FONT_PX."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "david-vrba/ascii-worm",
+    "commit": "c8ada42011e65638d3b469ea2ca6aea428cbb012",
+    "path": [
+      "worm-core.js",
+      "index.html",
+      "worm.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "worm-core.js is kept verbatim inside index.js. Its opening (function () { line became const WormCore = (function () {, and its last two lines, which wrote the api to module.exports or window.WormCore, became return api.",
+      "why": "Seam. A paw-fx effect is one ES module that touches no globals at import time.",
+      "kind": "seam"
+    },
+    {
+      "what": "index.html's inline script (fit, draw and the frame loop) runs inside mount(). It measures the section's [data-fx-stage] panel (clientWidth and clientHeight, inside its border) instead of innerWidth and innerHeight, creates the two canvases there instead of finding them by id, and marks both aria-hidden instead of giving the frame role=img, because the section's own copy carries its meaning. The worms, colors and fontSize options replace the ?worms= and ?color= URL parameters and the FONT_PX constant, with the same parsing and the same three-worm cap.",
+      "why": "Seam. Upstream owns the whole window; a section owns one panel and takes options, not a query string.",
+      "kind": "seam"
+    },
+    {
+      "what": "A ResizeObserver on the panel calls fit() when its size changes, in place of upstream's window resize listener. An IntersectionObserver stops the animation frame loop while the section is off screen and restarts it when it returns; upstream's 0.1 s dt clamp means the worm resumes where it was.",
+      "why": "Seam. The panel can change size without the window doing so, and a section below the fold should not spend frames.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion: reduce, with mount(null), with no document or with no 2D context, nothing is created and the markup's frame stays. data-fx-live is set after the first frame is drawn, and hides the frame. update() refits on a new fontSize, regrows the worms on a new worms count and recolours on new colors. destroy() cancels the frame loop, disconnects both observers, removes the canvases and data-fx-live.",
+      "why": "Seam. Upstream has no reduced-motion path; the contract asks for the resting state.",
+      "kind": "seam"
+    },
+    {
+      "what": "The rest state is CSS and upstream's own frame: a near-black section (#08080a) with a faint red glow, copy beside a 5:3 black panel, and inside the panel a <pre> holding the text worm.js prints when its output is not a terminal (100x30, one worm), tinted upstream's red and scaled so 100 columns fill the panel. The glow canvas's blur(4px) and opacity 0.7 are --fx-glow-blur and --fx-glow-opacity.",
+      "why": "Ours. The section has to look finished with no script; the frame is the worm as upstream itself renders it without a terminal.",
+      "kind": "ours"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-10**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-11**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3824,3 +3824,98 @@ entry: `meniscus` (pending the TS-source call).
 Based on `feat/fx-scout-2026-10-09`, as every run since 09-17 has been, though
 the task text says `origin/main`. Twenty-two scout PRs stacked (09-17 →
 10-10), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-11 — window 2026-10-10 to 2026-10-11
+
+One day. Discovery found one portable repo and it was ported. The backlog was
+not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `ascii-worm` | `david-vrba/ascii-worm`, `worm-core.js` + `index.html` + `worm.js` | `c8ada420` | MIT | Discovery (GitHub topic search `animation`, created 2026-10-10). A 3D worm made of text: a lit tube where every cell inside the body gets a surface normal and light picks a glyph from ` .:-=+*#%@`, with rings, taper, a depth buffer for self-crossings and a blurred copy underneath as glow. The head chases a slow Lissajous point and turns hard before an edge, so the body always stays on screen. One vanilla file, no deps, 2D canvas. Author account dates from 2021 with fifteen public repos; the README says the code is written from scratch, inspired by a video clip, and names no code source. `worm-core.js` is verbatim except its IIFE head and its `module.exports`/`window.WormCore` tail; the renderer is `index.html`'s inline script measured against a panel. The rest frame is the 100x30 text frame `worm.js` prints when stdout is not a terminal, which is why `worm.js` is in `origin.path`. Nothing on the shelf is a creature; the eight `ascii-*` effects are fields and solids. |
+
+Gates: `check` green (lint 130, smoke 130, 481 tests); `verify` 126 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped, `ascii-worm` PASS
+with no WARN.
+
+### Previews
+
+Shot live from a bare page (snippet plus the usage mount, `body
+.fx-ascii-worm{min-height:100vh}`) written into `dist/registry/gallery/` and
+served by `python3 -m http.server`, system Chrome through
+`AGENT_BROWSER_EXECUTABLE_PATH`, after `is visible "[data-fx-live]"` returned
+true. Shot at 1280x720 scale 1 and scaled to 640x360 with `sips`, because the
+split stacks under 760px. Not shot under reduced motion: that path leaves the
+baked frame, and the preview should show the canvas. `stream status` read
+`Streaming enabled` again; `stream disable` first. The Claude Browser pane
+confirmed the worm crawls (rAF live) and that the rest page shows the frame.
+
+### Contrast
+
+Not measured live: the copy never sits on the worm. Desktop is a split, and
+under 760px the panel stacks below the copy, so text sits on `#08080a` with a
+faint red glow. Computed on the flat ground: `#f2f4f8` headline 18.2:1,
+`#9a9aa6` lede 7.2:1. The eyebrow in upstream's pure red was 4.9:1 flat and
+about 4.2:1 where the glow is strongest, so it is lifted to a 70/30 mix of the
+red and white.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `fushanbobfan/turmite` | GitHub, created 2026-10-11, `src/*.js` | MIT | Langton's ant and turmites on square and hex grids: chaos, then a highway. Vanilla ES modules, no deps, tested. Held: it is a full simulator app (rule editor, share links, pattern detector, controls), not a section, and `ascii-life` plus `reaction-diffusion` already cover cellular growth. A thin "ant draws a highway behind the hero" port would need the seams to be most of the code. |
+| `jeiel85/neon-sprawl` | GitHub, created 2026-10-10, `app/` | MIT | A seeded cyberpunk city in three.js r170: 2,200 towers, 16,000 instanced flying cars, fly or chase cam. Held: a whole flight app with its own camera modes and UI; as a hero it would be a large carve-out, and it ships a JPEG skyline asset. Worth a look if a 3d-hero city is wanted. |
+| `wpsydev/liquid-glass-kit` | GitHub, created 2026-10-10 | MIT | Dependency-free liquid glass with React and Vue adapters; TypeScript source. Held: the shelf has four glass effects and two glass ports are already queued ahead of it. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `arjunkshah12345-hash/aurora-loop` | GitHub, created 2026-10-10 | MIT | An 8 s gradient-mesh loop built as a HyperFrames composition on a GSAP timeline. GSAP is a hard reject; `mesh-gradient` covers the look anyway. |
+| `abhishekmill/R3FSketchMaterial` | GitHub | MIT | React Three Fiber material. React is out of scope. |
+| `vishvananda/card-glint` | GitHub | Apache-2.0 | Rust/WASM card foil renderer; `sg-foil` covers the look. |
+| `Linker-007/gradient-gallery`, `hilsetapp/liquid-glass-studio`, `hermes98761234/truchet-tile-generator`, `hermes98761234/geometric-pattern-generator` | GitHub | MIT | Palette and pattern tools, not sections. |
+| `flamingotech-zeus/dynamic-corporate-site-template` | GitHub | MIT | A whole site template, not an effect. |
+| `minghong-chen/lunar-rover-3d`, `fanquanpp/composition-destijl`, `StarKnightt/river-morning` | GitHub | MIT | Scenes and games, not sections. |
+| `Natasuu/effects-lab`, `happychickencxk/particle-atlas`, `minahildilshad/Glow-Lab`, `zupzol/Party_Cles`, `matin676/animated-galaxy`, `fanfan-ovo/Qdstudy4` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| `exoticspices/shipyard`, `technoinspire/untzel`, `mad0021/mad0021.github.io` | GitHub | NOASSERTION | A ship generator, an audio instrument and a portfolio; licence text not opened. |
+| `nirholas/*` (forty-odd three.ws repos), games, Blender and Unity tools, video pipelines, agent skills (the rest of the twelve topic and twenty keyword searches) | GitHub | mixed | Not effects. |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-10` is empty. The Codrops hub page
+  (`/codrops/hub/all/`) that WebFetch 403s read fine in the Claude Browser
+  pane (`preview_start` with the url, then `get_page_text`): newest item is
+  Amber Genetics, 2026-10-08 (GSAP + React Three Fiber), so nothing in the
+  window.
+- `commits?since=2026-10-10` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`. `JuPicker/isoline` cut 1.1.0 (`278f49dc`: opens
+  on scroll, floor cut to the view, every colour form) after the stacked
+  `isoline-scene` pinned `77c1da57`; a re-pin is a reviewer's call once
+  10-10 lands, not a new effect. `miguelclavel/interaction-recipes` has one
+  commit (author name in the page title and structured data).
+- GitHub topic search, `created:>=2026-10-10` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`, and
+  twenty keyword searches (the sixteen from 10-10 plus `hover effect`,
+  `text animation`, `loader`, `dither`): the tables above. The search API
+  rate-limited mid-run (30/min); the dropped searches were re-run.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`,
+`wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`), `meniscus`
+(pending the TS-source call). New soft entries: `turmite`, `neon-sprawl`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-10`. Twenty-three scout PRs stacked (09-17 →
+10-11), none merged. Merge the bases with `--rebase`, not `--squash`.
