@@ -1,0 +1,134 @@
+/* reaction-diffusion: the CSS half of the effect. With JavaScript off, with
+   WebGL2 refused, or before the first frame, this is the whole hero: the deep
+   #06223a dish of upstream's default "Coral reef" palette with two soft washes
+   of its #0d5c75 and #f2a65a stops, and the copy on its own smoked panel.
+   index.js adds one square canvas under the copy, CSS-covered so the 512-cell
+   dish is centre-cropped and its cells stay square, and fades it in.
+
+   The palette is an option of the script, not of the sheet: the rest is
+   always the default palette's ground.
+
+   Stacking:
+     0  .fx-rd__gl     the dish, inserted by index.js
+     1  .fx-rd__inner  the copy, bottom left, on its panel */
+.fx-rd {
+  --fx-bg: #06223a;
+  --fx-ink: #fff6e8;
+  --fx-muted: #d9dfe4;
+  --fx-accent: #f2a65a;
+  --fx-eyebrow: #f7b874; /* the amber stop lifted a touch: 4.96:1 on the panel over white */
+  --fx-line: rgba(255, 255, 255, 0.1);
+  --fx-panel: 0.74;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 5vw, 3.5rem);
+  background:
+    radial-gradient(ellipse 42% 48% at 68% 36%, rgba(242, 166, 90, 0.12) 0%, rgba(0, 0, 0, 0) 100%),
+    radial-gradient(ellipse 50% 55% at 30% 62%, rgba(13, 92, 117, 0.55) 0%, rgba(0, 0, 0, 0) 100%),
+    var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  touch-action: pan-y;
+}
+
+.fx-rd__gl {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.fx-rd[data-fx-live] .fx-rd__gl { opacity: 1; }
+
+/* The pattern wraps across the whole frame and its light stops (#f2a65a,
+   #fff1d6) run right under the copy, so the copy sits on a smoked panel. */
+.fx-rd__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem) clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 14px;
+  background: color-mix(in oklab, #0a0d10 calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.fx-rd__eyebrow {
+  margin: 0 0 0.6rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fx-eyebrow);
+}
+
+.fx-rd__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.fx-rd__lede {
+  margin: 0.85rem 0 0;
+  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-rd__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.fx-rd__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 150ms ease;
+}
+
+.fx-rd__cta--primary {
+  background: var(--fx-accent);
+  color: #2a1604;
+}
+
+.fx-rd__cta--ghost {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fx-ink);
+}
+
+.fx-rd__cta:hover { transform: translateY(-1px); }
+
+.fx-rd__cta:focus-visible {
+  outline: 2px solid var(--fx-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-rd__gl,
+  .fx-rd__cta { transition: none; }
+}

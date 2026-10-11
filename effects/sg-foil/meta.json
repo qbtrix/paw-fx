@@ -1,0 +1,101 @@
+{
+  "name": "sg-foil",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "foil",
+    "emblem",
+    "metal",
+    "card",
+    "deboss",
+    "brushed",
+    "raking-light",
+    "negative-space",
+    "stamp",
+    "webgl",
+    "shader",
+    "hero",
+    "dark",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's foil: a foil-stamped emblem pressed into dark card. A heavy ring, hairline inner ring, interlaced octagram and centre boss sit in the left third as brushed metal foil in a real debossed recess, lit rim on one side and wall shadow on the other, while a lamp off the upper right corner rakes across the fibre and laid lines of the stock and a slow looping light sweep crosses the sheet and makes the foil flash. The right two thirds stay even and quiet, so that is where the copy goes: left-aligned, on a smoked panel, beside the mark rather than over it.",
+  "needs": [],
+  "license": "MIT",
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#d9a25a", "#8a8f99", "#efe0c2", "#1b1714"],
+      "description": "Four poles. The shader mixes the foil tint as 38% c1 and 62% c3, then pins its brightness, so those two set the metal's cast (gold, silver, copper) and not its value. c4 is the card stock, pulled most of the way to grey and pinned dark so it reads as coloured board. c2 only reaches the shader's all-zero palette check, so it changes nothing. Falls back to --fx-c1..--fx-c4."
+    },
+    "lightSweep": {
+      "type": "number",
+      "default": 0.5,
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "description": "How fast the lamp swings and the light sweep crosses the sheet; 0 freezes it and the foil holds one flash. Upstream default and range."
+    },
+    "depth": {
+      "type": "number",
+      "default": 5,
+      "min": 0,
+      "max": 12,
+      "step": 0.5,
+      "description": "Depth of the stamp in CSS pixels; 0 is flat printed foil, high is a deep die impression with strong rim and wall shadow. Upstream default and range."
+    },
+    "markSize": {
+      "type": "number",
+      "default": 0.27,
+      "min": 0.12,
+      "max": 0.45,
+      "step": 0.01,
+      "description": "Radius of the emblem as a fraction of frame height, from a small seal to a mark that dominates the left half. Upstream default and range."
+    },
+    "shine": {
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "description": "Strength of the specular streak on the foil; low is brushed satin foil, high is mirror-bright. Upstream default and range."
+    },
+    "grain": {
+      "type": "number",
+      "default": 0.6,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "description": "Visibility of the fibre texture, tooth and laid lines in the card stock; 0 is smooth coated board. Upstream default and range."
+    },
+    "mouseInfluence": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "description": "How strongly the pointer adds a second highlight on the foil; 0 ignores the mouse. Upstream default and range. The shared runtime holds u_mouse at (0,0), so raising this on its own changes nothing."
+    }
+  },
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["foil/shader.frag", "foil/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `foundry` preset.",
+      "why": "foil/meta.json declares `defaultPalette: \"foundry\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own and declares them. The shader's zero-fallback branch is not the answer either: paletteFor never produces zeros, so that branch is unreachable from paw-fx. Same call sg-damascus, sg-chrome, sg-gloam, sg-bask, sg-nebula-drift, sg-obsidian and sg-lightleak made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.12, saturation 1.04 and contrast 1.04 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The lamp falloff already darkens the lower left on its own, so the missing 0.12 vignette is a small gap; the section's own CSS grain layer covers what the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "name": "upstream-streaks",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "webgl",
+    "streaks",
+    "lines",
+    "light",
+    "cursor",
+    "interactive",
+    "dark",
+    "hero",
+    "green"
+  ],
+  "summary": "Full-bleed dark hero on upstream-fx's WebGL streak field: hundreds of hairline streaks fan upward from a point just below the bottom edge, each fading from a dark tail to a lit head, and part in a rounded gap around the cursor, closing again right behind it. All of the motion runs on the GPU in two draw calls a frame. The canvas sits behind the section's own copy, pauses off screen and in background tabs, survives a lost WebGL context, and under reduced motion draws one still frame. With no script or no WebGL the section rests on a CSS glow in upstream's own three colours.",
+  "needs": [],
+  "options": {
+    "accentColor": {
+      "type": "string",
+      "default": "#25d39b",
+      "description": "Colour of each streak's lit head (hex or rgb()). Upstream default."
+    },
+    "baseColor": {
+      "type": "string",
+      "default": "#03110d",
+      "description": "Colour of each streak's dark tail. Upstream default."
+    },
+    "background": {
+      "type": "string",
+      "default": "#000000",
+      "description": "Canvas clear colour behind the streaks; 'transparent' lets the section's CSS ground show through. Upstream default."
+    },
+    "count": {
+      "type": "number",
+      "default": 900,
+      "min": 1,
+      "max": 4000,
+      "step": 1,
+      "description": "Number of streaks. Upstream default and range."
+    },
+    "speed": {
+      "type": "number",
+      "default": 70,
+      "min": 0,
+      "max": 2000,
+      "step": 5,
+      "description": "How fast the streaks travel, in pixels per second. Upstream default and range."
+    },
+    "length": {
+      "type": "number",
+      "default": 240,
+      "min": 1,
+      "max": 2000,
+      "step": 1,
+      "description": "Streak length in pixels. Upstream default and range."
+    },
+    "spread": {
+      "type": "number",
+      "default": 42,
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "description": "Half-angle of the fan, in degrees. Upstream default and range."
+    },
+    "repelRadius": {
+      "type": "number",
+      "default": 70,
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "description": "Radius of the gap the cursor opens, in pixels. Upstream default and range."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 0.85,
+      "min": 0,
+      "max": 4,
+      "step": 0.05,
+      "description": "Brightness of the lit heads. Upstream default and range."
+    },
+    "interactive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the streaks part around the cursor. Upstream default."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "AmunM9/upstream-fx",
+    "commit": "355b663ae31f6cbe1cbdbb3243d66410bcd12ed5",
+    "path": "dist/upstream.global.js"
+  },
+  "deviations": [
+    {
+      "what": "The repo ships its plain-HTML install as the committed, minified dist/upstream.global.js; that bundle is ported verbatim inside a named function upstreamFx(e), which mount() calls once, the first time it runs. Removed: the `var Upstream=(` IIFE head, the `})({})` call, and the `$()` call that registered the <upstream-fx> custom element at load. The bundle's exports object (DEFAULT_OPTIONS, createUpstream, defineUpstreamElement) is returned instead.",
+      "why": "Seam. A paw-fx module touches no global at import time, and the bundle defines a custom element the moment it loads.",
+      "kind": "seam"
+    },
+    {
+      "what": "The WebGL context is requested with failIfMajorPerformanceCaveat: true, added to upstream's getContext options. When it is refused, upstream's createUpstream returns supported: false; mount() removes its canvas and leaves the section on its CSS rest.",
+      "why": "Seam. The contract asks WebGL effects to refuse a software context and fall back to the designed resting state.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount(el, opts) prepends a canvas to the section, styled like the canvas in upstream's shadow root (absolute, full size, z-index -1, pointer-events none), and calls upstream's createUpstream(canvas, opts), which clamps and fills every option from DEFAULT_OPTIONS itself. update(next) is upstream's setOptions. destroy() is upstream's destroy() plus removing the canvas and data-fx-live, which is set once upstream reports a working context. Reduced motion, off-screen pause and context-loss recovery are upstream's.",
+      "why": "Seam. Upstream's <upstream-fx> element is replaced by its own vanilla createUpstream function, which the README documents as the third way to use it.",
+      "kind": "seam"
+    },
+    {
+      "what": "The resting state is a CSS glow in upstream's three default colours (black ground, #03110d tail, #25d39b head) rising from below the bottom edge, where the streaks start; upstream's own no-WebGL fallback is the plain background colour. The copy sits on a blurred dark plate (--fx-scrim, a ::before with filter: blur) whose solid core covers every text box, so lit heads never pass right under the text.",
+      "why": "Ours. A flat black section with nothing but a headline reads as broken before the script runs, and the lit heads are bright enough to break text contrast where they cross the copy.",
+      "kind": "ours"
+    }
+  ]
+}

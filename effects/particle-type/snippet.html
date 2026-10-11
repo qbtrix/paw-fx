@@ -1,0 +1,17 @@
+<!-- particle-type section. Finished at rest with CSS alone: the heading is the
+     word itself, set in upstream's ember palette as gradient text. index.js
+     reads the word from that heading, draws it in particles on a canvas, and
+     only then turns the heading's ink transparent, so it stays in the page for
+     screen readers. The _fx paths are root-absolute because a site always
+     sits at the origin root. -->
+<link rel="stylesheet" href="/_fx/effects/particle-type/style.css">
+<section class="fx-particle-type" data-fx="particle-type">
+  <h1 class="fx-particle-type__word">Make it glow</h1>
+  <div class="fx-particle-type__inner">
+    <p class="fx-particle-type__lede">Swap the heading for your own words. Move through the letters to stir them, click to shatter.</p>
+    <div class="fx-particle-type__actions">
+      <a class="fx-particle-type__cta fx-particle-type__cta--primary" href="#">Get started</a>
+      <a class="fx-particle-type__cta fx-particle-type__cta--ghost" href="#">See how</a>
+    </div>
+  </div>
+</section>

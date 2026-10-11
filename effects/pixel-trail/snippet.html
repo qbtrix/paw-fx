@@ -1,0 +1,14 @@
+<!-- pixel-trail section. Finished at rest with CSS alone: the page colour and
+     the copy, which is exactly upstream's still state. index.js draws the
+     pixel trail on the canvas behind the copy as the pointer moves, and never
+     draws over the [data-fx-copy] block. Keep both data attributes.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/pixel-trail/style.css">
+<section class="fx-pixel-trail" data-fx="pixel-trail">
+  <canvas class="fx-pixel-trail__grid" data-fx-grid aria-hidden="true"></canvas>
+  <div class="fx-pixel-trail__copy" data-fx-copy>
+    <h1 class="fx-pixel-trail__title">Your Name</h1>
+    <p class="fx-pixel-trail__lede">Draw circles around me.</p>
+  </div>
+</section>
