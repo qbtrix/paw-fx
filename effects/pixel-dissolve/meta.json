@@ -1,0 +1,74 @@
+{
+  "name": "pixel-dissolve",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": [
+    "scroll",
+    "transition",
+    "pixel",
+    "dissolve",
+    "grid",
+    "canvas",
+    "light",
+    "dark",
+    "handover"
+  ],
+  "summary": "A handover between a light panel and a dark one, from miguelclavel/pixel-dissolve: as the dark panel scrolls up into view, the light one comes apart in squares, bottom rows first with a third of randomness so it reads like something coming apart rather than a blind, and accent colours flash along the leading edge. The sweep is tied to the arriving panel, so it finishes while you can see it, and runs in reverse on the way back up. One fixed canvas, shown only during the handover; the panel colours are read off the panels, so it follows whatever theme each one is in. At rest, with no script or under reduced motion, the two panels simply meet.",
+  "needs": [],
+  "options": {
+    "step": {
+      "type": "number",
+      "default": 24,
+      "min": 6,
+      "max": 96,
+      "step": 1,
+      "description": "Square size in pixels. Upstream's STEP."
+    },
+    "noise": {
+      "type": "number",
+      "default": 0.3333333333333333,
+      "description": "How much of each square's threshold is random. Upstream's NOISE: one third reads like coming apart, a half turns into static."
+    },
+    "accents": {
+      "type": "string[]",
+      "default": [
+        "#FFD84D",
+        "#FF4D6D",
+        "#5BE85B",
+        "#33D6FF"
+      ],
+      "description": "Colours a just-flipped square can flash first. Upstream's ACCENTS."
+    },
+    "at": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "description": "Freeze the sweep at this progress, 0 to 1; 0 follows the scroll. Upstream's ?at switch, which it uses for its README picture."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "miguelclavel/pixel-dissolve",
+    "commit": "12e6605cb4a403b70296bf19d058d3b2ea8407ec",
+    "path": "index.html"
+  },
+  "deviations": [
+    {
+      "what": "Upstream's #from, #to and #wipe ids become the section's [data-fx-from] and [data-fx-to] panels and its [data-fx-wipe] canvas, and the panel colours are read from --fx-page instead of --page. STEP, NOISE and ACCENTS are options with upstream's values as defaults; ?at is the at option. The scroll and resize listeners and the pending frame are removed in destroy().",
+      "why": "Seam. An effect is a section dropped into a page whose ids it does not own, configured by mount() rather than the page URL, and it must leave nothing running when torn down.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under reduced motion run() calls draw(0), which hides the wipe, where upstream returns without drawing.",
+      "why": "Seam. Upstream never shows the wipe under reduced motion because it never draws; a section can be remounted after an at freeze, so the hide has to be explicit. The visible result is the same: no wipe.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's third section (The end. Scroll back up to watch it again.) and its source-link line are not in the snippet, the copy is reworded from the author's site to the page, and the panels are min-height 100svh where upstream's are 100vh.",
+      "why": "Ours. A section carries the two panels the effect needs; the page around it supplies the rest.",
+      "kind": "ours"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "name": "capsule-nav",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": ["menu", "navigation", "header", "navbar", "glass", "frosted", "capsule", "pill", "scroll", "spring", "sticky"],
+  "summary": "A floating capsule header that is edge to edge and transparent at the top of the page, then springs to a narrower, thinner frosted-glass pill once you scroll past a threshold, and opens out again on the way back. The narrowing is a real spring integrated per frame (stiffness, damping, mass), so a change of scroll direction carries its velocity instead of restarting a transition; only the glass itself fades in through CSS. Every size is a custom property. With no script the capsule rests edge to edge over the hero, which is the unscrolled look.",
+  "needs": [],
+  "options": {
+    "threshold": {
+      "type": "number",
+      "default": 80,
+      "min": 0,
+      "max": 400,
+      "step": 1,
+      "description": "Scroll distance in px past which the capsule narrows and the glass fades in. Upstream's DEFAULTS.threshold."
+    },
+    "stiffness": {
+      "type": "number",
+      "default": 180,
+      "min": 40,
+      "max": 400,
+      "step": 1,
+      "description": "Spring constant k. Upstream's DEFAULTS.stiffness."
+    },
+    "damping": {
+      "type": "number",
+      "default": 28,
+      "min": 4,
+      "max": 60,
+      "step": 1,
+      "description": "Damping c, about critical at 2*sqrt(k*m). Upstream's DEFAULTS.damping."
+    },
+    "mass": {
+      "type": "number",
+      "default": 1,
+      "min": 0.2,
+      "max": 4,
+      "step": 0.1,
+      "description": "Spring mass m. Upstream's DEFAULTS.mass."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "ningqi24/deepseek-style-floating-navbar",
+    "commit": "bac85cfbdf3c80bcdb94417a4aeeb92522e69634",
+    "path": ["glass-navbar.js", "glass-navbar.css"]
+  },
+  "deviations": [
+    {
+      "what": "The UMD/IIFE wrapper, the DOMContentLoaded auto-init, initAll, the instances registry and the autoInit default are removed. The module exports mount(el, opts) and meta instead; mount finds the header inside the section with el.querySelector('.fx-cnav'), constructs the instance, and returns { update, destroy }. update() assigns the new options onto the instance and calls its update(); destroy() calls the instance's destroy(). The section carries data-fx-live while mounted.",
+      "why": "Seam. Importing the upstream file assigns onto `this` and reads the document at load, which fails the no-globals-at-import rule and the DOM-less import test; an effect is mounted by the site, not by itself.",
+      "kind": "seam"
+    },
+    {
+      "what": "The two throws on a missing element or a missing .fx-cnav__bar / .fx-cnav__inner become the resting handle { update() {}, destroy() {} }, and mount() returns it first when handed no element, no document or no matchMedia.",
+      "why": "Seam. A site mounts every effect it finds in one loop, and one throw would take the rest of the page's effects with it; the contract is that mount(null) survives.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every --gnav-* custom property is --fx-*, and the classes gnav, gnav__bar, gnav__inner, gnav--dark and gnav--light are fx-cnav, fx-cnav__bar, fx-cnav__inner, fx-cnav--dark and fx-cnav--light, in both index.js (_readTokens) and style.css. is-scrolled is kept. Every value behind the renamed names is upstream's.",
+      "why": "Seam. The effect contract prefixes custom properties --fx-, and the class names are ours so two effects never share a selector.",
+      "kind": "seam"
+    },
+    {
+      "what": "The data-gnav-threshold / -stiffness / -damping / -mass attribute overrides are dropped; threshold, stiffness, damping and mass are mount options, applied through the constructor's own merge over DEFAULTS and changeable through update().",
+      "why": "Seam. Options are the contract's one configuration surface, and a second one read from attributes would let the markup and the registry disagree.",
+      "kind": "seam"
+    },
+    {
+      "what": "The demo page around the header is ours: the brand, links and call-to-action inside the capsule, the --fx-ink link colour, a font and ink colour added to upstream's .fx-cnav selector and a 20px horizontal padding added to .fx-cnav__inner (it stacks on upstream's pad-l-on / pad-r-on in the scrolled state), the tall two-tone section with a dot grid and two blurred colour blobs, and the hero and body copy under it. Upstream's index.html is a demo and is not ported.",
+      "why": "Upstream ships only the header; a section needs a page under it tall enough to scroll past the threshold, something for the frosted glass to blur, and a resting frame that is not one flat colour.",
+      "kind": "ours"
+    }
+  ]
+}

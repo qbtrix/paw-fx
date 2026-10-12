@@ -1,0 +1,97 @@
+{
+  "name": "paper-marbling",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "marbling",
+    "ebru",
+    "ink",
+    "paper",
+    "generative",
+    "webgl2",
+    "webgl",
+    "pointer",
+    "interactive",
+    "light",
+    "hero"
+  ],
+  "summary": "Full-bleed light hero of ebru, Turkish paper marbling: drops of ink float on a bath of size and a comb pulls them into tongues, drawn on the GPU in raw WebGL2. Every drop and stroke is an exact area-preserving map of the tray, and the picture is rendered by walking the inverse maps backwards from each pixel, so it is exact at any resolution. On first sight the seeded pattern grows in the way upstream replays a marbling: drops swell with their area rising at a steady rate, combs slide in to their full length. Then the visitor drags a stylus through the ink and each stroke is added as one more exact map. Pattern (battal, gelgit, nonpareil, hearts, spiral, serpentine), palette, seed and stylus sharpness are options. This is not sg-suminagashi, which imitates marbling with a noise shader: here nothing is faked, the strokes are the real maps and the pointer really pulls the ink. Under reduced motion the finished marbling is drawn once and strokes still work. With no script or no WebGL2 the section rests on the istanbul bath with a few soft drops of its inks in CSS.",
+  "needs": [],
+  "options": {
+    "pattern": {
+      "type": "string",
+      "default": "gelgit",
+      "description": "Starting pattern, built from the seed: battal (stones), gelgit (come and go), nonpareil, hearts, spiral or serpentine. Upstream's default. Changing it through update() clears the visitor's strokes and redraws without replaying."
+    },
+    "palette": {
+      "type": "string",
+      "default": "istanbul",
+      "description": "Bath and inks: istanbul, indigo, ember, lagoon or ink. Changing it through update() recolours the pattern and keeps the strokes."
+    },
+    "seed": {
+      "type": "number",
+      "default": 1,
+      "min": 1,
+      "max": 9999,
+      "step": 1,
+      "description": "Seed for the pattern generator. The same pattern, palette and seed always give the same marbling."
+    },
+    "sharp": {
+      "type": "number",
+      "default": 14,
+      "min": 2,
+      "max": 80,
+      "step": 1,
+      "description": "Stylus sharpness, upstream's sharp slider: the distance in tray units (the tray is 1000 across) over which a stroke's pull halves. Small is a thin tine, large a broad push."
+    },
+    "play": {
+      "type": "boolean",
+      "default": true,
+      "description": "Grow the pattern in when the section first comes on screen: drops swell at a steady area rate, strokes slide in. Off, or under reduced motion, the finished marbling is drawn once."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "fushanbobfan/ebru",
+    "commit": "01b83abde140c342ea835da6b81bfb0847b12b98",
+    "path": [
+      "src/marble.js",
+      "src/pack.js",
+      "src/patterns.js",
+      "src/replay.js",
+      "src/gpu.js",
+      "src/tools.js",
+      "src/render.js",
+      "src/share.js",
+      "src/main.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Upstream's pure modules (marble.js, parseColor from render.js, pack.js, patterns.js, replay.js, gpu.js, tools.js) are concatenated verbatim into one module in dependency order with their import and export lines removed; tools.js's second, identical `round` helper is dropped since patterns.js already declares it. From main.js only MAX_BACKING, rebuildBase(), sizeCanvases(), drawGpu(), redraw(), play() (the timeline replay), addOp(), startOver(), trayPoint() and the pointer gestures are lifted, with the pattern, palette, seed and stylus sharpness as options. The 2D tray and overlay canvas, controls panel, swatches, status line, keyboard handler, share hash, undo and redo, Save PNG and the CPU renderer (with its PREVIEW and FRAME_MS, which only serve that path) are dropped. The GPU canvas is shown directly, so drawGpu() no longer calls finish() (a readPixels sync upstream used for timing) or drawImage() onto a 2D canvas.",
+      "why": "Seam. A hero needs one module, one canvas and no page chrome; the stylus is the only tool a visitor gets.",
+      "kind": "seam"
+    },
+    {
+      "what": "The tray is one square backing the size of the section's longer side times devicePixelRatio, capped by MAX_BACKING.gpu (2048) and the renderer's maxSize, drawn with upstream's display supersampling (2) in 256-row bands (upstream's print banding) and CSS-covered over the section (position absolute, inset 0, object-fit cover). trayPoint() maps a section point through that centred crop: with M = max(width, height), tray = ((x - (width - M) / 2) / M, (y - (height - M) / 2) / M) * TRAY, then clampToTray(). The gestures listen on the section, with pointer capture on it, instead of on the tray canvas; a press that starts on the copy panel (.fx-marbling__inner) is ignored so the CTAs keep their click.",
+      "why": "Seam. Upstream's tray is a square element in a page; a hero is wide, so the square is covered over it and the pointer has to go through the same crop.",
+      "kind": "seam"
+    },
+    {
+      "what": "createGpuRenderer()'s getContext adds failIfMajorPerformanceCaveat: true. mount(null), a missing document or matchMedia, a null renderer (no WebGL2 or a refused program) or any throw during setup returns the resting handle instead of falling back to the CPU renderer or throwing.",
+      "why": "Seam. The contract falls back to the CSS rest on a refused context rather than running a software renderer under a hero.",
+      "kind": "seam"
+    },
+    {
+      "what": "Playback waits for an IntersectionObserver to see the section and runs once; under prefers-reduced-motion: reduce, or with play off, the finished marbling is drawn once instead (upstream's reduced-motion replay steps strokes in every 400ms and is not used). The frame loop only exists during playback and a gesture. A ResizeObserver re-sizes the backing and redraws only once live and idle. data-fx-live is set after the first draw. destroy() cancels the frame, disconnects both observers, removes the four pointer listeners, loses the context through WEBGL_lose_context, removes the canvas and removes data-fx-live.",
+      "why": "Ours. A 2048-square inverse walk should not run for a section nobody can see, one draw per stroke is not motion, and teardown must give the context back.",
+      "kind": "ours"
+    },
+    {
+      "what": "The rest state is CSS: the istanbul bath (#efe6d2) with six soft radial drops of its inks (#1f3a68, #b5302b, #e0a526) at low alpha, and the copy on a .fx-marbling__inner paper-coloured veil panel (#fbf7ee at --fx-panel 0.82 over a 10px backdrop blur).",
+      "why": "Ours. The section has to look finished with no script, and dark ink can land straight under dark copy on a light ground, so the copy needs a plate.",
+      "kind": "ours"
+    }
+  ]
+}

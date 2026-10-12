@@ -1,0 +1,64 @@
+{
+  "name": "pixel-trail",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": ["cursor", "pointer", "pixel", "grid", "trail", "canvas", "hero", "light", "dark"],
+  "summary": "A hero whose empty space answers the pointer, from miguelclavel/pixel-trail: a canvas behind the copy is split into about a hundred columns of small squares, the pointer charges every square near it, and each square keeps the brightest it has ever been, so the trail holds its shape instead of flickering out. The brightest squares paint in the page's ink colour and the dimmer ones scatter into four accents around the edges; the charge fades slowly, twice as fast once the pointer rests. Nothing is ever drawn over the copy. Works with a finger on touch screens; at rest, with no script or under reduced motion, it is the page colour and the copy.",
+  "needs": [],
+  "options": {
+    "cols": {
+      "type": "number",
+      "default": 102,
+      "min": 24,
+      "max": 200,
+      "step": 1,
+      "description": "Grid width in squares. Upstream's COLS."
+    },
+    "radius": {
+      "type": "number",
+      "default": 60,
+      "min": 10,
+      "max": 200,
+      "step": 1,
+      "description": "How far from the pointer a square gets charged, in px. Upstream's RADIUS."
+    },
+    "accents": {
+      "type": "string[]",
+      "default": ["#FFD84D", "#FF4D6D", "#5BE85B", "#33D6FF"],
+      "description": "Colours the dimmer squares scatter into. Upstream's ACCENTS."
+    },
+    "demo": {
+      "type": "boolean",
+      "default": false,
+      "description": "Charge a loop around the copy in one go and hold it, with no fade. Upstream's ?demo switch, which it uses for its README picture."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "miguelclavel/pixel-trail",
+    "commit": "8c36e4d3e1d4cf9a6fa73423ae6cf7ee57004561",
+    "path": "index.html"
+  },
+  "deviations": [
+    {
+      "what": "Upstream's #hero, #grid and #copy ids become the section itself, its [data-fx-grid] canvas and its [data-fx-copy] block, so a page can hold more than one. The brightest squares read --fx-ink off the section instead of --ink off the document root.",
+      "why": "Seam. An effect is a section dropped into a page whose ids and root custom properties it does not own; a root --ink that is not set would paint those squares transparent.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's URL switches become options: ?demo is the demo option (same loop, same hold), and ?embed, which only hid the page's hint line, is dropped with that line. COLS, RADIUS and ACCENTS are options with upstream's values as defaults. The resize and pointer listeners, the frame and the demo timer are removed in destroy().",
+      "why": "Seam. A section is configured by mount(), not by the page URL, and must leave nothing running when torn down.",
+      "kind": "seam"
+    },
+    {
+      "what": "touch-action is pan-y on the section, where upstream's one-screen page sets none.",
+      "why": "Ours. In a page that scrolls, none would trap a finger over the whole hero; pan-y keeps vertical scrolling and still draws on a sideways drag.",
+      "kind": "ours"
+    },
+    {
+      "what": "The copy is placeholder text (Your Name / Draw circles around me.) in place of the author's name, and the section is min-height 100svh instead of the full page height.",
+      "why": "Ours. The headline is the reader's, and a section sizes itself rather than the document.",
+      "kind": "ours"
+    }
+  ]
+}
