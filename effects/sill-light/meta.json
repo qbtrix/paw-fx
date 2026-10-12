@@ -1,0 +1,141 @@
+{
+  "name": "sill-light",
+  "version": "1.0.0",
+  "category": "cursor",
+  "tags": [
+    "light",
+    "shadow",
+    "pointer",
+    "cursor",
+    "lamp",
+    "sun",
+    "specular",
+    "rim-light",
+    "materials",
+    "glass",
+    "haze",
+    "webgl2",
+    "shader",
+    "hero",
+    "dark"
+  ],
+  "summary": "Dark hero from upstream's specimen page where the pointer is the light. A WebGL2 pass lights the section's floor and treats every card as an analytic occluder, so each one casts a soft shadow whose penumbra widens with its height above the floor, with ambient occlusion where it nearly touches and haze that the cards shadow too. The cards answer the same light in CSS: a diffuse wash, a specular highlight that slides as the light moves, a rim on whichever edge faces it, and controls that cast onto the card they sit on. The headline casts glyph shadows and a light-side rim through text-shadow, so its colour and contrast never change. Four tiles show matte, satin, gloss and metal, and a glass card floats high enough to throw the deepest shadow. Lamp or sun mode, colour temperature in kelvin, shadow length, softness and haze are options; the Haze switch in the console is live. The light eases toward the pointer and stops rendering when it settles. Without WebGL2 the cards keep the light in CSS and the floor stays the section colour; with no script they rest on the specimen's static elevation shadows.",
+  "needs": [],
+  "options": {
+    "mode": {
+      "type": "string",
+      "default": "lamp",
+      "description": "lamp is an area light at the pointer; sun is a directional light whose place in the sky the pointer sets, with skylight mullions falling across the floor."
+    },
+    "temperature": {
+      "type": "number",
+      "default": 3200,
+      "min": 2200,
+      "max": 7500,
+      "step": 50,
+      "description": "Colour of the light in kelvin. Upstream's range is 2200 to 7500; the specimen ships 3200."
+    },
+    "intensity": {
+      "type": "number",
+      "default": 1.15,
+      "min": 0,
+      "max": 1.6,
+      "step": 0.05,
+      "description": "Strength of the key light. Upstream's range is 0 to 1.6."
+    },
+    "shadowLength": {
+      "type": "number",
+      "default": 1.4,
+      "min": 0.4,
+      "max": 2.6,
+      "step": 0.05,
+      "description": "Above 1 the light sits lower and shadows run longer. Upstream's range is 0.4 to 2.6."
+    },
+    "softness": {
+      "type": "number",
+      "default": 0.55,
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "description": "Size of the light, so the width of every penumbra. Upstream's range is 0 to 1."
+    },
+    "rays": {
+      "type": "number",
+      "default": 0.45,
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "description": "How visible the haze is, the light scattering past each card's edges. 0 turns it off and flips the section's Haze switch. Upstream's range is 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "LE-VAI/sill",
+    "commit": "e5d2f2c0b153393b16c9d7dc249465b8a20a76c5",
+    "path": [
+      "src/sill.js",
+      "src/sill.css",
+      "demo/specimen/index.html",
+      "demo/specimen/specimen.css",
+      "demo/specimen/specimen.js",
+      "docs/ARCHITECTURE.md"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "src/sill.js is kept verbatim inside index.js under a // ---- src/sill.js ---- marker, export keywords included; stage.js and panel.js are not ported because the section has no [data-stage] and no light panel. The colour probe is created on the first parseColor call (let probe; assigned inside parseColor) instead of at module scope.",
+      "why": "Seam. A paw-fx effect is one ES module that may only import ../../vendor/* or ../_shared/*, and nothing may touch the DOM at import time; upstream's module-scope probe calls document.createElement on import.",
+      "kind": "seam"
+    },
+    {
+      "what": "FloorRenderer requests its webgl2 context with failIfMajorPerformanceCaveat: true. A refusal takes upstream's own throw into the catch in _initFloor: the floor is skipped, the tier drops to static and the cards keep CSS-only light over their static elevations.",
+      "why": "Seam. The repo contract: a lit floor on a software rasteriser costs more than it shows, so it should not start.",
+      "kind": "seam"
+    },
+    {
+      "what": "The root is the section, new Sill({ root: el, params }). _measure also records this.rootDoc, the section's document offset from getBoundingClientRect plus scroll, _render passes it to the floor as root, and FloorRenderer.render subtracts it in the canvas transform: translate3d(${-frame.root.x}px, ${scrollY - frame.root.y - size.over}px, 0). That is the only coordinate change; the shader and every occluder stay in viewport px.",
+      "why": "Seam. Upstream's floor wrap sits in body at the document origin, so translate3d(0, scrollY - over) puts the canvas top at viewport y = -over. Inside a section the wrap sits at the section's origin, so the same transform minus that offset lands the canvas on the same viewport rectangle and the occluder rects (document minus scroll) line up with it again.",
+      "kind": "seam"
+    },
+    {
+      "what": "_readTheme reads getComputedStyle(this.root) instead of document.documentElement, and _applyEnabled and _initFloor put the sill-gl and sill-off classes on this.root instead of <html>. destroy() in mount removes both classes and data-fx-live.",
+      "why": "Seam. Tokens and flags belong to the section, so two sections on one page never read or clear each other's state, and the static-elevation rules can be scoped as .fx-sill-light:not(.sill-gl).",
+      "kind": "seam"
+    },
+    {
+      "what": "Custom properties are prefixed: sill's theme tokens --sill-* are --fx-sill-* in _readTheme and style.css; the per-element values _shade writes (--lc --lr --sc --wx --wy --wr --wa --wf --sx --sy --srx --sry --sa --rt --rr --rb --rl) are --fx-sl-*, and the ring the css cast reads (--sl-ring, --sl-ring-w) is --fx-sl-ring and --fx-sl-ring-w. specimen.css's tokens (--surface, --ink, --muted, --line, --signal, --elev-1/2/3 and the rest) are --fx-* too.",
+      "why": "Seam. paw-fx prefixes every custom property --fx-; renamed identically in index.js and style.css.",
+      "kind": "seam"
+    },
+    {
+      "what": "sill.css is scoped: :root became .fx-sill-light and every selector (.sl, .sl-rim, .sill-floor, .sl-type, :where([data-lit])) sits under .fx-sill-light; the .sill-stage rule is dropped with stage.js. Its prefers-contrast: more block is moved out of @layer sill to after the specimen tokens.",
+      "why": "Seam for the scoping. The prefers-contrast move is ours: upstream's layered block loses to the specimen's unlayered tokens, so on the specimen it never applies; after the theme it lowers wash, specular and rim as sill intends, with sill's own values.",
+      "kind": "seam"
+    },
+    {
+      "what": "Fonts are system stacks (--fx-sans, --fx-serif, --fx-mono) in place of Schibsted Grotesk, Fraunces and Geist Mono from Google Fonts; the headline's Fraunces font-variation-settings are dropped with the font.",
+      "why": "Seam. style.css fetches nothing off-site.",
+      "kind": "seam"
+    },
+    {
+      "what": "mount(el, opts) builds the Sill with specimen.js's params object as defaults, opts filtered to upstream's DEFAULTS keys on top; update(next) calls sill.set with the same filter; destroy() clears the settle timer, calls sill.destroy(), removes a .sill-floor wrap left by a refused context (FloorRenderer prepends it before getContext), and removes sill-gl, sill-off and data-fx-live. data-fx-live is set from onFrame once stats.gl is true and a frame has rendered. Under reduced motion mount still runs: upstream sets follow false, so the light is parked and renders once. mount(null) or no document returns a no-op.",
+      "why": "Seam. The paw-fx mount/update/destroy contract, and a flag the preview capture can wait on.",
+      "kind": "seam"
+    },
+    {
+      "what": "specimen.js's haze switch handler (toggle aria-checked, sill.set rays on or 0) runs inside mount on the [data-fx-haze] button, and turning it back on restores the last positive rays value rather than a fixed 0.45; update() keeps aria-checked in step with rays.",
+      "why": "Seam. A data attribute instead of id=haze-switch so two sections never collide, and an option can now change rays from outside the switch.",
+      "kind": "seam"
+    },
+    {
+      "what": "The section is a trimmed specimen: eyebrow, the lit headline and lede, the console card with the haze switch and the two buttons (as links), and on the other side the glass card overlapping the top of the four material tiles. The segmented Lamp/Sun control, the temperature slider and the 9x4 key tray are left out. Classes are BEM (fx-sill-light__console and so on) rather than .console, .btn, .tile. The two columns stack under 760px (specimen stacks at 1100px), the glass sits in flow above the tiles with margin-bottom -84px (the 28px field gap plus a 56px overlap of the tile tops) instead of at right -36px top 300px, padding and gap are clamped to fit 1280x720, and --fx-muted is #b0b0b0 (specimen's --muted is #a0a0a0, its eyebrow --muted-dim #8a8a8a), used for the eyebrow too: measured live, #a0a0a0 fell to 4.49:1 on the lede where the light pools, and #b0b0b0 keeps every text run on the floor above 4.5:1.",
+      "why": "Ours. A hero has to fit one screen and look finished at 375px; the seg control is unwired upstream (a role=radio that does nothing), and a host page's .btn or .tile must not restyle the section.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rest state: the section background is --fx-sill-floor (#121216), the colour the live floor is calibrated to reproduce, and the console, tiles, glass and ghost button carry specimen.css's static token elevations (--fx-elev-1/2/3 with the 1px --fx-line ring) under .fx-sill-light:not(.sill-gl). The section is position relative, isolation isolate and overflow hidden.",
+      "why": "Ours. The CSS-only resting state, and the stacking context the floor needs: .sill-floor is z-index -1 and would otherwise paint under the section background.",
+      "kind": "ours"
+    }
+  ]
+}

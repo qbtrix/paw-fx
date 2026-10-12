@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-11**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-12**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -3919,3 +3919,108 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-10`. Twenty-three scout PRs stacked (09-17 →
 10-11), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-12 — window 2026-10-11 to 2026-10-12
+
+One day. Discovery found two portable repos and both were ported. The backlog
+was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sill-light` | `LE-VAI/sill`, `src/sill.js` + `src/sill.css` + `demo/specimen/{index.html,specimen.css,specimen.js}` + `docs/ARCHITECTURE.md` | `e5d2f2c0` | MIT | Discovery (GitHub topic search `webgl`, created 2026-10-11). The pointer is a light: lit cards cast soft shadows onto a WebGL2 floor (the penumbra grows with each card's `data-depth`), catch a specular highlight and an edge rim on the side facing the light, and the headline casts glyph shadows. Eight materials, lamp or sun, haze. The section is a trimmed copy of upstream's own specimen page. `sill.js` is inlined verbatim apart from the seams: a lazy colour probe (upstream built it at import time), `failIfMajorPerformanceCaveat`, the section as root (one transform subtracts the section's document offset, tokens read from the section, `sill-gl` flags on the section, not `<html>`) and `--fx-` names for every custom property. Its neighbours on the shelf are `cursor-spotlight` (border arc + wash), `gobo-light` (a fixed lamp through a cut-out) and `wave-grid` (lit cubes). None of them casts moving shadows from interface cards or text. Author account dates from 2026-05 with 25 public repos. The README names Josh Comeau's shadow palettes and vanilla-tilt as prior art, and no code source. |
+| `koi-pond` | `ShellB-App/Shell-B-Screensavers`, `screensavers/koi-pond/index.html` | `34a9630d` | MIT | Discovery (GitHub topic search `generative-art`, created 2026-10-11). A night koi pond seen from above: koi in loose schools, ripples where they surface, drifting lily pads, moonlight shimmer and caustics. One vanilla 2D canvas, no dependencies. `saver.json` credits "Evie & Shell:B". The repo README says pieces can be made in the Shell:B Studio, so it may be tool-assisted, but the repo's LICENSE is MIT and the piece carries no other notice. The inline script is verbatim inside `build()`. The seams are the section box for `W`/`H`, a 400 ms ResizeObserver rebuild in place of `location.reload()`, rest under reduced motion (upstream slows to 0.25x), and an IntersectionObserver pause. `cursor: none` is dropped. The rest state is CSS: upstream's water colours, the moon glow at upstream's `moonX`/`moonY`, caustics, four lily pads and the vignette. `koi-pond-garden` (09-29 log) was a 562 KB walkable scene; this is the section-sized one. |
+
+Gates: `check` green (lint 132, smoke 132, 485 tests); `verify` 128 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped. `sill-light` and
+`koi-pond` both PASS with no WARN.
+
+`check` first failed one test, `every documented option gets a knob`. The
+sill options had no `step`, the inferred step left their defaults off the
+grid, and an explicit `step: 0.05` fixed it.
+
+### Previews
+
+Shot live at 1280x720 scale 1 and scaled to 640x360 with `sips`, from the
+built demo pages served by `python3 -m http.server`. Browser was system
+Chrome through `AGENT_BROWSER_EXECUTABLE_PATH`, after `is visible
+"[data-fx-live]"` returned true, with the demo bar hidden. `sill-light` was
+shot with the pointer at (560, 300) and `koi-pond` six seconds in. Neither
+was shot under reduced motion. The Claude Browser pane confirmed both run
+(light follows the pointer, koi swim), but the pane throttles rAF to about
+1/s while hidden, so contrast was measured in agent-browser instead (62 rAF/s).
+
+### Contrast
+
+Measured live; every text run on the effect clears 4.5:1.
+
+- `koi-pond`: the canvas pixels under every text run were sampled over 40
+  frames at 1280x720, 375x812 and 1440x900 and composited with the wash.
+  The worst cases were eyebrow and lede at 6.77:1 and the headline at 8.44:1.
+  The first wash was a radial gradient sized `max(108%, 46rem) max(96%,
+  40rem)`. Chrome rejects `max()` mixing `%` and `rem` in a gradient size, so
+  the wash never drew and white koi swam straight through the lede. Sized
+  without `max()`, the ellipse either dimmed the whole pond or left the
+  eyebrow at 3.7:1 at 1280x720. It is now a feathered rectangle drawn by the
+  copy box itself (`.fx-koi-pond__inner::before`), which follows the copy at
+  any size.
+- `sill-light`: the copy was hidden, the light parked at seven points
+  (including on the eyebrow, headline and lede), the screen captured and the
+  pixels read under each run, at the same three viewports. With upstream's
+  `#a0a0a0` muted ink the lede fell to 4.49:1 where the light pools, so
+  `--fx-muted` is `#b0b0b0`. Worst cases: eyebrow and lede 5.41:1, glass label
+  7.37:1, headline 10.78:1.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `ShellB-App/Shell-B-Screensavers` `synthwave-horizon`, `harmonograph`, `ink-currents` | same repo, `34a9630d`, `screensavers/<name>/index.html` | MIT | Each is a small one-file canvas piece (2–4 KB). `synthwave-horizon` (striped sun over a neon grid) has nothing like it on the shelf and is the best next pick from this repo. `ink-currents` is close to `perlin-flow-field`. `harmonograph` is the section-sized version of the lab rejected 09-23. `starfield-warp` and `bouncing-logo` repeat `starfield` or are not sections. |
+| `PC2005-cloud/cursorkit` | GitHub, created 2026-10-11 | MIT | 25 canvas cursor effects as zero-dependency Web Components. Held: the shelf already has six cursor effects, each file is 40–65 KB raw plus a 50 KB `base.js`, and one would have to be picked out of a framework. |
+| `UlviShabanbayli/domvybe-liquid-glass-sidebar` | GitHub, created 2026-10-11 | MIT | A glass sidebar whose active item is a liquid drop that stretches between items. Held: it ships JPG/AVIF/WebP backdrops, and four glass effects are on the shelf with two more glass ports queued. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `pieralukasz/glyphline` | GitHub, created 2026-10-11 | MIT | TypeScript library with React/Svelte adapters and a Next.js docs site; text highlights, not a section. |
+| `Grkmyldz148/fidelity-ui` | GitHub, created 2026-10-11 | MIT | TypeScript library (wireframe/skeleton reveal); a loading-state tool, not a section. |
+| `yasser-ch/Ascii-Cursor-Wallpaper` | GitHub, created 2026-10-11 | MIT | A 48 KB wallpaper builder app; the shelf has nine `ascii-*` effects. |
+| `smirk-dev/sine-and-sketch`, `2085645319-cmd/FlowToy`, `xytmotion/xyt-motion`, `Ethannju/ascii-portrait` | GitHub | MIT | Playgrounds and tools (photo-to-formula fitting, a generative toy, a shader language, a photo-to-ASCII exporter), not sections. |
+| `fushanbobfan/plasmodium` | GitHub, created 2026-10-12 | MIT | A slime mould simulator; `physarum` is already on the shelf (10-02). |
+| `Yuji5124/visual-effect-library` | GitHub, created 2026-10-11 | MIT | A 387-file TypeScript catalogue of 200 Three.js effects with its own build; nothing single-file to pin. |
+| `PRLODIGJAL/threejs-dragon`, `PRLODIGJAL/threejs-world-globe`, `tanuu5/*`, `farzinmirzaie/squirm`, `Hostingglobal-Tech/butter-squishy` | GitHub | MIT | Scenes, toys and games, not sections. |
+| `codrops/MotionTrailAnimations` | Codrops, pushed 2026-10-11 | MIT | Already in the 09-06 org survey (bundles two font files; superseded by `image-trail`). |
+| `Bentarraya/Key-Chain-Screen`, `Mukki-kl/mukki-kl.github.io` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| React/Next/Remotion repos (`BetterTyped/*`, `spiritracking-arch/background-rainbow-lines`, `tengubyte/sumi`, `NikitaMelnikit/palindrome-archive` and the rest), video/skill pipelines, Rust/Kotlin/Dart/C# projects (the rest of the twelve topic and twenty-two keyword searches) | GitHub | mixed | Out of scope (framework code, not effects, or not web). |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-11` gives only `MotionTrailAnimations`
+  (already surveyed). The hub page (`/codrops/hub/all/`, read in the Claude
+  Browser pane) still has Amber Genetics, 2026-10-08, as its newest item.
+- `commits?since=2026-10-11` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`, `JuPicker/isoline`.
+- GitHub topic search, `created:>=2026-10-11` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`, and
+  twenty-two keyword searches: the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`,
+`wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`), `meniscus`
+(pending the TS-source call), `turmite`, `neon-sprawl`. New: `synthwave-horizon`
+(Shell:B at `34a9630d`) first, then `cursorkit` and `domvybe-liquid-glass-sidebar`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-11`. Twenty-four scout PRs stacked (09-17 →
+10-12), none merged. Merge the bases with `--rebase`, not `--squash`.

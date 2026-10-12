@@ -1,0 +1,156 @@
+/* koi-pond: a full-bleed hero over a night koi pond seen from above.
+
+   index.js puts one canvas behind the copy and draws upstream's pond on it:
+   water, caustics, the moon's glow and shimmer, koi, lily pads, ripples and a
+   vignette, all opaque. Upstream's html/body rule (#050c14, overflow hidden)
+   is the section's here; its cursor: none is not carried over, a hero keeps
+   the pointer.
+
+   With no script, or under reduced motion (mount() then creates nothing),
+   .fx-koi-pond__rest is the pond at rest, built from upstream's own numbers:
+   the water gradient from waterDark rgb(8,18,36) to waterLight rgb(16,34,58)
+   along upstream's (0,0) -> (0.3W, H) axis, about 154deg on a 16:10 screen;
+   the moon's glow at moonX 0.72, moonY 0.2, radius 0.2 x min(W,H) (20vmin on
+   a full-bleed hero) with drawMoonlight's stops times moonGlowBase 0.18; two
+   caustic patches at causticAlpha; four lily pads in drawLilyPad's three
+   greens at 50-85px, upstream's lilyRMin..lilyRMax; and drawVignette's
+   0.4 black from 0.25 x min(W,H) out to 0.78 x max(W,H).
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-koi-pond__rest     the resting pond, faded once the canvas paints
+     -1  <canvas>               inserted by index.js
+      1  .fx-koi-pond__inner    the copy, with its legibility wash (::before) */
+.fx-koi-pond {
+  --fx-bg: #050c14;
+  --fx-ink: #f2f6fb;
+  --fx-muted: #d3dfeb;
+  --fx-moon: rgb(195, 218, 240);
+  --fx-scrim: 0.85;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-koi-pond *,
+.fx-koi-pond *::before,
+.fx-koi-pond *::after { box-sizing: border-box; }
+
+.fx-koi-pond__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 25vmin, rgba(0, 0, 0, 0.4) 78vmax),
+    radial-gradient(circle 68px at 13% 24%, rgb(48, 86, 56), rgb(34, 64, 42) 55%, rgb(22, 46, 30) 98%, transparent),
+    radial-gradient(circle 80px at 88% 72%, rgb(44, 79, 51), rgb(31, 59, 39) 55%, rgb(20, 42, 28) 98%, transparent),
+    radial-gradient(circle 54px at 8% 84%, rgb(40, 72, 47), rgb(29, 54, 35) 55%, rgb(18, 39, 25) 98%, transparent),
+    radial-gradient(circle 60px at 66% 90%, rgb(46, 82, 54), rgb(33, 61, 40) 55%, rgb(21, 44, 29) 98%, transparent),
+    radial-gradient(circle 20vmin at 72% 20%, rgba(195, 218, 240, 0.108), rgba(195, 218, 240, 0.032) 30%, rgba(50, 80, 110, 0.011) 65%, transparent),
+    radial-gradient(circle 18vmin at 24% 58%, rgba(45, 90, 120, 0.045), rgba(35, 70, 100, 0.013) 60%, transparent),
+    radial-gradient(circle 14vmin at 58% 34%, rgba(45, 90, 120, 0.045), rgba(35, 70, 100, 0.013) 60%, transparent),
+    linear-gradient(154deg, rgb(8, 18, 36), rgb(10, 22, 42) 50%, rgb(16, 34, 58));
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live once the first frame is on the canvas, and
+   destroy() removes it, so the rest comes back with the teardown. */
+.fx-koi-pond[data-fx-live] .fx-koi-pond__rest { opacity: 0; }
+
+.fx-koi-pond__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The pond is dark, but a white or shiro koi (head #f2e8d6 / #f5ece0, about
+   0.85 luminance) can swim under any word, so the copy gets its own wash: a
+   rectangle of --fx-bg drawn by the copy box itself, so it follows the copy at
+   any size, held flat a little past the text and feathered out over
+   --fx-feather on every side, so the pond around it keeps its colour.
+   Measured live at 1280x720 and 375x812 over 40 frames each; the worst
+   ratios are in the PR that landed this effect. Raise --fx-scrim if a
+   restyle brings one down. */
+.fx-koi-pond__inner::before {
+  --fx-feather: 3rem;
+  content: "";
+  position: absolute;
+  inset: -4rem -5rem;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in oklab, var(--fx-bg) 86%, transparent);
+  -webkit-mask:
+    linear-gradient(to right, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent);
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(to right, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent);
+  mask-composite: intersect;
+  opacity: var(--fx-scrim);
+}
+
+.fx-koi-pond__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+  text-align: center;
+}
+
+.fx-koi-pond__eyebrow {
+  margin: 0 0 1.4rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fx-moon) 85%, #fff);
+}
+
+.fx-koi-pond__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6.2vw, 4.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 36px color-mix(in oklab, var(--fx-bg) 80%, transparent);
+}
+
+.fx-koi-pond__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-koi-pond__cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2.3rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  background: var(--fx-ink);
+  color: #06121f;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+.fx-koi-pond__cta:hover {
+  transform: translateY(-1px);
+  background: #fff;
+}
+.fx-koi-pond__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}

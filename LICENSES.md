@@ -226,6 +226,8 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | pixel-dissolve | MIT | [miguelclavel/pixel-dissolve](https://github.com/miguelclavel/pixel-dissolve) `12e6605`, `index.html` |
 | isoline-scene | MIT | [JuPicker/isoline](https://github.com/JuPicker/isoline) `77c1da5`, `isoline.min.js`, `examples/basic.html` (adapts [lucasmarkes/hairline](https://github.com/lucasmarkes/hairline), MIT) |
 | ascii-worm | MIT | [david-vrba/ascii-worm](https://github.com/david-vrba/ascii-worm) `c8ada42`, `worm-core.js`, `index.html`, `worm.js` |
+| sill-light | MIT | [LE-VAI/sill](https://github.com/LE-VAI/sill) `e5d2f2c`, `src/sill.js`, `src/sill.css`, `demo/specimen/` |
+| koi-pond | MIT | [ShellB-App/Shell-B-Screensavers](https://github.com/ShellB-App/Shell-B-Screensavers) `34a9630`, `screensavers/koi-pond/index.html` (Koi Pond by Evie & Shell:B) |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
