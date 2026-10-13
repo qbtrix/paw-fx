@@ -1,0 +1,39 @@
+<!-- capsule-nav section. Finished at rest with CSS alone: the capsule header
+     sits edge to edge at the top of the page, transparent, over a tall
+     two-tone hero -- which is upstream's own unscrolled look, so a blocked
+     script or a pruned bundle leaves exactly this. With index.js mounted,
+     scrolling past 80px springs the capsule into a narrower, thinner frosted
+     pill; scrolling back opens it out again. The header is fixed to the
+     viewport (page-level nav, as upstream); the section is tall so the
+     scrolled state is reachable. Under prefers-reduced-motion the capsule
+     jumps between the two states instead of springing.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/capsule-nav/style.css">
+<section class="fx-cnav-page" data-fx="capsule-nav">
+  <header class="fx-cnav">
+    <div class="fx-cnav__bar">
+      <div class="fx-cnav__inner">
+        <a class="fx-cnav__brand" href="#">Lumen</a>
+        <a class="fx-cnav__link" href="#">Product</a>
+        <a class="fx-cnav__link" href="#">Pricing</a>
+        <a class="fx-cnav__link" href="#">Docs</a>
+        <a class="fx-cnav__link" href="#">Changelog</a>
+        <button class="fx-cnav__cta" type="button">Get started</button>
+      </div>
+    </div>
+  </header>
+  <div class="fx-cnav-hero">
+    <p class="fx-cnav-eyebrow">Now in public beta</p>
+    <h1>Notes that keep up with how you think.</h1>
+    <p class="fx-cnav-lede">Write, link and search in one quiet place. Scroll down and watch the header pull in to a frosted capsule; scroll back and it opens out again.</p>
+  </div>
+  <div class="fx-cnav-body">
+    <h2>Built for long documents</h2>
+    <p>Outlines fold, references resolve inline, and search reads every page you have ever written. Nothing loads in the way of the sentence you are on.</p>
+    <div class="fx-cnav-card">
+      <p>The header above is the effect. It springs rather than transitions, so a change of direction mid-scroll carries its velocity instead of restarting.</p>
+    </div>
+    <p>Keep scrolling. The capsule stays narrowed as long as you are past the threshold and relaxes the moment you return to the top.</p>
+  </div>
+</section>

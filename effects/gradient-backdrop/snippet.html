@@ -1,0 +1,12 @@
+<!-- gradient-backdrop section. Finished at rest with CSS alone: two soft
+     radial washes on a pale ground, upstream's own static fallback. index.js
+     puts an animated WebGL gradient (the fluid preset by default) behind the
+     copy once it has a context; pick another look with the preset option
+     (aurora night-swim, silk amethyst, forms petal and 26 more).
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/gradient-backdrop/style.css">
+<section class="fx-gradient-backdrop" data-fx="gradient-backdrop">
+  <h1 class="fx-gradient-backdrop__title">Always in motion.</h1>
+  <p class="fx-gradient-backdrop__lede">Swap this for your own words. The colour field keeps drifting behind them, slow enough to read over.</p>
+</section>

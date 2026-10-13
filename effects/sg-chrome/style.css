@@ -1,0 +1,217 @@
+/* sg-chrome: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding them moves the shader and the resting
+   metal together. Roles match the shader: c1 sky and body tint, c2 middle strip
+   and warm rim, c3 the two big strip lights, c4 floor. Keep c4 dark.
+
+   Rest is the studio the mirror reflects, flattened: a dark floor, a bright
+   band just above the horizon and three soft-edged strip lights at the
+   elevations env() puts them at, then two broad curved sheens so the bands
+   read as bent by a surface rather than painted on a wall.
+
+   The copy sits on a smoked PANEL, not a wash. A wash cannot hold this effect:
+   the strip lights are drawn as (c3 * 1.2 + 0.7) and the speculars add plain
+   white on top, so whole crests clip to white wherever they roll, including
+   straight under the lede. The panel is what holds the floor; --fx-panel is
+   the knob, and the bound in the PR that landed this was measured with solid
+   white behind it.
+
+   Stacking:
+     -2  .fx-chrome__rest   the CSS studio, covered by the canvas once it paints
+     -1  <canvas>           inserted by glsl-mount.js (inline style)
+      0  .fx-chrome__grain  dithers long ramps
+      1  .fx-chrome__inner  the copy, on its panel */
+.fx-chrome {
+  --fx-c1: #8fb2e8;
+  --fx-c2: #ff9a62;
+  --fx-c3: #d6e6ff;
+  --fx-c4: #141a2c;
+  --fx-bg: #05070c;
+  --fx-ink: #ffffff;
+  --fx-muted: #d9e0ec;
+  --fx-line: rgba(255, 255, 255, 0.12);
+  --fx-panel: 0.74;
+  --fx-speed: 1;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a full-bleed hero overflows by its own padding. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-chrome__rest {
+  position: absolute;
+  inset: -10%;
+  z-index: -2;
+  background:
+    /* two broad curved sheens: the swells catching the strips */
+    radial-gradient(70% 22% at 30% 38%, color-mix(in oklab, var(--fx-c3) 34%, transparent), transparent 70%),
+    radial-gradient(60% 18% at 72% 64%, color-mix(in oklab, var(--fx-c3) 26%, transparent), transparent 72%),
+    /* the warm rim off to one side */
+    radial-gradient(18% 50% at 86% 40%, color-mix(in oklab, var(--fx-c2) 30%, transparent), transparent 75%),
+    /* the studio: floor, horizon glow, three strip lights, deep sky */
+    linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--fx-c4) 60%, #000) 0%,
+      color-mix(in oklab, var(--fx-c4) 85%, var(--fx-c1)) 40%,
+      color-mix(in oklab, var(--fx-c1) 55%, var(--fx-c4)) 46%,
+      color-mix(in oklab, var(--fx-c3) 62%, var(--fx-c4)) 52%,
+      color-mix(in oklab, var(--fx-c3) 70%, var(--fx-c4)) 56%,
+      color-mix(in oklab, var(--fx-c1) 30%, var(--fx-c4)) 60%,
+      color-mix(in oklab, var(--fx-c2) 40%, var(--fx-c4)) 66%,
+      color-mix(in oklab, var(--fx-c1) 22%, var(--fx-c4)) 70%,
+      color-mix(in oklab, var(--fx-c3) 52%, var(--fx-c4)) 78%,
+      color-mix(in oklab, var(--fx-c3) 40%, var(--fx-c4)) 84%,
+      color-mix(in oklab, var(--fx-c4) 70%, #000) 100%
+    );
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it. */
+.fx-chrome[data-fx-live] .fx-chrome__rest {
+  opacity: 0;
+}
+
+/* Long dark ramps band on 8-bit displays; a little noise hides it. Inline SVG,
+   so the section fetches nothing. Also stands in for the poster's grain. */
+.fx-chrome__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+.fx-chrome__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+  padding: clamp(1.6rem, 4vw, 3rem) clamp(1.4rem, 4vw, 3rem);
+  border: 1px solid var(--fx-line);
+  border-radius: 18px;
+  background: color-mix(in oklab, #070a12 calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.fx-chrome__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.4rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-chrome__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c2);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c2) 20%, transparent);
+}
+
+.fx-chrome__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6.4vw, 4.8rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-chrome__lede {
+  margin: 1.5rem auto 0;
+  max-width: 32rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-chrome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.2rem;
+}
+
+.fx-chrome__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-chrome__cta--primary {
+  background: var(--fx-ink);
+  color: #07080f;
+}
+
+.fx-chrome__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+}
+
+.fx-chrome__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-chrome__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-chrome__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed: a slow
+   vertical bob, the strips rising and falling as a swell passes under them.
+   The shader has its own reduced-motion path in glsl-mount.js: one static
+   frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-chrome__rest {
+    animation: fx-chrome-swell calc(18s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-chrome-swell {
+    0% {
+      transform: translateY(0) scaleY(1);
+    }
+    100% {
+      transform: translateY(-3%) scaleY(1.06);
+    }
+  }
+}

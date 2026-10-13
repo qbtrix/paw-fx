@@ -1,0 +1,154 @@
+/* sunset-sea: a full-bleed hero over a physically based sunset at sea.
+
+   index.js puts one canvas behind the copy and draws upstream's shader on it:
+   a sky computed by single scattering, a sea that mirrors it, the glitter
+   path under a low sun, a thin cloud layer and hazy headlands. The canvas is
+   opaque. Upstream's page background (#0b0a10) is the section's --fx-bg.
+
+   With no script, under reduced motion, or with no WebGL context (mount()
+   then creates nothing), .fx-sunset-sea__rest is the sunset at rest. Its
+   colours are ours, picked to match upstream's defaults: the horizon at 38%
+   from the bottom (upstream's horizon 0.38), the sun just above it a little
+   right of centre (azimuth 9 deg), a lavender sky warming to orange at the
+   horizon, a dark sea, and a gold glitter column under the sun.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-sunset-sea__rest     the resting sunset, faded once the canvas paints
+     -1  <canvas>                 inserted by index.js
+      1  .fx-sunset-sea__inner    the copy, with its legibility wash (::before) */
+.fx-sunset-sea {
+  --fx-bg: #0b0a10;
+  --fx-ink: #f6f1ee;
+  --fx-muted: #e2d7d3;
+  --fx-glow: #f3b36a;
+  --fx-scrim: 0.8;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-sunset-sea *,
+.fx-sunset-sea *::before,
+.fx-sunset-sea *::after { box-sizing: border-box; }
+
+.fx-sunset-sea__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 40vmin, rgba(0, 0, 0, 0.3) 90vmax),
+    radial-gradient(ellipse 3vmin 30% at 56% 62%, rgba(255, 214, 150, 0.55), rgba(240, 160, 90, 0.18) 55%, transparent),
+    radial-gradient(circle 2.2vmin at 56% 59.5%, #fff1d6, #ffd49a 70%, transparent),
+    radial-gradient(ellipse 60vmax 22vmin at 56% 62%, rgba(250, 170, 100, 0.55), transparent 70%),
+    linear-gradient(to bottom,
+      #241f3a 0%,
+      #4a3a5c 30%,
+      #9a5a64 50%,
+      #e08a5e 58%,
+      #f0aa6c 61.8%,
+      #5a3c4a 62%,
+      #2e2232 72%,
+      #120e18 100%);
+  transition: opacity 600ms ease;
+}
+
+/* index.js sets data-fx-live once a frame is on the canvas, and destroy()
+   removes it, so the rest comes back with the teardown. */
+.fx-sunset-sea[data-fx-live] .fx-sunset-sea__rest { opacity: 0; }
+
+.fx-sunset-sea__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The sun and its glitter path are near white and the sun drifts, so the
+   copy gets its own wash: a rectangle of --fx-bg drawn by the copy box
+   itself, so it follows the copy at any size, held flat a little past the
+   text and feathered out over --fx-feather on every side. The worst measured
+   ratios are in the PR that landed this effect. Raise --fx-scrim if a restyle
+   brings one down. */
+.fx-sunset-sea__inner::before {
+  --fx-feather: 3rem;
+  content: "";
+  position: absolute;
+  inset: -4rem -5rem;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in oklab, var(--fx-bg) 86%, transparent);
+  -webkit-mask:
+    linear-gradient(to right, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent);
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(to right, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent),
+    linear-gradient(to bottom, transparent, #000 var(--fx-feather), #000 calc(100% - var(--fx-feather)), transparent);
+  mask-composite: intersect;
+  opacity: var(--fx-scrim);
+}
+
+.fx-sunset-sea__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 44rem;
+  text-align: center;
+}
+
+.fx-sunset-sea__eyebrow {
+  margin: 0 0 1.4rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fx-glow) 70%, #fff);
+}
+
+.fx-sunset-sea__title {
+  margin: 0;
+  font-size: clamp(2.3rem, 6.2vw, 4.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-shadow: 0 1px 36px color-mix(in oklab, var(--fx-bg) 80%, transparent);
+}
+
+.fx-sunset-sea__lede {
+  margin: 1.5rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-sunset-sea__cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2.3rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  background: var(--fx-ink);
+  color: #1a1220;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+.fx-sunset-sea__cta:hover {
+  transform: translateY(-1px);
+  background: #fff;
+}
+.fx-sunset-sea__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}

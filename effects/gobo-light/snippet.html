@@ -1,0 +1,24 @@
+<!-- gobo-light section. Finished at rest with CSS alone: the lit wall in
+     .fx-gobo__rest and the slat cast in .fx-gobo__beam are the hero with
+     JavaScript off, and index.js only covers them once the element has a
+     WebGL2 context, both programs linked and a frame on the canvas. The _fx
+     paths are root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The three
+     decorative layers carry aria-hidden; the backdrop element sets its own. The
+     copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/gobo-light/style.css">
+<section class="fx-gobo" data-fx="gobo-light">
+  <div class="fx-gobo__rest" aria-hidden="true"></div>
+  <div class="fx-gobo__beam" aria-hidden="true"></div>
+  <div class="fx-gobo__scrim" aria-hidden="true"></div>
+  <div class="fx-gobo__grain" aria-hidden="true"></div>
+  <div class="fx-gobo__inner">
+    <p class="fx-gobo__eyebrow"><span class="fx-gobo__dot" aria-hidden="true"></span>Four o'clock</p>
+    <h1 class="fx-gobo__title">Every room you remember had light coming into it from somewhere.</h1>
+    <p class="fx-gobo__lede">Swap this for your own words. Nineteen cut-outs ship with the section — blinds, a window, leaves, a fence, passing train — and each one puts the page somewhere instead of on a gradient.</p>
+    <div class="fx-gobo__actions">
+      <a class="fx-gobo__cta fx-gobo__cta--primary" href="#">Take a look</a>
+      <a class="fx-gobo__cta fx-gobo__cta--ghost" href="#">How it works</a>
+    </div>
+  </div>
+</section>

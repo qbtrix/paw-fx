@@ -1,0 +1,64 @@
+{
+  "name": "perlin-flow-field",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "flow-field",
+    "perlin",
+    "noise",
+    "particles",
+    "trails",
+    "canvas",
+    "canvas-2d",
+    "generative",
+    "sunset",
+    "warm",
+    "dark",
+    "hero",
+    "ambient"
+  ],
+  "summary": "Full-bleed dark hero where thousands of particles trace a seeded Perlin-noise flow field in a sunset ramp (indigo to magenta to coral to amber). Their trails fade instead of clearing, so the field reads as drifting silk, and the noise slowly moves in time. A warm glow, vignette and film grain sit on top. Set a hex seed to keep one field; update() with a new seed cross-fades to it. Particle density follows the measured frame rate. Under reduced motion, or with no script, the section rests on the same glow and vignette as CSS gradients.",
+  "needs": [],
+  "options": {
+    "seed": {
+      "type": "string",
+      "default": "",
+      "description": "Field seed as 1-8 hex digits (upstream shows it as #3FA2C91E). Empty picks a random field on every mount, as upstream does. Changing it through update() cross-fades to the new field over 1.2 s, like upstream's Regenerate button."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "uahz/perlin-flow-field",
+    "commit": "9dd05d821bfb4682cb9746519c7ccd24e66fe13a",
+    "path": [
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The stage is the section's box: W and H come from el.clientWidth and el.clientHeight, both canvases are inserted into the section, and a ResizeObserver on the section replaces the window resize listener (same 150 ms debounce); resize() returns early when clientWidth and clientHeight are unchanged, so the observer's initial callback does not clear the prewarmed trails.",
+      "why": "Seam. Upstream owns the whole window; a paw-fx effect is one section of a page.",
+      "kind": "seam"
+    },
+    {
+      "what": "newSeed() takes an optional fixed seed parsed from opts.seed by parseSeed(); update({ seed }) calls it, which gives upstream's 1.2 s cross-fade. The brand header, stats panel, Regenerate and Save buttons, the R and S window key handler, savePNG() and the document.title write are dropped.",
+      "why": "Seam. A hero section is not a playground, a section cannot take R and S from the whole page, and the seed is the one knob upstream's chrome exposed.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns the resting handle; reduced is a constant false after that return, so upstream's reduced ? 0.35 : 1 timeScale is kept but never takes the reduced branch.",
+      "why": "Ours. Upstream's reduced path still animates, only slower, and the contract is to stay at rest.",
+      "kind": "ours"
+    },
+    {
+      "what": "An IntersectionObserver pauses frame() off screen, the visibilitychange listener is dropped (frame()'s dtRaw > 1 guard already covers a tab coming back), data-fx-live is set after the first frame, and destroy() cancels the frame, clears the resize timer, disconnects both observers, removes both canvases and clears data-fx-live.",
+      "why": "Ours. Up to 11000 strokes a frame should not run for a section nobody can see, and teardown must leave the section as it found it.",
+      "kind": "ours"
+    },
+    {
+      "what": "The rest state is CSS: the .fx-perlin-flow-field background repeats drawFX()'s glow and vignette stops as radial gradients, and the copy sits on a .fx-perlin-flow-field__inner smoked panel modelled on upstream's .panel.",
+      "why": "Ours. The section has to look finished with no script, and additive strokes run under the copy, so it needs a plate.",
+      "kind": "ours"
+    }
+  ]
+}

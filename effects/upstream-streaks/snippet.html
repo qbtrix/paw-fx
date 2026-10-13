@@ -1,0 +1,13 @@
+<!-- upstream-streaks section. Finished at rest with CSS alone: a green glow
+     rising from below the bottom edge on black. index.js puts upstream-fx's
+     WebGL streaks behind the copy once it has a context; they fan upward and
+     part around the cursor.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/upstream-streaks/style.css">
+<section class="fx-upstream-streaks" data-fx="upstream-streaks">
+  <div class="fx-upstream-streaks__copy">
+    <h1 class="fx-upstream-streaks__title">Your headline here</h1>
+    <p class="fx-upstream-streaks__lede">Swap this for your own words. Move the cursor and the light parts around it, then closes behind it.</p>
+  </div>
+</section>
