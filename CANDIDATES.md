@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-12**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-13**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -4024,3 +4024,103 @@ Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
 
 Based on `feat/fx-scout-2026-10-11`. Twenty-four scout PRs stacked (09-17 →
 10-12), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-13 — window 2026-10-12 to 2026-10-13
+
+One day. Discovery found one portable repo and it was ported. The backlog was
+not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sunset-sea` | `keensense/sunset-sea`, `src/sunset.js` + `index.html` | `3a2982c1` | MIT | Discovery (GitHub topic search `webgl`, created 2026-10-12). A physically based sunset over the sea in one WebGL 1 fragment shader: single scattering through a spherical atmosphere (Rayleigh, Mie, ozone), a sea of eight travelling waves that mirrors the sky with Fresnel, a Cox-Munk glitter path under the sun, one thin cloud layer and hazy headlands. One ES module, no deps. The file is inlined verbatim from `VERT` to the end of the class; the seams are the dropped `export`, `failIfMajorPerformanceCaveat` on both `getContext` calls, and a `mount()` that builds with `autoStart: false`, wraps `render` once to set `data-fx-live`, then starts. Upstream already pauses off screen, follows resizes, lowers its render scale on a slow GPU and recovers a lost context, so the wrapper carries no numbers. The six option ranges are upstream's `index.html` sliders (hence the second path). Nothing on the shelf is a sky or a sea at golden hour; `clearwater` is shallow water from above and `bioluminescent-sea` is night. |
+
+Gates: `check` green (lint 133, smoke 133, 487 tests); `verify` 129 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped. `sunset-sea` PASS with
+no WARN.
+
+`check` failed twice first on `sg-bask` with `os error 35`, the bundled Chrome
+fault from 09-20. With `AGENT_BROWSER_EXECUTABLE_PATH` on system Chrome it went
+green. Every run needs that prefix on `check`, not only on previews.
+
+### Previews
+
+Shot live from the built demo page served by `python3 -m http.server`, system
+Chrome through `AGENT_BROWSER_EXECUTABLE_PATH`, after `is visible
+"[data-fx-live]"` returned true, with `.fxd-bar`, `.fxd-filler` and
+`.fxd-knobs` hidden (the knobs panel shows on any effect with options; hide it
+too). 1280x720 scale 1, scaled to 640x360 with `sips`. Not shot under reduced
+motion: that path leaves the CSS rest.
+
+### Contrast
+
+Measured live. Copy ink made transparent (the wash stays), five frames a second
+apart at 1280x720, 375x812 and 1440x900, ink read by painting the computed
+colour to a canvas, and the brightest pixel under each line box taken as the
+ground. The sun sits right under the lede at the default horizon, so the wash
+matters. At `--fx-scrim` 0.8 the worst cases are lede 5.43:1, headline 7.76:1,
+eyebrow 8.98:1. At 0.5 the lede fell to 2.29:1, so 0.8 stays. The sun's drift is
+±0.35° over 480 s, about ±4 px at 1280x720; the disc was already under the lede
+in every frame, so the drift does not change the worst case.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `fushanbobfan/dotwork` | GitHub, created 2026-10-13, `src/*.js` | MIT | Weighted Voronoi stippling (Secord 2002): dots relax by Lloyd iterations until spacing draws a picture, then one TSP line threads them. Vanilla ES modules, tested. Held for the same reason as `turmite` (10-11, same author): a full app with upload, plot and export panels, where a hero port would need the seams to be most of the code. A "dots settle into a formula picture" section from `density.js` + `lloyd.js` + `sources.js` is possible if wanted. |
+| `arslanagayev/theme-toggle-animation` | GitHub, created 2026-10-12 | MIT | Day/night switch: the sun squashes into a crescent, fireflies come out, and the page changes with a View Transitions circle from the knob. CSS-choreographed, no deps. Held: it is a page-wide theme control, not a section, it loads three web fonts, and a paw-fx port would have to decide what "the page's theme" means in a site. Siblings `like-button-animation` and `slide-to-confirm-animation` (same author, same week, MIT) are buttons with bundled OFL fonts; same call. |
+| `manashwebdev/cosmic-observatory` | GitHub, created 2026-10-12, `index.html` | MIT | A single-file space playground with a black hole. Held: `event-horizon` and `starfield` cover it. |
+| `PuspaRaj-Subedi/festival-overlay` | GitHub, created 2026-10-12 | MIT | Zero-dep festival overlays (Dashain, Tihar, Holi). Held: a library with a calendar and a 50 KB build; `confetti-burst` and `snow-fall` cover the look. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `JuPicker/fogged-glass` | GitHub, created 2026-10-12 | NOASSERTION | Licence text not an allow-list SPDX id; `wipe-glass` covers a window you wipe anyway. |
+| `rujilabs/motion-patterns` | GitHub, created 2026-10-13 | NOASSERTION | A credited collection of other people's motion; licence not on the allow-list as detected. |
+| `goatsoft/aurora` | GitHub, created 2026-10-12 | MIT | A `PLAN.md` and a README; no code yet. Worth a re-look if it ships (WebGPU backgrounds with a CSS fallback). |
+| `evoluteur/keplers-cosmic-cup`, `yanx5433-cmd/cytosphere`, `Shahfarzane/garden-of-earthly-delights`, `bborakurt/notch-launch-animation`, `datumsOG/glass-ui-kit` | GitHub | MIT | Scenes, a cell-biology experience, a painting, a launch splash and map-glass UI; not sections. |
+| `iniGlowee/occluder-dither-fade`, `lujun-dev/web3d-kit`, `abhijithneilabraham/playkin` | GitHub | MIT | three.js tooling, not sections. |
+| `comet-ctrl/flocking-website-idea`, `Oooorange928/boids`, `davidyen1124/organ-bank` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| Itzfizz scroll-hero assignments (`sahil-bytecraft`, `mb-thimmaraju`, `sakshampratap8800`, `Abhiranjan-Tiwary`) | GitHub | none | GSAP ScrollTrigger and no licence. Hard reject. |
+| React/Next/Flutter/Swift/Kotlin repos, games, `galbenyosef/*` offline mirrors, agent skills, Godot and Unity shaders (the rest of the twelve topic and twenty-four keyword searches) | GitHub | mixed | Out of scope. |
+
+### Sources checked and found quiet
+
+- Codrops: `user:codrops pushed:>=2026-10-12` gives only `CodropsTemplate`
+  (already in the 09-06 survey; a template, not an effect). The hub page
+  (`/codrops/hub/all/`, read in the Claude Browser pane) still has Amber
+  Genetics, 2026-10-08, as its newest item.
+- `commits?since=2026-10-12` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`, `JuPicker/isoline`, `LE-VAI/sill`,
+  `ShellB-App/Shell-B-Screensavers`.
+- GitHub topic search, `created:>=2026-10-12` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`, and
+  twenty-four keyword searches (`hero background`, `shader background`,
+  `webgl background`, `text effect`, `cursor effect`, `scroll effect`,
+  `hover effect`, `text animation`, `loader animation`, `dither`,
+  `liquid glass`, `gradient animation`, `particle effect`, `noise shader`,
+  `marquee`, `parallax`, `ascii animation`, `fluid simulation`,
+  `ripple effect`, `glitch effect`, `aurora`, `page transition`,
+  `fragment shader`, `css animation`): the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`,
+`wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`), `meniscus`
+(pending the TS-source call), `turmite`, `neon-sprawl`, `synthwave-horizon`
+(Shell:B at `34a9630d`), `cursorkit`, `domvybe-liquid-glass-sidebar`. New
+soft entries: `dotwork`, `theme-toggle-animation`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-12`. Twenty-five scout PRs stacked (09-17 →
+10-13), none merged. Merge the bases with `--rebase`, not `--squash`.
