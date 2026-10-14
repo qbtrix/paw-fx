@@ -1,0 +1,86 @@
+{
+  "name": "curly-kumo",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": [
+    "clouds",
+    "hanafuda",
+    "japanese",
+    "svg",
+    "procedural",
+    "scroll",
+    "grow",
+    "illustration",
+    "light",
+    "hero"
+  ],
+  "summary": "Light hero with procedural clouds in the style of the kumo on hanafuda cards, from curlykumo: red lobed masses with dark outlines and spiral curls, each generated from a seed so the same seed always gives the same cloud. When the section scrolls into view the clouds grow from nothing to their full shape, lobe by lobe and mass by mass, and when it leaves they fold away again; reversing mid-way never jumps. A scroll-linked mode ties growth to the scroll position instead. Drawn as SVG by upstream's own <curly-kumo> tag, which reserves the fully grown box so nothing shifts. Under reduced motion, or with no script, the clouds rest fully grown.",
+  "needs": [],
+  "options": {
+    "mode": {
+      "type": "string",
+      "default": "grow-in",
+      "description": "grow-in: grow when the cloud is half in view, fold away when it leaves (upstream's enter/leave trigger). scroll-link: growth follows the scroll position. still: fully grown, no motion. Both drivers are upstream's examples/scroll.html."
+    },
+    "fill": {
+      "type": "string",
+      "default": "#dd3a2c",
+      "description": "Cloud fill colour. Upstream default."
+    },
+    "stroke": {
+      "type": "string",
+      "default": "#1a1210",
+      "description": "Outline and curl colour. Upstream default."
+    },
+    "strokeWidth": {
+      "type": "number",
+      "default": 2.4,
+      "min": 0.5,
+      "max": 8,
+      "step": 0.1,
+      "description": "Line width in cloud units. Upstream default."
+    },
+    "duration": {
+      "type": "number",
+      "default": 1.5,
+      "min": 0.2,
+      "max": 6,
+      "step": 0.1,
+      "description": "Seconds a full grow-in or grow-out takes; a partial one takes proportionally less. Upstream default."
+    },
+    "sway": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "description": "Idle variation once grown, 0 to 1: the lobes breathe slowly. Upstream default (off)."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "ayalan/curlykumojs",
+    "commit": "eb8d8535e185ffed6f3075ee9f6c0b705e8bd2c2",
+    "path": [
+      "curlykumo.js",
+      "examples/scroll.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The upstream file is one UMD script. Its factory body (the generator, toSVG, draw and the <curly-kumo> element class) is kept verbatim inside a named function curlyKumo(), which mount() calls once, the first time it runs. Removed: the four UMD wrapper lines (the module.exports / root.CurlyKumo branch) and the defineElement() call that registered the tag at load. mount() calls upstream's own defineElement() instead, which is guarded by customElements.get and so registers the tag once.",
+      "why": "Seam. A paw-fx module touches no global at import time; the UMD wrapper writes self.CurlyKumo and defines a custom element the moment it loads.",
+      "kind": "seam"
+    },
+    {
+      "what": "Each [data-fx-kumo] slot in the section gets one upstream <curly-kumo> tag with that seed. mode grow-in sets upstream's enter=\"grow-in\" leave=\"grow-out\", mode scroll-link sets scroll-link, both as in upstream's examples/scroll.html; fill, stroke, strokeWidth, duration and sway become the tag's own attributes. update(next) rewrites those attributes. destroy() removes the tags (upstream's disconnectedCallback stops the frame loop and the observer) and clears data-fx-live.",
+      "why": "Seam. Upstream's tag is the animation driver; the wrapper only places it and maps options onto its attributes.",
+      "kind": "seam"
+    },
+    {
+      "what": "The resting state is upstream's own output baked into the snippet: for seeds 5 and 13, generate() at full growth and toSVG() with the default style, inside an svg whose viewBox follows the tag's _layout() padding. It is hidden once the live tag is in place. The paper ground (#fdfcf8) is upstream's demo page's; the layout, headline and serif are ours.",
+      "why": "Ours. The section has to look finished with no script, and the fully grown cloud is exactly what upstream shows under reduced motion.",
+      "kind": "ours"
+    }
+  ]
+}

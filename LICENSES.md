@@ -197,6 +197,39 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | sg-weft | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `weft/shader.frag` |
 | sg-hologram | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `hologram/shader.frag` |
 | sg-suminagashi | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `suminagashi/shader.frag` |
+| sg-obsidian | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `obsidian/shader.frag` |
+| sg-rainglass | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `rainglass/shader.frag` |
+| sg-lightleak | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `lightleak/shader.frag` |
+| sg-chrome | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `chrome/shader.frag` |
+| sg-damascus | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `damascus/shader.frag` |
+| sg-foil | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `foil/shader.frag` |
+| gobo-light | MIT | [thevangelist/tinseltown](https://github.com/thevangelist/tinseltown) `e31bfc8`, `src/tinseltown.js` + `src/shader.js` + `src/optics.js` + `src/options.js` + `src/cookies.js` |
+| bioluminescent-sea | MIT | [Raflael/ardentia](https://github.com/Raflael/ardentia) `7e1a155`, `index.html` |
+| wipe-glass | MIT | [Hixly/rain-on-glass](https://github.com/Hixly/rain-on-glass) `4d7bf1f`, `index.html` |
+| clearwater | MIT | [Aureliengmz/clearwater](https://github.com/Aureliengmz/clearwater) `4bc8261`, `index.html` |
+| ink-wash | MIT | [axtonliu/moyun](https://github.com/axtonliu/moyun) `eb488ac`, `index.html` |
+| event-horizon | MIT | [majiayu000/ephemera](https://github.com/majiayu000/ephemera) `8322873`, `black-hole.html`, `shared/glkit.js` |
+| stardust | MIT | [majiayu000/ephemera](https://github.com/majiayu000/ephemera) `8322873`, `stardust.html`, `shared/glkit.js` |
+| particle-breath | MIT | [bimohxh/limot-particle-breath](https://github.com/bimohxh/limot-particle-breath) `a979ee8`, `src/geometry.js`, `src/index.js`, `examples/index.html` |
+| particle-type | MIT | [jackthecoder17/particle-type](https://github.com/jackthecoder17/particle-type) `474de3f`, `index.html` |
+| perlin-flow-field | MIT | [uahz/perlin-flow-field](https://github.com/uahz/perlin-flow-field) `9dd05d8`, `index.html` |
+| meduse | MIT | [RonanCamus/meduse](https://github.com/RonanCamus/meduse) `9c0c1c8`, `meduse.js`, `index.html` |
+| physarum | MIT | [RonanCamus/physarum](https://github.com/RonanCamus/physarum) `3c68aa6`, `physarum.js`, `index.html` |
+| capsule-nav | MIT | [ningqi24/deepseek-style-floating-navbar](https://github.com/ningqi24/deepseek-style-floating-navbar) `bac85cf`, `glass-navbar.js`, `glass-navbar.css` |
+| reaction-diffusion | MIT | [evoluteur/reaction-diffusion](https://github.com/evoluteur/reaction-diffusion) `2620644`, `js/rd.js`, `index.html`, `css/rd.css` |
+| paper-marbling | MIT | [fushanbobfan/ebru](https://github.com/fushanbobfan/ebru) `01b83ab`, `src/marble.js`, `src/pack.js`, `src/patterns.js`, `src/replay.js`, `src/gpu.js`, `src/tools.js`, `src/render.js`, `src/share.js`, `src/main.js`, `index.html` |
+| split-flap | MIT | [enavermate/splitflap](https://github.com/enavermate/splitflap) `730ce03`, `dist/chunk-6QR3BTCU.js`, `dist/chunk-L4NHPYXD.js` |
+| gradient-backdrop | MIT | [nonlineartom/gradient-backdrops](https://github.com/nonlineartom/gradient-backdrops) `ddad93d`, `assets/backdrop.js`, `examples/hero.html` |
+| upstream-streaks | MIT | [AmunM9/upstream-fx](https://github.com/AmunM9/upstream-fx) `355b663`, `dist/upstream.global.js` |
+| curly-kumo | MIT | [ayalan/curlykumojs](https://github.com/ayalan/curlykumojs) `eb8d853`, `curlykumo.js`, `examples/scroll.html` |
+| pixel-trail | MIT | [miguelclavel/pixel-trail](https://github.com/miguelclavel/pixel-trail) `8c36e4d`, `index.html` |
+| pixel-dissolve | MIT | [miguelclavel/pixel-dissolve](https://github.com/miguelclavel/pixel-dissolve) `12e6605`, `index.html` |
+| isoline-scene | MIT | [JuPicker/isoline](https://github.com/JuPicker/isoline) `77c1da5`, `isoline.min.js`, `examples/basic.html` (adapts [lucasmarkes/hairline](https://github.com/lucasmarkes/hairline), MIT) |
+| ascii-worm | MIT | [david-vrba/ascii-worm](https://github.com/david-vrba/ascii-worm) `c8ada42`, `worm-core.js`, `index.html`, `worm.js` |
+| sill-light | MIT | [LE-VAI/sill](https://github.com/LE-VAI/sill) `e5d2f2c`, `src/sill.js`, `src/sill.css`, `demo/specimen/` |
+| koi-pond | MIT | [ShellB-App/Shell-B-Screensavers](https://github.com/ShellB-App/Shell-B-Screensavers) `34a9630`, `screensavers/koi-pond/index.html` (Koi Pond by Evie & Shell:B) |
+| sunset-sea | MIT | [keensense/sunset-sea](https://github.com/keensense/sunset-sea) `3a2982c`, `src/sunset.js`, `index.html` |
+| chladni-sand | MIT | [blvgor/resona-lab](https://github.com/blvgor/resona-lab) `31895f1`, `physics.js`, `renderer.js`, `app.js`, `index.html` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
@@ -229,18 +262,21 @@ which the build does automatically from the `paper` key's `licenseFiles`. Each
 `index.js` still carries the Apache-2.0 header comment and the "Powered by Paper
 Shaders" attribution the upstream project asks for.
 
-The nineteen shader.gallery ports vendor nothing. Their GLSL ships as
+The twenty-five shader.gallery ports vendor nothing. Their GLSL ships as
 `effects/sg-<name>/shader.frag`, byte-identical to the upstream file, SPDX header
 and all, and that header travels into every site because the whole file does.
 `index.js` repeats the same SPDX lines, so the MIT notice is present whether a
-reader opens the module or the shader. Seventeen are pinned at `cd06eee`; the two
-the 2026-09-14 survey added, `sg-hologram` and `sg-suminagashi`, are pinned at
+reader opens the module or the shader. Seventeen are pinned at `cd06eee`; the
+eight added since, `sg-hologram` and `sg-suminagashi` from the 2026-09-14 survey,
+`sg-obsidian` and `sg-rainglass` from 2026-09-18, `sg-lightleak` from
+2026-09-20, `sg-chrome` and `sg-damascus` from 2026-10-03, and `sg-foil` from
+2026-10-04, are pinned at
 `4e8d4cb`, the head after the 59-shader expansion of 2026-09-08/09. Nothing was
 re-pinned: a commit is a coordinate, not a version, and the seventeen still
 resolve at theirs.
 
 Both families' `meta.json` carries a `deviations` list. For the shader.gallery
-nineteen it is load-bearing rather than bookkeeping: their palettes and their poster
+twenty-five it is load-bearing rather than bookkeeping: their palettes and their poster
 post chain (bloom, grain, vignette, dither) live in `@shader-gallery/runtime`, a
 package paw-fx does not vendor, so the palettes here are ours and the output does
 not match the upstream posters. Both are declared per effect, with `kind: "ours"`.

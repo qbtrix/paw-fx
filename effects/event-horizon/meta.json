@@ -1,0 +1,60 @@
+{
+  "name": "event-horizon",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": ["black-hole", "space", "gravitational-lensing", "accretion-disk", "ray-tracing", "raymarching", "doppler", "stars", "nebula", "drag", "orbit", "webgl2", "hero"],
+  "summary": "Full-bleed hero with a Schwarzschild black hole in the middle of the frame, ray traced per pixel rather than faked with a sprite. Every ray is bent along an approximate photon geodesic, so the far side of the accretion disk lenses up over the top of the hole and the starfield behind it smears into an Einstein ring. The disk turns at Keplerian speed, runs white-hot inside and orange at the rim, and the side coming toward you is Doppler-beamed brighter and bluer. The camera drifts slowly round on its own; a horizontal drag flies it around the hole with inertia.",
+  "needs": [],
+  "options": {
+    "distance": {
+      "type": "number",
+      "default": 26,
+      "min": 9,
+      "max": 60,
+      "description": "Camera distance from the hole, in Schwarzschild radii (upstream's wheel zoom, clamped to its own 9..60). Closer fills the section with the disk and its lensed far side; further leaves a small hole in a wide lensed starfield. Changes glide, as upstream's zoom did."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "majiayu000/ephemera",
+    "commit": "8322873e1b94245debaa39bf9448a5187c434a97",
+    "path": ["black-hole.html", "shared/glkit.js"]
+  },
+  "deviations": [
+    {
+      "what": "Upstream is a page script over a window.glkit global. The fragment shader FS is verbatim; glkit's methods sit inside inicia() as a local glkit object and the page script follows them, so every glkit.context, glkit.program, glkit.uniforms and glkit.drag call site is upstream's. The page caption (#t) is not carried.",
+      "why": "Seam. The repo contract is a module that touches nothing at import time and returns { update, destroy }. The caption is upstream's demo copy about itself; snippet.html carries the section's own copy.",
+      "kind": "seam"
+    },
+    {
+      "what": "glkit.context sizes the canvas from el.clientWidth and el.clientHeight through a ResizeObserver instead of innerWidth, innerHeight and a window resize listener, requests the context with failIfMajorPerformanceCaveat: true, and no longer sets canvas.style width and height (style.css sizes it). glkit.drag normalises by the section instead of the window, also ends a drag on pointercancel, and its listeners are removed on destroy.",
+      "why": "Seam. Upstream owns the whole window; a section does not. A 320-step march per pixel on a software rasteriser is worse than the CSS rest, and pointercancel is what a browser sends when a vertical swipe on a touch screen turns into a page scroll.",
+      "kind": "seam"
+    },
+    {
+      "what": "glkit.fail throws instead of painting a pre element over document.body. The throw lands in mount()'s catch, which loses the context, removes the canvas and returns the resting handle.",
+      "why": "The repo contract. A section must fall back to its CSS rest on failure and must never write into the host page's body.",
+      "kind": "seam"
+    },
+    {
+      "what": "The wheel listener that zoomed distT between 9 and 60 is dropped; dist and distT start from the distance option, default 26 (upstream's start), and update() glides to a new one through upstream's own dist += (distT - dist) * .08 easing.",
+      "why": "Ours. Upstream's page has overflow hidden, so the wheel had nothing else to do. In a section the wheel scrolls the page, and a hero that eats it traps the visitor.",
+      "kind": "ours"
+    },
+    {
+      "what": "A local requestAnimationFrame shadows the global inside inicia(), so upstream's frame() runs unchanged through pulso(), which stops while an IntersectionObserver reports the section off screen and sets data-fx-live after the first drawn frame. webglcontextlost tears down to the CSS rest.",
+      "why": "Ours. A full-screen ray march every frame is worth stopping when nobody can see it, and the flag waits for a real frame so the resting state never fades out from under an empty canvas.",
+      "kind": "ours"
+    },
+    {
+      "what": "Under prefers-reduced-motion mount() returns at once and no context is created. Upstream has no reduced-motion path.",
+      "why": "The repo contract. The time uniform drives both the camera's slow orbit and the disk's rotation, so there is no still mode upstream to hold; the CSS resting state is the reduced-motion picture.",
+      "kind": "ours"
+    },
+    {
+      "what": "touch-action is pan-y on the canvas (style.css), not none on the body.",
+      "why": "Ours. A full-height hero that swallows vertical touch strands a phone visitor above the rest of the page. Horizontal drags still orbit.",
+      "kind": "ours"
+    }
+  ]
+}

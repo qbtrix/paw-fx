@@ -1,0 +1,68 @@
+{
+  "name": "sg-obsidian",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["obsidian", "glass", "fracture", "conchoidal", "material", "reflection", "specular", "dark", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's obsidian: a freshly broken face of black volcanic glass. Eight shell-shaped fracture scars overlap as stacked planes, each fanning from its own point of percussion and carrying concentric ripple ribs and fine radial hackle, while a dim tinted studio reflects through a Fresnel skin, speculars spark on the rib crests and razor flake edges glint as hairlines. The first material hero in the library rather than a field or a gradient.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#5d6a85", "#9aa8c6", "#2f3a55", "#513a69"],
+      "description": "Four poles tinting the reflected studio and the smoky flow banding frozen inside the glass. The stone itself is near-black in every theme, so these change what the glass is standing in rather than what it is made of; `tint` at 0 drops them out and leaves pure silver-on-black. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "scale": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Size of the fracture shells against the frame; low is a wide face with many small scars, high is a close-up of one or two big shells. Upstream default, range 0.4 to 2.5."
+    },
+    "ripple": {
+      "type": "number",
+      "default": 1,
+      "description": "Height of the conchoidal ripple ribs and the radial hackle; 0 is smooth polished planes, high is a deeply rippled break. Upstream default, range 0 to 2.5."
+    },
+    "sweep": {
+      "type": "number",
+      "default": 0.25,
+      "description": "How fast the key light and the reflected strip lights circle the stone; 0 holds them still. Upstream default, range 0 to 2."
+    },
+    "gloss": {
+      "type": "number",
+      "default": 1,
+      "description": "Strength of the reflections, speculars and edge glints; low is a dull weathered face, high is wet glass. Upstream default, range 0 to 1.5."
+    },
+    "tint": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How much palette colour enters the reflected studio and the smoke; 0 is pure silver-on-black. Upstream default, range 0 to 1."
+    },
+    "mouseInfluence": {
+      "type": "number",
+      "default": 0,
+      "description": "How far the pointer pulls the soft-box across the glass; 0 ignores the mouse. Upstream default, range 0 to 1. The shared runtime holds u_mouse at (0,0), so raising this on its own changes nothing."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["obsidian/shader.frag", "obsidian/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `nocturne` preset.",
+      "why": "obsidian/meta.json declares `defaultPalette: \"nocturne\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own and declares them. The shader's zero-fallback branch is not the answer either: paletteFor never produces zeros, so that branch is unreachable from paw-fx. Same call sg-gloam, sg-bask and sg-nebula-drift made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.2, saturation 1.05 and contrast 1.04 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers what the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
