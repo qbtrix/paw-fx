@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-13**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-14**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -4124,3 +4124,100 @@ soft entries: `dotwork`, `theme-toggle-animation`.
 
 Based on `feat/fx-scout-2026-10-12`. Twenty-five scout PRs stacked (09-17 →
 10-13), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-14 — window 2026-10-13 to 2026-10-14
+
+One day. Discovery found one portable repo and it was ported. The backlog was
+not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `chladni-sand` | `blvgor/resona-lab`, `physics.js` + `renderer.js` (+ `app.js`, `index.html`) | `31895f12` | MIT | Discovery (GitHub keyword search, created 2026-10-13). Sand on a vibrating square plate: Kirchhoff-Love plate modes (`physics.js`), and 40,000 WebGL points that walk down the displacement gradient until they gather on the nodal lines (`renderer.js`). The log has held three Chladni repos before (`sandsong` 09-25, `tonoscope`, `Chladni_Sky`) as instruments or labs, and this repo is a lab too. The difference is that its engine is two clean files (261 lines: pure functions plus one renderer class) and all of the lab (gallery, sound, PNG export, settings panels) lives in `app.js`. So the port takes the engine, not the lab, and no audio ships. Both engine files are inlined verbatim. The seams are `export` dropped on each declaration, the renderer's import of `physics.js` dropped, and `failIfMajorPerformanceCaveat` on the one `getContext`. The software-GPU path rests on CSS rather than taking upstream's Canvas 2D fallback, which draws 40,000 arcs a frame. `mount()` follows `app.js`'s `rebuildField`, `resize` and `animate`. Tapping the plate runs upstream's "next" and then "scatter the sand". The default preset is 26 (modes (1, 7) + (7, 1), nested rings), not upstream's 0, which is a single ring. Option steps are upstream's `index.html` sliders. Nothing on the shelf draws a pattern out of settling particles. |
+
+Gates: `check` green (lint 134, smoke 134, 489 tests); `verify` 130 pass /
+1 warn (`paw-avatar`, as before) / 0 fail / 3 skipped. `chladni-sand` PASS with
+no WARN. `check` ran with `AGENT_BROWSER_EXECUTABLE_PATH` on system Chrome from
+the start, so the `sg-bask` / `os error 35` fault never showed.
+
+The first `check` failed one test, `every documented option gets a knob`.
+`grain`, `spread` and `exposure` had no `step`, and the inferred 200-stop step
+does not land on their defaults. Upstream's `index.html` sliders give the steps
+(0.1, and 5000 for `count`), which is why `index.html` is the fourth path.
+
+### Rest and preview
+
+The rest is an inline SVG in the snippet: pattern 26's nodal lines, computed
+with upstream's own `createField` plus the marching-squares code from
+`paintField` on a 64-cell grid (472 segments, 9 KB of path), stroked as a
+dotted trail in `--fx-sand`. Changing the `preset` option does not change the
+rest, which always shows 26. The preview was shot live with system Chrome
+after `is visible "[data-fx-live]"`, with `.fxd-bar`, `.fxd-filler` and
+`.fxd-knobs` hidden, at 1280x720 scale 1, then scaled to 640x360 with `sips`.
+I checked the reduced-motion rest and 375 wide by eye: the plate stacks under
+the copy.
+
+One bug was caught while shooting: the demo mounts with no options, so upstream's
+`DEFAULT_STATE.preset` (0) won over the documented default. `mount()` now
+seeds `preset` from `meta.options.preset.default`.
+
+### Contrast
+
+The copy sits beside the plate, never on top of it, on flat `#090a09`, so it
+was computed statically rather than measured over frames. Headline ink 16.99:1,
+lede 9.83:1, eyebrow 13.93:1, CTA plate 13.93:1.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `jj-stuff/paper-shaders-webgpu` | GitHub, created 2026-10-14 | Apache-2.0 | An unofficial WGSL port of Paper's grain gradient and dithering. Held: WebGPU only, and `grain-gradient` already ships from upstream Paper. |
+| `r-Pav/TexLoom` | GitHub, created 2026-10-13, `src/lib/texgen/*.ts` | MIT | A WebGL2 texture workbench with 516 GLSL patterns, which could become a backlog like shader.gallery. Held: TypeScript sources inside a React + shadcn app, so it waits on the same TS-source call as `meniscus`. |
+| `Enskygr234/kar-tanesi` | GitHub, created 2026-10-13, `kartanesi.js` | MIT | Makes a deterministic SVG snowflake from any text. Held: it is a generator, not a section; a "your name as a snowflake" text effect could be built on it if wanted. Sibling `kar-js` (MIT) is a snowfall, and `snow-fall` covers that. |
+| `fushanbobfan/kilim` | GitHub, created 2026-10-14 | MIT | Wave function collapse weaving. Held: a full app, the same call as the same author's `turmite` and `dotwork`. |
+| `manashwebdev/Hush`, `manashwebdev/abyss` | GitHub, created 2026-10-13/14 | MIT | A whole calm scrolling journey from sea to sky, and a focus timer as an ocean dive. Held: experiences, not sections. |
+| `WolfurX/reel-engine`, `nvneik3d/Origin`, `blvgor/volna-gradient-generator` | GitHub | MIT / MIT / none | A motion-graphics engine, a GPU evolution sim (6.6 MB), and a gradient generator with no licence. Not sections, or not portable. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `UtopiaGuy/cymatic` | GitHub, created 2026-10-13 | **none** | A WebGL2 Chladni plate with free-edge modes. No LICENSE file, so it is a hard reject. Re-check if a licence lands, like `Chladni_Sky`. |
+| `StarKnightt/sand-type` | GitHub, created 2026-10-13 | **none** | A big word made of sand that you draw through with the cursor (WebGL2 grain physics). It looks good, but there is no LICENSE file. Re-check. |
+| `codrops/3DCarousel` | Codrops org, pushed 2026-10-13 | MIT | Already in the 09-06 survey as a ScrollSmoother + SplitText reject. The push changes nothing. |
+| `Dedusss/field-5`, `fabiobiondi/gloop-ui`, `hrmonic/animbrio-slider`, `digvijay165/portfolio` | GitHub | MIT / MIT / Apache-2.0 / MIT | A Next.js site, React components, a React slider editor, and a portfolio. Out of scope. |
+| `DexAi3000/spiderman-neural-web`, `JahanzaibJameel/mechanical-keyboard`, `comet-ctrl/flocking-website-idea`, `Oooorange928/boids` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| Games, motion-template mirrors (`motiontemplates/*`), `galbenyosef/*` offline mirrors, agent skills, Godot/Unity/Minecraft shaders, Swift/Flutter/React repos (the rest of the thirteen topic and twenty-four keyword searches) | GitHub | mixed | Out of scope. |
+
+### Sources checked and found quiet
+
+- Codrops hub (`/codrops/hub/all/`, read in the Claude Browser pane; WebFetch
+  gets a 403): Amber Genetics, 2026-10-08, is still the newest item.
+  `user:codrops pushed:>=2026-10-13` gives only `3DCarousel` (above).
+- `commits?since=2026-10-13` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `tsparticles/tsparticles`,
+  `darkroomengineering/lenis`, `majiayu000/ephemera`, `keensense/sunset-sea`.
+- GitHub topic search, `created:>=2026-10-13` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`,
+  `webgpu`, plus twenty-four keyword searches (the 10-13 list, with `chladni`
+  and `webgl effect` added): the tables above.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`) and `mogp-motion`
+(`withmehmet/mogp-motion` at `e2db8dd2`); soft: `wine-pour-parallax`,
+`threelight`, `fivefold`, `liquid-glass`, `BlitzText`, `geomotion`,
+`wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`), `meniscus`
+(pending the TS-source call, now with `TexLoom` beside it), `turmite`,
+`neon-sprawl`, `synthwave-horizon` (Shell:B at `34a9630d`), `cursorkit`,
+`domvybe-liquid-glass-sidebar`, `dotwork`, `theme-toggle-animation`. New soft
+entries: `kar-tanesi`, `kilim`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-13`. Twenty-six scout PRs stacked (09-17 →
+10-14), none merged. Merge the bases with `--rebase`, not `--squash`.
