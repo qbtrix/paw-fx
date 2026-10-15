@@ -1,0 +1,122 @@
+/* chladni-sand: a hero with copy beside a square plate of settling sand.
+
+   index.js puts one opaque WebGL canvas inside .fx-chladni-sand__plate and
+   runs upstream's sand on it: the grains start scattered and gather on the
+   plate's nodal lines. The field is square and the grains live in a unit
+   square, so the plate keeps aspect-ratio 1 or the pattern stretches. The
+   plate colour is upstream's default background (#090a09), which is also the
+   section's --fx-bg, so the sand reads as floating on the page.
+
+   With no script, under reduced motion, or with no WebGL context (mount()
+   then creates nothing), .fx-chladni-sand__rest is the plate at rest: pattern
+   26's nodal lines (the default preset), computed with upstream's own field and contour code and
+   drawn as a dotted trail in the sand colour. If you change the preset
+   option, the rest still shows pattern 26.
+
+   Stacking inside the plate, and the one thing to preserve when editing:
+     the rest SVG first, faded once the canvas paints (data-fx-live)
+     then <canvas>, appended by index.js, over it */
+.fx-chladni-sand {
+  --fx-bg: #090a09;
+  --fx-sand: #e7d7b1;
+  --fx-ink: #f2ede2;
+  --fx-muted: #bdb6a6;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-chladni-sand *,
+.fx-chladni-sand *::before,
+.fx-chladni-sand *::after { box-sizing: border-box; }
+
+.fx-chladni-sand__inner { max-width: 34rem; justify-self: end; }
+
+.fx-chladni-sand__eyebrow {
+  margin: 0 0 1.4rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fx-sand);
+}
+
+.fx-chladni-sand__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 4.6vw, 4rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+
+.fx-chladni-sand__lede {
+  margin: 1.4rem 0 2.2rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--fx-muted);
+}
+
+.fx-chladni-sand__cta {
+  display: inline-block;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  background: var(--fx-sand);
+  color: var(--fx-bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+.fx-chladni-sand__cta:focus-visible,
+.fx-chladni-sand__plate:focus-visible {
+  outline: 2px solid var(--fx-sand);
+  outline-offset: 4px;
+}
+
+.fx-chladni-sand__plate {
+  position: relative;
+  justify-self: start;
+  width: min(100%, 36rem);
+  aspect-ratio: 1;
+  background: var(--fx-bg);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--fx-sand) 14%, transparent);
+}
+.fx-chladni-sand[data-fx-live] .fx-chladni-sand__plate { cursor: pointer; }
+
+.fx-chladni-sand__rest {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 600ms ease;
+}
+.fx-chladni-sand__rest path {
+  fill: none;
+  stroke: var(--fx-sand);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-dasharray: 0 1.5;
+  opacity: 0.8;
+}
+
+/* index.js sets data-fx-live once a frame of sand is on the canvas, and
+   destroy() removes it, so the rest comes back with the teardown. */
+.fx-chladni-sand[data-fx-live] .fx-chladni-sand__rest { opacity: 0; }
+
+.fx-chladni-sand__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 52rem) {
+  .fx-chladni-sand { grid-template-columns: minmax(0, 1fr); }
+  .fx-chladni-sand__inner,
+  .fx-chladni-sand__plate { justify-self: center; }
+}

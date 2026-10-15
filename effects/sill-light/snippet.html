@@ -1,0 +1,46 @@
+<!-- sill-light section: upstream's specimen page, trimmed to a hero. Finished
+     at rest with CSS alone: the section is the floor colour and the cards
+     carry the specimen's static token elevations, which is what sill itself
+     falls back to without WebGL. index.js lights it: data-lit marks every
+     surface the light answers (data-material, data-depth and data-opacity are
+     upstream's per element), data-lit="type" makes the headline cast glyph
+     shadows, and data-fx-haze is the switch that turns the haze on and off.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/sill-light/style.css">
+<section class="fx-sill-light" data-fx="sill-light">
+  <div class="fx-sill-light__inner">
+    <div class="fx-sill-light__intro">
+      <p class="fx-sill-light__eyebrow">Real-time light</p>
+      <h1 class="fx-sill-light__headline" data-lit="type" data-depth="12">Lit by the pointer.</h1>
+      <p class="fx-sill-light__lede">Shadows, reflections and edge light, computed from where you are.</p>
+
+      <div class="fx-sill-light__console" data-lit data-material="satin" data-depth="26">
+        <div class="fx-sill-light__row">
+          <button type="button" role="switch" aria-checked="true" class="fx-sill-light__switch" data-fx-haze>
+            <span>Haze</span>
+            <span class="fx-sill-light__track" data-lit data-material="satin" data-depth="3" aria-hidden="true"><span class="fx-sill-light__thumb" data-lit data-material="gloss" data-depth="6"></span></span>
+          </button>
+        </div>
+        <div class="fx-sill-light__row fx-sill-light__actions">
+          <a class="fx-sill-light__btn fx-sill-light__btn--primary" href="#" data-lit data-material="gloss" data-depth="8">Get started</a>
+          <a class="fx-sill-light__btn fx-sill-light__btn--ghost" href="#" data-lit data-material="satin" data-depth="6">How it works</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="fx-sill-light__field">
+      <aside class="fx-sill-light__glass" data-lit data-material="glass" data-depth="58" data-opacity="0.45">
+        <p class="fx-sill-light__glass-label">One light</p>
+        <p class="fx-sill-light__glass-text">Every surface answers it.</p>
+      </aside>
+
+      <ul class="fx-sill-light__quartet" aria-label="Materials">
+        <li class="fx-sill-light__tile" data-lit data-material="matte" data-depth="14"><span class="fx-sill-light__face fx-sill-light__face--matte" data-lit data-material="matte" data-depth="3"></span><span class="fx-sill-light__tile-name">Matte</span></li>
+        <li class="fx-sill-light__tile" data-lit data-material="satin" data-depth="14"><span class="fx-sill-light__face fx-sill-light__face--satin" data-lit data-material="satin" data-depth="3"></span><span class="fx-sill-light__tile-name">Satin</span></li>
+        <li class="fx-sill-light__tile" data-lit data-material="gloss" data-depth="14"><span class="fx-sill-light__face fx-sill-light__face--gloss" data-lit data-material="gloss" data-depth="3"></span><span class="fx-sill-light__tile-name">Gloss</span></li>
+        <li class="fx-sill-light__tile" data-lit data-material="metal" data-depth="14"><span class="fx-sill-light__face fx-sill-light__face--metal" data-lit data-material="metal" data-depth="3"></span><span class="fx-sill-light__tile-name">Metal</span></li>
+      </ul>
+    </div>
+  </div>
+</section>

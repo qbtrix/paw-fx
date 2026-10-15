@@ -1,0 +1,393 @@
+/* scroll-reveal-css: the reveal is the upstream stylesheet below, verbatim
+   except one seam: every `--mogp-*` custom property is renamed `--fx-mogp-*`,
+   because paw-fx prefixes its variables. The `data-mogp-*` attributes and the
+   `mogp-*` keyframe names are upstream's API and stay as they are.
+
+   Upstream: withmehmet/mogp-motion, mogp-motion.css at e2db8dd2.
+   MIT License. Copyright (c) 2026 withmehmet.
+
+   After the upstream block comes the section's own layout, taken from
+   upstream's index.html demo page (its card, tag and grid styles), scoped
+   under .fx-reveal and moved onto --fx- variables. */
+
+/* =========================================================
+   MOGP Motion
+   CSS-only scroll-driven motion system
+
+   Philosophy: Sensible Defaults, Optional Customization
+   "Make it work first, customize later."
+
+   ─────────────────────────────────────────────────────────
+   LEVEL 1 — Minimal usage (no extra attributes needed)
+   ─────────────────────────────────────────────────────────
+   <div data-mogp-motion="fade"></div>
+   <div data-mogp-motion="scale-up"></div>
+   <div data-mogp-motion="slide-up"></div>
+   <div data-mogp-motion="slide-down"></div>
+
+   ─────────────────────────────────────────────────────────
+   LEVEL 2 — Optional customization
+   ─────────────────────────────────────────────────────────
+   data-mogp-motion-start="10"
+   Where the animation begins, expressed as a percentage of
+   the element's total time on screen (0% = element begins
+   entering the viewport, 100% = element has fully exited).
+   Default: 10. Supported values: 0, 5, 10 ... 95, 100 (multiples of 5 only)
+
+   data-mogp-motion-end="50"
+   Where the animation finishes, on the same 0–100 scale as
+   data-mogp-motion-start. After this point the element stays
+   static until it exits the viewport.
+   Default: 50. Supported values: 0, 5, 10 ... 95, 100 (multiples of 5 only)
+
+   data-mogp-scale-start="70"
+   The element's starting size, as a percentage of its final
+   size, for the scale-up animation. The value IS the visual
+   starting scale — no inversion, no extra math.
+   Default: 70. Supported values: 90, 80, 70, 60, 50
+   (90 = subtlest effect, 50 = strongest effect)
+   Note: has no effect on fade animations.
+
+   data-mogp-slide-distance="50"   → 50px  ← default
+   Supported values: 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150
+   Note: only affects slide-up and slide-down animations.
+
+   data-mogp-motion-will-change
+   Opt-in only. Excessive use increases memory usage.
+
+   ─────────────────────────────────────────────────────────
+   Browser support
+   ─────────────────────────────────────────────────────────
+   Browsers without scroll-driven animation support
+   show content normally (progressive enhancement).
+   ========================================================= */
+
+
+/* =========================================================
+   SCROLL-DRIVEN MOTION
+   ========================================================= */
+
+@supports ((animation-timeline: view()) and (animation-range: entry 0% exit 100%)) {
+
+  /* ---
+     Base: shared animation config + sensible defaults.
+     All attributes are optional — omitting them falls back
+     to these values automatically.
+
+     Both range-start and range-end use the "cover" named
+     range (0% = element begins entering the viewport,
+     100% = element has fully exited). Using the same named
+     range for both endpoints keeps --fx-mogp-start and
+     --fx-mogp-end on one consistent, size-independent scale.
+
+     animation-range-start and animation-range-end are used
+     as separate properties instead of the animation-range
+     shorthand. The shorthand does not reliably accept CSS
+     custom properties (Chromium bug #335473).
+
+     --fx-mogp-scale now holds the element's starting size
+     directly (e.g. 0.70 = starts at 70% size), so the
+     scale-up keyframe below assigns it straight to `scale`
+     with no calc() inversion.
+  --- */
+  :where([data-mogp-motion]) {
+    --fx-mogp-start:    10%;
+    --fx-mogp-end:      50%;
+    --fx-mogp-scale:    0.70;
+    --fx-mogp-distance: 50px;
+
+    animation-duration:        1ms;
+    animation-timing-function: linear;
+    animation-fill-mode:       both;
+    animation-timeline:        view();
+    animation-range-start:     cover var(--fx-mogp-start);
+    animation-range-end:       cover var(--fx-mogp-end);
+  }
+
+  /* ---
+     will-change: opt-in only.
+     Use sparingly — excessive use increases memory usage.
+  --- */
+  :where([data-mogp-motion][data-mogp-motion-will-change]) {
+    will-change: opacity, scale, translate;
+  }
+
+
+  /* -------------------------------------------------------
+     MOTION-START TOKENS
+     Override --fx-mogp-start when present.
+     Percentage of the element's total time on screen at
+     which the animation begins. Omitting the attribute uses
+     the default (10%). Supported values: multiples of 5,
+     from 0 to 100.
+  ------------------------------------------------------- */
+
+  :where([data-mogp-motion-start="0"])   { --fx-mogp-start:   0%; }
+  :where([data-mogp-motion-start="5"])   { --fx-mogp-start:   5%; }
+  :where([data-mogp-motion-start="10"])  { --fx-mogp-start:  10%; }
+  :where([data-mogp-motion-start="15"])  { --fx-mogp-start:  15%; }
+  :where([data-mogp-motion-start="20"])  { --fx-mogp-start:  20%; }
+  :where([data-mogp-motion-start="25"])  { --fx-mogp-start:  25%; }
+  :where([data-mogp-motion-start="30"])  { --fx-mogp-start:  30%; }
+  :where([data-mogp-motion-start="35"])  { --fx-mogp-start:  35%; }
+  :where([data-mogp-motion-start="40"])  { --fx-mogp-start:  40%; }
+  :where([data-mogp-motion-start="45"])  { --fx-mogp-start:  45%; }
+  :where([data-mogp-motion-start="50"])  { --fx-mogp-start:  50%; }
+  :where([data-mogp-motion-start="55"])  { --fx-mogp-start:  55%; }
+  :where([data-mogp-motion-start="60"])  { --fx-mogp-start:  60%; }
+  :where([data-mogp-motion-start="65"])  { --fx-mogp-start:  65%; }
+  :where([data-mogp-motion-start="70"])  { --fx-mogp-start:  70%; }
+  :where([data-mogp-motion-start="75"])  { --fx-mogp-start:  75%; }
+  :where([data-mogp-motion-start="80"])  { --fx-mogp-start:  80%; }
+  :where([data-mogp-motion-start="85"])  { --fx-mogp-start:  85%; }
+  :where([data-mogp-motion-start="90"])  { --fx-mogp-start:  90%; }
+  :where([data-mogp-motion-start="95"])  { --fx-mogp-start:  95%; }
+  :where([data-mogp-motion-start="100"]) { --fx-mogp-start: 100%; }
+
+
+  /* -------------------------------------------------------
+     MOTION-END TOKENS
+     Override --fx-mogp-end when present.
+     Percentage of the element's total time on screen at
+     which the animation finishes. After this point the
+     element stays static until it exits the viewport.
+     Omitting the attribute uses the default (50%).
+     Supported values: multiples of 5, from 0 to 100.
+  ------------------------------------------------------- */
+
+  :where([data-mogp-motion-end="0"])   { --fx-mogp-end:   0%; }
+  :where([data-mogp-motion-end="5"])   { --fx-mogp-end:   5%; }
+  :where([data-mogp-motion-end="10"])  { --fx-mogp-end:  10%; }
+  :where([data-mogp-motion-end="15"])  { --fx-mogp-end:  15%; }
+  :where([data-mogp-motion-end="20"])  { --fx-mogp-end:  20%; }
+  :where([data-mogp-motion-end="25"])  { --fx-mogp-end:  25%; }
+  :where([data-mogp-motion-end="30"])  { --fx-mogp-end:  30%; }
+  :where([data-mogp-motion-end="35"])  { --fx-mogp-end:  35%; }
+  :where([data-mogp-motion-end="40"])  { --fx-mogp-end:  40%; }
+  :where([data-mogp-motion-end="45"])  { --fx-mogp-end:  45%; }
+  :where([data-mogp-motion-end="50"])  { --fx-mogp-end:  50%; }
+  :where([data-mogp-motion-end="55"])  { --fx-mogp-end:  55%; }
+  :where([data-mogp-motion-end="60"])  { --fx-mogp-end:  60%; }
+  :where([data-mogp-motion-end="65"])  { --fx-mogp-end:  65%; }
+  :where([data-mogp-motion-end="70"])  { --fx-mogp-end:  70%; }
+  :where([data-mogp-motion-end="75"])  { --fx-mogp-end:  75%; }
+  :where([data-mogp-motion-end="80"])  { --fx-mogp-end:  80%; }
+  :where([data-mogp-motion-end="85"])  { --fx-mogp-end:  85%; }
+  :where([data-mogp-motion-end="90"])  { --fx-mogp-end:  90%; }
+  :where([data-mogp-motion-end="95"])  { --fx-mogp-end:  95%; }
+  :where([data-mogp-motion-end="100"]) { --fx-mogp-end: 100%; }
+
+
+  /* -------------------------------------------------------
+     SCALE-START TOKENS
+     Override --fx-mogp-scale when present.
+     The value IS the starting size percentage — assigned
+     directly to --fx-mogp-scale, no inversion needed.
+     Omitting the attribute uses the default (0.70 = 70%).
+     Has no effect on fade animations.
+  ------------------------------------------------------- */
+
+  :where([data-mogp-scale-start="90"]) { --fx-mogp-scale: 0.90; }
+  :where([data-mogp-scale-start="80"]) { --fx-mogp-scale: 0.80; }
+  :where([data-mogp-scale-start="70"]) { --fx-mogp-scale: 0.70; }
+  :where([data-mogp-scale-start="60"]) { --fx-mogp-scale: 0.60; }
+  :where([data-mogp-scale-start="50"]) { --fx-mogp-scale: 0.50; }
+
+
+  /* -------------------------------------------------------
+     SLIDE-DISTANCE TOKENS
+     Override --fx-mogp-distance when present.
+     Omitting the attribute uses the default (50px).
+     Only affects slide-up and slide-down animations.
+  ------------------------------------------------------- */
+
+  :where([data-mogp-slide-distance="30"])  { --fx-mogp-distance:  30px; }
+  :where([data-mogp-slide-distance="40"])  { --fx-mogp-distance:  40px; }
+  :where([data-mogp-slide-distance="50"])  { --fx-mogp-distance:  50px; }
+  :where([data-mogp-slide-distance="60"])  { --fx-mogp-distance:  60px; }
+  :where([data-mogp-slide-distance="70"])  { --fx-mogp-distance:  70px; }
+  :where([data-mogp-slide-distance="80"])  { --fx-mogp-distance:  80px; }
+  :where([data-mogp-slide-distance="90"])  { --fx-mogp-distance:  90px; }
+  :where([data-mogp-slide-distance="100"]) { --fx-mogp-distance: 100px; }
+  :where([data-mogp-slide-distance="110"]) { --fx-mogp-distance: 110px; }
+  :where([data-mogp-slide-distance="120"]) { --fx-mogp-distance: 120px; }
+  :where([data-mogp-slide-distance="130"]) { --fx-mogp-distance: 130px; }
+  :where([data-mogp-slide-distance="140"]) { --fx-mogp-distance: 140px; }
+  :where([data-mogp-slide-distance="150"]) { --fx-mogp-distance: 150px; }
+
+
+  /* -------------------------------------------------------
+     MOTION TYPE → ANIMATION NAME
+  ------------------------------------------------------- */
+
+  :where([data-mogp-motion="fade"])       { animation-name: mogp-fade; }
+  :where([data-mogp-motion="scale-up"])   { animation-name: mogp-scale-up; }
+  :where([data-mogp-motion="slide-up"])   { animation-name: mogp-slide-up; }
+  :where([data-mogp-motion="slide-down"]) { animation-name: mogp-slide-down; }
+
+}
+
+
+/* =========================================================
+   FALLBACK
+
+   Browsers without scroll-driven animation support
+   show content normally (progressive enhancement).
+   ========================================================= */
+
+@supports not ((animation-timeline: view()) and (animation-range: entry 0% exit 100%)) {
+  :where([data-mogp-motion]) {
+    animation: none;
+    opacity: 1;
+    scale: none;
+  }
+}
+
+
+/* =========================================================
+   KEYFRAMES
+   ========================================================= */
+
+@keyframes mogp-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes mogp-scale-up {
+  from { opacity: 0; scale: var(--fx-mogp-scale); }
+  to   { opacity: 1; scale: 1; }
+}
+
+@keyframes mogp-slide-up {
+  from { opacity: 0; translate: 0 var(--fx-mogp-distance); }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes mogp-slide-down {
+  from { opacity: 0; translate: 0 calc(var(--fx-mogp-distance) * -1); }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   Respects user's motion preference.
+   Content remains fully visible — no layout shift.
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-mogp-motion]) {
+    animation-name:     none;
+    animation-timeline: auto;
+    opacity:            1;
+    scale:              none;
+    translate:          none;
+  }
+}
+
+
+/* =========================================================
+   SECTION LAYOUT (paw-fx)
+   Values from upstream index.html's demo styles: the light
+   ground, the #f3f3f3 card on a #dcdcdc hairline, the mono
+   tag pill, the 12-column grid's 16px / 24px auto gap and
+   its 640px breakpoint. Nothing here animates; the motion is
+   all in the block above.
+   ========================================================= */
+
+.fx-reveal {
+  --fx-bg:      #ffffff;
+  --fx-surface: #f3f3f3;
+  --fx-border:  #dcdcdc;
+  --fx-ink:     #161616;
+  --fx-ink-2:   #525252;
+  --fx-sans: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+  --fx-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --fx-radius: 8px;
+
+  box-sizing: border-box;
+  background: var(--fx-bg);
+  color: var(--fx-ink-2);
+  font-family: var(--fx-sans);
+  line-height: 1.6;
+  font-size: 16px;
+  padding: 88px 16px 72px;
+}
+
+.fx-reveal *,
+.fx-reveal *::before,
+.fx-reveal *::after { box-sizing: border-box; }
+
+.fx-reveal__inner {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.fx-reveal__head { max-width: 54ch; margin: 0 0 32px; }
+
+.fx-reveal__title {
+  font-size: clamp(30px, 4.5vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--fx-ink);
+  margin: 0 0 18px;
+  font-weight: 700;
+}
+
+.fx-reveal__lede {
+  color: var(--fx-ink-2);
+  font-size: 17px;
+  max-width: 48ch;
+  margin: 0;
+}
+
+.fx-reveal__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.fx-reveal__card {
+  background: var(--fx-surface);
+  border: 1px solid var(--fx-border);
+  border-radius: var(--fx-radius);
+  padding: 26px;
+}
+
+.fx-reveal__card p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--fx-ink-2);
+}
+
+.fx-reveal__card strong {
+  display: block;
+  color: var(--fx-ink);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.fx-reveal__tag {
+  display: inline-block;
+  font-family: var(--fx-mono);
+  font-size: 12px;
+  color: var(--fx-ink-2);
+  background: var(--fx-bg);
+  border: 1px solid var(--fx-border);
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 640px) {
+  .fx-reveal { padding-inline: 24px; }
+  .fx-reveal__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .fx-reveal__grid { gap: 24px; }
+}
+
+@media (min-width: 1024px) {
+  .fx-reveal { padding-inline: 32px; }
+}

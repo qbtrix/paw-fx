@@ -1,0 +1,16 @@
+<!-- sunset-sea section. Finished at rest with CSS alone: .fx-sunset-sea__rest
+     is a sunset over the sea in gradients, and index.js fades it only once its
+     canvas has drawn a frame. The _fx path is root-absolute because a site
+     always sits at the origin root, and "./_fx/..." would break on a nested
+     page such as /blog/post.html. The decorative layers carry aria-hidden;
+     the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sunset-sea/style.css">
+<section class="fx-sunset-sea" data-fx="sunset-sea">
+  <div class="fx-sunset-sea__rest" aria-hidden="true"></div>
+  <div class="fx-sunset-sea__inner">
+    <p class="fx-sunset-sea__eyebrow">Golden hour</p>
+    <h1 class="fx-sunset-sea__title">A sunset that never quite finishes.</h1>
+    <p class="fx-sunset-sea__lede">Swap this for your own words. The sky is worked out from how light crosses the air, and the sea catches every colour of it.</p>
+    <a class="fx-sunset-sea__cta" href="#">Take a look</a>
+  </div>
+</section>

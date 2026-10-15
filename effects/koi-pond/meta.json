@@ -1,0 +1,108 @@
+{
+  "name": "koi-pond",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "canvas",
+    "water",
+    "pond",
+    "koi",
+    "fish",
+    "night",
+    "moon",
+    "calm",
+    "dark",
+    "hero"
+  ],
+  "summary": "Full-bleed hero over upstream's night koi pond seen from above, with centred copy on a soft dark wash. Schools of koi in five colourings (orange, white, black, calico, shiro) wander and hold together, steer clear of each other and of the edges, and wag their tails as they swim; each fish leaves expanding rings on the water every few seconds. Lily pads with a notch and fine veins drift and slowly turn over them, caustic light slides across the bottom, and the moon lays a glow, horizontal shimmer streaks, sparkles and a broken light path on the surface, all under a vignette. Plain 2D canvas, no dependency; it stops off screen and lays the pond out again when the section changes size. With no script or under reduced motion the section rests on a CSS pond in upstream's own water colours, with the moon's glow and a few lily pads.",
+  "needs": [],
+  "options": {
+    "numSchools": {
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "description": "How many schools of koi share the pond; each holds 6 to 9 fish. Upstream's CFG.numSchools."
+    },
+    "lilyCount": {
+      "type": "number",
+      "default": 10,
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "description": "How many lily pads drift on the surface, drawn over the koi. Upstream's CFG.lilyCount."
+    },
+    "koiSpeed": {
+      "type": "number",
+      "default": 0.4,
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05,
+      "description": "Base swimming speed in pixels per frame; each fish gets half to all of it. Upstream's CFG.koiSpeed."
+    },
+    "causticAlpha": {
+      "type": "number",
+      "default": 0.065,
+      "min": 0,
+      "max": 0.2,
+      "step": 0.005,
+      "description": "Strength of the caustic light patches that slide across the pond floor. Upstream's CFG.causticAlpha."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "ShellB-App/Shell-B-Screensavers",
+    "commit": "34a9630de6e433d7513145e22e8e334f477202fa",
+    "path": [
+      "screensavers/koi-pond/index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Upstream's inline script, from the CFG block through the main loop, runs inside build(), which mount() calls. The canvas is created by mount (aria-hidden, class fx-koi-pond__canvas) and inserted first in the section instead of found with getElementById('c'), and W and H are el.clientWidth and el.clientHeight instead of innerWidth and innerHeight, keeping upstream's || 1920 and || 1080 fallbacks. The rest of the script is indented but unchanged.",
+      "why": "Seam. Upstream owns the whole window; a section owns its own box, and a paw-fx module touches no globals at import time.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's resize handler, location.reload() 400 ms after the window stops resizing, is gone. A ResizeObserver on the section waits the same 400 ms (setTimeout(rebuild, 400)) and calls build() again, which lays out a fresh pond at the new clientWidth and clientHeight. Its first callback, which reports the size already built, is skipped.",
+      "why": "Seam. Reloading the page is a screensaver's restart; a section can change size without the window, and must not reload the page it sits in.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's html, body rule (#050c14 background, overflow hidden, cursor: none) becomes the .fx-koi-pond section's --fx-bg and overflow: hidden, without cursor: none.",
+      "why": "Seam. A screensaver hides the pointer; a hero section sits in a page the visitor is pointing at.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion: reduce, with mount(null), with no document or with no 2D context, mount() creates nothing and returns a no-op handle, so the CSS rest stays. Upstream instead slows everything to CFG.reducedMotion (0.25x); those lines are kept, and only take effect if the preference changes after mount and the pond is rebuilt.",
+      "why": "Seam. The paw-fx contract asks for the resting state under reduced motion.",
+      "kind": "seam"
+    },
+    {
+      "what": "The frame loop's handle belongs to mount: frame() ends with raf = requestAnimationFrame(frame) and build() ends with return frame instead of starting the loop. An IntersectionObserver cancels the loop while the section is off screen and restarts it when it returns. No document.hidden handler: a hidden tab gets no animation frames, and upstream's own Math.min(0.05, dt) clamp means the pond resumes where it was.",
+      "why": "Seam. A section below the fold should not spend frames.",
+      "kind": "seam"
+    },
+    {
+      "what": "frame() sets data-fx-live on the section after its first frame is drawn, and the CSS fades .fx-koi-pond__rest under [data-fx-live]. destroy() cancels the frame loop, clears the resize timer, disconnects both observers, removes the canvas and data-fx-live.",
+      "why": "Seam. The rest must stay up until the canvas really paints, and come back after teardown.",
+      "kind": "seam"
+    },
+    {
+      "what": "Options numSchools, lilyCount, koiSpeed and causticAlpha are merged into upstream's CFG with Object.assign(CFG, knobs(settings)) right after the CFG literal; their defaults are upstream's values. knobs() keeps upstream's value for anything that is not a finite number of 0 or more, and for a koiSpeed of 0 (drawKoi divides by it). update() merges the new options and, when one of the four actually changed, rebuilds the pond, because koiSpeed and the counts are read when the fish and pads are made.",
+      "why": "Seam. Upstream tunes by editing CFG; a section takes options.",
+      "kind": "seam"
+    },
+    {
+      "what": "The rest state is ours, CSS only, from upstream's numbers: .fx-koi-pond__rest layers a 154deg linear-gradient from waterDark rgb(8, 18, 36) through rgb(10, 22, 42) to waterLight rgb(16, 34, 58), the moon's glow as a radial-gradient circle 20vmin at 72% 20% with drawMoonlight's stops times moonGlowBase 0.18, two caustic patches at causticAlpha, four lily pads in drawLilyPad's greens at 54-80px, and drawVignette's rgba(0, 0, 0, 0.4). Upstream's preview.jpg is not used.",
+      "why": "Ours. The section has to look finished with no script and under reduced motion; upstream has no resting state, it paints from its script.",
+      "kind": "ours"
+    },
+    {
+      "what": "Centred copy (eyebrow, headline, lede, one CTA) over a wash of --fx-bg at --fx-scrim 0.85 drawn by the copy box itself (.fx-koi-pond__inner::before), held flat a little past the text and feathered out over --fx-feather, so white koi swimming under the copy never take it below 4.5:1.",
+      "why": "Ours. A white or shiro koi can swim under any word, and light ink over one is near 1:1; the wash keeps the copy above 4.5:1 on every frame.",
+      "kind": "ours"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "name": "chladni-sand",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": [
+    "webgl",
+    "particles",
+    "sand",
+    "chladni",
+    "cymatics",
+    "physics",
+    "pattern",
+    "calm",
+    "interactive",
+    "hero"
+  ],
+  "summary": "Hero with copy beside a square plate of sand that settles into a Chladni figure. Upstream's engine: the plate's modes come from Kirchhoff-Love thin-plate theory, each of 48 patterns mixes mode (m, n) with (n, m), and 40,000 WebGL points walk down the displacement gradient until they gather on the nodal lines, the parts of the plate that stand still. Tap or press Enter on the plate and the sand scatters and settles into the next pattern. No dependency; the loop stops off screen and in a hidden tab. With no script, under reduced motion, or with no WebGL the plate rests on a dotted drawing of pattern 26's nodal lines.",
+  "needs": [],
+  "options": {
+    "preset": {
+      "type": "number",
+      "default": 26,
+      "min": 0,
+      "max": 47,
+      "step": 1,
+      "description": "Which of upstream's 48 patterns the sand settles into. Tapping the plate moves to the next one."
+    },
+    "count": {
+      "type": "number",
+      "default": 40000,
+      "min": 10000,
+      "max": 80000,
+      "description": "Grains of sand.",
+      "step": 5000
+    },
+    "grain": {
+      "type": "number",
+      "default": 1.2,
+      "min": 0.5,
+      "max": 2.8,
+      "description": "Grain size.",
+      "step": 0.1
+    },
+    "spread": {
+      "type": "number",
+      "default": 1.2,
+      "min": 0.3,
+      "max": 3,
+      "description": "How much the grains jitter, so how soft the settled lines are.",
+      "step": 0.1
+    },
+    "exposure": {
+      "type": "number",
+      "default": 1,
+      "min": 0.4,
+      "max": 1.8,
+      "description": "Brightness of the sand.",
+      "step": 0.1
+    },
+    "color": {
+      "type": "string",
+      "default": "#e7d7b1",
+      "description": "Sand colour. Set --fx-sand to match so the CSS rest agrees."
+    },
+    "background": {
+      "type": "string",
+      "default": "#090a09",
+      "description": "Plate colour. Set --fx-bg to match."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "blvgor/resona-lab",
+    "commit": "31895f122ad6ee60e01139b364e23a4b0664f10c",
+    "path": [
+      "physics.js",
+      "renderer.js",
+      "app.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "physics.js and renderer.js are inlined verbatim, physics first, except that export is dropped from every top-level declaration (each such line ends in a seam comment) and renderer.js's import of sampleGrid from ./physics.js is dropped. app.js is not ported; mount() reproduces its rebuildField, resize, next-pattern and scatter-sand handlers and its animate loop for the sand view only.",
+      "why": "Seam. A paw-fx module exports mount(), not the engine, and the two upstream modules become one file.",
+      "kind": "seam"
+    },
+    {
+      "what": "The SandRenderer constructor's getContext('webgl') passes failIfMajorPerformanceCaveat: true. When it returns null upstream falls back to Canvas 2D; mount() instead sees renderer.gl is null, removes the canvas and returns a no-op handle so the CSS rest stays.",
+      "why": "Seam. The paw-fx contract: a WebGL effect refuses a software context and falls back to its resting state, and upstream's 2D fallback draws 40,000 arcs a frame.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion: reduce, with mount(null) or with no document, mount() creates nothing and returns a no-op handle. Upstream instead starts the lab paused.",
+      "why": "Seam. The paw-fx contract asks for the resting state under reduced motion.",
+      "kind": "seam"
+    },
+    {
+      "what": "The renderer's draw is wrapped once to set data-fx-live on the section after a frame on a live context; the CSS fades .fx-chladni-sand__rest under [data-fx-live]. An IntersectionObserver stops the loop while the section is off screen, on top of upstream's document.hidden check. The field canvas SandRenderer needs is created detached and never shown. The error callback is a no-op.",
+      "why": "Seam. The rest must stay up until the canvas paints, a hero should not burn a core off screen, and the lab's contour and field views and its status toasts are not part of this section.",
+      "kind": "seam"
+    },
+    {
+      "what": "State is upstream's validateState over DEFAULT_STATE plus the options, with view pinned to sand, tuning to patterns and running to true; the option ranges are validateState's clamps and the steps are upstream's index.html sliders. Tapping the plate, or Enter or Space on it, runs upstream's next-pattern then scatter-sand; mount() gives the plate role button, tabindex 0 and an aria-label. The default preset is 26, modes (1, 7) + (7, 1), rather than upstream's 0, a single ring.",
+      "why": "Seam. One view and one interaction suit a section; the lab's other controls stay in the lab.",
+      "kind": "seam"
+    },
+    {
+      "what": "The layout and the rest are ours: copy on the left and a square plate on the right, stacked under 52rem, plate colour --fx-bg (upstream's #090a09) with a faint ring. The rest is an inline SVG of pattern 26's nodal lines (the default preset, modes (1, 7) + (7, 1)), computed with upstream's createField and paintField contour code on a 64-cell grid and drawn as a dotted stroke in --fx-sand.",
+      "why": "Ours. The section has to look finished with no script, and the field is square, so the plate keeps aspect-ratio 1.",
+      "kind": "ours"
+    }
+  ]
+}

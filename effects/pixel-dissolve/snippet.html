@@ -1,0 +1,24 @@
+<!-- pixel-dissolve section. Two panels in opposite tones; finished at rest with
+     CSS alone, where they simply meet. index.js covers the screen with the
+     [data-fx-wipe] canvas while the [data-fx-to] panel arrives and dissolves
+     the [data-fx-from] panel into it, square by square, bottom rows first.
+     Each panel's colour is its --fx-page in style.css. Keep the data
+     attributes; put whatever copy you like in the panels.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/pixel-dissolve/style.css">
+<section class="fx-pixel-dissolve" data-fx="pixel-dissolve">
+  <div class="fx-pixel-dissolve__panel" data-fx-from>
+    <div class="fx-pixel-dissolve__copy">
+      <h2 class="fx-pixel-dissolve__title">Scroll down.</h2>
+      <p class="fx-pixel-dissolve__lede">This half of the page breaks into squares and the next one comes through underneath. Bottom rows first, with a little noise, so it reads like something coming apart rather than a window blind.</p>
+    </div>
+  </div>
+  <div class="fx-pixel-dissolve__panel fx-pixel-dissolve__panel--inv" data-fx-to>
+    <div class="fx-pixel-dissolve__copy">
+      <h2 class="fx-pixel-dissolve__title">And you're through.</h2>
+      <p class="fx-pixel-dissolve__lede">The sweep is tied to this panel arriving, not to the one you left, so it finishes while you can still see it. Scroll back up and it runs in reverse.</p>
+    </div>
+  </div>
+  <div class="fx-pixel-dissolve__wipe" aria-hidden="true"><canvas data-fx-wipe></canvas></div>
+</section>
