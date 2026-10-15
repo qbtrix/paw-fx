@@ -230,6 +230,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | koi-pond | MIT | [ShellB-App/Shell-B-Screensavers](https://github.com/ShellB-App/Shell-B-Screensavers) `34a9630`, `screensavers/koi-pond/index.html` (Koi Pond by Evie & Shell:B) |
 | sunset-sea | MIT | [keensense/sunset-sea](https://github.com/keensense/sunset-sea) `3a2982c`, `src/sunset.js`, `index.html` |
 | chladni-sand | MIT | [blvgor/resona-lab](https://github.com/blvgor/resona-lab) `31895f1`, `physics.js`, `renderer.js`, `app.js`, `index.html` |
+| scroll-reveal-css | MIT | [withmehmet/mogp-motion](https://github.com/withmehmet/mogp-motion) `e2db8dd`, `mogp-motion.css`, `index.html` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |

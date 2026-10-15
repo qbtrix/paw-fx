@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-15**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -4221,3 +4221,93 @@ entries: `kar-tanesi`, `kilim`.
 
 Based on `feat/fx-scout-2026-10-13`. Twenty-six scout PRs stacked (09-17 →
 10-14), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-15 — window 2026-10-14 to 2026-10-15
+
+One day. Discovery found nothing portable, so this run took one entry from the
+vetted backlog (Step 3.5).
+
+### Ported (backlog)
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `scroll-reveal-css` | `withmehmet/mogp-motion`, `mogp-motion.css` + `index.html` | `e2db8dd2` | MIT | Backlog since 09-21 (ranked behind `pigment-drift` and `cosmos-demo`). CSS-only scroll reveals on `animation-timeline: view()`: elements with `data-mogp-motion="fade|scale-up|slide-up|slide-down"` fade, grow or slide in as they cross the viewport, with per-element start/end, scale and distance attributes. No JavaScript in the motion path; `reveal-stagger` needs anime.js for the same job. The hold was "an attribute system, not a section, and the demo would have to be invented". The section is taken from upstream's own `index.html` demo (its card, tag, heading and grid values, scoped under `.fx-reveal`), which is why `index.html` is the second path. The upstream stylesheet is inlined verbatim; the one seam is `--mogp-*` → `--fx-mogp-*`. The `data-mogp-*` attributes and `mogp-*` keyframes keep their names because they are upstream's API. `mount()` only sets `data-fx-live`, has no options, and carries no numbers. Licence re-checked at the pin: `LICENSE` reads MIT, Copyright (c) 2026 withmehmet. |
+
+Gates: `check` green (lint 135, smoke 135, 491 tests), run with
+`AGENT_BROWSER_EXECUTABLE_PATH` on system Chrome. `verify` 131 pass / 1 warn
+(`paw-avatar`, as before) / 0 fail / 3 skipped. `scroll-reveal-css` PASS with
+no WARN.
+
+Checked live in system Chrome: with motion on, the cards below the fold
+compute `opacity: 0` with `scale: 0.7` / `translate: 0 50px` etc., and all six
+reach `opacity: 1` at rest position once scrolled in. At 375 wide the page has
+no sideways scroll. The preview is the `?reduced=1` rest frame at 1280x720
+scale 1 with `.fxd-bar`, `.fxd-filler` and `.fxd-knobs` hidden, scaled to
+640x360 with `sips`. Contrast is static (no shader): `#161616` and `#525252`
+ink on `#ffffff` / `#f3f3f3`, worst case `#525252` on `#f3f3f3` at 7.04:1 (headline `#161616` 16.31:1).
+
+`cosmos-demo` was passed over again: its hold is a product call (the picture
+settles over minutes into a different one, so it is a narrative, not a loop)
+and that has not changed. `pigment-drift` still waits on the captain's word.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `nwnuyhs/polanaluz` | GitHub, created 2026-10-14, `src/core/*.ts` | MIT | Stained-glass light backgrounds: volumetric beams through a coloured pane, a ~18 KB zero-dependency WebGL2 library with presets. A good `backgrounds` candidate. Held: TypeScript sources under Vite with no built module at the pin, so it waits on the same TS-source call as `pigment-drift`, `meniscus` and `TexLoom`. |
+| `poligle/ascsat` | GitHub, created 2026-10-14, `index.html` | MIT | Real-time ASCII renderer for procedural 3D satellites. Held: a 129 KB single-file GIF-export app on the Tailwind CDN and a global three r128, not the vendored ES-module three; the render loop would need carving out. |
+| `KAZX-dev/kazx-balance-card` | GitHub, created 2026-10-14 | MIT | A two-pan scale that weighs a dropped file on a glowing tilt card, with spring physics and Web Audio. Held: a file tool, not a section. |
+| `fushanbobfan/attractorium`, `lyhjeremy/fourier-pen` | GitHub, created 2026-10-14/15 | MIT | Strange-attractor viewer and a Fourier drawing machine. Held: full apps (the `kilim`/`turmite` call). |
+| `sayed1145/glsl-black-hole`, `vincentwesley/synthwave-drive`, `daoge96/plaza-aeterna` | GitHub | MIT | A GLSL black hole (`event-horizon` covers it), a TS beat-driven synthwave road (`synthwave-horizon` is already on the backlog), and a single-file vaporwave scene with a Win95 desktop (a scene, not a section). |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| Codrops hub: *A Drift* (`zen-aperios/a-drift`, 2026-10-13) | Codrops hub | **none** | GSAP and no LICENSE file. Hard reject. |
+| Codrops hub: *Raging Sea*, *Galaxy Configurator*, *Hologram Shader* (`thibautlfr/threejs-journey`, branches `29-raging-sea`, `30-animated-galaxy`, `33-hologram`, 2026-10-11) | Codrops hub | unknown | The repo returns 404 to the API (private or moved), so no licence can be read. Reject; re-check if it reappears. |
+| Codrops hub: *R3F Sketch Material* (`abhishekmill/R3FSketchMaterial`, 2026-10-11) | Codrops hub | MIT | React Three Fiber source. Out of scope. |
+| `3-rt/ghostty-landscapes` | GitHub, created 2026-10-14 | none of its own | GitHub detects MIT from `THIRD_PARTY_LICENSE.txt`, which is Ghostty's licence for one derived prefix file. The repo's own code has no LICENSE. Hard reject. |
+| `devillink/dithersite` | GitHub | Apache-2.0 | A whole site that loads GSAP, Spline and an ad script from CDNs. Reject. |
+| `goatsoft/aurora` | GitHub (10-13 log: "re-look if it ships") | NOASSERTION | It shipped: a Vue + TS WebGPU monorepo with 17 background generators. Licence not on the allow-list as detected, and TS/Vue. Reject. |
+| `UtopiaGuy/cymatic`, `StarKnightt/sand-type` | GitHub (10-14 re-check) | **none** | Still no LICENSE file. |
+| `Brown3951/CursorX-Interactive-Cursor-Effects` and its six forks, `Emanuelec987/Trig-JS` and its forks, `RyujiAydin13/microkit`, `aHashimoto85396/MotionVault`, `Juliap22/Flower` | GitHub | NOASSERTION | Licence not an allow-list SPDX id. |
+| `CAUCHY-zzz/animations`, `carloseduardoprof17-design/mercurio`, `linzeyan/scrolling.light`, `PabloMesquida/tree-demo` and the other unlicensed rows | GitHub | **none** | No LICENSE file. Hard reject. |
+| Games, 3D apps, CAD and anatomy viewers, agent skills and motion-video kits, React/Vue/Swift/Kotlin/Rust/Flutter repos (the rest of the thirteen topic and twenty-seven keyword searches) | GitHub | mixed | Out of scope. |
+
+### Sources checked and found quiet
+
+- Codrops hub (`/codrops/hub/all/`, read in the Claude Browser pane): five
+  new items since Amber Genetics (above), none portable.
+  `users/codrops/repos?sort=pushed` shows nothing pushed after `3DCarousel`
+  (10-13).
+- `commits?since=2026-10-14` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`,
+  `tsparticles/tsparticles`, `darkroomengineering/lenis`,
+  `majiayu000/ephemera`, `keensense/sunset-sea`, `blvgor/resona-lab`,
+  `JuPicker/isoline`.
+- GitHub topic search, `created:>=2026-10-14` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`,
+  `webgpu`, plus twenty-seven keyword searches (the 10-14 list, with
+  `background animation`, `interactive background` and `vanilla js
+  animation` added): the tables above. The search API's 30-a-minute cap was
+  hit once mid-run; the keyword pass was re-run after the reset.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+`mogp-motion` is taken (ported as `scroll-reveal-css`). Unchanged:
+`pigment-drift` on the captain's word (10-04 held table), then `cosmos-demo`
+(`absoyak/cosmos-demo` at `a247d9f1`, narrative hold); soft:
+`wine-pour-parallax`, `threelight`, `fivefold`, `liquid-glass`, `BlitzText`,
+`geomotion`, `wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`),
+`meniscus` (pending the TS-source call, with `TexLoom` beside it), `turmite`,
+`neon-sprawl`, `synthwave-horizon` (Shell:B at `34a9630d`), `cursorkit`,
+`domvybe-liquid-glass-sidebar`, `dotwork`, `theme-toggle-animation`,
+`kar-tanesi`, `kilim`. New soft entry: `polanaluz` (TS-source call).
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-14`. Twenty-seven scout PRs stacked (09-17 →
+10-15), none merged. Merge the bases with `--rebase`, not `--squash`.
