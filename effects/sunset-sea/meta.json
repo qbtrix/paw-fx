@@ -1,0 +1,110 @@
+{
+  "name": "sunset-sea",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "webgl",
+    "shader",
+    "sunset",
+    "sea",
+    "ocean",
+    "sky",
+    "atmosphere",
+    "calm",
+    "warm",
+    "hero"
+  ],
+  "summary": "Full-bleed hero over upstream's physically based sunset at sea, with centred copy on a soft dark wash. One WebGL fragment shader: the sky is single scattering through a spherical atmosphere (Rayleigh, Mie and ozone), so the reds of a low sun come from the long path through the air; the sea is eight travelling waves that mirror the sky with Fresnel; the bright path under the sun uses the Cox-Munk slope distribution, so it is smooth and never flickers. A thin cloud layer is lit from below and hazy headlands sit on the horizon. The sun drifts up and down a little so it never sets. No dependency; it pauses off screen, lowers its resolution on a slow GPU and recovers from a lost context. With no script, under reduced motion, or with no WebGL the section rests on a CSS sunset in the same colours.",
+  "needs": [],
+  "options": {
+    "elevation": {
+      "type": "number",
+      "default": 2.4,
+      "min": -5,
+      "max": 25,
+      "step": 0.1,
+      "description": "Sun height above the horizon in degrees. 0-6 is a sunset, below about -4 is dusk, 10 and up is a golden afternoon."
+    },
+    "clouds": {
+      "type": "number",
+      "default": 0.45,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "description": "Cloud cover of the one thin layer lit from below, 0 to 1."
+    },
+    "wind": {
+      "type": "number",
+      "default": 3.5,
+      "min": 0,
+      "max": 14,
+      "step": 0.1,
+      "description": "Wind speed in m/s. Sets the wave size and how wide the glitter path under the sun is."
+    },
+    "turbidity": {
+      "type": "number",
+      "default": 1.25,
+      "min": 0.3,
+      "max": 4,
+      "step": 0.05,
+      "description": "Haze. 1 is clear air; 2 to 3 is hazier and redder."
+    },
+    "exposure": {
+      "type": "number",
+      "default": 0.3,
+      "min": 0.1,
+      "max": 1.2,
+      "step": 0.01,
+      "description": "Overall brightness of the sky and sea."
+    },
+    "horizon": {
+      "type": "number",
+      "default": 0.38,
+      "min": 0.15,
+      "max": 0.85,
+      "step": 0.01,
+      "description": "Where the horizon sits, from the bottom of the section (0) to the top (1)."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "keensense/sunset-sea",
+    "commit": "3a2982c19cea56959e5d10be8b0d7a7c576ac9e9",
+    "path": [
+      "src/sunset.js",
+      "index.html"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "src/sunset.js from the VERT const to the end of the Sunset class is inlined verbatim, except that the class is not exported (export class Sunset becomes class Sunset, and export default Sunset is dropped). mount() creates the canvas (aria-hidden, class fx-sunset-sea__canvas), inserts it first in the section and calls new Sunset(cv, { ...opts, autoStart: false }), then start(). update() is setOptions(); destroy() is the instance's destroy() plus removing the canvas.",
+      "why": "Seam. A paw-fx module exports mount(), not a class, and the section owns the canvas.",
+      "kind": "seam"
+    },
+    {
+      "what": "Both getContext calls in _init pass failIfMajorPerformanceCaveat: true. Upstream then throws 'WebGL is not available'; mount() catches it, removes the canvas and returns a no-op handle so the CSS rest stays.",
+      "why": "Seam. The paw-fx contract: a WebGL effect refuses a software context and falls back to its resting state.",
+      "kind": "seam"
+    },
+    {
+      "what": "Under prefers-reduced-motion: reduce, with mount(null) or with no document, mount() creates nothing and returns a no-op handle, so the CSS rest stays. Upstream instead draws one still frame (respectReducedMotion); that code is kept and only takes effect if the preference changes after mount.",
+      "why": "Seam. The paw-fx contract asks for the resting state under reduced motion.",
+      "kind": "seam"
+    },
+    {
+      "what": "The instance's render is wrapped once, before start(), to set data-fx-live on the section after a frame is drawn on a live context; the CSS fades .fx-sunset-sea__rest under [data-fx-live]. destroy() removes data-fx-live.",
+      "why": "Seam. The rest must stay up until the canvas really paints, and come back after teardown.",
+      "kind": "seam"
+    },
+    {
+      "what": "The rest state is ours, CSS only: .fx-sunset-sea__rest is a linear-gradient sky from lavender to orange with the horizon at 62% from the top (upstream's horizon 0.38), a sun disc just above it at 56% across (azimuth 9), a warm glow band, a gold glitter column below the sun and a soft vignette. Upstream has no resting state; its colours come from the shader.",
+      "why": "Ours. The section has to look finished with no script, under reduced motion and without WebGL.",
+      "kind": "ours"
+    },
+    {
+      "what": "Centred copy (eyebrow, headline, lede, one CTA) over a wash of --fx-bg at --fx-scrim 0.8 drawn by the copy box itself (.fx-sunset-sea__inner::before), held flat a little past the text and feathered out over --fx-feather. The six options use upstream's index.html slider ranges and steps.",
+      "why": "Ours. The sun disc and the glitter path are near white and the sun drifts, so light ink needs its own ground to stay above 4.5:1.",
+      "kind": "ours"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "liquid-tab-bar",
+  "version": "1.0.0",
+  "category": "menu",
+  "tags": ["menu", "navigation", "tab-bar", "bottom-nav", "mobile", "gooey", "membrane", "svg", "drag", "pointer", "spring"],
+  "summary": "A bottom navigation bar whose surface sags under a ball that follows your pointer, like a mattress under a bowling ball. The surface is an SVG path recomputed every frame as a Gaussian dip with a slight rebound lip, not a goo blur filter, so it dents inward. Drag the ball along the bar and it lags behind with a lerp; let go and it settles onto the nearest tab, tinting itself and its glow to that tab's colour. The tabs are real links with aria-current, hash links switch in place and real paths navigate. With no script the bar rests dented under the ball on the first tab.",
+  "needs": [],
+  "options": {
+    "active": {
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "description": "Index of the tab the ball starts on. Upstream's options.active; with no value the tab is read from location.hash or location.pathname."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "everyoneneedsasamwise/liquid-tab-bar",
+    "commit": "fd3ebda76a9a12f967d294cd0c23858a392a45e3",
+    "path": ["liquid-tab-bar.js", "liquid-tab-bar.css", "index.html"]
+  },
+  "deviations": [
+    {
+      "what": "The IIFE wrapper, the DOMContentLoaded autoInit, the API object and the LiquidTabBar global are removed. The module exports mount(el, opts) and meta instead; mount finds the nav with el.querySelector('.liquid-tab-bar'), passes opts straight to the LiquidTabBar constructor and returns { update, destroy }. update({ active }) calls setActive; destroy() calls the instance's destroy(). The section carries data-fx-live while mounted, and mount returns the resting handle when handed no element, no document or a nav with no tabs.",
+      "why": "Seam. Importing the upstream file reads the document and assigns a global at load, which fails the no-globals-at-import rule; an effect is mounted by the site, not by itself.",
+      "kind": "seam"
+    },
+    {
+      "what": "Every --ltb-* custom property is --fx-ltb-*, in style.css and in the one setProperty('--fx-ltb-accent') in _paintTabs. The class names (liquid-tab-bar, ltb__glow, ltb__membrane, ltb__bar, ltb__ball, ltb__ballHi, ltb__tabs, ltb__tab, ltb__lbl, is-active) are upstream's, because the constructor builds that markup.",
+      "why": "Seam. The effect contract prefixes custom properties --fx-.",
+      "kind": "seam"
+    },
+    {
+      "what": "Upstream's position: fixed on the bar reads position: var(--fx-ltb-position, fixed), and .fx-ltb-page sets --fx-ltb-position: absolute, so the bar sits at the foot of its own section. Set it to fixed to pin the bar to the viewport as upstream does.",
+      "why": "A section is placed among other sections, and a bar fixed to the viewport would sit over every one of them and under the demo page's own bottom bar. The default keeps upstream's value for anyone who drops the class onto a page-level nav.",
+      "kind": "ours"
+    },
+    {
+      "what": "The snippet carries the DOM the constructor builds rather than upstream's plain links: the glow at left 10%, the membrane svg with viewBox 0 0 480 94 and preserveAspectRatio none, the bar path, contact ellipse, ball and highlight computed with upstream's barPath and edgeY for tab 0 on a 480px bar, and the five tabs with upstream's built-in icon markup, aria-label, data-icon and data-color, tab 0 is-active. The constructor reads those anchors back (aria-label for the label, the inline svg as a custom icon) and rebuilds the same markup. Below 480px the static path stretches horizontally, so the ball reads as an ellipse until index.js redraws at the real width.",
+      "why": "Upstream draws the whole bar from script, so with JS off it is five bare links. The contract wants a finished section at rest; the precomputed frame is upstream's own first paint.",
+      "kind": "ours"
+    },
+    {
+      "what": "The section around the bar is ours, built from upstream's index.html demo page: its colours (#0b0f1a, #121829, #e7ecf5, #8893a7, the card fill and border, accent #e09f5c), the radial ground, eyebrow, heading, lede and hint-pill type, the pulse keyframes, and the three Home cards; the five tab colours are the demo's data-color values. The eyebrow, heading and lede copy are ours. The panel swapping on hashchange, the theme toggle, the usage block and the footer are demo wiring and are not ported. The hint pulse runs only under prefers-reduced-motion: no-preference. The cards add overflow-wrap: anywhere, so requestAnimationFrame breaks inside a 150px card instead of running out of it.",
+      "why": "Upstream ships only the bar; a section needs a page above it, and the demo page is upstream's own picture of one.",
+      "kind": "ours"
+    }
+  ]
+}

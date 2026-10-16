@@ -1,0 +1,47 @@
+<!-- scroll-reveal-css section. Finished at rest with CSS alone, and the motion
+     is CSS too: each card carries a `data-mogp-motion` attribute and
+     style.css drives it with `animation-timeline: view()`, so the cards fade,
+     grow or slide in as they cross the viewport with no script at all.
+     A browser without scroll-driven animations, and a visitor who asked for
+     less motion, both get every card in place and fully visible.
+     The attributes are the API: put `data-mogp-motion="fade|scale-up|
+     slide-up|slide-down"` on any element, and tune it with
+     data-mogp-motion-start / -end (0-100 in steps of 5),
+     data-mogp-scale-start (50-90) and data-mogp-slide-distance (30-150).
+     The _fx path is root-absolute because a site always sits at the origin
+     root, and "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/scroll-reveal-css/style.css">
+<section class="fx-reveal" data-fx="scroll-reveal-css">
+  <div class="fx-reveal__inner">
+    <div class="fx-reveal__head">
+      <h2 class="fx-reveal__title">Everything you need, nothing you don't.</h2>
+      <p class="fx-reveal__lede">Replace this copy with your own. Each card below arrives on its own as you scroll, using the browser's native scroll-driven animations and no JavaScript.</p>
+    </div>
+    <div class="fx-reveal__grid">
+      <div class="fx-reveal__card" data-mogp-motion="fade">
+        <span class="fx-reveal__tag">fade</span>
+        <p><strong>Fast by default</strong>Only opacity changes; position and size stay fixed.</p>
+      </div>
+      <div class="fx-reveal__card" data-mogp-motion="scale-up">
+        <span class="fx-reveal__tag">scale-up</span>
+        <p><strong>Built to grow</strong>The card grows from 70% of its size up to full size.</p>
+      </div>
+      <div class="fx-reveal__card" data-mogp-motion="slide-up">
+        <span class="fx-reveal__tag">slide-up</span>
+        <p><strong>Private by design</strong>The card slides in from 50px below its place.</p>
+      </div>
+      <div class="fx-reveal__card" data-mogp-motion="slide-down">
+        <span class="fx-reveal__tag">slide-down</span>
+        <p><strong>Ready when you are</strong>The reverse of slide-up: the card drops into place from above.</p>
+      </div>
+      <div class="fx-reveal__card" data-mogp-motion="scale-up" data-mogp-scale-start="90">
+        <span class="fx-reveal__tag">scale-start = 90</span>
+        <p><strong>A subtle entrance</strong>Starts at 90% size.</p>
+      </div>
+      <div class="fx-reveal__card" data-mogp-motion="slide-up" data-mogp-slide-distance="150">
+        <span class="fx-reveal__tag">slide-distance = 150</span>
+        <p><strong>A dramatic one</strong>A long slide from 150px below.</p>
+      </div>
+    </div>
+  </div>
+</section>

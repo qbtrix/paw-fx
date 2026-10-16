@@ -1,0 +1,61 @@
+/* curly-kumo: hanafuda-style clouds that grow in as the section scrolls into
+   view and fold away when it leaves.
+
+   Resting state: each [data-fx-kumo] slot holds upstream's own SVG for its
+   seed, fully grown (curlykumo.js generate() + toSVG() with the default
+   style, the same picture the tag shows under reduced motion). index.js adds
+   one upstream <curly-kumo> tag per slot and sets data-fx-live; the still is
+   then hidden and the tag, which reserves the fully grown box, takes its
+   place without moving anything. The paper ground and ink are upstream's
+   default stroke (#1a1210) and its demo page's paper. */
+.fx-curly-kumo {
+  --fx-ink: #1a1210;
+  --fx-ink-soft: #4a403b;
+  --fx-ground: #fdfcf8;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--fx-ink);
+  background: var(--fx-ground);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-curly-kumo *,
+.fx-curly-kumo *::before,
+.fx-curly-kumo *::after { box-sizing: border-box; }
+
+.fx-curly-kumo__sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.fx-curly-kumo__cloud { position: absolute; }
+.fx-curly-kumo__cloud--a { left: -2%; top: 3%; width: clamp(160px, 31vw, 440px); }
+.fx-curly-kumo__cloud--b { right: -2%; bottom: 3%; width: clamp(150px, 29vw, 410px); }
+
+.fx-curly-kumo__still,
+.fx-curly-kumo__live {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.fx-curly-kumo[data-fx-live] .fx-curly-kumo__still { display: none; }
+
+.fx-curly-kumo__title {
+  margin: 0;
+  font: 400 clamp(48px, 9vw, 128px)/0.95 "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  letter-spacing: -0.02em;
+}
+.fx-curly-kumo__lede {
+  max-width: 34ch;
+  margin: 20px auto 0;
+  font-size: clamp(16px, 1.6vw, 19px);
+  color: var(--fx-ink-soft);
+}

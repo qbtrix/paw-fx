@@ -1,0 +1,21 @@
+<!-- sg-damascus section. Finished at rest with CSS alone: the contour bands in
+     .fx-damascus__rest are the hero with JavaScript off, and index.js only
+     covers them with a WebGL canvas once it has the shader, a context and a
+     linked program. The _fx paths are root-absolute because a site always sits
+     at the origin root, and "./_fx/..." would break on a nested page such as
+     /blog/post.html. The decorative layers carry aria-hidden; the copy is the
+     only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-damascus/style.css">
+<section class="fx-damascus" data-fx="sg-damascus">
+  <div class="fx-damascus__rest" aria-hidden="true"></div>
+  <div class="fx-damascus__grain" aria-hidden="true"></div>
+  <div class="fx-damascus__inner">
+    <p class="fx-damascus__eyebrow"><span class="fx-damascus__dot" aria-hidden="true"></span>Folded thirty-six times</p>
+    <h1 class="fx-damascus__title">The pattern is the proof of the work.</h1>
+    <p class="fx-damascus__lede">Swap this for your own words. The headline takes one line or three, and the light keeps sweeping the steel behind the panel either way.</p>
+    <div class="fx-damascus__actions">
+      <a class="fx-damascus__cta fx-damascus__cta--primary" href="#">See the blades</a>
+      <a class="fx-damascus__cta fx-damascus__cta--ghost" href="#">How it is forged</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+{
+  "name": "scroll-reveal-css",
+  "version": "1.0.0",
+  "category": "scroll",
+  "tags": ["reveal", "scroll", "fade", "slide", "scale", "scroll-driven", "css-only", "no-js", "cards"],
+  "summary": "A grid of cards that fade, grow or slide in one by one as they cross the viewport, on native CSS scroll-driven animations (`animation-timeline: view()`) with no JavaScript and no library. Any element opts in with a `data-mogp-motion` attribute, and per-element attributes set where in its time on screen the motion starts and ends, the starting scale and the slide distance. Browsers without scroll-driven animations, and visitors who prefer less motion, see every card in place.",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "withmehmet/mogp-motion",
+    "commit": "e2db8dd2ab4cc6c55c0f1f8aa8f08952882f33a7",
+    "path": ["mogp-motion.css", "index.html"]
+  },
+  "deviations": [
+    {
+      "kind": "seam",
+      "what": "Every `--mogp-*` custom property in the stylesheet is renamed `--fx-mogp-*`.",
+      "why": "paw-fx prefixes its custom properties with `--fx-`. The `data-mogp-*` attributes and the `mogp-*` keyframe names are upstream's public API and keep their spelling, so markup written for upstream works unchanged."
+    },
+    {
+      "kind": "ours",
+      "what": "The section layout (`.fx-reveal` and its head, grid, card and tag) is appended after the upstream block.",
+      "why": "Upstream is an attribute system, not a section, so paw-fx needs markup to put it in. The layout is taken from upstream's own index.html demo page (its card, tag, heading and 12-column grid values) rather than drawn fresh, scoped under `.fx-reveal`, and does not animate."
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "name": "murmuration",
+  "version": "1.0.0",
+  "category": "particles",
+  "tags": ["particles", "boids", "flocking", "birds", "starlings", "murmuration", "canvas", "emergence", "predator", "pointer", "generative", "dusk"],
+  "summary": "A starling murmuration on a 2D canvas: thousands of Reynolds boids that only see their neighbours and follow three rules (separation, alignment, cohesion), found through a uniform spatial-hash grid so the flock stays O(n). A hawk wanders the stage, or follows your pointer, and the birds flee it in rolling waves. Each bird is a streak tinted by depth from dim emerald to gold, drawn additively over a translucent wash that leaves motion-blur trails. With no script the stage shows a settled flock drawn from the same simulation.",
+  "needs": [],
+  "options": {
+    "count": {
+      "type": "number",
+      "default": 2500,
+      "min": 400,
+      "max": 5000,
+      "step": 100,
+      "description": "Number of birds. Upstream's birds slider."
+    },
+    "cohesion": {
+      "type": "number",
+      "default": 1.0,
+      "min": 0,
+      "max": 2.4,
+      "step": 0.05,
+      "description": "Weight of the steer toward the local centre of mass. Upstream's cohesion slider."
+    },
+    "alignment": {
+      "type": "number",
+      "default": 1.2,
+      "min": 0,
+      "max": 2.4,
+      "step": 0.05,
+      "description": "Weight of the steer toward the neighbours' average heading. Upstream's alignment slider."
+    },
+    "hawk": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the predator flies. Upstream's Hawk button."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "robotismo/art-sims",
+    "commit": "28b1155fb59aeec01272dec55e96be25b3646e08",
+    "path": "13-murmuration/index.html"
+  },
+  "deviations": [
+    {
+      "what": "The page script runs inside mount(el, opts), so every section owns its own flock, and the canvas is el.querySelector('canvas') instead of document.getElementById('c'). The section carries data-fx-live while mounted, and mount returns the resting handle when handed no element, no document, no matchMedia or no canvas.",
+      "why": "Seam. Upstream's script runs at load against one page-level canvas; an effect is mounted by the site, once per section.",
+      "kind": "seam"
+    },
+    {
+      "what": "The birds, cohesion and alignment sliders and the Hawk button are the options count, cohesion, alignment and hawk: N, W_COH, W_ALI and hawkOn start from them, and update() does what the oninput / onclick handlers did (seed(+count) and settle(120) when paused, the two weights, the hawk flag). The Regenerate, Pause / Play and Save PNG buttons, the back link and the window.__sim hook are not ported, so setPaused no longer writes the button label.",
+      "why": "Seam. Options are the contract's one configuration surface; the rest is lab chrome around the piece.",
+      "kind": "seam"
+    },
+    {
+      "what": "The pointer listeners on the canvas take { signal } from an AbortController, and destroy() aborts it, cancels the rAF loop and bumps settleId so a settle in progress stops. The coarse-pointer hint text targets .fx-murm-hawkhint inside the section.",
+      "why": "Seam. Upstream never tears down; an effect must.",
+      "kind": "seam"
+    },
+    {
+      "what": "The :root custom properties --bg, --gold, --gold2, --green, --ink and --muted are --fx-bg, --fx-gold, --fx-gold2, --fx-green, --fx-ink and --fx-muted, the body rules sit on .fx-murm, and the classes are fx-murm-eyebrow, fx-murm-sub, fx-murm-stage and fx-murm-caption. The canvas gets position: relative so it stacks over the resting SVG, and the caption's top margin is 18px, since the controls row that sat between stage and caption is gone.",
+      "why": "Seam. The contract prefixes custom properties --fx- and the section cannot style body.",
+      "kind": "seam"
+    },
+    {
+      "what": "The stage carries an inline SVG (.fx-murm-rest, viewBox 0 0 820 620) of a settled flock: upstream's seed() and simulate() run for 120 steps, and 900 of the 2500 birds drawn as draw() draws them, one oriented triangle per bird, in five depth bands with the band's colour and alpha from draw()'s formula. The canvas paints an opaque ground on its first frame and covers it.",
+      "why": "Upstream paints only from script, so with JS off the stage is empty. The contract wants a finished section at rest; this is upstream's own reduced-motion still frame, thinned to keep the snippet small.",
+      "kind": "ours"
+    }
+  ]
+}
