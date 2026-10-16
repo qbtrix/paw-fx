@@ -1,0 +1,218 @@
+/* liquid-tab-bar: a bottom nav whose surface sags under a ball that follows
+   the pointer. The block from the upstream banner down to its reduced-motion
+   rule is upstream's liquid-tab-bar.css with --ltb-* renamed to --fx-ltb-*,
+   and position read from --fx-ltb-position (default fixed, upstream's value).
+   Class names are upstream's, since index.js builds that markup.
+
+   Var roles: --fx-ltb-max-width, --fx-ltb-bar-fill, --fx-ltb-bar-stroke,
+   --fx-ltb-label (inactive icon + label), --fx-ltb-label-active (icon on the
+   ball), --fx-ltb-accent (set live by index.js to the tab's colour),
+   --fx-ltb-ball-highlight, --fx-ltb-focus, --fx-ltb-lift, --fx-ltb-glow-
+   opacity. --fx-ltb-position is ours: fixed pins the bar to the viewport as
+   upstream does; the section sets absolute so the bar sits at its own foot.
+
+   The section under the bar (.fx-ltb-page) is ours, built from the values of
+   upstream's index.html demo page: its two-tone radial ground, type, hint
+   pill and the three Home cards.
+
+   Resting state: the snippet carries the bar's built DOM with tab 0 active,
+   so JS off shows the dented bar and the ball. Reduced motion stops the hint
+   pulse; index.js already jumps the ball instead of easing it. */
+
+/*!
+ * liquid-tab-bar.css — styles for the gooey bottom navigation bar.
+ * Theme by overriding the --fx-ltb-* custom properties on .liquid-tab-bar.
+ */
+
+.liquid-tab-bar {
+  /* --- theme tokens (override these) --- */
+  --fx-ltb-max-width: 480px;
+  --fx-ltb-accent: #e09f5c;              /* set live by JS to the active tab's colour */
+  --fx-ltb-bar-fill: #161c2b;
+  --fx-ltb-bar-stroke: rgba(238, 189, 138, 0.18);
+  --fx-ltb-label: #66728b;               /* inactive icon + label */
+  --fx-ltb-label-active: #0b0f1a;        /* active icon sitting on the ball */
+  --fx-ltb-ball-highlight: rgba(255, 255, 255, 0.18);
+  --fx-ltb-focus: #eebd8a;
+  --fx-ltb-lift: -28px;                  /* how high the active icon rides the ball */
+  --fx-ltb-glow-opacity: 0.5;
+
+  position: var(--fx-ltb-position, fixed);
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--fx-ltb-max-width);
+  height: calc(64px + 30px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  z-index: 50;
+  touch-action: none;
+}
+
+.liquid-tab-bar__clearance,
+body.has-liquid-tab-bar {
+  /* add this class to <body> (or use the utility) so page content isn't
+     hidden behind the fixed bar */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.ltb__glow {
+  position: absolute;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: 120px;
+  height: 64px;
+  border-radius: 50%;
+  filter: blur(28px);
+  opacity: var(--fx-ltb-glow-opacity);
+  background: var(--fx-ltb-accent);
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+
+.ltb__membrane {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  height: calc(64px + 30px);
+  overflow: visible;
+  pointer-events: none;
+  display: block;
+}
+
+.ltb__bar {
+  fill: var(--fx-ltb-bar-fill);
+  stroke: var(--fx-ltb-bar-stroke);
+  stroke-width: 1;
+}
+.ltb__ball { fill: var(--fx-ltb-accent); transition: fill 0.4s ease; }
+.ltb__ballHi { fill: var(--fx-ltb-ball-highlight); }
+
+.ltb__tabs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  height: 64px;
+  display: flex;
+}
+
+.ltb__tab {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--fx-ltb-label);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ltb__tab svg {
+  width: 21px;
+  height: 21px;
+  transition: transform 0.45s cubic-bezier(0.5, 1.3, 0.5, 1), color 0.3s ease;
+}
+
+.ltb__lbl {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 0.3s ease;
+}
+
+.ltb__tab.is-active { color: var(--fx-ltb-label-active); }
+.ltb__tab.is-active svg { transform: translateY(var(--fx-ltb-lift)); }
+.ltb__tab.is-active .ltb__lbl { opacity: 0; }
+
+.ltb__tab:focus-visible {
+  outline: 2px solid var(--fx-ltb-focus);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+/* Optional light theme: add data-theme="light" to the nav */
+.liquid-tab-bar[data-theme="light"] {
+  --fx-ltb-bar-fill: #ffffff;
+  --fx-ltb-bar-stroke: rgba(20, 24, 40, 0.1);
+  --fx-ltb-label: #9aa3b2;
+  --fx-ltb-label-active: #ffffff;
+  --fx-ltb-ball-highlight: rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ltb__ball { transition: none; }
+  .ltb__tab svg { transition: transform 0.01ms, color 0.01ms; }
+}
+
+/* ---- the section (ours, values from upstream's index.html) ---- */
+.fx-ltb-page {
+  --fx-ltb-position: absolute;
+  --fx-bg: #0b0f1a;
+  --fx-bg2: #121829;
+  --fx-fg: #e7ecf5;
+  --fx-muted: #8893a7;
+  --fx-card: rgba(255, 255, 255, 0.04);
+  --fx-card-br: rgba(255, 255, 255, 0.08);
+  --fx-accent: #e09f5c;
+  position: relative;
+  box-sizing: border-box;
+  min-height: min(100vh, 720px);
+  overflow: hidden;
+  padding: 54px max(18px, env(safe-area-inset-right)) calc(118px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left));
+  background:
+    radial-gradient(90rem 50rem at 50% -20%, var(--fx-bg2), var(--fx-bg) 60%),
+    var(--fx-bg);
+  color: var(--fx-fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.fx-ltb-page *, .fx-ltb-page *::before, .fx-ltb-page *::after { box-sizing: border-box; }
+.fx-ltb-wrap { max-width: 720px; margin: 0 auto; }
+.fx-ltb-eyebrow {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--fx-accent); margin: 0 0 14px;
+}
+.fx-ltb-page h1 {
+  font-size: clamp(32px, 6.5vw, 56px); line-height: 1.04; letter-spacing: -0.02em;
+  margin: 0 0 16px; font-weight: 650; text-wrap: balance;
+}
+.fx-ltb-page h1 .fx-ltb-thin { font-weight: 300; color: var(--fx-muted); }
+.fx-ltb-lede { font-size: clamp(16px, 2.4vw, 18.5px); color: var(--fx-muted); max-width: 52ch; margin: 0 0 26px; }
+.fx-ltb-hint {
+  margin: 0; display: inline-flex; align-items: center; gap: 9px;
+  font-size: 13.5px; color: var(--fx-muted);
+  padding: 9px 14px; border-radius: 999px; border: 1px dashed var(--fx-card-br);
+}
+.fx-ltb-dot {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--fx-accent);
+  box-shadow: 0 0 0 0 var(--fx-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fx-ltb-dot { animation: fx-ltb-pulse 2s infinite; }
+}
+@keyframes fx-ltb-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--fx-accent) 60%, transparent); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.fx-ltb-cards { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.fx-ltb-cards > div {
+  background: var(--fx-card); border: 1px solid var(--fx-card-br); border-radius: 12px;
+  padding: 16px; min-height: 92px; font-size: 14px; color: var(--fx-muted);
+  overflow-wrap: anywhere;
+}
+.fx-ltb-cards b { color: var(--fx-fg); display: block; margin-bottom: 4px; font-weight: 600; }

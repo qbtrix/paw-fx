@@ -1,0 +1,53 @@
+/* murmuration: a flock of boids over a dusk stage. Every rule here is
+   upstream's 13-murmuration/index.html <style>, scoped under .fx-murm, with
+   :root's --bg/--gold/--gold2/--green/--ink/--muted renamed --fx-bg,
+   --fx-gold, --fx-gold2, --fx-green, --fx-ink, --fx-muted, and the body
+   rules moved onto the section. The controls, buttons, slider and back-link
+   rules are not ported, since those elements are not.
+
+   .fx-murm-rest is ours: the settled flock as an inline SVG behind the
+   canvas. The canvas paints an opaque ground on its first frame, so once
+   index.js runs the SVG is covered and never seen again.
+
+   Resting state: JS off shows the stage with the SVG flock, the title and
+   upstream's caption. Reduced motion is handled in index.js, which settles
+   the flock and holds one still frame, as upstream does. */
+
+.fx-murm {
+  --fx-bg: #070b09;
+  --fx-gold: #e8c45e;
+  --fx-gold2: #f6e6a8;
+  --fx-green: #2f9e6f;
+  --fx-ink: #d7e0d6;
+  --fx-muted: #7d8c82;
+  box-sizing: border-box;
+  background: radial-gradient(120% 100% at 50% -10%, #0d1512 0%, #070b09 62%);
+  color: var(--fx-ink);
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 18px 70px;
+}
+.fx-murm * { box-sizing: border-box; }
+.fx-murm-eyebrow {
+  letter-spacing: .34em; text-transform: uppercase; font-size: 11px; color: var(--fx-gold);
+  font-family: ui-monospace, 'SF Mono', monospace; opacity: .85;
+}
+.fx-murm h1 { font-size: 30px; margin: 9px 0 2px; font-weight: 600; }
+.fx-murm-sub { color: var(--fx-muted); font-size: 14px; margin: 0 0 16px; font-style: italic; }
+.fx-murm-stage {
+  position: relative; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(232, 196, 94, .14), 0 30px 80px -30px #000; background: #05080699;
+}
+.fx-murm-stage canvas { display: block; max-width: 100%; height: auto; cursor: crosshair; touch-action: none; position: relative; }
+.fx-murm-stage { max-width: 100%; }
+/* cap the stage by the viewport height, so the piece fits on one screen */
+.fx-murm-stage canvas { width: min(820px, max(300px, calc((100vh - 230px) * 820 / 620))); width: min(820px, max(300px, calc((100svh - 230px) * 820 / 620))); }
+@media (max-height: 500px) { .fx-murm-stage { max-width: min(100%, calc((100vh - 120px) * 1.3226)); max-width: min(100%, calc((100svh - 120px) * 1.3226)); } }
+.fx-murm-caption { max-width: 700px; text-align: center; color: var(--fx-muted); font-size: 13.5px; line-height: 1.65; margin-top: 18px; }
+.fx-murm-caption b { color: var(--fx-ink); font-weight: 600; }
+.fx-murm-eyebrow, .fx-murm h1, .fx-murm-sub { text-align: center; }
+
+/* ---- the resting flock (ours) ---- */
+.fx-murm-rest { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: var(--fx-bg); }

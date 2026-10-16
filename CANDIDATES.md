@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-10-15**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-16**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -4311,3 +4311,116 @@ and that has not changed. `pigment-drift` still waits on the captain's word.
 
 Based on `feat/fx-scout-2026-10-14`. Twenty-seven scout PRs stacked (09-17 →
 10-15), none merged. Merge the bases with `--rebase`, not `--squash`.
+
+## 2026-10-16 — window 2026-10-15 to 2026-10-16
+
+One day. Discovery found two portable effects and both were ported. The
+backlog was not touched.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `liquid-tab-bar` | `everyoneneedsasamwise/liquid-tab-bar`, `liquid-tab-bar.js` + `liquid-tab-bar.css` (+ `index.html`) | `fd3ebda7` | MIT | Discovery (GitHub topic search, created 2026-10-15). A bottom nav whose surface is an SVG path redrawn every frame as a Gaussian dip under a ball that lerps toward the pointer and settles on the tab you release over. Zero dependencies, real links, `aria-current`, reduced motion jumps the ball. Same `menu` shelf as `capsule-nav`, and nothing there is a bottom tab bar. The engine is inlined verbatim; the seams are the IIFE / auto-init / global swapped for `mount`, and `--ltb-*` → `--fx-ltb-*`. Class names stay upstream's because the constructor builds that markup. Two `ours` changes: `position` reads `--fx-ltb-position` (default `fixed`, upstream's value), and the section sets it to `absolute` so the bar sits at its own foot instead of over every other section and under the demo page's bar. The section page is built from upstream's `index.html` demo values, which is why it is the third path. |
+| `murmuration` | `robotismo/art-sims`, `13-murmuration/index.html` | `28b1155f` | MIT | Discovery (GitHub keyword search, created 2026-10-15). Reynolds boids on a 2D canvas: separation, alignment and cohesion over a uniform spatial-hash grid, a hawk that wanders or follows the pointer, depth-tinted streaks over a motion-blur wash. Nothing on the shelf flocks (`firefly-swarm` drifts, `meduse` swims). The page script runs inside `mount()`, the sliders and Hawk button are options and `update()` does their handlers' work, and Regenerate / Pause / Save PNG / `window.__sim` are dropped. Upstream's reduced-motion path (settle 120 steps, hold one frame) is kept as is. |
+
+Gates: `check` green (lint 137, smoke 137, 495 tests), run with
+`AGENT_BROWSER_EXECUTABLE_PATH` on system Chrome. `verify` 133 pass / 1 warn
+(`paw-avatar`, as before) / 0 fail / 3 skipped. `liquid-tab-bar` and
+`murmuration` PASS with no WARN.
+
+Both were checked live in system Chrome at 1440x900. `liquid-tab-bar`:
+`data-fx-live` set, the membrane `viewBox` redrawn at the real width, a click
+on Create moves the ball to x 240, sets `#create` and tints the accent to
+`#6ee7b7`. `murmuration`: `data-fx-live` set, canvas backing store 820 wide,
+the flock organises and the hawk scatters it, no console errors. At 375 wide
+neither page scrolls sideways.
+
+### Rest and preview
+
+`liquid-tab-bar` carries the DOM upstream's constructor builds, with the bar
+path, contact shadow, ball and highlight computed by upstream's `barPath` and
+`edgeY` for tab 0 on a 480px bar (its max width). Below 480px the static path
+stretches sideways, so the ball reads as an ellipse until `index.js` redraws.
+`murmuration` carries an inline SVG of a settled flock: upstream's `seed()`
+and `simulate()` run for 120 steps, then 900 of the 2500 birds drawn the way
+`draw()` draws them, in five depth bands (33 KB raw, 14 KB gzipped). Previews
+are the `?reduced=1` frame at 1280x720 scale 1, with `.fxd-bar`,
+`.fxd-filler` and `.fxd-knobs` hidden, scaled to 640x360 with `sips`, shot
+after `is visible "[data-fx-live]"`.
+
+### Contrast
+
+Copy never sits on the moving layer in either section, so contrast is static.
+`liquid-tab-bar`: lede and card copy `#8893a7` 5.70:1 at worst (on the
+`#121829` top of the radial ground), headline `#e7ecf5` 16.14:1 on
+`#0b0f1a`; the tab labels are upstream's `#66728b` on the bar fill `#161c2b`
+at 3.52:1, which is under 4.5:1. They are 8.5px uppercase captions
+under an icon, and the icon carries the meaning, so this is noted rather than
+changed: it is upstream's palette. `murmuration`: caption and sub line `#7d8c82`
+5.25:1 at worst (on the `#0d1512` top of the ground), title `#d7e0d6`
+14.63:1, eyebrow `#e8c45e` 11.77:1.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Why held |
+|---|---|---|---|
+| `robotismo/art-sims` `05-phyllotaxis-bloom` | GitHub, pinned `28b1155f` | MIT | Golden-angle packing (Vogel's model) drawn as 1400 leaf units, with a divergence-angle slider. Held: it blooms for about three seconds and then sits still, and the no-JS rest would need a 117 KB SVG (15 KB gzipped) to show the same picture. A fair pick if a static "bloom on load" hero is wanted. |
+| `robotismo/art-sims` `01`, `03`, `11`, `14`, `15`, `16` (auxin bloom, crinkle margin, lichtenberg, frond, dendrite, areole) | same | MIT | Each grows to a finished picture and stops, which is the `cosmos-demo` narrative hold. `02-turing-tissue` and `04-slime-veins` duplicate `reaction-diffusion` and `physarum`. Vols II and IV (`06`–`10`, `17`) need three's `GPUComputationRenderer` from `examples/jsm`, which is not vendored. |
+| `jeiel85/argon` | GitHub, created 2026-10-15 | MIT | Particle life with a 6x6 species matrix and a WebAudio synth in a 41 KB `app.js`. Held: a lab, not a section (the `attractorium` call). The engine is extractable if wanted. |
+| `aispin/textural` | GitHub, created 2026-10-15, `src/textural.ts` | MIT | Turns a word into a soft Canvas 2D card background. Held: TypeScript source with no built module at the pin, so it waits on the TS-source call with `polanaluz`, `pigment-drift`, `meniscus` and `TexLoom`. |
+| `quietwright/endgrain` | GitHub, created 2026-10-15, `src/endgrain.js` | MIT | Identicons that grow: a string becomes a tree and the picture is its cross-section. Held: a generator, not a section (the `kar-tanesi` call). |
+| `biering/ditherdance` | GitHub, created 2026-10-15 | Apache-2.0 | Dithered gradients and images. Held: TypeScript, and `dithering` already ships. |
+
+### Rejected
+
+| Candidate | Source | Licence | Reason |
+|---|---|---|---|
+| `codrops/CinemaSeatPreview` | Codrops org, created 2026-10-15 | MIT | three.js WebGPU scene that ships GSAP in `js/lib/`. Hard reject (GSAP). |
+| `codrops/SeatPreview` | Codrops org, pushed 2026-10-15 (2016 repo) | **none** | No LICENSE file; the README points at the Codrops licensing page. Hard reject. |
+| `leoassisdev/flowcore-efeito-*` (fifteen repos: splash-cursor, galaxy, prism, letter-glitch, aceternity-globe, world-map, logo-loop and more) | GitHub, created 2026-10-15 | MIT | TypeScript re-creations of React Bits and Aceternity components, one named after Aceternity. Hard reject. |
+| `cray4pasta/glitter-powder` | GitHub | MIT | A React component. Out of scope. |
+| `selim7417/event-horizon`, `HinaAyanami/gargantua-webgl` | GitHub | MIT | Ray-traced black holes; `event-horizon` already ships. |
+| `donaldtrinh1638/CursorX-Interactive-Cursor-Effects`, `EkaterinaUchida/Trig-JS`, `SophieOwens14/Trig-JS`, `Chiara7109/microkit`, `kloserock97-tech/overgrowth`, `arraypress/effects-astro`, `funiyayue-art/apso-particle-morph`, `islomf2010-dot/afterlight` | GitHub | NOASSERTION | Licence is not an allow-list SPDX id. |
+| `0ssy/browser-based-generative-art-engine` | GitHub | ISC | ISC is not on the allow-list. |
+| `everyoneneedsasamwise`'s neighbours in the results: games, 3D apps and scenes (`golden-temple`, `glass-diorama-open`, `pelican-cyclist`), Home Assistant cards, Obsidian plugins, agent skills, awesome lists, Swift/Kotlin/Flutter/Rust/Python repos, and the unlicensed rows | GitHub | mixed | Out of scope, or no LICENSE file. |
+
+### Sources checked and found quiet
+
+- Codrops hub (`/codrops/hub/all/`): not reachable this run. The Claude
+  Browser pane was refused `tympanus.net` (no one was there to allow it), and
+  `curl` and both RSS feeds get the Cloudflare challenge page (403). The org
+  was covered through `users/codrops/repos?sort=pushed`: `CinemaSeatPreview`
+  and `SeatPreview` (above) are the only pushes since `3DCarousel`. The next
+  run should read the hub, since anything posted 10-15 or 10-16 is unseen.
+- `commits?since=2026-10-15` is empty on `shader-gallery/shaders`,
+  `paper-design/shaders`, `openshaders/openshaders`, `majiayu000/ephemera`,
+  `blvgor/resona-lab`, `withmehmet/mogp-motion`. `tsparticles/tsparticles`
+  has eleven dependabot bumps and `darkroomengineering/lenis` a v1.3.27
+  release with one fix (SVG elements as `scrollTo` targets); neither adds an
+  effect.
+- GitHub topic search, `created:>=2026-10-15` across `animation`, `webgl`,
+  `css-animation`, `shaders`, `scroll-animation`, `generative-art`,
+  `creative-coding`, `shader`, `threejs`, `canvas`, `glsl`, `particles`,
+  `webgpu` (218 repos), plus twenty-eight keyword searches. The search API's
+  30-a-minute cap cut the last four keywords (`three.js effect`,
+  `canvas animation`, `webgl effect`, `svg animation`); the topic pass covers
+  the same ground.
+- CodePen: not reachable without a human check (see 10-03).
+
+### Backlog after this run
+
+Unchanged: `pigment-drift` on the captain's word (10-04 held table), then
+`cosmos-demo` (`absoyak/cosmos-demo` at `a247d9f1`, narrative hold); soft:
+`wine-pour-parallax`, `threelight`, `fivefold`, `liquid-glass`, `BlitzText`,
+`geomotion`, `wave-line`, `moving-parts-free` (`dot-repel`, `pixel-ribbon`),
+`meniscus` (pending the TS-source call, with `TexLoom`, `polanaluz` and now
+`textural` beside it), `turmite`, `neon-sprawl`, `synthwave-horizon` (Shell:B
+at `34a9630d`), `cursorkit`, `domvybe-liquid-glass-sidebar`, `dotwork`,
+`theme-toggle-animation`, `kar-tanesi`, `kilim`. New soft entries:
+`phyllotaxis-bloom` (art-sims `05`), `argon`, `endgrain`.
+
+### Stacking
+
+Based on `feat/fx-scout-2026-10-15`. Twenty-eight scout PRs stacked (09-17 →
+10-16), none merged. Merge the bases with `--rebase`, not `--squash`.

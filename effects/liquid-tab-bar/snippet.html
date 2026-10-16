@@ -1,0 +1,44 @@
+<!-- liquid-tab-bar section. Finished at rest with CSS alone: the nav below
+     is the markup upstream's constructor builds, with tab 0 active and the
+     bar path, ball, highlight and contact shadow precomputed from upstream's
+     barPath / edgeY for a 480px bar (its max width), so a blocked script or a
+     pruned bundle leaves the dented bar with the ball on Home. With index.js
+     mounted the path is redrawn every frame at the real width: drag the ball
+     and the surface sags under it; let go and it settles on the nearest tab.
+     The tabs are real links, so they work and read correctly without JS.
+     Under prefers-reduced-motion the ball jumps instead of easing.
+     The bar sits at the foot of this section; set --fx-ltb-position: fixed
+     on .fx-ltb-page to pin it to the viewport as upstream does.
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/liquid-tab-bar/style.css">
+<section class="fx-ltb-page" data-fx="liquid-tab-bar">
+  <div class="fx-ltb-wrap">
+    <p class="fx-ltb-eyebrow">Bottom navigation</p>
+    <h1>A tab bar<br><span class="fx-ltb-thin">that sags under your finger.</span></h1>
+    <p class="fx-ltb-lede">The bar's surface is a membrane. It dents downward under a ball that follows your pointer, then settles onto the tab you let go over.</p>
+    <p class="fx-ltb-hint"><span class="fx-ltb-dot"></span> Grab the ball and drag it along the bar below</p>
+    <div class="fx-ltb-cards">
+      <div><b>Membrane</b>A computed Gaussian dip, not a blur filter.</div>
+      <div><b>Follow</b>requestAnimationFrame easing with liquid lag.</div>
+      <div><b>Settle</b>Release and the ball snaps to the nearest tab.</div>
+    </div>
+  </div>
+  <nav class="liquid-tab-bar" role="navigation" style="--fx-ltb-accent: #e09f5c">
+    <div class="ltb__glow" aria-hidden="true" style="left: 10%"></div>
+    <svg class="ltb__membrane" aria-hidden="true" viewBox="0 0 480 94" preserveAspectRatio="none">
+      <defs><radialGradient id="ltb-shadow-rest" cx="50%" cy="38%" r="60%"><stop offset="0%" stop-color="rgba(0,0,0,0.55)"/><stop offset="60%" stop-color="rgba(0,0,0,0.18)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
+      <path class="ltb__bar" d="M 0 30.0 L 0.0 30.09 L 5.0 31.18 L 10.0 32.65 L 15.0 34.50 L 20.0 36.67 L 25.0 39.01 L 30.0 41.33 L 35.0 43.39 L 40.0 44.97 L 45.0 45.85 L 50.0 45.93 L 55.0 45.20 L 60.0 43.76 L 65.0 41.77 L 70.0 39.48 L 75.0 37.13 L 80.0 34.91 L 85.0 32.99 L 90.0 31.44 L 95.0 30.28 L 100.0 29.49 L 105.0 29.00 L 110.0 28.75 L 115.0 28.66 L 120.0 28.69 L 125.0 28.78 L 130.0 28.90 L 135.0 29.04 L 140.0 29.18 L 145.0 29.30 L 150.0 29.42 L 155.0 29.52 L 160.0 29.61 L 165.0 29.68 L 170.0 29.74 L 175.0 29.80 L 180.0 29.84 L 185.0 29.88 L 190.0 29.90 L 195.0 29.93 L 200.0 29.94 L 205.0 29.96 L 210.0 29.97 L 215.0 29.98 L 220.0 29.98 L 225.0 29.99 L 230.0 29.99 L 235.0 29.99 L 240.0 30.00 L 245.0 30.00 L 250.0 30.00 L 255.0 30.00 L 260.0 30.00 L 265.0 30.00 L 270.0 30.00 L 275.0 30.00 L 280.0 30.00 L 285.0 30.00 L 290.0 30.00 L 295.0 30.00 L 300.0 30.00 L 305.0 30.00 L 310.0 30.00 L 315.0 30.00 L 320.0 30.00 L 325.0 30.00 L 330.0 30.00 L 335.0 30.00 L 340.0 30.00 L 345.0 30.00 L 350.0 30.00 L 355.0 30.00 L 360.0 30.00 L 365.0 30.00 L 370.0 30.00 L 375.0 30.00 L 380.0 30.00 L 385.0 30.00 L 390.0 30.00 L 395.0 30.00 L 400.0 30.00 L 405.0 30.00 L 410.0 30.00 L 415.0 30.00 L 420.0 30.00 L 425.0 30.00 L 430.0 30.00 L 435.0 30.00 L 440.0 30.00 L 445.0 30.00 L 450.0 30.00 L 455.0 30.00 L 460.0 30.00 L 465.0 30.00 L 470.0 30.00 L 475.0 30.00 L 480.0 30.00 L 480 30.00 L 480 82 Q 480 94 468 94 L 12 94 Q 0 94 0 82 Z"/>
+      <ellipse fill="url(#ltb-shadow-rest)" cx="48" cy="49" rx="23.75" ry="7"/>
+      <circle class="ltb__ball" cx="48" cy="34.5" r="25"/>
+      <circle class="ltb__ballHi" cx="41" cy="26.5" r="10.5"/>
+    </svg>
+    <div class="ltb__tabs">
+      <a class="ltb__tab is-active" href="#home" aria-label="Home" aria-current="page" data-icon="home" data-color="#e09f5c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9h13v-9"/></svg><span class="ltb__lbl">Home</span></a>
+      <a class="ltb__tab" href="#explore" aria-label="Explore" data-icon="compass" data-color="#8aa0e8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg><span class="ltb__lbl">Explore</span></a>
+      <a class="ltb__tab" href="#create" aria-label="Create" data-icon="grid" data-color="#6ee7b7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/></svg><span class="ltb__lbl">Create</span></a>
+      <a class="ltb__tab" href="#saved" aria-label="Saved" data-icon="heart" data-color="#f0929b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7-.3C19 15.6 12 20 12 20Z"/></svg><span class="ltb__lbl">Saved</span></a>
+      <a class="ltb__tab" href="#profile" aria-label="Profile" data-icon="user" data-color="#b89cf0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg><span class="ltb__lbl">Profile</span></a>
+    </div>
+  </nav>
+</section>
