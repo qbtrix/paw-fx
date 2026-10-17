@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-17**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,54 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-17 — scout run, log-only
+
+Quiet discovery, and the backlog's top two cannot be ported faithfully. No
+effect shipped. This section moves the watermark and records why.
+
+### Sources
+
+- **Codrops Creative Hub, all demos.** `tympanus.net/codrops/hub/all/` returned
+  HTTP 403 to WebFetch, so no listing could be read this run. Next run: try
+  `agent-browser` first (see the 2026-09-14 note). Do not read the 403 as
+  "nothing new".
+- **Codrops org repos, GitHub topic search, vendor releases.** Not re-run this
+  run. The 2026-09-14 survey found them quiet, and the 403 blocked the one
+  source that could show a new item.
+- **CodePen.** Still closed to discovery, per the 2026-09-14 note.
+
+### Backlog — obsidian and rainglass do not port
+
+The 2026-09-14 queue ranked `obsidian`, then `rainglass`, first. Both are
+blocked by the same thing: their `meta.json` names a palette preset, and the
+preset is not in the pinned repo.
+
+| Candidate | Upstream | Commit | Licence | Blocker |
+|---|---|---|---|---|
+| `obsidian` | `shader-gallery/shaders`, `obsidian/shader.frag` + `meta.json` | `4e8d4cb2` | MIT | `defaultPalette: "nocturne"`. The shader reads `u_palette[4]` and carries no fallback colours. The `nocturne` values live in `@shader-gallery/runtime` (npm), not in the repo. |
+| `rainglass` | `shader-gallery/shaders`, `rainglass/shader.frag` + `meta.json` | `4e8d4cb2` | MIT | `defaultPalette: "peacock"`. Same case as obsidian. |
+
+Porting either would mean choosing four colours ourselves, which the rules
+forbid. Reading the preset from the npm package would make the origin an npm
+release, not a pinned commit, so it is not a clean port either. Both stay
+queued. The next run should decide whether the npm route is acceptable.
+
+Licence re-confirmed at the pinned commit: `gh api repos/shader-gallery/shaders/license`
+returns MIT.
+
+`suminagashi` and `hologram` did not hit this, because their shaders carry
+their own four colours. Check a backlog entry's `meta.json` for a named preset
+before picking it.
+
+### Rejected
+
+Nothing new was screened, so nothing was rejected this run.
+
+### Next run should read first
+
+`gh` GraphQL has a separate hourly quota from REST. It hit 0 this run and
+blocked `gh pr list` and `gh pr create`. REST stayed fine. If a run fails with
+`API rate limit already exceeded`, check
+`gh api graphql -f query='{rateLimit{remaining resetAt}}'` and wait for the
+reset rather than retrying.
