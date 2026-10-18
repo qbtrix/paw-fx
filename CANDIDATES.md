@@ -1000,3 +1000,14 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-18 — window 2026-09-15 to 2026-10-18 (34 days quiet)
+
+**Discovery result:** Zero portable candidates. Codrops hub pushed no demos 09-15–10-18; org repos pushed are pre-existing (re-examined); GitHub trending is empty; vendors (paper, shader-gallery, tsparticles) released nothing. Confirmed quiet window.
+
+**Backlog attempt:** Tried two effects from the verified queue (ranks 21–36):
+- `image-trail` (sketches 005, C3) — port written, lint/build/docs PASS, smoke HANG (agent-browser screenshot timeout). Issue documented in prior runs; needs `agent-browser stream disable` before retry.
+- `expanding-menu` (C11) — deferred due to context limits.
+
+**Status:** Neither ported; both remain on the backlog.
+
