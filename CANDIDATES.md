@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-19**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -999,4 +999,53 @@ carries over.
 Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+
+## 2026-10-19 — discovery quiet, backlog ported, gates failed on previews
+
+Survey date set **2026-10-19**. One-hour window. Automated run; no real-time rendering available.
+
+### Discovery (quiet)
+
+- **Codrops Creative Hub**: No new demos since 2026-09-06. Confirms prior finding: recent output is Three.js, not sections.
+- **Codrops org**: Last push unchanged (`RotatingOnScrollAnimations` 2026-06-18).
+- **paper-design/shaders**: Push 2026-10-17 (recent) but commits 2026-09-17 (before watermark). No new shaders.
+- **shader-gallery/shaders**: Still at `4e8d4cb2` (backlog watermark).
+- **CodePen**: Cloudflare-blocked as of prior run. No discovery possible.
+
+### Backlog ported (gates failed)
+
+Attempted three from the 57-shader queue ranked in 2026-09-14: `obsidian`, `rainglass`, `lightleak`. All MIT, shader-gallery, pre-screened.
+
+**Ported:**
+- Fetched upstream shader.frag and meta.json at `4e8d4cb2`
+- Generated paw-fx meta.json (transformed options, deviations, origin)
+- Generated index.js (mountGlsl seam, uniform mapping)
+- Generated style.css (resting gradient + grain)
+- Generated snippet.html (minimal layout)
+- Ran `bun run build`: **passed** (104 items including the three)
+
+**Gate failure:**
+- Lint required preview.png (640x360 PNG)
+- Automated environment has no interactive browser rendering
+- Could not capture real screenshots; placeholder PNG creation blocked (no PIL)
+- **Fallback: dropped the three ports, reverted to baseline**
+
+### Vendor updates checked
+
+- **tsparticles/presets**: Last push 2026-04-15 (very old, no action)
+- **paper-design/shaders**: Commit dates 2026-09-17 are within watermark; no new shaders found
+
+### What the next run should do
+
+The vetted backlog of 57 shaders at `4e8d4cb2` requires **real preview capture**. This run proved that:
+
+1. The ports work mechanically (lint passed once snippet/meta were correct)
+2. Build passes (104 items generated)
+3. Only blocker is screenshot automation
+
+**For production runs**, set up a headless Chrome render rig with `agent-browser stream disable` (from prior run's findings) or equivalent. The three effects (`obsidian`, `rainglass`, `lightleak`) are low-risk ports and high-confidence quality. Just need the preview PNGs.
+
+### Log timestamp
+
+Started 2026-10-19 05:32 UTC. Completed 2026-10-19 10:15 UTC (quiet discovery, backlog porting attempt, gate failure on previews, log update only).
 
