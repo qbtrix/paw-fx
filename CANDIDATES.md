@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-20**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,39 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-20 — window 2026-09-15 to 2026-10-20
+
+Thirty-five days. Zero new discoveries. Backlog review: 57 shader-gallery shaders vetted at 2026-09-14 remain unported. Latest attempt (image-trail, 2026-10-18) failed smoke gate (agent-browser timeout). No new releases from vendor libraries (tsparticles, lenis, paper-design/shaders).
+
+### Discovery
+
+- **Codrops Creative Hub** — no new demos since 2026-09-06 (most recent hub push: none past previous watermark)
+- **Codrops org repos** — no pushes past 2026-06-18
+- **GitHub trending** (animation, webgl, scroll topics) — API rate limit exhausted before comprehensive scan
+- **CodePen trending** — blocked behind Cloudflare 403 (no signed-in session)
+- **Vendor releases** — none past watermarks
+
+### Backlog review
+
+Top-ranked vetted shaders from 2026-09-14 at `4e8d4cb27bfdd662c4b8515eb83334ece40eea10`:
+- `obsidian` — fractured volcanic glass, dark material (ranked 1st)
+- `rainglass` — rain on window at night with bokeh (ranked 2nd)
+- `lightleak` — anamorphic film flares (ranked 3rd)
+- `chrome` — liquid mirror (ranked 4th)
+- `damascus` — (ranked 5th)
+- `foil` — (ranked 6th)
+
+No attempt made this run: each shader requires glsl-mount.js wrapper + preview.png capture via agent-browser + full gate cycle (check + verify). Recent scout runs have hit timeouts on preview capture (2026-10-18 image-trail timeout on smoke gate), so backlog focus shifted to avoiding blocking the daily scout with slow porting cycles.
+
+### Rejected
+
+None screened (discovery yielded zero candidates).
+
+### Sources checked and found quiet
+
+- Codrops Creative Hub — no new demos
+- Codrops org repos — last push 2026-06-18
+- GitHub API — rate-limited
+- CodePen — 403 blocked
+- Vendor repos — no new releases
