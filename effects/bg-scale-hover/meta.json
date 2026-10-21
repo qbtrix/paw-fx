@@ -1,0 +1,29 @@
+{
+  "name": "bg-scale-hover",
+  "kind": "effect",
+  "version": "1.0.0",
+  "category": "gallery",
+  "tags": ["hover", "background", "navigation", "image"],
+  "summary": "Navigation menu with a full-bleed background image that scales up on item hover, revealed through an expanding clip window.",
+  "needs": ["anime"],
+  "options": {
+    "duration": {
+      "type": "number",
+      "default": 1800,
+      "description": "Animation duration in milliseconds"
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "codrops/BackgroundScaleHoverEffect",
+    "commit": "5ec048fcd4d43d7ec80260c2037065e6f77d6011",
+    "path": ["src/js/screen.js", "src/js/navigation.js", "src/css/base.css"]
+  },
+  "deviations": [
+    {
+      "kind": "api-migration",
+      "what": "GSAP tweens → anime.js v4. Easing names: Power2.easeOut → easeOutPower2. Timeline management moved to individual animate() calls.",
+      "why": "GSAP licence forbids use in tools that let people build animations without code, which paw-fx is. Every duration, easing curve and stagger is upstream's; only the spelling moved."
+    }
+  ]
+}

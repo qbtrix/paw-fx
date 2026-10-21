@@ -1,0 +1,81 @@
+/* Copyright (c) 2009 - 2020 [Codrops] — MIT */
+
+:root {
+  --fx-text-color: #e5e3e0;
+  --fx-bg-color: #000;
+  --fx-link-color: #e5e3e0;
+  --fx-link-hover: #fff;
+  --fx-menu-bg: #282b27;
+  --fx-clip-path: polygon(37% 15%, 63% 15%, 63% 85%, 37% 85%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fx-text-color: #e5e3e0;
+    --fx-bg-color: #000;
+    --fx-link-color: #e5e3e0;
+    --fx-link-hover: #fff;
+    --fx-menu-bg: #282b27;
+  }
+}
+
+[data-fx-live] {
+  background-color: var(--fx-bg-color);
+  color: var(--fx-text-color);
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.bg-scale-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background: var(--fx-menu-bg);
+}
+
+.bg-scale-nav a {
+  color: var(--fx-link-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+
+.bg-scale-nav a:hover {
+  color: var(--fx-link-hover);
+}
+
+.bg-scale-items {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.bg-scale-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  clip-path: var(--fx-clip-path);
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-scale-item:first-child {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-scale-item {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}

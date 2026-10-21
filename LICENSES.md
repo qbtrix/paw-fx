@@ -27,6 +27,7 @@ directory to each other. `swup` was staged and dropped, so it appears in neither
 
 | Effect | Licence | Upstream |
 |---|---|---|
+| **bg-scale-hover** | **MIT** | **[codrops/BackgroundScaleHoverEffect](https://github.com/codrops/BackgroundScaleHoverEffect) `5ec048fc`, `src/js/screen.js` + `src/js/navigation.js` + `src/css/base.css`** |
 | aurora-css | MIT | paw-fx (original) |
 | mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `6046740`, `packages/shaders/src/shaders/mesh-gradient.ts` |
 | starfield | MIT | [tsparticles/presets](https://github.com/tsparticles/presets) `ae866a5`, `presets/stars/src/options.ts` |

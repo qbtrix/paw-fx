@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-21**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,27 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-10-21 — window 2026-09-15 to 2026-10-21
+
+37 days. Quiet run: no new portables after 2026-09-14.
+
+### Discovery
+
+- **Codrops Creative Hub.** Fetched. Newest section-shaped demo is `RepeatingImageTransition` (2026-10-04, already ported as `image-repeat-reveal`). Recent pushes 2026-10-04 to 2026-10-20 are all either already-ported repos, already-excluded (GSAP plugins, font bundles, SMTP deps), or full-page Astro templates (`interlude`, `atelier-north`, `isle-thorne-collective`, `CinemaSeatPreview`).
+- **GitHub trending.** No October 2026 trending list found; GitHub's trending filter requires a real UI.
+- **Vendor releases.** Paper Shaders v0.0.78 (date unknown). tsparticles 4.4.0 (2026-08-31, pre-watermark, no new effects). Lenis 1.3.26 (already vendored).
+- **CodePen.** Blocked — `codepen.io` sits behind Cloudflare bot challenge (403 on `/trending`, `/picks`, `/*/feed`). No discovery path available.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Gates |
+|---|---|---|---|---|
+| `bg-scale-hover` | [codrops/BackgroundScaleHoverEffect](https://github.com/codrops/BackgroundScaleHoverEffect) | `5ec048fc` | MIT | lint✓ build✓ smoke✓ verify WARN (numeric constants ours) |
+
+### Backlog strategy
+
+Discovery found zero new portables after 2026-09-14. Per Step 3.5, pulled from the vetted backlog: `bg-scale-hover` (ranked 12 in 2026-09-06 survey, line 327) was the pick. Next unported backlog candidates: `grid-hover-reveal` (rank 15, line 305) and `sticky-logo-scroll` (rank 16, line 537) are available if a second port is wanted.
+
+### Solace shaders
+
+The 14-shader MIT repo HARSHITSHARMA18/shaders pushed 2026-09-26. One effect, `solace-field`, was ported earlier. The remaining 13 need a convention for image sampling that is not yet established in paw-fx (gallery effects currently use CSS backgrounds; Solace shaders would need `<img>` + pixel-level access). Rank for future run: `chromatic-refraction` (no current equivalent), `refractive-lens` (same), `black-hole-portal` (same). Deferred pending convention.
