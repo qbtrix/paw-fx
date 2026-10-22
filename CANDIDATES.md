@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-22**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -999,4 +999,31 @@ carries over.
 Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+
+## 2026-10-22 — window 2026-09-15 to 2026-10-22
+
+Quiet day. No new effects discovered; backlog exists.
+
+### Sources checked
+
+- **Codrops Creative Hub:** No demos published 09-15 to 10-22. Hub remains Three.js/WebGPU/experimental; section-shaped work is absent.
+- **Codrops org repos:** No new pushes since RotatingOnScrollAnimations (2026-06-18).
+- **GitHub trending:** Narrow yield on `animation`, `css-animation`, `shaders`, `webgl` topics; everything above noise is infrastructure, not sections.
+- **CodePen:** Cloudflare 403 blocks all trending and picks feeds; discovery closed. Porting path still works with direct pen URLs.
+
+### Vetted, not ported — shader-gallery backlog ready
+
+The 57 shaders from the 2026-09-14 run at `4e8d4cb2` remain available. Three rank highest for a future run:
+
+| Name | Family | Colour | Parametric |
+|---|---|---|---|
+| `sg-obsidian` | Burnish | Black volcanic glass with conchoidal fractures; studio lights reflect and circle. | 6 params: scale, rib height, light drift, polish, palette tint, mouse influence |
+| `sg-rainglass` | Veil | Rain on a window; bokeh lights behind fogged glass, drops fall and smear, each is a lens. | 6 params: rain amount, speed, smear, fog, lens strength, light density |
+| `sg-lightleak` | Veil | Film light leak: soft blooms bleed from edges, anamorphic streaks flare, halation glow beneath. | 5 params: leak, streak, warmth, spread, speed |
+
+All three MIT, full upstream GLSL, zero new dependencies. Each ~1 hour to port with preview and gates.
+
+### Rejected
+
+No new sources rejected this run.
 
