@@ -1,0 +1,22 @@
+{
+  "name": "sg-obsidian",
+  "kind": "effect",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": ["obsidian", "glass", "fracture", "dark", "shader", "material"],
+  "summary": "A freshly broken face of black volcanic glass with shell-shaped fracture scars.",
+  "needs": [],
+  "options": {
+    "u_scale": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Scale of the fracture pattern"
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": "obsidian/shader.frag"
+  }
+}
