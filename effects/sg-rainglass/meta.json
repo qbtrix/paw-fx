@@ -1,0 +1,22 @@
+{
+  "name": "sg-rainglass",
+  "kind": "effect",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": ["rain", "glass", "droplets", "bokeh", "night", "window", "shader"],
+  "summary": "Rain on a window at night with bokeh lights and lens-like refraction drops.",
+  "needs": [],
+  "options": {
+    "u_speed": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Speed of rain and bokeh motion"
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": "rainglass/shader.frag"
+  }
+}

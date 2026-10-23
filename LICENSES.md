@@ -196,6 +196,8 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | sg-sheen | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `sheen/shader.frag` |
 | sg-weft | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `weft/shader.frag` |
 | sg-hologram | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `hologram/shader.frag` |
+| sg-obsidian | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `obsidian/shader.frag` |
+| sg-rainglass | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `rainglass/shader.frag` |
 | sg-suminagashi | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `suminagashi/shader.frag` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |

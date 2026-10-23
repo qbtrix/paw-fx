@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-23**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -999,4 +999,24 @@ carries over.
 Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+
+
+## 2026-10-23 — window 2026-09-14 to 2026-10-23
+
+39 days. Zero new sources since the last watermark. Codrops quiet, GitHub trending empty, CodePen blocked. Fell back to vetted backlog per Step 3.5.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-obsidian` | `shader-gallery/shaders`, `obsidian/shader.frag` | `4e8d4cb2` | MIT | Fractured volcanic glass with shell-shaped conchoidal scars. Dark material hero with zero dependencies. First fracture-surface shader. |
+| `sg-rainglass` | `shader-gallery/shaders`, `rainglass/shader.frag` | `4e8d4cb2` | MIT | Rain on a window at night with bokeh and lens-like refraction drops. Adjacent to `bokeh-drift` but richer, more photographic. Night-time hero backlog. |
+
+Both gates green: `check` 103 effects (lint ok, build ok, smoke ok, 427 tests), `verify` 103 pass / 1 pre-existing warn (paw-avatar).
+
+### Backlog untouched
+
+55+ shader-gallery shaders remain queued at `4e8d4cb2`, ranked: `chrome`, `rainglass` (now ported), `lightleak`, `obsidian` (now ported), `damascus`, `foil`.
+
+14 Solace shaders (cleared to port, MIT, no Shadertoy idioms) remain unscheduled; 9 source shapes found, 5 needing image-sample slots.
 

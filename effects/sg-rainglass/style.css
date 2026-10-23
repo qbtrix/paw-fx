@@ -1,0 +1,40 @@
+.fx-sg-rainglass {
+  --fx-scrim: 0.4;
+  --fx-light: hsl(210, 20%, 90%);
+  --fx-dark: hsl(210, 15%, 15%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: linear-gradient(180deg, #1a2a3a 0%, #0d1620 100%);
+  color: var(--fx-light);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-sg-rainglass__rest {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #1a2a3a 0%, #0d1620 100%);
+  z-index: -2;
+}
+
+.fx-sg-rainglass__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,var(--fx-scrim)) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fx-sg-rainglass__grain {
+  position: absolute;
+  inset: 0;
+  background-image:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="3"/></filter><rect width="256" height="256" fill="%23fff" filter="url(%23g)" opacity="0.02"/></svg>');
+  pointer-events: none;
+  z-index: 1;
+}

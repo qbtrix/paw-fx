@@ -1,0 +1,40 @@
+.fx-sg-obsidian {
+  --fx-scrim: 0.6;
+  --fx-light: hsl(0, 0%, 95%);
+  --fx-dark: hsl(0, 0%, 8%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: linear-gradient(135deg, var(--fx-dark) 0%, #1a1a1a 100%);
+  color: var(--fx-light);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-sg-obsidian__rest {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--fx-dark) 0%, #1a1a1a 100%);
+  z-index: -2;
+}
+
+.fx-sg-obsidian__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,var(--fx-scrim)) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fx-sg-obsidian__grain {
+  position: absolute;
+  inset: 0;
+  background-image:
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="2"/></filter><rect width="256" height="256" fill="%23000" filter="url(%23g)" opacity="0.03"/></svg>');
+  pointer-events: none;
+  z-index: 1;
+}
