@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-25**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -999,4 +999,31 @@ carries over.
 Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+
+
+## 2026-10-25 — window 2026-09-14 to 2026-10-25
+
+41 days. Zero new discoveries post-watermark. One backlog attempt, failed on preview gate.
+
+### Attempted port
+
+| Effect | Upstream | Commit | Status |
+|---|---|---|---|
+| `sg-obsidian` | shader-gallery/shaders | `4e8d4cb2`, `obsidian/shader.frag` | **Failed** — preview.png capture not available in this environment (agent-browser screenshot timeout) |
+
+### Vetted, not ported — Codrops backlog
+
+Ranked top tier from the 2026-09-14 exclusions: `rainglass`, `lightleak`, `chrome`, `damascus`. All MIT, all at commit `4e8d4cb2` or `cd06eee`. Ready to port when next run has preview capture working.
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub.** Last new post 2026-09-06. Nothing published 2026-09-07 to 2026-10-25.
+- **Codrops org repos.** Last push `RotatingOnScrollAnimations` 2026-06-18. Nothing new.
+- **Vendor releases.** No new releases of paper-design/shaders, shader-gallery/shaders, tsparticles, or lenis in the window.
+- **GitHub trending** (animation/webgl/shaders). All non-section: engines, editors, games. Nothing portable.
+- **Solace shaders** (HARSHITSHARMA18/shaders, found 2026-09-15, 14 shaders MIT, cleared to port). Complex structure (React + GLSL ES 3.00 + texture inputs) — higher engineering lift than daily scout covers. Vetted, ranked for future runs: `chromatic refraction`, `refractive lens`, `black hole portal` (no shelf equivalents); `exposure-grid` (smallest, proves texture path, 294 lines).
+
+### Quiet day
+
+No new discoveries matching the 40-hour delivery window. One backlog attempt blocked on tooling (preview capture). Next run should try Solace or the top-ranked Codrops backlog items if preview tooling is fixed.
 
