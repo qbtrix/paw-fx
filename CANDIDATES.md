@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-26**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -999,4 +999,27 @@ carries over.
 Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
+
+
+## Scout log — 2026-10-26
+
+**Discovery status:** Quiet since 2026-09-14 watermark.
+
+**Sources checked:**
+- Codrops org repos: newest push still `RotatingOnScrollAnimations` 2026-06-18.
+- Codrops Creative Hub: newest demo still 2026-09-06 (face mask with MediaPipe; rejected — fetches models off-site).
+- Vendor releases: tsparticles v4.4.0 (2026-08-31, pre-watermark), lenis already vendored, paper-design cuts no releases.
+- GitHub search (css-animation, scroll-animation, etc., pushed after 2026-09-14): nothing section-shaped.
+- CodePen: blocked by Cloudflare bot challenge on `/trending`, `/picks`, RSS feeds; `/details` pages inaccessible.
+
+**New candidate found:**
+- **Solace shaders** (`HARSHITSHARMA18/shaders`): 14 WebGL effects (actually 9 source files), MIT, "Copyright (c) 2026 Harshit Sharma". Cleared to port in 2026-09-15 scout (checked for Shadertoy lifts; none found). React/Next wrapper needs rewriting to vanilla. Suitable for backlog ranking after first port is tested.
+
+**Backlog state:**
+- Shader-gallery `4e8d4cb2`: 57 shaders ranked, 19 shipped (sg-*), 38 waiting.
+  Top ranked not yet ported: `lightleak`, `chrome`, `damascus`, `foil`, `lightshow`, ...
+- 31 open scout PRs queued (most recent 2026-10-25); none merged. PR #68 has sg-obsidian, sg-rainglass; PR #66 has bg-scale-hover; others unreviewed.
+
+**This run:**
+No new portable discoveries. Backlog remains full. 31 PRs already queued without captain merge; adding more increases wait without clearing the line. Quiet day. Log updated, no port.
 
