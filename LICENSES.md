@@ -453,3 +453,6 @@ than as lightning; and `bubbles` is a third rising-particle effect next to
 disk upstream but is not exported from `src/effects/index.js`, and a `fire`
 effect was removed before this commit.
 
+| sg-obsidian | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `obsidian/shader.frag` |
+| sg-rainglass | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `rainglass/shader.frag` |
+| sg-lightleak | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `lightleak/shader.frag` |
