@@ -1000,3 +1000,32 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-27 — quiet day, backlog port (shader-gallery)
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-obsidian` | `shader-gallery/shaders`, `obsidian/shader.frag` | `4e8d4cb2` | MIT | Fractured volcanic glass, dark material. Discovery window yielded only GSAP-heavy Codrops repos. Backlog 2026-09-14 ranked this first. |
+| `sg-rainglass` | `shader-gallery/shaders`, `rainglass/shader.frag` | `4e8d4cb2` | MIT | Rain on night window, bokeh behind. Richer adjacent to `bokeh-drift`. Second on rank. |
+| `sg-lightleak` | `shader-gallery/shaders`, `lightleak/shader.frag` | `4e8d4cb2` | MIT | Anamorphic film flares. Adjacent to `god-rays`. Third on rank. |
+
+Gates: `check` 104 effects (lint, build, smoke, 429 tests), `verify` 99 pass / 2 warn / 0 fail. New ports: sg-obsidian PASS, sg-rainglass WARN (numeric-trace: palette not traced — seam deviation), sg-lightleak PASS.
+
+### Discovered, not ported — recent Codrops (GSAP-heavy)
+
+| Candidate | Repo | Licence | Why not |
+|---|---|---|---|
+| `OnScrollColumnsRows` | codrops/OnScrollColumnsRows, 2026-10-22 | MIT | GSAP ScrollTrigger + Lenis. Medium port. |
+| `DoubleImageHoverEffects` | codrops/DoubleImageHoverEffects, 2026-10-21 | MIT | GSAP + three.js. Medium port. |
+| `ConnectedGrid` | codrops/ConnectedGrid, 2026-10-20 | MIT | GSAP ScrollTrigger + Lenis. Medium port. |
+| `SlideshowAnimations` | codrops/SlideshowAnimations, 2026-10-16 | MIT | GSAP + three.js (6 variants). Large port. |
+
+New discoveries all require GSAP/ScrollTrigger migration to anime.js, same as the 2026-09 batch. Prefer backlog to new GSAP-heavy work: each shader is 1 hour; each Codrops multi-file effect is 4-8 hours. Rank the Codrops repos for a future scout when bandwidth opens: prioritize `OnScrollColumnsRows` (freshest, single mechanism), then two low-weight variants from Codrops sketches. Never rank `SlideshowAnimations` before its variants finish.
+
+### Sources checked
+
+- **Codrops org repos pushed 2026-09-14 to 2026-10-27.** Newest six: OnScrollColumnsRows, DoubleImageHoverEffects, ConnectedGrid, SlideshowAnimations, CinemaSeatPreview, 3DCarousel. All MIT-licensed. All GSAP/three.js/Lenis.
+- **Shader-gallery backlog (vetted 2026-09-14).** 57 shaders at `4e8d4cb`, MIT, same mount contract. Took top 3 of ranked six. Four more (chrome, damascus, foil) remain ranked; skip "marquee", "confetti", "plasma", "ascii"-adjacent, duplicates of shipped effects.
+- **Hub and vendor releases.** No new public Codrops releases 2026-09-15 to 2026-10-27. tsparticles, lenis, paper-design vendors unchanged. CodePen search inconclusive (platform search, not API).

@@ -1,0 +1,36 @@
+{
+  "name": "sg-lightleak",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["shader", "webgl", "hero", "shader-gallery", "lightleak"],
+  "summary": "Shader Gallery shader: lightleak effect",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#232c6b", "#7d6bff", "#16404f", "#2b1642"],
+      "description": "Four poles; index 1 is the luminous one. Falls back to --fx-c1..--fx-c4."
+    },
+    "driftSpeed": {
+      "type": "number",
+      "default": 0.14,
+      "description": "Drift rate of the twilight poles. 0 holds the dusk still."
+    },
+    "glow": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Brightness of the pole blooming through the dark."
+    },
+    "warp": {
+      "type": "number",
+      "default": 0.6,
+      "description": "Organic distortion of the colour edges."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": "lightleak/shader.frag"
+  }
+}
