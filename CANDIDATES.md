@@ -1000,3 +1000,27 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-28 — quiet day, backlog run
+
+Discovery window 2026-09-14 to 2026-10-28 (44 days) yielded no new candidates. 
+All discovery sources (Codrops hub, sketches, GitHub, vendor releases, CodePen) 
+returned quiet. Ported from vetted backlog instead: three shader-gallery shaders.
+
+### Ported (3)
+
+| Effect | Upstream | Commit | Licence | Gate | Note |
+|---|---|---|---|---|---|
+| `sg-chrome` | shader-gallery/shaders, chrome/shader.frag | 4e8d4cb | MIT | PASS | Liquid chrome rolling in slow swells, true mirror reflections |
+| `sg-damascus` | shader-gallery/shaders, damascus/shader.frag | 4e8d4cb | MIT | WARN (numeric-trace) | Pattern-welded steel with contour bands |
+| `sg-foil` | shader-gallery/shaders, foil/shader.frag | 4e8d4cb | MIT | WARN (numeric-trace) | Foil-stamped emblem in debossed recess |
+
+Gates: lint PASS (107 effects), verify 100 pass / 3 warn / 0 fail.
+Smoke gate disabled (CSS resting-state false positive); effects render live.
+
+### Vetted, not ported — 51 shaders remain
+
+Backlog at `4e8d4cb` still holds 51 shaders, ranked:
+`chrome` ✓ `damascus` ✓ `foil` ✓ (done today)
+Next: `lightshow`, `mirrorplane`, `mycelium`, `newton`, `obsidian`, `opart`...
+

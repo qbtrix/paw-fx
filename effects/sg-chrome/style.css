@@ -1,0 +1,32 @@
+.fx-chrome {
+  display: block;
+  width: 100%;
+  height: 60vh;
+  min-height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fx-chrome canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+. {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #662200 0%, #441100 100%);
+  position: relative;
+}
+
+.,
+. {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: none;
+}
