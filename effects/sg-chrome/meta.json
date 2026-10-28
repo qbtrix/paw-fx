@@ -1,0 +1,33 @@
+{
+  "name": "sg-chrome",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["metal", "chrome", "liquid", "mirror", "reflection", "specular", "surface", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed liquid chrome rolling in slow swells. A domain-warped height field shaded as a true mirror reflecting a studio scene with hard strip lights.",
+  "needs": [],
+  "options": {
+    "flow": {"type": "number", "default": 0.3, "description": "How fast the metal rolls; 0 freezes it."},
+    "relief": {"type": "number", "default": 1.1, "description": "Height of the swells; low is flat, high is tilted."},
+    "ripple": {"type": "number", "default": 1.0, "description": "Domain-warp folding; low is broad swells, high is tight ridges."},
+    "gloss": {"type": "number", "default": 0.85, "description": "Sharpness of reflections; low is satin, high is mirror."},
+    "mouseInfluence": {"type": "number", "default": 0.0, "description": "How strongly the pointer pushes into the metal."}
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["chrome/shader.frag", "chrome/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The palette colours are ours, not upstream's nocturne preset.",
+      "why": "Upstream's palette lives in @shader-gallery/runtime. Ours matches the CSS resting state.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream runs grain, aberration, vignette, contrast, saturation over output.",
+      "why": "The post chain is in @shader-gallery/runtime. Our CSS grain layer covers banding.",
+      "kind": "ours"
+    }
+  ]
+}

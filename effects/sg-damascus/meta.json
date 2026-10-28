@@ -1,0 +1,16 @@
+{
+  "name": "sg-damascus",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["metal", "damascus", "pattern", "welded", "etched", "shader-gallery"],
+  "summary": "Pattern-welded steel with tight contour bands that bunch into ladder rungs and flow like grain between dimples.",
+  "needs": [],
+  "options": {},
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["damascus/shader.frag"]
+  },
+  "deviations": []
+}
