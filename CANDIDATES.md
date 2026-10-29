@@ -1000,3 +1000,25 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-29 — window 2026-09-15 to 2026-10-29
+
+Quiet day. No discovery, backlog deferred.
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub.** No new section-shaped demos published since 2026-09-15.
+- **Codrops org.** No pushes to MIT-licensed repos.  
+- **GitHub trending.** No new animation/webgl/css-animation repos with allow-listed licences.
+- **CodePen.** Behind Cloudflare bot challenge (confirmed from prior run notes).
+
+### Backlog status
+
+57 shader-gallery shaders at `4e8d4cb2`, ranked `obsidian` / `rainglass` / `lightleak` / `chrome` / `damascus` / `foil` — **deferred to next run** for dedicated porting session. Each is an hour of work on the proven glsl-mount.js runtime.
+
+14 Solace shaders (MIT, found 2026-09-15) require glsl2-mount.js (WebGL2 ES 3.00) — **deferred** pending upstream runtime decision.
+
+### Next run
+
+Pick 3-5 from the shader-gallery ranked list. All are vetted MIT, all exist at commit 4e8d4cb2, all use the existing `_shared/glsl-mount.js` pattern.
+
