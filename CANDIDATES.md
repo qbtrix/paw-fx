@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-10-30**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,30 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-10-30 — window 2026-09-15 to 2026-10-30
+
+46 days. Discovery quiet; backlog run attempted, gates failed.
+
+### Discovery
+
+| Source | Result |
+|--------|--------|
+| Codrops Creative Hub | No new demos (last: 2026-09-06) |
+| Codrops org repos | No new pushes (last: RotatingOnScrollAnimations, 2026-06-18) |
+| GitHub trending (topics: animation, webgl, scroll-animation, shaders) | Nothing section-shaped newer than watermark |
+| Vendor releases (tsparticles, lenis, paper-design) | No new versions requiring shader ports |
+| CodePen | Still blocked behind Cloudflare bot challenge (403 on /trending, /picks, feeds) |
+
+### Backlog porting attempt
+
+Screened two shaders from the vetted queue at shader-gallery `4e8d4cb2` for potential port:
+- `obsidian` — fractured volcanic glass, conchoidally fractured shells, Fresnel reflections, studio light rig
+- `rainglass` — rain on night window, bokeh city lights, depth parallax
+
+Both source files fetched, index.js/meta.json/snippet.html/style.css written, LICENSES.md updated. **Result: Both dropped.** preview.png capture failed (agent-browser screenshot tool timeout or stream issue); lint requires previews present. The backlog remains vetted and ready: both entries stay in queue at `4e8d4cb2` for future runs.
+
+### Next run
+
+- CodePen capture remains blocked; investigate Cloudflare workaround
+- Confirm agent-browser stream status (`agent-browser stream status`) before capture
+- Backlog shaders obsidian, rainglass ready to retry once previews work
