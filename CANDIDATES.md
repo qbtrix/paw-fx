@@ -1000,3 +1000,33 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-10-31 — window 2026-09-14 to 2026-10-31
+
+47 days. Discovery found zero portable candidates (5 recent Codrops repos all use GSAP); backlog of 57 unported shader-gallery shaders remains available at commit `4e8d4cb2`.
+
+### Ported
+
+None. All discovery candidates rejected at GSAP check.
+
+### Vetted, not ported — backlog unchanged
+
+Shader-gallery backlog `4e8d4cb27bfdd662c4b8515eb83334ece40eea10`, ranked for future runs:
+`obsidian`, `rainglass`, `lightleak`, `chrome`, `damascus`, `foil` plus 51 others.
+
+### Rejected
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `SlideshowAnimations` | codrops, pushed 2026-10-16 | **Uses GSAP** — "Animation by GSAP" in README |
+| `OnScrollColumnsRows` | codrops, pushed 2026-10-22 | **Uses GSAP** — "Animations with GSAP and ScrollTrigger" |
+| `DoubleImageHoverEffects` | codrops, pushed 2026-10-21 | **Uses GSAP** — "Animations with GSAP" |
+| `ConnectedGrid` | codrops, pushed 2026-10-20 | **Uses GSAP** — "GSAP with ScrollTrigger" |
+| `3DCarousel` | codrops, pushed 2026-10-13 | **Uses GSAP** (likely; README cut off in fetch) |
+
+### Sources checked and found quiet
+
+- **Codrops org repos.** Searched for pushes 2026-09-14 onward: all 5 found use GSAP.
+- **GitHub animation repos.** Searched trending; recent MIT repos are full applications, not portableeffects.
+- **shader-gallery.** Last commit 2026-09-09, before watermark.
+- **CodePen.** No new MIT public pens found matching effect patterns since LASTDATE.
