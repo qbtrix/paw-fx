@@ -1,0 +1,22 @@
+<!-- sg-circuit section. Finished at rest with CSS alone: the solder mask, the
+     traces and the pads in .fx-pcb__rest are the hero with JavaScript off, and
+     index.js only covers them with a WebGL canvas once it has the shader, a
+     context and a linked program. The _fx paths are root-absolute because a
+     site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The three decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-circuit/style.css">
+<section class="fx-pcb" data-fx="sg-circuit">
+  <div class="fx-pcb__rest" aria-hidden="true"></div>
+  <div class="fx-pcb__scrim" aria-hidden="true"></div>
+  <div class="fx-pcb__grain" aria-hidden="true"></div>
+  <div class="fx-pcb__inner">
+    <p class="fx-pcb__eyebrow"><span class="fx-pcb__dot" aria-hidden="true"></span>Now shipping</p>
+    <h1 class="fx-pcb__title">Infrastructure that routes itself.</h1>
+    <p class="fx-pcb__lede">Replace this copy with your own. The headline slot takes one line or three, and the pulses keep racing along the board behind it either way.</p>
+    <div class="fx-pcb__actions">
+      <a class="fx-pcb__cta fx-pcb__cta--primary" href="#">Get started</a>
+      <a class="fx-pcb__cta fx-pcb__cta--ghost" href="#">Read the docs</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,239 @@
+/* sg-circuit: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting board together instead of leaving the two clashing at the
+   moment the canvas appears. --fx-c1 is the solder mask in both states, --fx-c2
+   the copper and --fx-c3 the tinned pads. The shader does not read --fx-c4;
+   here it is a faint copper warmth under the mask.
+
+   The resting layer is line work like the shader, so it is drawn with
+   repeating gradients at the shader's 8px pitch rather than blurred: the
+   fibreglass weave as a faint checker, three routing lanes of parallel traces,
+   and two rows of pads. The 45-degree jogs are the one thing CSS cannot do
+   cheaply and are left out; at rest the board is all straight runs.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-pcb__rest   the CSS board, covered by the canvas once it paints
+     -1  <canvas>        inserted by glsl-mount.js (inline style)
+      0  .fx-pcb__scrim  legibility wash, over whichever layer is showing
+      1  .fx-pcb__inner  the copy */
+.fx-pcb {
+  --fx-c1: #2f9c80;
+  --fx-c2: #5cc7a8;
+  --fx-c3: #d8efe2;
+  --fx-c4: #c98a4b;
+  --fx-bg: #061411;
+  --fx-ink: #ffffff;
+  --fx-muted: #dcebe4;
+  --fx-speed: 1;
+  --fx-scrim: 0.88;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a "full-bleed" hero overflows the viewport by exactly
+     its own padding. An effect drops into a site whose reset it does not
+     control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* Top to bottom: two rows of tinned pads, three lanes of traces (two
+   horizontal, one vertical), the weave, the raking light, the mask. The mask is
+   the shader's own recipe -- c1 a quarter greyed and taken to 37%. */
+.fx-pcb__rest {
+  position: absolute;
+  inset: -4%;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--fx-c3) 80%, transparent) 0 3px, transparent 3.5px) 18% 22% / 16px 16px no-repeat,
+    radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--fx-c3) 80%, transparent) 0 3px, transparent 3.5px) 82% 74% / 16px 16px no-repeat,
+    repeating-linear-gradient(to right, color-mix(in oklab, var(--fx-c3) 60%, transparent) 0 6px, transparent 6px 16px) 14% 20% / 80px 10px no-repeat,
+    repeating-linear-gradient(to right, color-mix(in oklab, var(--fx-c3) 60%, transparent) 0 6px, transparent 6px 16px) 80% 76% / 80px 10px no-repeat,
+    repeating-linear-gradient(to bottom, color-mix(in oklab, var(--fx-c2) 46%, transparent) 0 2px, transparent 2px 8px) 0 18% / 100% 40px no-repeat,
+    repeating-linear-gradient(to bottom, color-mix(in oklab, var(--fx-c2) 46%, transparent) 0 2px, transparent 2px 8px) 0 78% / 100% 32px no-repeat,
+    repeating-linear-gradient(to right, color-mix(in oklab, var(--fx-c2) 38%, transparent) 0 2px, transparent 2px 8px) 88% 0 / 40px 100% no-repeat,
+    repeating-linear-gradient(45deg, color-mix(in oklab, #000000 14%, transparent) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(-45deg, color-mix(in oklab, #000000 10%, transparent) 0 2px, transparent 2px 6px),
+    radial-gradient(70% 60% at 20% 10%, color-mix(in oklab, var(--fx-c3) 10%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 80% 100%, color-mix(in oklab, var(--fx-c4) 8%, transparent), transparent 72%),
+    color-mix(in oklab, color-mix(in oklab, var(--fx-c1) 75%, #8a8a8a) 37%, #000000);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-pcb[data-fx-live] .fx-pcb__rest {
+  opacity: 0;
+}
+
+/* Wide dark fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the grain
+   in upstream's poster post chain, which we do not have. */
+.fx-pcb__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than relying on where the field
+   happens to sit, because in the live state it does not sit still. Held flat
+   across the inner 36% -- the whole column -- then eased out over four stops,
+   because a flat core running straight into one linear ramp draws a visible
+   hard-edged ellipse across the hero.
+
+   MEASURED: Live shader, copy hidden, worst WCAG ratio between each run's
+   computed colour and any pixel under its box, over eight frames 1.5s apart.
+   At the 0.78 this started on, the title fell to 4.24:1 whenever a pulse head
+   crossed it; pulses are the brightest pixels on the board and they move
+   through the copy column. 0.88 lifts the title to 5.41:1 (1280x720) and
+   5.40:1 (390x844), the lede to 6.55:1 and 5.28:1. Re-measure before lowering
+   it. */
+.fx-pcb__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #020a08 84%, transparent) 0%,
+    color-mix(in oklab, #020a08 84%, transparent) 36%,
+    color-mix(in oklab, #020a08 56%, transparent) 54%,
+    color-mix(in oklab, #020a08 28%, transparent) 70%,
+    color-mix(in oklab, #020a08 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-pcb__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-pcb__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-pcb__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c3);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c3) 22%, transparent);
+}
+
+.fx-pcb__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #020a08 66%, transparent);
+}
+
+.fx-pcb__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-pcb__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-pcb__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-pcb__cta--primary {
+  background: var(--fx-ink);
+  color: #020a08;
+}
+
+.fx-pcb__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-pcb__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-pcb__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-pcb__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer drifts, and only when motion is allowed. It
+   translates and never scales: scaling a hairline pitch beats against the
+   display grid and the whole field crawls with moire. The shader has its own
+   reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-pcb__rest {
+    animation: fx-pcb-drift calc(40s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-pcb-drift {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(1.2%, -0.8%, 0);
+    }
+    100% {
+      transform: translate3d(BACfx-pcb-drift);
+    }
+  }
+}

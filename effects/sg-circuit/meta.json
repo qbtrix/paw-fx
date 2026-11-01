@@ -1,0 +1,63 @@
+{
+  "name": "sg-circuit",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["circuit", "pcb", "traces", "copper", "solder-mask", "technical", "pulse", "dark", "developer", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's circuit: a printed circuit board seen straight down under raking light, copper bundles jogging at 45 degrees across a solder mask with the fibreglass weave showing through, ending in rows of tinned pads and vias, while pulses of light race along the traces with comet tails. A technical hero for developer tools that is not a code background.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#2f9c80", "#5cc7a8", "#d8efe2", "#c98a4b"],
+      "description": "Four poles. Index 0 is the solder mask, 1 tints the copper under it, 2 is the tinned pads, the silkscreen tint and the travelling pulses. Index 3 is not read by the shader; the CSS rest uses it as a copper accent. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "pitch": {
+      "type": "number",
+      "default": 8,
+      "description": "Trace pitch in CSS pixels; low is a dense fine-pitch board, high is a chunky hobby board. Upstream default, range 4 to 16."
+    },
+    "speed": {
+      "type": "number",
+      "default": 1,
+      "description": "How fast the light pulses travel along the traces; 0 freezes them in place. Upstream default, range 0 to 3."
+    },
+    "density": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Fraction of lanes that carry a trace bundle; the rest hold SMD footprints or bare mask. Upstream default, range 0.2 to 1."
+    },
+    "glow": {
+      "type": "number",
+      "default": 1,
+      "description": "Brightness of the travelling pulses and their halo on the mask; 0 is an unpowered board. Upstream default, range 0 to 2.5."
+    },
+    "weave": {
+      "type": "number",
+      "default": 1,
+      "description": "Visibility of the fibreglass weave and mask mottle in the ground; 0 is a flat matte mask. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["circuit/shader.frag", "circuit/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `verdigris` preset.",
+      "why": "circuit/meta.json declares `defaultPalette: \"verdigris\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. The shader's own zero-branch fallback is blue and violet and would read as a different board. Same call sg-obsidian, sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.18, saturation 1.05 and contrast 1.04 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
