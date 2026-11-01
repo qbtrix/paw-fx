@@ -1,0 +1,63 @@
+{
+  "name": "sg-fluted",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["fluted", "reeded", "ribbed", "glass", "refraction", "dispersion", "specular", "glow", "dark", "webgl", "shader", "hero", "shader-gallery"],
+  "summary": "Full-bleed hero running shader.gallery's fluted: a wall of vertical reeded glass over a drifting field of coloured glows and light pillars. Every rib is a cylindrical lens that slices what sits behind it into repeating smears, with a specular line down each rib, lit seams where they meet and a chromatic fringe at the edges.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": ["#ff5fa2", "#ffb04a", "#b79bff", "#3fb8c8"],
+      "description": "Four glows behind the glass. Index 3 also sets the dark ground and the room the rib edges reflect; 2 and 1 tint the specular lines. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "ribs": {
+      "type": "number",
+      "default": 26,
+      "description": "How many ribs span the frame; low is a few fat reeds, high is fine tight fluting. Upstream default, range 6 to 60."
+    },
+    "refraction": {
+      "type": "number",
+      "default": 0.85,
+      "description": "How far each rib bends and shifts the backdrop; 0 is flat glass, high slices it into hard repeating smears. Upstream default, range 0 to 2."
+    },
+    "dispersion": {
+      "type": "number",
+      "default": 0.7,
+      "description": "Chromatic split at the rib edges; 0 is achromatic glass, high fringes every edge with colour. Upstream default, range 0 to 1.5."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "How fast the glows and pillars drift behind the glass; 0 holds the backdrop still. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "4e8d4cb27bfdd662c4b8515eb83334ece40eea10",
+    "path": ["fluted/shader.frag", "fluted/meta.json"]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `witchlight` preset.",
+      "why": "fluted/meta.json declares `defaultPalette: \"witchlight\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. Same call sg-obsidian, sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.05, aberration 0.002, vignette 0.26, saturation 1.1 and contrast 1.05 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The section's own CSS grain layer covers the banding the poster's grain was there for; the shader's own dispersion term still fringes the rib edges, so losing the global aberration costs little.",
+      "kind": "ours"
+    },
+    {
+      "what": "u_mouseInfluence is held at upstream's 0.0 and is not exposed as an option.",
+      "why": "glsl-mount.js keeps u_mouse at (0,0) and attaches no pointer listener, so the knob would be a control that moves nothing. Upstream's own default is 0.0, so the rendered result is unchanged.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

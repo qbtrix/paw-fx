@@ -1,0 +1,253 @@
+/* sg-fluted: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four glows are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting glass together instead of leaving the two clashing at the
+   moment the canvas appears. --fx-c4 is also the dark ground, as in the shader.
+
+   The resting layer is the shader's recipe flattened: four blurred glows on a
+   near-black ground, then a repeating rib on top -- a dark groove, a soft
+   falloff, and a bright specular hairline a third of the way across each rib,
+   at the shader's default of 26 ribs across the frame. The ribs are drawn on a
+   separate pseudo-element so the blur under them never softens the glass.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-flute__rest  the CSS glass, covered by the canvas once it paints
+     -1  <canvas>         inserted by glsl-mount.js (inline style)
+      0  .fx-flute__scrim legibility wash, over whichever layer is showing
+      1  .fx-flute__inner the copy */
+.fx-flute {
+  --fx-c1: #ff5fa2;
+  --fx-c2: #ffb04a;
+  --fx-c3: #b79bff;
+  --fx-c4: #3fb8c8;
+  --fx-bg: #07060c;
+  --fx-ink: #ffffff;
+  --fx-muted: #eeebf5;
+  --fx-speed: 1;
+  --fx-scrim: 0.88;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a "full-bleed" hero overflows the viewport by exactly
+     its own padding. An effect drops into a site whose reset it does not
+     control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-flute__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  transition: opacity 420ms ease;
+}
+
+/* The glows behind the glass, on the shader's ground of c4 at 5%. */
+.fx-flute__rest::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(34% 46% at 30% 44%, color-mix(in oklab, var(--fx-c1) 88%, transparent), transparent 72%),
+    radial-gradient(30% 44% at 52% 58%, color-mix(in oklab, var(--fx-c2) 80%, transparent), transparent 72%),
+    radial-gradient(34% 50% at 74% 40%, color-mix(in oklab, var(--fx-c3) 72%, transparent), transparent 72%),
+    radial-gradient(28% 40% at 88% 70%, color-mix(in oklab, var(--fx-c4) 70%, transparent), transparent 74%),
+    color-mix(in oklab, var(--fx-c4) 5%, var(--fx-bg));
+  filter: blur(36px);
+  will-change: transform;
+}
+
+/* The ribs: 26 across the frame, each a darker groove at the join, a lit seam
+   beside it and a specular hairline down the face. Not blurred. */
+.fx-flute__rest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to right,
+    color-mix(in oklab, #000000 42%, transparent) 0 1px,
+    color-mix(in oklab, var(--fx-c3) 30%, transparent) 1px 2px,
+    color-mix(in oklab, #000000 18%, transparent) 2px calc(100% / 26 * 0.3),
+    color-mix(in oklab, #ffffff 34%, transparent) calc(100% / 26 * 0.3) calc(100% / 26 * 0.3 + 1px),
+    transparent calc(100% / 26 * 0.3 + 1px) calc(100% / 26 * 0.82),
+    color-mix(in oklab, #000000 20%, transparent) calc(100% / 26)
+  );
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-flute[data-fx-live] .fx-flute__rest {
+  opacity: 0;
+}
+
+/* Wide dark fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the grain
+   in upstream's poster post chain, which we do not have. */
+.fx-flute__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than relying on where the field
+   happens to sit, because in the live state it does not sit still. Held flat
+   across the inner 36% -- the whole column -- then eased out over four stops,
+   because a flat core running straight into one linear ramp draws a visible
+   hard-edged ellipse across the hero.
+
+   MEASURED: Live shader, copy hidden, worst WCAG ratio between each run's
+   computed colour and any pixel under its box, over eight frames 1.5s apart.
+   At the 0.8 this started on, the title fell to 4.36:1 at 1280x720 whenever a
+   bright rib streak crossed it. 0.88 lifts it to 5.29:1 (1280x720) and 5.14:1
+   (390x844). The lede sat at 4.56:1 on a phone, so --fx-muted moved from
+   #e4e0ee toward the ink, to #eeebf5: 7.04:1 desktop, 5.03:1 phone. Re-measure
+   before lowering either. */
+.fx-flute__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #05040a 84%, transparent) 0%,
+    color-mix(in oklab, #05040a 84%, transparent) 36%,
+    color-mix(in oklab, #05040a 56%, transparent) 54%,
+    color-mix(in oklab, #05040a 28%, transparent) 70%,
+    color-mix(in oklab, #05040a 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-flute__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-flute__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-flute__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c3);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c3) 22%, transparent);
+}
+
+.fx-flute__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #05040a 66%, transparent);
+}
+
+.fx-flute__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-flute__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-flute__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-flute__cta--primary {
+  background: var(--fx-ink);
+  color: #05040a;
+}
+
+.fx-flute__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-flute__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-flute__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-flute__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer drifts, and only when motion is allowed. It
+   translates and never scales: scaling a hairline pitch beats against the
+   display grid and the whole field crawls with moire. The shader has its own
+   reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-flute__rest::before {
+    animation: fx-flute-drift calc(30s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-flute-drift {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(3%, -1.5%, 0);
+    }
+    100% {
+      transform: translate3d(BACfx-flute-drift);
+    }
+  }
+}

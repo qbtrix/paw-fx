@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-01**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,76 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-11-01 — window 2026-10-31 to 2026-11-01
+
+On main the watermark still read 2026-09-14, but that is only because none of
+the scout PRs since have merged. Nearly every day from 2026-09-17 to 2026-10-31
+has an open scout PR (#35 to #74), each carrying its own dated section, so the real
+window this run had to cover was the one day since #74. Discovery was empty;
+two shaders came off the shader.gallery backlog.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-fluted` | `shader-gallery/shaders`, `fluted/shader.frag` + `fluted/meta.json` | `4e8d4cb2` | MIT | Reeded glass over drifting colour glows. Fluted glass is a common marketing-hero look right now and nothing on the shelf or in an open PR does it; `glass-transition` is a page transition, not a surface. |
+| `sg-circuit` | `shader-gallery/shaders`, `circuit/shader.frag` + `circuit/meta.json` | `4e8d4cb2` | MIT | A PCB with light pulses racing along the traces. A developer-tool hero that is not a code background; `code-reveal-grid` is the nearest and it is a hover grid. |
+
+Both name a palette preset upstream (`witchlight`, `verdigris`) that lives in
+`@shader-gallery/runtime`, so both ship their own four colours, picked off the
+poster, and declare them as `ours`, the same as `sg-obsidian`. Contrast was
+measured, not inherited: eight live frames, copy hidden, at 1280x720 and
+390x844. Both needed `--fx-scrim` raised to 0.88 because a rib streak or a pulse
+head crossing the title took it to 4.36:1 and 4.24:1. Numbers are in each
+`style.css`. Unlike the 2026-09-14 run, headless Chrome advanced frames this
+time (successive screenshots differed), so these are real multi-frame worsts.
+
+`check`: lint 103, smoke 103, 427 tests pass. `verify`: 99 pass, 1 warn (the
+pre-existing `paw-avatar` one), 0 fail; both new ports PASS with 0 warns.
+
+### Backlog after this run
+
+Shader-gallery at `4e8d4cb27bfdd662c4b8515eb83334ece40eea10`: `fluted` and
+`circuit` are taken. The six ranked picks (`obsidian`, `rainglass`,
+`lightleak`, `chrome`, `damascus`, `foil`) are all being ported in open PRs
+(#68, #71, #72 and the stacked 09-18 to 10-16 chain), so the next run should
+skip them until those land or close. Still free, with no shelf twin:
+`engraving` (copperplate hatch, light ground), `agate`, `woodgrain`, `dunes`,
+`thermal`, `waxseal`, `crystal`, `pixelsort`, `datamosh`. Skip as near
+duplicates of shipped or in-flight work: `turing` (`reaction-diffusion`),
+`boids` (`murmuration`), `flowfield` (`perlin-flow-field`), `inkflow`
+(`ink-wash`), plus the 2026-09-14 skip list. Solace shaders stay with PR #34.
+
+### Rejected
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `AnimatedCodeBackground` variations 02 to 09 | `codrops/AnimatedCodeBackground` @ `5336a90d`, pushed 2026-10-31, MIT | Requires GSAP. The eight new WebGL2 fields are GSAP-free, but the `CodeItem` that hosts every one of them runs on `gsap.ticker`, `gsap.to` and `gsap.delayedCall`, `glyphAtlas.js` calls `gsap.utils.clamp`, and `gsap.min.js` is bundled. Variation 01 already ships as `code-reveal-grid`. If GSAP-light ports are ever allowed, this is four calls to re-seam and the best Codrops candidate in weeks. |
+| `ScrollBasedLayoutAnimations` Layouts 02 | `codrops/ScrollBasedLayoutAnimations` @ `729029a0`, pushed 2026-10-31 | GSAP 3.15 + Lenis. |
+| `LookbookHoverEffects` | `codrops/LookbookHoverEffects`, pushed 2026-10-31 | "Driven by GSAP" in the README. |
+| `SeamTransitions` | `codrops/SeamTransitions`, pushed 2026-10-30 | GSAP + ScrollSmoother. |
+
+### Sources checked and found quiet
+
+- **Codrops Creative Hub and both RSS feeds**: Cloudflare challenge page to
+  `curl`. Not bypassed. The `codrops` GitHub org (sorted by push) is the
+  working substitute and is what found the four above.
+- **GitHub topic search** (`webgl`, `shaders`, `css-animation`,
+  `scroll-animation`, pushed since 10-31, created since 10-01, 20+ stars): apps
+  and tooling, nothing section-shaped.
+- **paper-design/shaders**: commits since 09-14 are ShaderMount fixes
+  (#294, #295, #297) and the 0.0.82 publish. No new shader.
+- **shader-gallery/shaders**: last commit still `4e8d4cb2` (2026-09-09).
+- **tsParticles**: last release v4.4.0 (2026-08-31).
+- **CodePen**: not attempted; the 2026-09-14 note on Cloudflare blocking still
+  stands.
+
+### For the next run
+
+- The `preview.png` recipe now also needs `.fxd-knobs` hidden: the demo page
+  grew a Knobs panel in #33 and it lands in the thumbnail otherwise.
+- `agent-browser stream status` showed streaming enabled again; `stream
+  disable` before the first screenshot.
+- Thirty-odd scout PRs are open against `main`. Most append to the end of this
+  file, and the ones that add `sg-` ports also edit the same LICENSES.md
+  paragraph, so they will conflict with each other as they merge.
