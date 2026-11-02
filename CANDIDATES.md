@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-02**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,93 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-11-02 — window 2026-11-01 to 2026-11-02
+
+On main the watermark still read 2026-09-14 because none of the scout PRs since
+have merged. The real watermark was 2026-11-01, from the latest open scout PR
+(#75), and the dedup set was main plus every effect any open scout PR adds.
+
+shader.gallery woke up. The 2026-11-01 log said `shader-gallery/shaders` was
+still at `4e8d4cb2` (2026-09-09); it was not. Between 2026-10-27 and
+2026-11-02 it graduated fourteen new shaders into the gallery, in four new
+families, the last commit landing the morning of this run. None of the
+fourteen appeared in any scout log. Three came across this run, one per family
+so the PR does not add three of the same look.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-uptime` | `shader-gallery/shaders`, `uptime/shader.frag` + `uptime/meta.json` | `bb534385` | MIT | The cold aisle of a data hall: racks of blinking status lights, a scan band sweeping away down the aisle. A hosting/infra/devtools hero, and nothing on the shelf is a scene like it; `sg-circuit` (in #75) is a flat board. |
+| `sg-glower` | `shader-gallery/shaders`, `glower/shader.frag` + `glower/meta.json` | `bb534385` | MIT | Night storm towers with slow glows inside, a sodium-lit town on the plain. The first weather landscape in the library. |
+| `sg-slipface` | `shader-gallery/shaders`, `slipface/shader.frag` + `slipface/meta.json` | `bb534385` | MIT | Moonlit dunes with gold windward slopes and black slip faces. The first warm night landscape; the old backlog `dunes` at `4e8d4cb` is a flat ridge field, not a scene, so this does not twin it. |
+
+All three name a palette preset upstream (`glacier`, `umbra`, `foundry`) that
+lives in `@shader-gallery/runtime`, so each ships four colours picked off the
+poster and declares them `ours`. The shaders' zero-palette fallback is one
+generic blue/violet/cyan/red set shared by all fourteen, not the poster
+colours, so passing zeros would have been further from upstream, not closer.
+The post chain here is mostly bloom (0.4 to 0.55), declared per effect; the
+live look is crisper than the posters.
+
+Each was confirmed to compile and link in Chrome (`data-fx-live` set, no
+console errors) before its preview was taken, since nothing in `check` proves
+a shader compiles. Contrast was measured, not inherited: eight live frames,
+copy hidden, 1280x720 and 390x844. Numbers are in each `style.css`. Lowest
+runs: `sg-uptime` lede 5.33:1 on a phone at scrim 0.85, `sg-slipface` title
+5.11:1 on a phone at 0.7, `sg-glower` title 6.14:1 at 0.7.
+
+### Vetted, not ported — 11 more at the same sha
+
+All MIT, at `bb534385e7a36241942da872f7a93c8c785103dd`, same uniform contract
+as the ported three, all naming a `defaultPalette` preset (so all need `ours`
+colours). By family, so the next run takes one per family:
+
+- **Concourse** (server aisles, twins of `sg-uptime`): `rackrow` (amber, lit
+  doorway), `plenum` (warm scan bands, perforated floor), `underhum` (cold
+  racks, ember far end). Skip while `sg-uptime` is open; one aisle is enough.
+- **Lour** (night storms, twins of `sg-glower`): `squallglow` (cold glows,
+  two cells), `anvil` (multi-colour cells, coral canopy). Skip likewise.
+- **Seif** (moonlit dunes, twins of `sg-slipface`): `seif` (teal slopes,
+  crescent moon), `erg` (rose crests, wine sky). Skip likewise.
+- **Vista** (scenes, no twin on the shelf): `nave` (cathedral nave with dusty
+  sun shafts), `conduit` (lava tube with mint melt seams) — **these two are the
+  next picks.** `noctiluca` (bioluminescent night surf) overlaps
+  `bioluminescent-sea` in the stacked 09-21 PR; `shallows` (underwater caustics
+  on sand) is close to `clearwater` in the stacked 09-24 PR. Take them only if
+  those PRs close.
+
+The older `4e8d4cb` backlog from the 2026-11-01 log (`engraving`, `agate`,
+`woodgrain`, `dunes`, `thermal`, `waxseal`, `crystal`, `pixelsort`, `datamosh`)
+is unchanged and still free.
+
+### Rejected / not taken
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `AnimatedCodeBackground` (new push) | `codrops/AnimatedCodeBackground` @ `b22a6867`, 2026-11-01 | README-only change since the 2026-11-01 log's `5336a90d`. Still GSAP. |
+| `pro-threads` | `kubai087/pro-threads`, MIT, created 2026-10-30 | Licence is fine, but it is a whole wallpaper app (i18n, share, persist, panels, palettes across a dozen modules), not a section. Porting means picking the renderer out of `webgl.js` + `shader.js` + `letters.js` and inventing the seams around it. Worth a look on a quiet day if its renderer turns out to be self-contained. |
+| `flat-to-3d` | `Sam1983Aing/flat-to-3d`, MIT, created 2026-10-28 | Seven architecture scroll demos; single push, no stars to speak of, and each demo is a scene about building drawings rather than a reusable section. Not screened further. |
+| `open-3d-skills`, `phoria2` | GitHub topic search | Agent skills and a 3D engine respectively. Not effects. |
+
+### Sources checked and found quiet
+
+- **Codrops org repos** (by push): nothing new since the 2026-11-01 log's four
+  GSAP rejects, beyond the README push above.
+- **paper-design/shaders**: last commit `1923e9f5` (2026-10-25), already seen.
+- **tsParticles** v4.4.0 (2026-08-31); **Lenis** v1.3.27 (2026-10-15), a
+  library bump, nothing to port.
+- **GitHub topic search** (`webgl` created since 10-25, `css-animation` pushed
+  since 11-01): the three above, plus apps and tooling.
+- **Codrops hub and CodePen**: not attempted; the Cloudflare notes in the
+  2026-09-14 and 2026-11-01 logs still stand.
+
+### For the next run
+
+- Check `shader-gallery/shaders` commits by date, not just the head sha in an
+  old log. It moves in bursts; this one was 37 commits over a week.
+- `sg-fluted/style.css` in PR #75 has a broken last keyframe,
+  `translate3d(BACfx-flute-drift)`. Invalid CSS is dropped silently, so no gate
+  catches it. Fix it in #75, not in a later scout PR.
+- Under zsh, `$B:effects/...` reads `:e` as a history modifier and eats the
+  path. Write `"${B}:effects/..."`.
