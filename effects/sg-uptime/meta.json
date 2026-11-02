@@ -1,0 +1,82 @@
+{
+  "name": "sg-uptime",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "server",
+    "data-center",
+    "aisle",
+    "racks",
+    "status-lights",
+    "scan",
+    "haze",
+    "perspective",
+    "interior",
+    "dark",
+    "infrastructure",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's uptime: a low eye in the cold aisle of a data hall at night. Steel racks recede on both sides into blue haze, pricked with thousands of blinking status lights and mirrored in the polished floor, while a broad band of cold light sweeps slowly away down the aisle.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#8fdcff",
+        "#4fb6ff",
+        "#dff6ff",
+        "#25507f"
+      ],
+      "description": "Four cold tones. 1 and 2 are most of the status lights and 2 the scan band; 0 the rarer lights and the ceiling strips; 3 the ambient wash on racks and floor. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "scan": {
+      "type": "number",
+      "default": 1,
+      "description": "Brightness of the band of cold light scanning down the aisle. Upstream default, range 0 to 2."
+    },
+    "scanSpeed": {
+      "type": "number",
+      "default": 1,
+      "description": "How fast the scan band travels away down the aisle. Upstream default, range 0 to 2."
+    },
+    "haze": {
+      "type": "number",
+      "default": 1,
+      "description": "Density of the cold haze that swallows the far end of the hall. Upstream default, range 0.2 to 2."
+    },
+    "activity": {
+      "type": "number",
+      "default": 1,
+      "description": "How many status lights are lit and how fast they blink. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "uptime/shader.frag",
+      "uptime/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `glacier` preset.",
+      "why": "uptime/meta.json declares `defaultPalette: \"glacier\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. Same call sg-obsidian, sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.55 (radius 3.5) and dither over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The status lights and the scan band lean on that bloom for their halo, so the live hero reads crisper and a little flatter than the poster.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

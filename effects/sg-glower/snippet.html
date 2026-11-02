@@ -1,0 +1,22 @@
+<!-- sg-glower section. Finished at rest with CSS alone: the storm in .fx-glower__rest
+     is the hero with JavaScript off, and index.js only covers it with a WebGL
+     canvas once it has the shader, a context and a linked program. The _fx
+     paths are root-absolute because a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. The three
+     decorative layers carry aria-hidden; the copy is the only thing a screen
+     reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-glower/style.css">
+<section class="fx-glower" data-fx="sg-glower">
+  <div class="fx-glower__rest" aria-hidden="true"></div>
+  <div class="fx-glower__scrim" aria-hidden="true"></div>
+  <div class="fx-glower__grain" aria-hidden="true"></div>
+  <div class="fx-glower__inner">
+    <p class="fx-glower__eyebrow"><span class="fx-glower__dot" aria-hidden="true"></span>Storm season</p>
+    <h1 class="fx-glower__title">Weather the busy months without breaking stride.</h1>
+    <p class="fx-glower__lede">Replace this copy with your own. The headline slot takes one line or three, and the glow keeps moving through the clouds either way.</p>
+    <div class="fx-glower__actions">
+      <a class="fx-glower__cta fx-glower__cta--primary" href="#">Get started</a>
+      <a class="fx-glower__cta fx-glower__cta--ghost" href="#">Read the forecast</a>
+    </div>
+  </div>
+</section>

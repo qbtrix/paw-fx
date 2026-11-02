@@ -1,0 +1,22 @@
+<!-- sg-uptime section. Finished at rest with CSS alone: the hall glow and the
+     racks of status lights in .fx-uptime__rest are the hero with JavaScript off,
+     and index.js only covers them with a WebGL canvas once it has the shader, a
+     context and a linked program. The _fx paths are root-absolute because a
+     site always sits at the origin root, and "./_fx/..." would break on a
+     nested page such as /blog/post.html. The three decorative layers carry
+     aria-hidden; the copy is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-uptime/style.css">
+<section class="fx-uptime" data-fx="sg-uptime">
+  <div class="fx-uptime__rest" aria-hidden="true"></div>
+  <div class="fx-uptime__scrim" aria-hidden="true"></div>
+  <div class="fx-uptime__grain" aria-hidden="true"></div>
+  <div class="fx-uptime__inner">
+    <p class="fx-uptime__eyebrow"><span class="fx-uptime__dot" aria-hidden="true"></span>All systems green</p>
+    <h1 class="fx-uptime__title">Infrastructure that stays up while you sleep.</h1>
+    <p class="fx-uptime__lede">Replace this copy with your own. The headline slot takes one line or three, and the scan light keeps moving down the aisle either way.</p>
+    <div class="fx-uptime__actions">
+      <a class="fx-uptime__cta fx-uptime__cta--primary" href="#">Start free</a>
+      <a class="fx-uptime__cta fx-uptime__cta--ghost" href="#">See the status page</a>
+    </div>
+  </div>
+</section>

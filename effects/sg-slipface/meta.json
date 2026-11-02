@@ -1,0 +1,81 @@
+{
+  "name": "sg-slipface",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "dunes",
+    "desert",
+    "sand",
+    "moon",
+    "night",
+    "landscape",
+    "ripples",
+    "wind",
+    "warm",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's slipface: moonlit dunes under a low amber moon. Windward slopes glow gold with interfering ripple marks, sharp brinks break into blue-black slip faces with long shadows, and fine threads of lit sand pour off the crests as the view drifts across the sand sea.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#8a5a24",
+        "#e0a040",
+        "#ffe0a0",
+        "#1c2340"
+      ],
+      "description": "Four sand tones, the ramp a slope climbs as the moon lights it: 3 (shade) to 0 to 1 to 2. 2 also tints the moon, glints and stars. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "wind": {
+      "type": "number",
+      "default": 1,
+      "description": "How much sand streams off the crests and how fast it blows. Upstream default, range 0 to 2."
+    },
+    "moon": {
+      "type": "number",
+      "default": 0.08,
+      "description": "Raises the moon, shortening the shadows and lighting more of the slopes. Upstream default, range 0.03 to 0.2."
+    },
+    "ripple": {
+      "type": "number",
+      "default": 1,
+      "description": "Depth of the interfering ripple marks on the windward slopes. Upstream default, range 0 to 2.5."
+    },
+    "haze": {
+      "type": "number",
+      "default": 0.8,
+      "description": "Night haze that softens the distant dunes into the horizon. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "slipface/shader.frag",
+      "slipface/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `foundry` preset.",
+      "why": "slipface/meta.json declares `defaultPalette: \"foundry\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. Same call sg-obsidian, sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.45 (radius 3.5), aberration 0.0008 and dither over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The moon halo and the lit crest plumes lean on that bloom, so the live hero reads a little crisper than the poster.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

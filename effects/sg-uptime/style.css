@@ -1,0 +1,244 @@
+/* sg-uptime: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four cold tones are declared here as --fx-c1..--fx-c4 and index.js reads
+   them back off the section, so overriding the custom properties moves the
+   shader and the resting aisle together.
+
+   The resting layer is the shader's scene flattened: a blue-black hall, a cold
+   glow where the aisle vanishes, two walls of racks drawn as rows of tiny
+   status lights that thin out toward the middle, and a floor that catches the
+   glow. The lights sit on their own pseudo-element so the blur under them
+   never softens a pixel-sized dot.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-uptime__rest  the CSS aisle, covered by the canvas once it paints
+     -1  <canvas>          inserted by glsl-mount.js (inline style)
+      0  .fx-uptime__scrim legibility wash, over whichever layer is showing
+      1  .fx-uptime__inner the copy */
+.fx-uptime {
+  --fx-c1: #8fdcff;
+  --fx-c2: #4fb6ff;
+  --fx-c3: #dff6ff;
+  --fx-c4: #25507f;
+  --fx-bg: #03060b;
+  --fx-ink: #ffffff;
+  --fx-muted: #e6eef6;
+  --fx-speed: 1;
+  --fx-scrim: 0.85;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a "full-bleed" hero overflows the viewport by exactly
+     its own padding. An effect drops into a site whose reset it does not
+     control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-uptime__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  transition: opacity 420ms ease;
+}
+
+/* The hall: a cold glow at the vanishing point, the haze around it, and the
+   floor below catching it. */
+.fx-uptime__rest::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(10% 14% at 50% 46%, color-mix(in oklab, var(--fx-c3) 70%, transparent), transparent 80%),
+    radial-gradient(34% 30% at 50% 46%, color-mix(in oklab, var(--fx-c2) 32%, transparent), transparent 76%),
+    linear-gradient(to bottom, transparent 54%, color-mix(in oklab, var(--fx-c4) 26%, transparent) 70%, transparent 100%),
+    radial-gradient(70% 60% at 50% 50%, color-mix(in oklab, var(--fx-c4) 34%, var(--fx-bg)), var(--fx-bg) 80%);
+  filter: blur(18px);
+  will-change: transform;
+}
+
+/* The racks: a grid of tiny lights, masked to the two walls so the aisle in
+   the middle stays dark. Not blurred. */
+.fx-uptime__rest::after {
+  content: "";
+  position: absolute;
+  inset: 8% 0 22%;
+  background:
+    radial-gradient(circle at 30% 40%, var(--fx-c1) 0 1px, transparent 1.6px) 0 0 / 23px 17px,
+    radial-gradient(circle at 60% 70%, var(--fx-c2) 0 1px, transparent 1.6px) 0 0 / 31px 13px,
+    radial-gradient(circle at 50% 50%, #ffb347 0 0.8px, transparent 1.4px) 0 0 / 97px 41px;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.55) 30%, transparent 42%, transparent 58%, rgba(0, 0, 0, 0.55) 70%, #000 100%);
+  mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.55) 30%, transparent 42%, transparent 58%, rgba(0, 0, 0, 0.55) 70%, #000 100%);
+  opacity: 0.75;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-uptime[data-fx-live] .fx-uptime__rest {
+  opacity: 0;
+}
+
+/* Wide dark fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the
+   dither in upstream's poster post chain, which we do not have. */
+.fx-uptime__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash, because the scan band and the brightest
+   status lights pass right behind it. Held flat across the inner 36% -- the
+   whole column -- then eased out over four stops, because a flat core running
+   straight into one linear ramp draws a visible hard-edged ellipse.
+
+   MEASURED: live shader, copy hidden, worst WCAG ratio between each run's
+   computed colour and any pixel under its box, over eight frames 1.5s apart.
+   At 0.85: title 5.57:1 (1280x720) and 6.04:1 (390x844), lede 6.89 / 5.33,
+   eyebrow 9.82 / 8.84, ghost CTA 8.53 / 5.58. The lede on a phone is the run
+   closest to the floor, because the rack walls crowd in at that width.
+   Re-measure before lowering --fx-scrim. */
+.fx-uptime__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #02040a 84%, transparent) 0%,
+    color-mix(in oklab, #02040a 84%, transparent) 36%,
+    color-mix(in oklab, #02040a 56%, transparent) 54%,
+    color-mix(in oklab, #02040a 28%, transparent) 70%,
+    color-mix(in oklab, #02040a 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-uptime__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-uptime__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-uptime__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c1);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 22%, transparent);
+}
+
+.fx-uptime__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #02040a 66%, transparent);
+}
+
+.fx-uptime__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-uptime__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-uptime__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-uptime__cta--primary {
+  background: var(--fx-ink);
+  color: #02040a;
+}
+
+.fx-uptime__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-uptime__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-uptime__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-uptime__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the hall glow breathes, and only when motion is allowed: a slow pulse
+   standing in for the scan band. The shader has its own reduced-motion path
+   in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-uptime__rest::before {
+    animation: fx-uptime-scan calc(12s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-uptime-scan {
+    from {
+      opacity: 0.82;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
