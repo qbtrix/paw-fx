@@ -1,0 +1,242 @@
+/* sg-conduit: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four mint tones are declared here as --fx-c1..--fx-c4 and index.js reads
+   them back off the section, so overriding the custom properties moves the
+   shader and the resting tunnel together.
+
+   The resting layer is the shader's scene flattened: a dark arch of rock, a
+   mint fume glow where the tube bends away, and a floor below crossed by thin
+   glowing seams. The seams sit on their own pseudo-element so the blur under
+   the fume never softens them.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-conduit__rest   the CSS tunnel, covered by the canvas once it paints
+     -1  <canvas>            inserted by glsl-mount.js (inline style)
+      0  .fx-conduit__scrim  legibility wash, over whichever layer is showing
+      1  .fx-conduit__inner  the copy */
+.fx-conduit {
+  --fx-c1: #4fe3c4;
+  --fx-c2: #c9fff0;
+  --fx-c3: #f1fffa;
+  --fx-c4: #1d8676;
+  --fx-bg: #030807;
+  --fx-ink: #ffffff;
+  --fx-muted: #e2f0ec;
+  --fx-speed: 1;
+  --fx-scrim: 0.6;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the vertical padding
+     lands outside it and a "full-bleed" hero overflows the viewport by exactly
+     its own padding. An effect drops into a site whose reset it does not
+     control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-conduit__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  transition: opacity 420ms ease;
+}
+
+/* The tube: a mint fume glow where it bends away, a dark arch of rock
+   around it, and the floor below catching the melt light. */
+.fx-conduit__rest::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(18% 16% at 48% 50%, color-mix(in oklab, var(--fx-c4) 46%, transparent), transparent 80%),
+    radial-gradient(60% 50% at 48% 46%, color-mix(in oklab, #0e2622 80%, transparent), transparent 82%),
+    linear-gradient(to bottom, transparent 58%, color-mix(in oklab, var(--fx-c4) 20%, transparent) 76%, transparent 100%),
+    var(--fx-bg);
+  filter: blur(18px);
+  will-change: transform;
+}
+
+/* The seams: thin wavy lines of melt across the floor, masked to the lower
+   half so the arch stays dark. Not blurred. */
+.fx-conduit__rest::after {
+  content: "";
+  position: absolute;
+  inset: 58% -10% 0;
+  background:
+    repeating-radial-gradient(120% 60% at 30% 140%, transparent 0 34px, color-mix(in oklab, var(--fx-c2) 70%, transparent) 35px 36px, transparent 37px 58px),
+    repeating-radial-gradient(110% 70% at 80% 150%, transparent 0 47px, color-mix(in oklab, var(--fx-c1) 55%, transparent) 48px 49px, transparent 50px 71px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40%);
+  mask-image: linear-gradient(to bottom, transparent, #000 40%);
+  opacity: 0.55;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-conduit[data-fx-live] .fx-conduit__rest {
+  opacity: 0;
+}
+
+/* Wide dark fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the
+   dither in upstream's poster post chain, which we do not have. */
+.fx-conduit__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash, because the white-hot seams
+   and the sparks pass right behind it. Held flat across the inner 36% -- the
+   whole column -- then eased out over four stops, because a flat core running
+   straight into one linear ramp draws a visible hard-edged ellipse.
+
+   MEASURED: live shader, copy hidden, worst WCAG ratio between each run's
+   computed colour and any pixel under its box, over eight frames 1.5s apart.
+   At 0.6: title 10.93:1 (1280x720) and 13.40:1 (390x844), lede 6.36 / 6.20,
+   eyebrow 15.05 / 15.87, ghost CTA 7.99 / 6.46. The seams run below the copy
+   at both widths, so the lede is the run closest to the floor.
+   Re-measure before lowering --fx-scrim. */
+.fx-conduit__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #02040a 84%, transparent) 0%,
+    color-mix(in oklab, #02040a 84%, transparent) 36%,
+    color-mix(in oklab, #02040a 56%, transparent) 54%,
+    color-mix(in oklab, #02040a 28%, transparent) 70%,
+    color-mix(in oklab, #02040a 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-conduit__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-conduit__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-conduit__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c1);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 22%, transparent);
+}
+
+.fx-conduit__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #02040a 66%, transparent);
+}
+
+.fx-conduit__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-conduit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-conduit__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-conduit__cta--primary {
+  background: var(--fx-ink);
+  color: #02040a;
+}
+
+.fx-conduit__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-conduit__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-conduit__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-conduit__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the fume glow breathes, and only when motion is allowed: a slow pulse
+   standing in for the heat in the seams. The shader has its own
+   reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-conduit__rest::before {
+    animation: fx-conduit-heat calc(12s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-conduit-heat {
+    from {
+      opacity: 0.82;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

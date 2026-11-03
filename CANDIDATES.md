@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-03**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,82 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-11-03 — window 2026-11-02 to 2026-11-03
+
+On main the watermark still read 2026-09-14 because none of the scout PRs since
+have merged. The real watermark was 2026-11-02, from the latest open scout PR
+(#76), and the dedup set was main plus every effect any open scout PR adds.
+
+Discovery turned up one new library worth logging (pixelfx, below) and nothing
+section-shaped to port, so this run took the two next picks the 2026-11-02 log
+named off the shader.gallery Vista family.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-nave` | `shader-gallery/shaders`, `nave/shader.frag` + `nave/meta.json` | `bb534385` | MIT | Looking down a stone cathedral nave toward an orange glow, dusty sun shafts sweeping across the piers. The first architectural interior on the shelf, and the first scene built on light shafts. |
+| `sg-conduit` | `shader-gallery/shaders`, `conduit/shader.frag` + `conduit/meta.json` | `bb534385` | MIT | Walking down a lava tube, its crust floor split by white-hot mint seams, sparks lifting into the fume. A deep-tech or energy hero that is not another particle field. |
+
+Both name a palette preset upstream (`clay`, `mint`) that lives in
+`@shader-gallery/runtime`, so each ships four colours picked off the poster and
+declares them `ours`, along with the post chain it does not have (nave: bloom
+0.45 r4, dither, saturation 1.2, contrast 1.08; conduit: bloom 0.5 r4, dither,
+saturation 1.1). Without that saturation lift the nave's far glow reads browner
+than the poster's orange.
+
+Each was confirmed live in Chrome (`data-fx-live` set, no page errors, eight
+distinct frames) before its preview was taken. Contrast was measured, not
+inherited: eight live frames 1.5s apart, copy hidden, 1280x720 and 390x844. The
+first pass at `--fx-scrim` 0.85 left every run at 8:1 or better and buried the
+scene, so both came down: nave to 0.7 (lowest run, the phone title, 5.30:1; at
+0.6 the phone lede fell to 4.68:1), conduit to 0.6 (lowest run, the phone lede,
+6.20:1). Numbers are in each `style.css`.
+
+`check`: lint 103, smoke 103, 427 tests pass. `verify`: 99 pass, 1 warn (the
+existing `paw-avatar` one), 0 fail; both new ports PASS with 0 warns.
+
+### Backlog after this run
+
+Shader-gallery at `bb534385e7a36241942da872f7a93c8c785103dd`: `nave` and
+`conduit` are taken, so the Vista family has only `noctiluca` and `shallows`
+left, and both still twin effects in open stacked PRs (`bioluminescent-sea`,
+`clearwater`). The Concourse, Lour and Seif skips from the 2026-11-02 log stand
+while #76 is open. The `4e8d4cb` backlog (`engraving`, `agate`, `woodgrain`,
+`dunes`, `thermal`, `waxseal`, `crystal`, `pixelsort`, `datamosh`) is unchanged
+and still free; take from it next.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Notes |
+|---|---|---|---|
+| pixelfx | `patch-gg/pixelfx` @ `a84159688af3ca37a4be05a0d422b94451b2e24e`, created 2026-10-30, 3.6k stars | MIT (repo `LICENSE`; `NOTICE.md` credits Sprite Fusion and Hollow Crown, both MIT) | 244 code-driven pixel-art effects. Mostly game VFX, but two folders fit a marketing page: `src/fx/weather/` (`aurora`, `fireflies`, `cherry-blossoms`, `shooting-stars`, `god-rays`, `snow`) and `src/fx/transitions/` (`iris`, `blinds`, `diamond-wipe`, `crt-off`). Not ported today because every effect draws into pixelfx's own framebuffer from `src/core` (`createFrame`, `composite`, `sim.js`) plus a per-folder `_lib.js`, and `_shared/` files may import nothing, so a port needs a seam design (vendor `src/core` as a manifest key, most likely) before the first effect. The font under `gallery/fonts` is NOT MIT (see its own NOTICE); never ship it. |
+
+### Rejected / not taken
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `frontend-arsenal` | `exasdwyh-commits/frontend-arsenal`, GitHub topic search | No LICENSE file. |
+| `madeforaward-ui` | `shivc868/madeforaward-ui`, MIT, created since 10-30 | React components. paw-fx is vanilla. |
+| `yarn-world`, `lunar-walk`, `mars-2100`, `senna-800kg`, `halo-above-the-clouds` | GitHub topic search, created since 10-30 | Whole three.js scenes or apps, not sections (and `halo-above-the-clouds` is not on the allow-list). |
+| `open-3d-skills`, `claude-animation-skills`, `ghostty-cursor-fx` | GitHub topic search | Agent skills and a terminal plugin. Not effects. |
+
+### Sources checked and found quiet
+
+- **Codrops org repos** (by push): newest is still `AnimatedCodeBackground`
+  (2026-11-01), already rejected as GSAP.
+- **shader-gallery/shaders**: no commits after `bb534385` (2026-11-02 01:16Z).
+- **paper-design/shaders**: no commits since 2026-11-01.
+- **tsParticles** v4.4.0 (2026-08-31); **Lenis** v1.3.27 (2026-10-15).
+- **Codrops hub and CodePen**: not attempted; the Cloudflare notes in earlier
+  logs still stand.
+
+### For the next run
+
+- The preview recipe needs `.fxd-knobs` hidden too (the demo grew a Knobs
+  panel in #33), and `agent-browser --session fx-scout stream disable` before
+  the first shot.
+- A shader.gallery port's `style.css` comes most cheaply off the newest `sg-`
+  port, but its rest layers and its `MEASURED:` block are scene-specific:
+  redraw the first and re-measure the second, never carry them over.

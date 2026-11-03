@@ -1,0 +1,82 @@
+{
+  "name": "sg-conduit",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "lava",
+    "tunnel",
+    "cave",
+    "molten",
+    "seams",
+    "sparks",
+    "fume",
+    "perspective",
+    "interior",
+    "dark",
+    "mint",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's conduit: walking down a winding lava tube whose floor of ember-dark crust plates is split by white-hot mint seams, while the lumpy basalt arches overhead catch a cool rim of melt light and the far bend dissolves into glowing fume with sparks lifting through it.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#4fe3c4",
+        "#c9fff0",
+        "#f1fffa",
+        "#1d8676"
+      ],
+      "description": "Four mint tones. 3 and 0 mix into the melt and the light it throws on the walls; 1 and 2 the white-hot seam cores and the rim on the rock. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "flow": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How fast the crust drifts and the walk moves down the tube. Upstream default, range 0 to 1.5."
+    },
+    "heat": {
+      "type": "number",
+      "default": 1,
+      "description": "Brightness of the molten seams and the light they throw onto the walls. Upstream default, range 0.2 to 2."
+    },
+    "sparks": {
+      "type": "number",
+      "default": 1,
+      "description": "How many sparks lift off the flow and how bright they are. Upstream default, range 0 to 2.5."
+    },
+    "haze": {
+      "type": "number",
+      "default": 1,
+      "description": "Density of the lit fume that fills the tube and hides the far bend. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "conduit/shader.frag",
+      "conduit/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `mint` preset.",
+      "why": "conduit/meta.json declares `defaultPalette: \"mint\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. Same call sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 (radius 4), dither and saturation 1.1 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The seams lean on that bloom for their halo, so the live hero reads crisper than the poster.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
