@@ -1,0 +1,82 @@
+{
+  "name": "sg-nave",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "cathedral",
+    "nave",
+    "architecture",
+    "light-shafts",
+    "god-rays",
+    "dust",
+    "stone",
+    "perspective",
+    "interior",
+    "dark",
+    "warm",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's nave: looking down a stone cathedral nave whose ribbed vault recedes bay after bay toward a deep orange glow, while broad dusty sun shafts slant down from the clerestory across blue-black piers. The sun climbs and sinks so the shafts sweep, clouds dim them in turn, and motes turn in the light as the view creeps down the aisle.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#a87588",
+        "#f2dcc0",
+        "#e9a77c",
+        "#ff8a3d"
+      ],
+      "description": "Four warm tones. 1 and 2 mix into the sunlight and 1 is the window glass; 0 and 2 the dusty shafts; 3 the glow at the far end of the nave. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "sun": {
+      "type": "number",
+      "default": 1.1,
+      "description": "Strength of the sun through the windows, from overcast gloom to blazing shafts. Upstream default, range 0.3 to 1.8."
+    },
+    "cloud": {
+      "type": "number",
+      "default": 0.6,
+      "description": "How fast clouds pass the windows, dimming one shaft after another. Upstream default, range 0 to 1.5."
+    },
+    "dust": {
+      "type": "number",
+      "default": 0.8,
+      "description": "How much dust hangs in the air, from faint shafts to thick beams full of motes. Upstream default, range 0 to 2."
+    },
+    "glide": {
+      "type": "number",
+      "default": 0.35,
+      "description": "Speed of the slow walk down the nave. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "nave/shader.frag",
+      "nave/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `clay` preset.",
+      "why": "nave/meta.json declares `defaultPalette: \"clay\"`, and the preset table lives in @shader-gallery/runtime, a package paw-fx does not vendor and which is not in the pinned repo. The port cannot resolve the name, so it ships four of its own, picked off the upstream poster by eye, and declares them. Same call sg-gloam and sg-bask made.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.45 (radius 4), dither, saturation 1.2 and contrast 1.08 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster. The shafts and the far glow lean on that bloom and the saturation lift, so the live hero reads a little greyer and crisper than the poster.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
