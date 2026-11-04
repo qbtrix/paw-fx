@@ -1,0 +1,21 @@
+<!-- sg-engraving section. Finished at rest with CSS alone: the ruled lines and
+     the folds in .fx-engr__rest are the hero with JavaScript off, and index.js
+     only covers them with a WebGL canvas once it has the shader, a context and
+     a linked program. The _fx paths are root-absolute because a site always
+     sits at the origin root. The decorative layers carry aria-hidden; the copy
+     is the only thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-engraving/style.css">
+<section class="fx-engr" data-fx="sg-engraving">
+  <div class="fx-engr__rest" aria-hidden="true"></div>
+  <div class="fx-engr__scrim" aria-hidden="true"></div>
+  <div class="fx-engr__grain" aria-hidden="true"></div>
+  <div class="fx-engr__inner">
+    <p class="fx-engr__eyebrow"><span class="fx-engr__dot" aria-hidden="true"></span>Printed by hand</p>
+    <h1 class="fx-engr__title">Cut line by line, pulled one sheet at a time.</h1>
+    <p class="fx-engr__lede">Replace this copy with your own. The headline takes one line or three, and the drapery keeps breathing behind it either way.</p>
+    <div class="fx-engr__actions">
+      <a class="fx-engr__cta fx-engr__cta--primary" href="#">See the plates</a>
+      <a class="fx-engr__cta fx-engr__cta--ghost" href="#">About the press</a>
+    </div>
+  </div>
+</section>

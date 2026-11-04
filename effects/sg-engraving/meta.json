@@ -1,0 +1,84 @@
+{
+  "name": "sg-engraving",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "engraving",
+    "copperplate",
+    "crosshatch",
+    "ink",
+    "paper",
+    "print",
+    "intaglio",
+    "light",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's engraving: a copperplate line engraving of slowly breathing drapery, ink on laid paper. Parallel burin lines wrap every fold, swelling from hairlines on the lit crests to fat cuts in shadow, with a second and third family crossing them as the tone deepens. A light-ground hero in line work, for print, craft and editorial sites.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#2b3a67",
+        "#4a5578",
+        "#c9d2e3",
+        "#141a33"
+      ],
+      "description": "Four poles. Index 2 tints the paper stock, index 1 tints the plate-tone film the wiped plate leaves in the shadows, and indices 3 and 0 mix the ink, so a blue set prints blue-black and a warm set prints sepia. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "pitch": {
+      "type": "number",
+      "default": 9,
+      "description": "CSS-pixel spacing of the engraved lines; low is a fine dense plate, high is a coarse open ruling. Upstream default, range 4 to 20."
+    },
+    "wrap": {
+      "type": "number",
+      "default": 1,
+      "description": "How far the lines bend around the folds; 0 is a flat straight ruling shaded only by weight. Upstream default, range 0 to 2.5."
+    },
+    "relief": {
+      "type": "number",
+      "default": 1,
+      "description": "Depth of the drapery and its tonal range; high drives deep cross-hatched shadows. Upstream default, range 0.2 to 2."
+    },
+    "ink": {
+      "type": "number",
+      "default": 0.95,
+      "description": "Ink density of the impression; low is a pale worn-plate pull, 1 is a fresh dense print. Upstream default, range 0.3 to 1."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.25,
+      "description": "How fast the drapery breathes and the light precesses; 0 holds the plate still. Upstream default, range 0 to 1."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "engraving/shader.frag",
+      "engraving/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `nocturne` preset.",
+      "why": "engraving/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a blue-black nocturne picked off the poster (cool laid paper, navy-black ink), and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.14, saturation 1.02 and contrast 1.03 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster exactly. The shader draws its own paper fibre and tooth, and the section's CSS grain layer stands in for the poster's grain.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

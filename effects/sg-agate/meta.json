@@ -1,0 +1,85 @@
+{
+  "name": "sg-agate",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "agate",
+    "stone",
+    "banded",
+    "mineral",
+    "translucent",
+    "druzy",
+    "material",
+    "silver",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's agate: a polished agate slice on a lightbox, running off every edge. Irregular concentric mineral bands follow one wandering outline, milky bands glow where a drifting backlight sits behind them, and a druzy quartz heart glints crystal by crystal. A natural-material hero for jewellery, craft and luxury goods sites.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#8c939c",
+        "#5f6670",
+        "#eef2f6",
+        "#3b3f45"
+      ],
+      "description": "Four poles. Index 2 tints the milky chalcedony bands, index 0 the iron bands and the outer rind, index 1 the saturated dyed band, and index 3 the warm secondary band and the thin dark deposition lines. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "bands": {
+      "type": "number",
+      "default": 12,
+      "description": "How many layers per unit of depth; low is a few broad zones, high is a dense fortification of fine bands. Upstream default, range 3 to 20."
+    },
+    "wander": {
+      "type": "number",
+      "default": 1,
+      "description": "Irregularity of the cavity outline the bands follow; 0 is smooth concentric rings, high is a ragged crenellated fortification. Upstream default, range 0 to 2."
+    },
+    "glow": {
+      "type": "number",
+      "default": 1,
+      "description": "Translucent glow of the thin bands where the drifting light sits behind the slice; 0 is an opaque stone. Upstream default, range 0 to 2."
+    },
+    "druzy": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Radius of the crystalline quartz zone at the centre; small is a pinpoint, large is a wide sparkling bed. Upstream default, range 0.05 to 1."
+    },
+    "drift": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Speed of the backlight drift, the surface sheen sweep and the glacial rotation of the slice; 0 holds it still except the glints. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "bb534385e7a36241942da872f7a93c8c785103dd",
+    "path": [
+      "agate/shader.frag",
+      "agate/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `mercury` preset.",
+      "why": "agate/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a cool silver set picked off the poster (near-white chalcedony, slate and pewter bands), and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.03, vignette 0.2, saturation 1.05 and contrast 1.03 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it will not match the upstream poster exactly. The section's own CSS grain layer covers the banding the poster's grain was there for.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}
