@@ -1,0 +1,259 @@
+/* sg-engraving: the CSS half of the effect. This file is the whole hero on its
+   own -- with JavaScript off, before index.js has fetched shader.frag, or after
+   a WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting sheet together. The shader reads them by role: --fx-c3 tints
+   the paper stock, --fx-c2 the shadow film, --fx-c4 and --fx-c1 mix the ink.
+   This file follows the same roles.
+
+   LIGHT GROUND, like sg-suminagashi and sg-bask: the field is laid paper and
+   the ink is navy-black, so the copy is near-black and the scrim is a WHITE
+   wash. Raising --fx-scrim makes the sheet brighter, not darker.
+
+   The resting layer is ruled, not blurred: the shader draws parallel burin
+   lines at a 9px pitch, so the rest draws a 9px ruling bent into soft folds by
+   two shading bands, with a cross-hatch only where the folds go dark. Blurred
+   to a smudge, the canvas would read as a cut.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-engr__rest   the CSS sheet, covered by the canvas once it paints
+     -1  <canvas>         inserted by glsl-mount.js (inline style)
+      0  .fx-engr__scrim  legibility wash, over whichever layer is showing
+      1  .fx-engr__inner  the copy */
+.fx-engr {
+  --fx-c1: #2b3a67;
+  --fx-c2: #4a5578;
+  --fx-c3: #c9d2e3;
+  --fx-c4: #141a33;
+  --fx-bg: #e6e3dc;
+  --fx-ink: #141a2e;
+  --fx-muted: #2c3244;
+  --fx-speed: 1;
+  --fx-scrim: 0.74;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The plate at rest: a 9px horizontal ruling (the `pitch` default) in the ink
+   the shader mixes from --fx-c4 and --fx-c1, laid over two diagonal shading
+   bands that stand in for the folds of the drapery, and a 45deg second family
+   that only shows inside the dark bands, the way the shader brings in its
+   cross-hatch as tone deepens. The sheet under it is the stock the shader
+   mixes, a warm paper tinted a tenth of the way to --fx-c3. */
+.fx-engr__rest {
+  position: absolute;
+  inset: -8%;
+  z-index: -2;
+  background:
+    repeating-linear-gradient(
+      -4deg,
+      color-mix(in oklab, color-mix(in oklab, var(--fx-c4) 60%, var(--fx-c1)) 62%, transparent) 0 1.6px,
+      transparent 1.6px 9px
+    ),
+    linear-gradient(
+      118deg,
+      transparent 0 14%,
+      color-mix(in oklab, #ede9e0 78%, transparent) 22% 30%,
+      transparent 38% 52%,
+      color-mix(in oklab, #ede9e0 78%, transparent) 60% 68%,
+      transparent 76%
+    ),
+    repeating-linear-gradient(
+      48deg,
+      color-mix(in oklab, var(--fx-c4) 30%, transparent) 0 1px,
+      transparent 1px 9px
+    ),
+    linear-gradient(
+      118deg,
+      color-mix(in oklab, var(--fx-c2) 22%, transparent),
+      transparent 40%,
+      color-mix(in oklab, var(--fx-c2) 18%, transparent) 80%
+    ),
+    linear-gradient(174deg, color-mix(in oklab, var(--fx-c3) 10%, #eee5d4), color-mix(in oklab, var(--fx-bg) 90%, #ffffff));
+  filter: blur(0.3px);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-engr[data-fx-live] .fx-engr__rest {
+  opacity: 0;
+}
+
+/* The paper tooth. Dense, because here it is not hiding gradient banding -- it
+   is the paper, and the shader draws its own fibre, mottle and specks into the
+   stock. Multiply, because on a bright
+   ground additive noise reads as haze rather than as tooth. Inline SVG, so the
+   section fetches nothing. */
+.fx-engr__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.11;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7 0.95' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+/* A white wash, not a dark one: the copy is near-black and the sheet is the
+   bright thing, so legibility comes from lifting the pixels under the text.
+   Here it does real work, because the deep cross-hatch is near-solid ink.
+
+   MEASURED: live shader, copy hidden, eight frames 1.5s apart, worst ratio
+   between each run's ink and any pixel under its line boxes. At the 0.7 this
+   started on, the lede was 3.86:1 at 1280x720 and 3.67:1 at 390x844, because a
+   cross-hatched fold under the lede is near-solid ink. --fx-muted moved from
+   #3d4458 to #2c3244 and the scrim went to 0.74: title 7.49:1 / 7.58:1, lede
+   5.56:1 / 5.32:1 (desktop / phone). At 0.82 every run cleared 6.3:1 but the
+   folds behind the copy went flat. Re-measure before lowering either. */
+.fx-engr__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    102% 90% at 50% 50%,
+    color-mix(in oklab, #f6f4ef 94%, transparent) 0%,
+    color-mix(in oklab, #f6f4ef 94%, transparent) 40%,
+    color-mix(in oklab, #f6f4ef 66%, transparent) 58%,
+    color-mix(in oklab, #f6f4ef 34%, transparent) 74%,
+    color-mix(in oklab, #f6f4ef 12%, transparent) 89%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-engr__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-engr__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 24%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, #ffffff 62%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-engr__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--fx-c1) 70%, var(--fx-ink));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 30%, transparent);
+}
+
+.fx-engr__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.fx-engr__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-engr__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-engr__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-engr__cta--primary {
+  background: var(--fx-ink);
+  color: #f4f2ec;
+}
+
+.fx-engr__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 30%, transparent);
+  background: color-mix(in oklab, #ffffff 55%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-engr__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-engr__cta--ghost:hover {
+  background: color-mix(in oklab, #ffffff 80%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 48%, transparent);
+}
+
+.fx-engr__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer moves, and only when motion is allowed: a slow drift
+   that stands in for the drapery breathing. It translates and barely scales,
+   because scaling a hairline ruling makes it beat against the display grid.
+   The shader has its own reduced-motion path in glsl-mount.js: one static
+   frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-engr__rest {
+    animation: fx-engr-drift calc(60s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-engr-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-1.4%, 1%, 0) scale(1.015);
+    }
+    100% {
+      transform: translate3d(1.4%, -1.2%, 0) scale(1.008);
+    }
+  }
+}

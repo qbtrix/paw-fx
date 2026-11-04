@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-04**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,86 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-11-04 — window 2026-11-03 to 2026-11-04
+
+On main the watermark still read 2026-09-14 because none of the scout PRs since
+have merged. The real watermark was 2026-11-03, from the latest open scout PR
+(#77), and the dedup set was main plus every effect any open scout PR adds.
+
+Discovery turned up nothing portable, so this run took the top two of the free
+`4e8d4cb` backlog the 2026-11-03 log named.
+
+### Ported
+
+| Effect | Upstream | Commit | Licence | Why |
+|---|---|---|---|---|
+| `sg-engraving` | `shader-gallery/shaders`, `engraving/shader.frag` + `engraving/meta.json` | `bb534385` | MIT | A copperplate line engraving of breathing drapery, ink on laid paper, with true cross-hatch building in the folds. A light-ground hero in line work. `sg-suminagashi` is the only other light line-work hero, and it is floating ink rings, not ruled hatching. |
+| `sg-agate` | `shader-gallery/shaders`, `agate/shader.frag` + `agate/meta.json` | `bb534385` | MIT | A polished agate slice on a lightbox: concentric mineral bands, a drifting backlight, druzy quartz hearts. A natural-material hero for jewellery and craft sites. Not a twin of `sg-contour` (glowing topographic isolines on near-black) or `sg-damascus` (open #72, pattern-welded steel). |
+
+Both were in the `4e8d4cb` backlog. They are pinned at `bb534385`, upstream's
+head today, because `shader.frag` and `meta.json` are byte-identical at both
+shas (checked with `cmp`), and `verify` fetches the pin.
+
+Both name a palette preset upstream (`nocturne`, `mercury`) that lives in
+`@shader-gallery/runtime`, so each ships four colours picked off the poster and
+declares them `ours`, along with the post chain it does not have (engraving:
+grain 0.03, vignette 0.14, saturation 1.02, contrast 1.03; agate: grain 0.03,
+vignette 0.2, saturation 1.05, contrast 1.03). The shaders' own fallback four
+are the generic blue/violet/cyan/rose set, not what either poster shows, so
+passing those was not the closer road here.
+
+Each was confirmed live in Chrome (`data-fx-live` set, eight distinct frames)
+before its preview was taken. Contrast was measured on eight live frames 1.5s
+apart, copy hidden, at 1280x720 and 390x844, worst pixel under each line box.
+Engraving: scrim 0.74 and `--fx-muted` #2c3244, lowest run the phone lede at
+5.32:1. Agate: scrim 0.84 and `--fx-muted` #e6ebf0, lowest run the phone lede at
+4.93:1 (at 0.8 it sat exactly on 4.5:1). Numbers are in each `style.css`.
+
+`check`: lint 103, smoke 103, 427 tests pass. `verify`: 99 pass, 1 warn (the
+existing `paw-avatar` one), 0 fail; both new ports PASS with 0 warns.
+
+### Backlog after this run
+
+Shader-gallery `4e8d4cb` backlog, still free: `woodgrain`, `thermal`,
+`waxseal`, `crystal`, `pixelsort`, `datamosh`. `dunes` is dropped from the
+queue: #76's `sg-slipface` is moonlit dunes. Take `woodgrain` and `waxseal`
+next (material heroes, nothing like them on the shelf). Re-check each against
+`bb534385` (or the head that day) before pinning. pixelfx (below) stays vetted
+and needs a seam design first.
+
+### Vetted, not ported
+
+| Candidate | Source | Licence | Notes |
+|---|---|---|---|
+| pixelfx | `patch-gg/pixelfx` @ `a84159688af3ca37a4be05a0d422b94451b2e24e` | MIT | Unchanged from the 2026-11-03 log: needs a `src/core` vendor seam before any effect can port. |
+
+### Rejected / not taken
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `TextCharacterAnimations` | `codrops/TextCharacterAnimations`, MIT, created 2026-11-03 | Built on GSAP SplitText, Flip, ScrollTrigger and ScrollSmoother. |
+| `nocturne` | `BuanDesu/nocturne`, MIT, GitHub topic search | A whole six-part demo site, not a section. |
+| `atlas-of-small-weathers` | `mpinedaj/atlas-of-small-weathers`, MIT | A generative-art app driven by live weather data, not a section. |
+| `vfx3d-arsenal`, `senna-800kg`, `nimbus-ring` | GitHub topic search | Three.js game VFX and whole three.js scenes. |
+| `electric-scooter`, `self-storage`, `graphic-design-studio` templates | `8bsite/*`, MIT | Full-site templates; the scooter one uses GSAP scroll animation. |
+| `meridian-shaders`, `bismuth` | GitHub topic search | Minecraft shader packs. |
+| `zero-to-one-glsl`, `awesome-motion-animation` | GitHub topic search | A tutorial and a link list, not effects (and the list is CC-BY-4.0). |
+
+### Sources checked and found quiet
+
+- **Codrops org repos** (by push): only `TextCharacterAnimations` is new.
+- **shader-gallery/shaders**: no commits after `bb534385`.
+- **paper-design/shaders**: one commit on 2026-11-03, `2fec1d57`, removing dead
+  code from shaders and docs pages. No new shader.
+- **tsParticles** v4.4.0 (2026-08-31); **Lenis** v1.3.27 (2026-10-15).
+- **Codrops hub and CodePen**: not attempted; the Cloudflare notes in earlier
+  logs still stand.
+
+### For the next run
+
+- The preview recipe needs `.fxd-knobs` hidden too, and
+  `agent-browser --session fx-scout stream disable` before the first shot.
+  Both were used this run.
+- `uv run --with pillow python` gives the contrast script PIL without
+  installing anything; the system python has none.
