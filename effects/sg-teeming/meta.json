@@ -1,0 +1,79 @@
+{
+  "name": "sg-teeming",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "foundry",
+    "molten",
+    "metal",
+    "sparks",
+    "industrial",
+    "fire",
+    "interior",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's teeming: a dark foundry casting floor where a tilted ladle pours a white-hot stream into a sprue basin, and runners carry the metal out along spiral arms of sand cups that glow and crust over in a slow outward wave. Sparks fan up through the haze and a furnace mouth burns in the far wall. An industrial hero for manufacturing, hardware and maker sites.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#d4621a",
+        "#f2a531",
+        "#fff1c4",
+        "#8a2a0c"
+      ],
+      "description": "Four poles. The metal's heat ramp runs 3, 0, 1, 2: index 3 is the dull red of cooling crust, 0 the orange of the runners, 1 the amber of the stream and 2 the white-hot core. The furnace mouth, the smoke and the bounce on the walls mix 0 and 3. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "flow": {
+      "type": "number",
+      "default": 1,
+      "description": "How fast metal streams down the runners and the fill wave rolls out through the moulds; 0 holds the pour. Upstream default, range 0 to 2."
+    },
+    "heat": {
+      "type": "number",
+      "default": 1,
+      "description": "Brightness of the molten metal and the bounce light it throws on the sand and walls. Upstream default, range 0.3 to 1.8."
+    },
+    "sparks": {
+      "type": "number",
+      "default": 1,
+      "description": "How many sparks fan up from the pour. Upstream default, range 0 to 2."
+    },
+    "smoke": {
+      "type": "number",
+      "default": 1,
+      "description": "Density of the hot haze glowing over the casting floor. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "6701714b9b1bfada43e6807f03685a2d0d28427d",
+    "path": [
+      "teeming/shader.frag",
+      "teeming/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `foundry` preset.",
+      "why": "teeming/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a foundry set picked off the poster: crust red, runner orange, amber and a white-hot core, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.04, vignette 0.3, bloom 0.5 at radius 4 and dither over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it reads flatter than the upstream poster, with no bloom around the brightest lights. The section's CSS grain layer stands in for the poster's grain.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

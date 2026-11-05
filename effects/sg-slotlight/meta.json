@@ -1,0 +1,78 @@
+{
+  "name": "sg-slotlight",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "canyon",
+    "sandstone",
+    "strata",
+    "desert",
+    "light-shafts",
+    "landscape",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's slotlight: a low view up a narrow, twisting sandstone slot canyon. Fluted walls swept by flowing strata glow pale coral under a thin white slit of sky and sink through wine into near-black shade, while faint blades of dusty sunlight fan down from the slit and swing as the view creeps forward. A warm landscape hero for travel, outdoor and photography sites.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#a04e52",
+        "#d98a78",
+        "#f3d6c6",
+        "#5c2233"
+      ],
+      "description": "Four poles. Index 3 is the wine of the deep walls, 0 the coral mid-wall, 1 the hot bounce near the rim and 2 the pale slit of sky. The shafts and the pool of light on the sand mix 1 and 2. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.35,
+      "description": "How fast the view creeps up the canyon and the shafts swing; 0 holds the view still. Upstream default, range 0 to 1."
+    },
+    "strata": {
+      "type": "number",
+      "default": 1,
+      "description": "Density of the sandstone beds and ledges on the walls. Upstream default, range 0.4 to 2.5."
+    },
+    "haze": {
+      "type": "number",
+      "default": 0.8,
+      "description": "How much dust lights up inside the sun shafts. Upstream default, range 0 to 1.5."
+    },
+    "bounce": {
+      "type": "number",
+      "default": 1,
+      "description": "How far the bounced sunlight reaches down the walls before cold shade takes over. Upstream default, range 0.3 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "6701714b9b1bfada43e6807f03685a2d0d28427d",
+    "path": [
+      "slotlight/shader.frag",
+      "slotlight/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `coral` preset.",
+      "why": "slotlight/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a coral set picked off the poster: wine shade, coral mid-wall, a hot pale bounce and a near-white slit, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs grain 0.035, vignette 0.22, bloom 0.35 and dither over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it reads flatter than the upstream poster, with no bloom around the brightest lights. The section's CSS grain layer stands in for the poster's grain.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-05**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,95 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+## 2026-11-05 — window 2026-11-04 to 2026-11-05
+
+On main the watermark still read 2026-09-14 because none of the scout PRs since
+have merged. The real watermark was 2026-11-04, from the latest open scout PR
+(#78). The dedup set was main plus every effect any open scout PR adds.
+
+shader-gallery pushed 87 commits after `bb534385` on 2026-11-04, adding 46 new
+shaders across nine families. That made this a discovery day, so the backlog
+was left alone.
+
+### Ported
+
+All three are pinned at `6701714b9b1bfada43e6807f03685a2d0d28427d`, upstream's
+head today. None of the three exists at `bb534385`. Each `origin.path` names
+`<slug>/shader.frag` and `<slug>/meta.json`.
+
+| Effect | Upstream | Licence | Why |
+|---|---|---|---|
+| `sg-slotlight` | `slotlight` (Narrows) | MIT | A low view up a sandstone slot canyon, coral walls under a white slit of sky, dusty light shafts swinging as the view creeps forward. A warm landscape hero. Nothing on the shelf or in an open PR is a canyon. |
+| `sg-teeming` | `teeming` (Smithy) | MIT | A foundry casting floor: a ladle pours white-hot metal that runs out along spiral runners, with sparks and a burning furnace mouth. An industrial hero. `sg-conduit` (#77, lava tube) is molten rock in a tunnel, not a foundry. |
+| `sg-shimmer` | `shimmer` (Byway) | MIT | A night desert highway to a vanishing point, mint street lamps sliding past, heat shimmer and a road mirage on the horizon. A night-drive hero. No road scene on the shelf. |
+
+Upstream names a palette preset for each (`coral`, `foundry`, `mint`) that
+lives in `@shader-gallery/runtime`. So each ships four colours picked off the
+poster and declares them `ours`, along with the post chain it does not have.
+The chain includes bloom (0.35, 0.5, 0.5), so the ports read flatter than the
+posters. Palette roles were read off each shader's `u_palette` use, not
+guessed.
+
+Each one was confirmed live in Chrome (`data-fx-live` set) before its preview
+was taken. Contrast was measured on eight live frames 1.5s apart, copy hidden,
+at 1280x720 and 390x844, taking the worst pixel under each text line box.
+- slotlight: scrim 0.8, lowest run the desktop eyebrow at 5.97:1. At 0.6 it
+  was 3.69:1.
+- teeming: scrim 0.88, lowest run the lede at 6.03:1. At 0.8 it was 4.67:1.
+- shimmer: scrim 0.85, lowest run the phone eyebrow at 6.90:1. At 0.6 the
+  title was 3.66:1.
+
+`check`: lint 104, smoke 104, 429 tests pass. `verify`: 100 pass, 1 warn (the
+existing `paw-avatar` one), 0 fail. All three new ports PASS with 0 warns.
+
+### Vetted, not ported: the rest of the 46 at `6701714b`
+
+All MIT, same repo and licence as above. Flags mark twins of shipped or
+open-PR effects.
+
+| Family | Shaders | Notes |
+|---|---|---|
+| Vitrine | `accretion`, `apollonian`, `armillary`, `ferrofluid`, `gyrosphere`, `hopf`, `klein`, `quicksilver`, `resonance`, `smokering`, `tesseract` | Upstream shelf is `logo`: one object centred on a dark studio floor. A centred copy column sits right on the object, so these need a side-copy layout before they port well. `quicksilver` is near `sg-chrome` (#72). |
+| Narrows | `bergschrund`, `chasm`, `crossbed`, `siq` | Slot canyons and glacier crevasses. Taken: `slotlight`. Next best: `chasm` (ice, cold palette). |
+| Smithy | `pour`, `sprue` | Foundry. Taken: `teeming`. Same family, so hold them back. |
+| Byway | `interchange`, `tarmac`, `viaduct`, `viaduct-2` | Night roads. Taken: `shimmer`. `viaduct` (fog under a concrete viaduct) is the most distinct of the rest. |
+| Hollow | `dripstone`, `dripwell`, `moonmilk`, `headwall`, `platelayer`, `skylight` | Caves and tube tunnels. `skylight` (lava tube) is near `sg-conduit` (#77). The three cave pools are one idea. `headwall` and `platelayer` are subway tunnels. |
+| Drizzle | `cloche`, `glasshouse`, `nightglass`, `pane`, `truss`, `vinery`, `weep` | Rain on glass and fogged greenhouses. Near `sg-rainglass` (#68) and `sg-fluted` (#75). |
+| Sanctum | `lancet`, `sanctus`, `transept` | Gothic naves. Near `sg-nave` (#77). |
+| Lour | `squall-2`, `tempest` | Storm clouds. Near `sg-glower` (#77). |
+| Lagoon | `shoalfire`, `shoalglass`, `shoaling` | Caustics over shallow sand. Near `clearwater` (open PR). |
+
+### Backlog after this run
+
+- Shader-gallery `4e8d4cb` backlog, still free: `woodgrain`, `thermal`,
+  `waxseal`, `crystal`, `pixelsort`, `datamosh`. Take `woodgrain` and
+  `waxseal` next.
+- From `6701714b`: `chasm`, `viaduct`, then one of the Hollow caves. Vitrine
+  waits for a side-copy hero layout.
+- pixelfx stays vetted (`patch-gg/pixelfx` @ `a84159688af3ca37a4be05a0d422b94451b2e24e`,
+  MIT). It needs a `src/core` vendor seam first.
+
+### Rejected / not taken
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `BabylonJS/Babylon.js`, `google/filament`, `playcanvas/engine`, `visgl/deck.gl`, `gkjohnson/three-gpu-pathtracer` | GitHub `topic:webgl` pushed after 2026-11-04 | Engines and frameworks, not sections. |
+| `NomaDamas/CozyClay` | same search | AGPL-3.0, and a whole app. |
+| `kitao/pyxel` | same search | NOASSERTION licence, a Python game engine. |
+| `mlightcad/cad-viewer` | same search | A CAD app, not a section. |
+
+### Sources checked and found quiet
+
+- **Codrops org repos** (by creation date): nothing after
+  `TextCharacterAnimations` (2026-11-03, already rejected for GSAP).
+- **paper-design/shaders**: head still `2fec1d57` (2026-11-03). No new shader.
+- **Codrops hub and CodePen**: not attempted. The Cloudflare notes in earlier
+  logs still stand.
+
+### For the next run
+
+- In zsh, `$b:effects` reads `:e` as a modifier, and a `$AB` holding a command
+  with flags does not word-split. Write `${b}`, and put multi-step browser
+  work in a `bash` script.
+- A palette role read is quick: grep the shader for `u_palette[` and the
+  `c0..c3` / `C0..C3` uses.

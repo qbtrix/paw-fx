@@ -1,0 +1,21 @@
+<!-- sg-shimmer section. Finished at rest with CSS alone: the gradients in
+     .fx-shim__rest are the hero with JavaScript off, and index.js only covers them
+     with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root. The decorative layers carry aria-hidden; the copy is the only
+     thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-shimmer/style.css">
+<section class="fx-shim" data-fx="sg-shimmer">
+  <div class="fx-shim__rest" aria-hidden="true"></div>
+  <div class="fx-shim__scrim" aria-hidden="true"></div>
+  <div class="fx-shim__grain" aria-hidden="true"></div>
+  <div class="fx-shim__inner">
+    <p class="fx-shim__eyebrow"><span class="fx-shim__dot" aria-hidden="true"></span>After dark</p>
+    <h1 class="fx-shim__title">The long way home, with the lights on.</h1>
+    <p class="fx-shim__lede">Replace this copy with your own. The headline takes one line or three, and the road keeps sliding past behind it either way.</p>
+    <div class="fx-shim__actions">
+      <a class="fx-shim__cta fx-shim__cta--primary" href="#">Start the drive</a>
+      <a class="fx-shim__cta fx-shim__cta--ghost" href="#">See the route</a>
+    </div>
+  </div>
+</section>
