@@ -1,0 +1,79 @@
+{
+  "name": "sg-shimmer",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": [
+    "road",
+    "highway",
+    "night",
+    "desert",
+    "lamps",
+    "mirage",
+    "travel",
+    "dark",
+    "webgl",
+    "shader",
+    "hero",
+    "shader-gallery"
+  ],
+  "summary": "Full-bleed hero running shader.gallery's shimmer: a straight desert highway at night running to a vanishing point under a faint galaxy. Two files of street lamps slide past crisp and close and shrink to soft points where rising heat bends the far poles and lays a mirage on the road. A night-drive hero for travel, mobility and late-hours products.",
+  "needs": [],
+  "options": {
+    "colors": {
+      "type": "string[]",
+      "default": [
+        "#5fcfa6",
+        "#8fdcc4",
+        "#e4fff4",
+        "#2e8a74"
+      ],
+      "description": "Four poles. Index 3 is the base tone of the sky, the asphalt and the desert floor, 0 the lamp pools on the road, 1 the reflector posts and road paint, and 2 the lamp heads and stars. Omit to read --fx-c1 through --fx-c4 off the section, which is what keeps the shader and the CSS resting state on one palette."
+    },
+    "heat": {
+      "type": "number",
+      "default": 1,
+      "description": "How hard rising heat bends the air over the horizon and how bright the road mirage reads. Upstream default, range 0 to 2.5."
+    },
+    "speed": {
+      "type": "number",
+      "default": 0.5,
+      "description": "How fast the lamps and road paint slide past; 0 parks the view. Upstream default, range 0 to 1.5."
+    },
+    "lamps": {
+      "type": "number",
+      "default": 1,
+      "description": "Brightness of the lamp heads and the pools they throw on the road. Upstream default, range 0.3 to 2."
+    },
+    "haze": {
+      "type": "number",
+      "default": 1,
+      "description": "Distance haze and the town glow sitting on the horizon. Upstream default, range 0 to 2."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "shader-gallery/shaders",
+    "commit": "6701714b9b1bfada43e6807f03685a2d0d28427d",
+    "path": [
+      "shimmer/shader.frag",
+      "shimmer/meta.json"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "The four u_palette colours are ours, not upstream's `mint` preset.",
+      "why": "shimmer/meta.json names a palette as a string only; the table it resolves against lives in @shader-gallery/runtime, a package paw-fx does not vendor. Ours is a mint set picked off the poster: deep teal ground, mint lamp pools, a paler mint for the paint and near-white lamp heads, and the CSS resting state reads the same --fx-c1..--fx-c4.",
+      "kind": "ours"
+    },
+    {
+      "what": "No post chain: upstream's poster runs bloom 0.5 at radius 4, dither and saturation 1.15 over the shader output.",
+      "why": "The post chain lives in @shader-gallery/runtime, a package paw-fx does not vendor. Our output is the raw shader, so it reads flatter than the upstream poster, with no bloom around the brightest lights. The section's CSS grain layer stands in for the poster's grain.",
+      "kind": "ours"
+    },
+    {
+      "what": "Rendered through paw-fx's own WebGL runtime (effects/_shared/glsl-mount.js) rather than @shader-gallery/runtime.",
+      "why": "Seam. Upstream ships the .frag with no module around it. The GLSL itself is byte-identical to upstream and lives in shader.frag beside index.js.",
+      "kind": "seam"
+    }
+  ]
+}

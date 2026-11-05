@@ -1,0 +1,21 @@
+<!-- sg-slotlight section. Finished at rest with CSS alone: the gradients in
+     .fx-slot__rest are the hero with JavaScript off, and index.js only covers them
+     with a WebGL canvas once it has the shader, a context and a linked
+     program. The _fx paths are root-absolute because a site always sits at the
+     origin root. The decorative layers carry aria-hidden; the copy is the only
+     thing a screen reader should reach. -->
+<link rel="stylesheet" href="/_fx/effects/sg-slotlight/style.css">
+<section class="fx-slot" data-fx="sg-slotlight">
+  <div class="fx-slot__rest" aria-hidden="true"></div>
+  <div class="fx-slot__scrim" aria-hidden="true"></div>
+  <div class="fx-slot__grain" aria-hidden="true"></div>
+  <div class="fx-slot__inner">
+    <p class="fx-slot__eyebrow"><span class="fx-slot__dot" aria-hidden="true"></span>Off the trail</p>
+    <h1 class="fx-slot__title">Light finds its way down, one wall at a time.</h1>
+    <p class="fx-slot__lede">Replace this copy with your own. The headline takes one line or three, and the canyon keeps creeping forward behind it either way.</p>
+    <div class="fx-slot__actions">
+      <a class="fx-slot__cta fx-slot__cta--primary" href="#">Plan a trip</a>
+      <a class="fx-slot__cta fx-slot__cta--ghost" href="#">See the routes</a>
+    </div>
+  </div>
+</section>

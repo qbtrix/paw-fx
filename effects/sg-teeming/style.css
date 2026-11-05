@@ -1,0 +1,215 @@
+/* sg-teeming: the CSS half of the effect. This file is the whole hero on its own
+   -- with JavaScript off, before index.js has fetched shader.frag, or after a
+   WebGL failure sends mount() back to rest, this is what a visitor sees.
+
+   The four poles are declared here as --fx-c1..--fx-c4 and index.js reads them
+   back off the section, so overriding the custom properties moves the shader
+   and the resting scene together instead of leaving the two clashing at the
+   moment the canvas appears. Roles: heat ramp 3 crust red, 0 runner orange, 1 amber stream, 2 white-hot core.
+
+   Stacking, and the one thing to preserve when editing:
+     -2  .fx-teem__rest   the CSS scene, covered by the canvas once it paints
+     -1  <canvas>          inserted by glsl-mount.js (inline style)
+      0  .fx-teem__scrim  legibility wash, over whichever layer is showing
+      1  .fx-teem__inner  the copy */
+.fx-teem {
+  --fx-c1: #d4621a;
+  --fx-c2: #f2a531;
+  --fx-c3: #fff1c4;
+  --fx-c4: #8a2a0c;
+  --fx-bg: #070504;
+  --fx-ink: #ffffff;
+  --fx-muted: #f3e3cf;
+  --fx-speed: 1;
+  --fx-scrim: 0.88;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* min-height sizes the content box, so without this the ~205px of vertical
+     padding lands outside it and a "full-bleed" hero overflows the viewport by
+     exactly its own padding. An effect drops into a site whose reset it does
+     not control, so it sets this itself. */
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(3rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+/* The pour just right of centre, a hot pool where it lands, the glow of the runners spreading across the floor and the furnace mouth on the left wall, roughly where the shader puts them on its first frames. */
+.fx-teem__rest {
+  position: absolute;
+  inset: -18%;
+  z-index: -2;
+  background:
+    radial-gradient(10% 34% at 61% 44%, color-mix(in oklab, var(--fx-c3) 70%, transparent), transparent 72%),
+    radial-gradient(22% 18% at 60% 66%, color-mix(in oklab, var(--fx-c2) 46%, transparent), transparent 72%),
+    radial-gradient(48% 30% at 58% 70%, color-mix(in oklab, var(--fx-c1) 30%, transparent), transparent 76%),
+    radial-gradient(14% 22% at 18% 34%, color-mix(in oklab, var(--fx-c1) 40%, transparent), transparent 74%),
+    linear-gradient(180deg, color-mix(in oklab, #1a1610 70%, var(--fx-bg)), var(--fx-bg) 70%);
+  filter: blur(40px) saturate(1.1);
+  will-change: transform;
+  transition: opacity 420ms ease;
+}
+
+/* index.js sets data-fx-live only once the shader has a context, a linked
+   program and a canvas in the DOM. Every failure path leaves it unset and
+   destroy() removes it, so this rule is also the proof that teardown worked. */
+.fx-teem[data-fx-live] .fx-teem__rest {
+  opacity: 0;
+}
+
+/* Wide blurred fields band on 8-bit displays; a little noise hides it. Inline
+   SVG, so the section fetches nothing. This layer also stands in for the grain
+   in upstream's poster post chain, which we do not have. */
+.fx-teem__grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+/* The copy carries its own wash rather than relying on where the light
+   happens to sit, because in the live state it moves. The wash is held flat
+   across the inner 36% of the ray -- the whole content column -- and only
+   then eased out, so it never draws a hard-edged ellipse. The worst case
+   measured on eight live frames 1.5s apart, copy hidden, at 1280x720 and
+   390x844, worst pixel under each line box: At 0.88 the lowest run was the lede at 6.03:1 on both desktop and phone (title 7.94, eyebrow 10.20). At 0.8 the lede sat at 4.67:1 under the pour.
+   Re-measure the same way before lowering --fx-scrim. */
+.fx-teem__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    104% 92% at 50% 52%,
+    color-mix(in oklab, #03040c 80%, transparent) 0%,
+    color-mix(in oklab, #03040c 80%, transparent) 36%,
+    color-mix(in oklab, #03040c 54%, transparent) 54%,
+    color-mix(in oklab, #03040c 28%, transparent) 70%,
+    color-mix(in oklab, #03040c 10%, transparent) 86%,
+    transparent 100%
+  );
+  opacity: var(--fx-scrim);
+}
+
+.fx-teem__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 62rem;
+  text-align: center;
+}
+
+.fx-teem__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1.6rem;
+  padding: 0.45rem 0.95rem 0.45rem 0.6rem;
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fx-ink) 7%, transparent);
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+  backdrop-filter: blur(6px);
+}
+
+.fx-teem__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--fx-c1);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--fx-c1) 22%, transparent);
+}
+
+.fx-teem__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 7.2vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  text-wrap: balance;
+  text-shadow: 0 1px 44px color-mix(in oklab, #03040c 60%, transparent);
+}
+
+.fx-teem__lede {
+  margin: 1.8rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.26rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-teem__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.fx-teem__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.fx-teem__cta--primary {
+  background: var(--fx-ink);
+  color: #0a0a18;
+}
+
+.fx-teem__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 26%, transparent);
+  background: color-mix(in oklab, var(--fx-ink) 6%, transparent);
+  color: var(--fx-ink);
+  backdrop-filter: blur(6px);
+}
+
+.fx-teem__cta:hover {
+  transform: translateY(-1px);
+}
+
+.fx-teem__cta--ghost:hover {
+  background: color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-color: color-mix(in oklab, var(--fx-ink) 40%, transparent);
+}
+
+.fx-teem__cta:focus-visible {
+  outline: 2px solid var(--fx-ink);
+  outline-offset: 3px;
+}
+
+/* Only the resting layer drifts, and only when motion is allowed. The shader
+   has its own reduced-motion path in glsl-mount.js: one static frame, no loop. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-teem__rest {
+    animation: fx-teem-drift calc(38s / var(--fx-speed)) ease-in-out infinite alternate;
+  }
+  @keyframes fx-teem-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(3%, -2%, 0) scale(1.08) rotate(-3deg);
+    }
+    100% {
+      transform: translate3d(-3%, 3%, 0) scale(1.04) rotate(3deg);
+    }
+  }
+}

@@ -197,6 +197,9 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | sg-weft | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `cd06eee`, `weft/shader.frag` |
 | sg-hologram | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `hologram/shader.frag` |
 | sg-suminagashi | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `4e8d4cb`, `suminagashi/shader.frag` |
+| sg-slotlight | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `6701714`, `slotlight/shader.frag` |
+| sg-teeming | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `6701714`, `teeming/shader.frag` |
+| sg-shimmer | MIT | [shader-gallery/shaders](https://github.com/shader-gallery/shaders) `6701714`, `shimmer/shader.frag` |
 | grain-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/grain-gradient.ts` |
 | neuro-noise | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/neuro-noise.ts` |
 | static-mesh-gradient | Apache-2.0 | [paper-design/shaders](https://github.com/paper-design/shaders) `7002061`, `packages/shaders/src/shaders/static-mesh-gradient.ts` |
@@ -235,7 +238,10 @@ and all, and that header travels into every site because the whole file does.
 `index.js` repeats the same SPDX lines, so the MIT notice is present whether a
 reader opens the module or the shader. Seventeen are pinned at `cd06eee`; the two
 the 2026-09-14 survey added, `sg-hologram` and `sg-suminagashi`, are pinned at
-`4e8d4cb`, the head after the 59-shader expansion of 2026-09-08/09. Nothing was
+`4e8d4cb`, the head after the 59-shader expansion of 2026-09-08/09. The three
+the 2026-11-05 scout added, `sg-slotlight`, `sg-teeming` and `sg-shimmer`, are
+pinned at `6701714`, the head that day; none of the three exists at `bb53438`.
+Nothing was
 re-pinned: a commit is a coordinate, not a version, and the seventeen still
 resolve at theirs.
 
