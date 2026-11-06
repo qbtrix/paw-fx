@@ -1,0 +1,19 @@
+<!-- glass-lens section. Finished at rest with CSS alone: each plate is
+     blurred, tinted, rim-lit glass over the scene, and index.js adds the rim
+     lens that bends the scene inward near each plate's edge (Chromium only).
+     A blocked script, Firefox, Safari or reduced transparency leaves the
+     plates as plain glass. Text inside a plate takes the fx-glens__ink class,
+     which blends it into the glass the way upstream does.
+     Put your own picture behind the glass with one declaration:
+       .fx-glens { --fx-scene: url("/media/hero.jpg") center / cover; }
+     The _fx path is root-absolute: a site always sits at the origin root, and
+     "./_fx/..." would break on a nested page such as /blog/post.html. -->
+<link rel="stylesheet" href="/_fx/effects/glass-lens/style.css">
+<section class="fx-glens" data-fx="glass-lens">
+  <div class="fx-glens__card fx-glens__glass">
+    <p class="fx-glens__eyebrow fx-glens__ink">Thick glass</p>
+    <h2 class="fx-glens__title fx-glens__ink">Look through it, and watch the edges bend.</h2>
+    <p class="fx-glens__lede fx-glens__ink">A clear plate that lifts the colour behind it, catches light on its rim and pulls the scene inward at the edge, with a faint colour split where the glass is thickest.</p>
+  </div>
+  <a class="fx-glens__pill fx-glens__glass fx-glens__ink" href="#" data-pill>Start building</a>
+</section>

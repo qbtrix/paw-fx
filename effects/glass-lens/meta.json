@@ -1,0 +1,63 @@
+{
+  "name": "glass-lens",
+  "version": "1.0.0",
+  "category": "backgrounds",
+  "tags": ["glass", "frosted", "refraction", "lens", "backdrop-filter", "svg-filter", "hero", "card", "light", "no-dependency"],
+  "summary": "Glass plates over a soft pastel scene: each one blurs and lifts the colour behind it, catches light on its rim, and bends the scene inward near its edge like a thick slab, with a slight colour split. The rim bend is an SVG displacement map inside backdrop-filter (Chromium); elsewhere the plates stay plain CSS glass.",
+  "needs": [],
+  "options": {
+    "rim": {
+      "type": "number",
+      "default": 40,
+      "description": "Widest the refracting rim gets, in CSS pixels. Small plates narrow it to their short side / 3.5. Upstream's rim."
+    },
+    "edge": {
+      "type": "number",
+      "default": 1.1,
+      "description": "How far inward the very edge samples the scene, in rim widths. Upstream's edge."
+    },
+    "power": {
+      "type": "number",
+      "default": 2.6,
+      "description": "How fast the bend falls off across the rim: (1 - d / rim) ^ power. Upstream's power."
+    },
+    "dispersion": {
+      "type": "number",
+      "default": 0.15,
+      "description": "How much further red bends than blue at the rim; 0 for a single pass with no colour split. Upstream's dispersion."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "kubai087/glasswork",
+    "commit": "4f0b6744b898b3a9b98fbd913ab24fdb83c53162",
+    "path": ["lens.js", "glass.css"]
+  },
+  "deviations": [
+    {
+      "what": "The scene behind the glass is a CSS stand-in (--fx-scene): soft stripes over radial washes in the light colours of upstream's mesh wallpaper.",
+      "why": "Upstream shows its glass over WebGL wallpapers, photos and Apple wallpaper files its NOTICE says must not be redistributed. A section library ships no imagery and no second renderer, so the scene is one CSS background a site author can point at their own picture. The stripes are there so the rim has edges to bend.",
+      "kind": "ours"
+    },
+    {
+      "what": "Every custom property gains the --fx- prefix, .glass becomes .fx-glens__glass, and lens.js writes --fx-glass-lens instead of --glass-lens.",
+      "why": "Seam. paw-fx custom properties are --fx- prefixed, and a bare .glass class or --ink property would collide with host-page CSS.",
+      "kind": "seam"
+    },
+    {
+      "what": "No @property registrations, no material transitions, no Safari redraw toggle (--redraw), and no playground rules (.stage[data-refract], .stage[data-tuning], [data-engine=webkit]). --fx-density, --fx-keep and --fx-floor are set on each plate instead.",
+      "why": "Those exist so the playground can glide between presets, swap in its WebGL refraction and work around its own Safari surfaces. A section has one fixed material, so its plates carry the values the registrations gave as initial values.",
+      "kind": "ours"
+    },
+    {
+      "what": "No adapt.js: plates do not sample the scene to pick their tint density or switch to dark glass.",
+      "why": "Adaptive tint samples the wallpaper's pixels, which needs a canvas or video under the glass. The CSS scene has none, so density is a fixed --fx-density per plate (1 on the copy card, upstream's 0.35 elsewhere) and dark glass is opt-in with data-kind=\"dark\".",
+      "kind": "ours"
+    },
+    {
+      "what": "lens.js's export keywords are dropped and mount() gives each .fx-glens__glass its own liquidGlass() lens, setting data-fx-live once the first filter is in place.",
+      "why": "Seam. A paw-fx effect is one index.js exporting mount and meta; the registry ships no sibling module, so the lens is inlined rather than imported.",
+      "kind": "seam"
+    }
+  ]
+}

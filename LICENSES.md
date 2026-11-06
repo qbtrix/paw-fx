@@ -84,6 +84,7 @@ stack.
 | circular-text | MIT | [codrops/CircularTextEffect](https://github.com/codrops/CircularTextEffect) `fcd9aaa`, `src/js/demo1/intro.js` + `src/index.html` + `src/css/base.css` |
 | terminal-hover | MIT | [codrops/LineTextHoverAnimations](https://github.com/codrops/LineTextHoverAnimations) `00fdd50`, `js/effect-1/text-animator.js` + `js/effect-1/index.js` + `js/textSplitter.js` + `css/base.css` |
 | image-trail | MIT | [codrops/codrops-sketches](https://github.com/codrops/codrops-sketches) `bbf47ca`, `005-image-motion-trail-opaque/js/index.js` + `005-image-motion-trail-opaque/css/base.css` |
+| glass-lens | MIT | [kubai087/glasswork](https://github.com/kubai087/glasswork) `4f0b674`, `lens.js` + `glass.css` (code only: the Apple wallpaper files its NOTICE excludes are not used) |
 | pixel-tooltip | MIT | [codrops/PixelGooeyTooltip](https://github.com/codrops/PixelGooeyTooltip) `60ade47`, `js/tooltip.js` + `js/index.js` + `css/tooltip.css` + `index.html` |
 | clip-hover | MIT | [codrops/ClipHoverEffect](https://github.com/codrops/ClipHoverEffect) `57b5cc1`, `js/card.js` + `js/utils.js` + `css/base.css` |
 | grid-3d-stagger | MIT | [codrops/Staggered3DGridAnimations](https://github.com/codrops/Staggered3DGridAnimations) `7c2703d`, `js/index.js` + `index.html` + `css/base.css` |
