@@ -1,0 +1,226 @@
+/* glass-lens: glass plates over a soft scene, their rims bending it inward.
+
+   The material below the section rules is Glasswork's glass.css, renamed:
+   .glass is .fx-glens__glass and every custom property gains the --fx-
+   prefix. A plate is light glass by default; data-kind="dark" on a plate
+   makes it smoky glass with light ink, for a dark scene. data-pill marks a
+   capsule. --fx-density (0 thin, 1 dense) sets how much tint a plate carries.
+
+   THE SCENE is ours. Upstream puts its glass over animated wallpapers and
+   photos; this section paints a CSS stand-in from the light colours of
+   upstream's own `mesh` wallpaper, crossed with soft stripes so the rim has
+   edges to bend. Point --fx-scene at your own picture with one declaration:
+
+       .fx-glens { --fx-scene: url("/media/hero.jpg") center / cover; }
+
+   With the script blocked, in Firefox or Safari, or with reduced motion on,
+   the plates are still blurred, tinted and rim-lit glass: only the rim bend
+   is missing, and that needs Chromium. */
+.fx-glens {
+  --fx-u: 1px;
+  --fx-scene:
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.5) 0 12px, transparent 12px 44px),
+    radial-gradient(55% 70% at 12% 18%, #ffc29e, transparent 72%),
+    radial-gradient(50% 65% at 88% 22%, #c7b3ff, transparent 72%),
+    radial-gradient(60% 60% at 70% 96%, #94c7ff, transparent 72%),
+    radial-gradient(45% 55% at 22% 92%, #9eedd1, transparent 72%),
+    radial-gradient(40% 45% at 52% 45%, #ff9ec7, transparent 75%),
+    #f4efe8;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 90svh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  padding: clamp(3.5rem, 8vw, 7rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-scene);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+.fx-glens *,
+.fx-glens *::before,
+.fx-glens *::after { box-sizing: border-box; }
+
+.fx-glens__card {
+  width: min(36rem, 100%);
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+}
+.fx-glens__eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.fx-glens__title {
+  margin: 0;
+  font-size: clamp(2rem, 5.2vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+.fx-glens__lede {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.55;
+}
+.fx-glens__pill {
+  --fx-radius: 999;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Plates hold their own defaults; upstream registered these with @property
+   so the playground could animate between them. */
+.fx-glens__glass {
+  --fx-density: 0.35;
+  --fx-keep: 1;
+  --fx-floor: 0;
+}
+.fx-glens__card.fx-glens__glass { --fx-density: 1; }
+
+/* ---------- The two materials ---------- */
+
+.fx-glens__glass {
+  --fx-m-tint: var(--fx-l-tint, #ffffff);
+  --fx-m-k: var(--fx-l-k, 1);
+  --fx-m-thin: var(--fx-l-thin, 0.06);
+  --fx-m-dense: var(--fx-l-dense, 0.22);
+  --fx-m-blur: var(--fx-l-blur, 2);
+  --fx-m-sat: var(--fx-l-sat, 1.8);
+  --fx-m-bri: var(--fx-l-bri, 1.06);
+  --fx-m-con: var(--fx-l-con, 1);
+  --fx-m-catch: var(--fx-l-catch, 1);
+  --fx-m-bevel: var(--fx-l-bevel, 1);
+  --fx-m-shadow: var(--fx-l-shadow, 1);
+  /* Dark ink: one color in fixed steps, multiplied into the glass so it
+     picks up the glass's color and keeps its contrast. */
+  --fx-ink: rgba(0, 0, 0, 0.86);
+  --fx-ink-2: rgba(60, 60, 67, 0.7);
+  --fx-ink-solid: #000000;
+  --fx-ink-a: 0.86;
+  --fx-well: rgba(0, 0, 0, 0.15);
+  --fx-row-hover: rgba(0, 0, 0, 0.06);
+  --fx-row-active: rgba(0, 0, 0, 0.1);
+  --fx-blend: multiply;
+}
+
+/* A capsule (its radius at least half its height) keeps round ends: a
+   superellipse on a radius that is already half the box flattens them.
+   The page marks capsules as they are sized (data-pill). */
+.fx-glens__glass[data-pill] { corner-shape: round; }
+
+.fx-glens__glass[data-kind="dark"] {
+  --fx-m-tint: var(--fx-d-tint, #1e1e22);
+  --fx-m-k: var(--fx-d-k, 1);
+  --fx-m-thin: var(--fx-d-thin, 0.16);
+  --fx-m-dense: var(--fx-d-dense, 0.38);
+  --fx-m-blur: var(--fx-d-blur, 2);
+  --fx-m-sat: var(--fx-d-sat, 1.6);
+  --fx-m-bri: var(--fx-d-bri, 0.8);
+  --fx-m-con: var(--fx-d-con, 1);
+  --fx-m-catch: var(--fx-d-catch, 1);
+  --fx-m-bevel: var(--fx-d-bevel, 1);
+  --fx-m-shadow: var(--fx-d-shadow, 1);
+  /* Light ink adds light rather than covering. */
+  --fx-ink: rgba(255, 255, 255, 0.94);
+  --fx-ink-2: rgba(235, 235, 245, 0.64);
+  --fx-ink-solid: #ffffff;
+  --fx-ink-a: 0.94;
+  --fx-well: rgba(255, 255, 255, 0.22);
+  --fx-row-hover: rgba(255, 255, 255, 0.08);
+  --fx-row-active: rgba(255, 255, 255, 0.14);
+  --fx-blend: plus-lighter;
+}
+
+/* ---------- The four declarations ---------- */
+
+.fx-glens__glass {
+  /* The tint opacity setting (--fx-m-k, 0-1.5) scales the tint. Below 1 the
+     tone in the filter and the bevel thin with it (--fx-veil-k), so at 0 only
+     the blur, the rim and the shadow are left: clear glass. The tint never
+     goes below the least opacity the surface's text needs (--fx-floor). */
+  --fx-veil-k: min(1, var(--fx-m-k));
+  --fx-tint-a: min(0.95, max(var(--fx-floor), calc((var(--fx-m-thin) + (var(--fx-m-dense) - var(--fx-m-thin)) * var(--fx-density)) * var(--fx-m-k))));
+  --fx-filter:
+    blur(calc(var(--fx-m-blur) * var(--fx-u, 1px)))
+    saturate(var(--fx-m-sat))
+    contrast(calc(1 + (var(--fx-m-con) - 1) * var(--fx-veil-k)))
+    brightness(calc(1 + (var(--fx-m-bri) - 1) * var(--fx-veil-k)))
+    saturate(var(--fx-keep));
+
+  border-radius: calc(var(--fx-radius, 28) * var(--fx-u, 1px));
+  /* Continuous corners, where the browser draws them (Chromium 139+);
+     elsewhere the plain border-radius stays. */
+  corner-shape: superellipse(var(--fx-corner-k, 1));
+  color: var(--fx-ink);
+  background: color-mix(in srgb, var(--fx-m-tint) calc(var(--fx-tint-a) * 100%), transparent);
+  -webkit-backdrop-filter: var(--fx-filter);
+  backdrop-filter: var(--fx-filter) var(--fx-glass-lens,);
+  isolation: isolate;
+}
+
+/* Light glass: light caught where the rim faces it, on the top left and
+   fainter on the bottom right, over a faint even line that keeps the
+   outline; a firmer hairline and a soft shadow; and the bevel, soft bands
+   just inside the edge, so the plate reads as a thick slab. The bands stay
+   within a few pixels of the edge: a box shadow only mixes plain white and
+   black, so a wide band washes the scene's color out. */
+.fx-glens__glass {
+  box-shadow:
+    inset calc(1.5 * var(--fx-u)) calc(1.5 * var(--fx-u)) var(--fx-u) calc(-1 * var(--fx-u)) rgb(255 255 255 / calc(1 * var(--fx-m-catch))),
+    inset calc(-1.5 * var(--fx-u)) calc(-1.5 * var(--fx-u)) var(--fx-u) calc(-1 * var(--fx-u)) rgb(255 255 255 / calc(0.6 * var(--fx-m-catch))),
+    inset 0 0 0 calc(0.5 * var(--fx-u)) rgb(255 255 255 / calc(0.3 * var(--fx-m-catch))),
+    0 0 0 calc(0.5 * var(--fx-u)) rgb(0 0 0 / calc(0.12 * var(--fx-m-shadow))),
+    0 calc(4 * var(--fx-u)) calc(16 * var(--fx-u)) rgb(0 0 0 / calc(0.1 * var(--fx-m-shadow))),
+    inset 0 calc(6 * var(--fx-u)) calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.5 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset calc(4 * var(--fx-u)) 0 calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.22 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset calc(-4 * var(--fx-u)) 0 calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.12 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset 0 calc(-6 * var(--fx-u)) calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(0 0 0 / calc(0.06 * var(--fx-veil-k) * var(--fx-m-bevel)));
+}
+
+/* Dark glass: the same light, dimmer, with a darker outline and shadow.
+   The bottom shade stays faint: over a light wallpaper dark glass is a mid
+   tone, which black only muddies. */
+.fx-glens__glass[data-kind="dark"] {
+  box-shadow:
+    inset var(--fx-u) var(--fx-u) calc(0.5 * var(--fx-u)) calc(-0.5 * var(--fx-u)) rgb(255 255 255 / calc(0.46 * var(--fx-m-catch))),
+    inset calc(-1 * var(--fx-u)) calc(-1 * var(--fx-u)) calc(0.5 * var(--fx-u)) calc(-0.5 * var(--fx-u)) rgb(255 255 255 / calc(0.18 * var(--fx-m-catch))),
+    inset 0 0 0 calc(0.5 * var(--fx-u)) rgb(255 255 255 / calc(0.06 * var(--fx-m-catch))),
+    0 0 0 calc(0.5 * var(--fx-u)) rgb(0 0 0 / calc(0.28 * var(--fx-m-shadow))),
+    0 calc(4 * var(--fx-u)) calc(14 * var(--fx-u)) rgb(0 0 0 / calc(0.22 * var(--fx-m-shadow))),
+    inset 0 calc(6 * var(--fx-u)) calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.18 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset calc(4 * var(--fx-u)) 0 calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.07 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset calc(-4 * var(--fx-u)) 0 calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(255 255 255 / calc(0.04 * var(--fx-veil-k) * var(--fx-m-bevel))),
+    inset 0 calc(-6 * var(--fx-u)) calc(8 * var(--fx-u)) calc(-6 * var(--fx-u)) rgb(0 0 0 / calc(0.08 * var(--fx-veil-k) * var(--fx-m-bevel)));
+}
+
+/* Text and icons on the glass blend with it. Icons are drawn opaque and
+   faded whole: a translucent color darkens where strokes overlap. Only
+   plain text and icons blend: Safari on iOS can leave a whole surface
+   undrawn when its blurred element holds a blended element that also
+   clips (the progress bar), and the slider's thumb would lose its white. */
+.fx-glens__glass .fx-glens__ink,
+.fx-glens__glass .fx-glens__ink-2 {
+  mix-blend-mode: var(--fx-blend);
+}
+
+.fx-glens__glass .fx-glens__ink-2 { color: var(--fx-ink-2); }
+
+@media (prefers-reduced-transparency: reduce) {
+  .fx-glens__glass {
+    background: color-mix(in srgb, var(--fx-m-tint) 96%, transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .fx-glens__glass { border: 1px solid CanvasText; background: Canvas; backdrop-filter: none; }
+}

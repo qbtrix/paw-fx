@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-06**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,68 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-11-06 — window 2026-11-05 to 2026-11-06
+
+Main still read 2026-09-14 because no scout PR has merged since. The real
+watermark was 2026-11-05, from the latest open scout PR (#79). The dedup set
+was main plus every effect any open scout PR adds (49 names across #49–#79).
+
+### Ported
+
+| Effect | Upstream | Licence | Why |
+|---|---|---|---|
+| `glass-lens` | `kubai087/glasswork` @ `4f0b6744b898b3a9b98fbd913ab24fdb83c53162`, `lens.js` + `glass.css` | MIT | Created 2026-11-05. Thick-glass plates that blur and lift the scene behind them, catch light on the rim, and bend the scene inward at the edge with a slight colour split (an SVG displacement map in `backdrop-filter`, Chromium only). No dependencies, no build. Nothing on the shelf or in an open PR refracts at the rim: `glass-transition` is a page transition and `sg-rainglass` / `sg-fluted` are full-bleed shaders. |
+
+Licence note for review: the repo's `NOTICE` has a "do not reuse or
+redistribute" line, but it covers only the Apple wallpaper files in `media/`
+(Tahoe, Sonoma, Ventura, Monterey, Big Sur). The code is plain MIT and
+`gh api .../license` reads MIT. The port uses none of `media/`, and the name,
+summary and tags avoid the Apple trademark the NOTICE lists.
+
+The scene behind the glass is a CSS stand-in in the light colours of
+upstream's `mesh` wallpaper, crossed with soft stripes so the rim has edges to
+bend. `adapt.js` (adaptive tint) and `wallpapers.js` (WebGL scenes) are not
+ported; see the deviations in `meta.json`. Confirmed live in Chrome
+(`data-fx-live` set, both plates carrying `url(#liquid-glass-lens-N)` in
+`backdrop-filter`) before the preview was taken.
+
+`check`: lint 102, smoke 102, 425 tests pass. `verify`: 98 pass, 1 warn (the
+existing `paw-avatar` one), 0 fail. `glass-lens` PASS with 0 warns.
+
+### Rejected / not taken
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `effect-atlas/effect-atlas` | GitHub `topic:scroll-animation`, created 2026-11-03 | "Effect Atlas License 1.0": MIT plus Commons Clause, self-described as not open source. Not on the allow-list. |
+| `yusen-dev/living-ascii` | GitHub `topic:webgl`, MIT, created 2026-11-04 | An image-to-ASCII-loop tool with a node server and an input folder, not a section. |
+| `mauroz9/reel-gallery` | `topic:scroll-animation`, MIT, created 2026-11-05 | TypeScript build. |
+| `YusufCeng1z/ding` | `topic:animation`, MIT, created 2026-11-05 | A toast component with React/Svelte/TypeScript builds, not a section. |
+| `DominikScholz/open-bot-avatar` | `topic:animation`, MIT | TypeScript avatar renderer; `paw-avatar` already covers the shelf. |
+| `Avarce/ghostty-cursor-fx` | `topic:shaders`, MIT | Cursor shaders for the Ghostty terminal, not the web. |
+| `Moh4696/open-3d-skills` | `topic:webgl`, MIT | Agent skills, not effects (already rejected in an earlier log). |
+
+### Sources checked and found quiet
+
+- **shader-gallery/shaders**: head still `6701714b` (2026-11-04). No new shader.
+- **paper-design/shaders**: head moved `2fec1d57` → `3f29ea83` (2026-11-05),
+  two commits: premultiplied-alpha texture upload across existing shaders and a
+  docs change. No new shader.
+- **Codrops org repos** (by creation date): nothing after
+  `TextCharacterAnimations` (2026-11-03, GSAP).
+- **Codrops hub and RSS feed**: both 403 from Cloudflare.
+- **CodePen**: not attempted.
+
+### Backlog after this run
+
+Unchanged from the 2026-11-05 log: shader-gallery `4e8d4cb` (`woodgrain`,
+`waxseal` first), `6701714b` (`chasm`, `viaduct`), pixelfx waiting on a
+`src/core` vendor seam.
+
+### For the next run
+
+- The demo pages now carry a Knobs panel (`details.fxd-knobs`, from #33). Add
+  `.fxd-knobs` to the selector the preview recipe hides, or it lands in the
+  bottom right of every preview.
+- A doc comment in an inlined upstream module that still says
+  `import ... from './x.js'` fails the registry build. Drop that line.
