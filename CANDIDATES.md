@@ -1,6 +1,6 @@
 # Codrops candidates for paw-fx
 
-Survey date **2026-09-14**. The body of this file is the 2026-09-06 org survey
+Survey date **2026-11-07**. The body of this file is the 2026-09-06 org survey
 and is unchanged; the dated log at the bottom carries everything screened since.
 Every sha below is the head of the named repo's
 default branch at that moment, resolved through
@@ -1000,3 +1000,70 @@ Pick order when this gets scheduled: the ones with no equivalent on the shelf
 already. `chromatic refraction`, `refractive lens` and `black hole portal` have
 nothing like them; `fluid distortion` overlaps `warp` and `liquid-metal`.
 
+
+## 2026-11-07 — window 2026-11-06 to 2026-11-07
+
+Main still read 2026-09-14 because no scout PR has merged since. The real
+watermark was 2026-11-06, from the latest open scout PR (#80). The dedup set
+was main plus every effect any open scout PR adds.
+
+### Ported
+
+| Effect | Upstream | Licence | Why |
+|---|---|---|---|
+| `ascii-island` | `danieljan-design/noxe-ascii-engine` @ `16e6bb9482ee41a722be0f0f51d9182a4d733eda`, `engine/ascii-engine.js` + `engine/atlas.js` + `engine/shaders.js` + `scenes/kit.js` + `scenes/island.js` + `app.js` | MIT | Created 2026-11-05, plain ES modules on three.js, no build. A real three.js scene (shadows, fog, a lighthouse beam, a sailboat on the swell) redrawn every frame as coloured glyphs: a glyph ramp per material, per-pixel edge glyphs, tilt-shift, bloom, grain. Not a duplicate of the `ascii-*` shelf: those are metaory/ascii-lab's 2D character-grid maths (torus, plasma, tunnel); this is a GPU post-process over arbitrary 3D geometry. |
+
+Two seams were needed to run it on the vendored three 0.185.1 (upstream pins
+0.170.0), both in `meta.json`'s deviations: `packNormalToRGB( normal )` is
+written out as its body because the normal material no longer includes
+`<packing>` (it failed to compile and the aux pass drew nothing), and the loop
+uses `performance.now()` instead of the deprecated `THREE.Clock`.
+`mergeGeometries` (a three addon, not vendored) has a small local stand-in for
+its one call, and `OrbitControls.autoRotate` is reproduced directly. Confirmed
+live in Chrome at 1280x720 (`data-fx-live` set, no console errors) before the
+preview was taken.
+
+`check`: lint 102, smoke 102, 425 tests pass. `verify`: 98 pass, 1 warn (the
+existing `paw-avatar` one), 0 fail. `ascii-island` PASS with 0 warns.
+
+### Vetted, not ported
+
+| Candidate | Repo / commit | Licence | Note |
+|---|---|---|---|
+| Noxe's other scenes | `danieljan-design/noxe-ascii-engine` @ `16e6bb9`, `scenes/winter.js`, `scenes/reef.js`, `scenes/farm.js` | MIT | Each is a second `ascii-*` hero on the same engine. Winter needs the `Reflector` addon and Reef needs `mergeVertices` / `toCreasedNormals`, neither vendored; Farm needs only `mergeGeometries`, so it could reuse today's stand-in. Port one only if a second ASCII hero is wanted. |
+| `minchenlee/three-painterly` | MIT, created 2026-11-05 | MIT | Vanilla three.js modules: a painterly post-process pass and baked debris. A pass, not a section; would need a scene to wrap. Revisit if a "painted" hero is wanted. |
+
+### Rejected
+
+| Candidate | Source | Reason |
+|---|---|---|
+| `novahoangdev/soap-bubbles` | `topic:shaders`, MIT | A React Native / Expo app (`app/App.tsx`, `.glb` assets), not a web section. |
+| `kaan0d/glyphworks` | `topic:webgl`, MIT | TypeScript + Vite build. |
+| `AHTOOOXA/pixelkit` | `topic:shaders`, MIT | TypeScript engine with a game, not a section. |
+| `amirmushichge/bottle-studio` | `topic:webgl`, MIT | A product configurator page, not a reusable section. |
+| `habom2310/swarm-build` | `topic:animation`, MIT | Screenshot-building tool, not an effect. |
+| `Sam1983Aing/veloce-prive`, `tricuongdao/lab2.xartisan.studio` and the other scroll-site repos | `topic:scroll-animation` | No LICENSE file. |
+
+### Sources checked and found quiet
+
+- **shader-gallery/shaders**: head still `6701714b` (2026-11-04).
+- **paper-design/shaders**: head still `3f29ea83` (2026-11-05).
+- **tsparticles**: v4 merged to main on 2026-11-06. Not bumped: the release is
+  inside the 7-day minimum package age. Re-check after 2026-11-13.
+- **Lenis**: last release v1.3.27 (2026-10-15), nothing new.
+- **Codrops org repos**: nothing after `TextCharacterAnimations` (2026-11-03, GSAP).
+- **Codrops hub** and **CodePen trending**: both 403.
+
+### Backlog after this run
+
+Unchanged: shader-gallery `4e8d4cb` (`woodgrain`, `waxseal` first),
+`6701714b` (`chasm`, `viaduct`), pixelfx waiting on a `src/core` vendor seam.
+
+### For the next run
+
+- three 0.185 drift to watch in any three.js port pinned to an older release:
+  `MeshNormalMaterial` no longer pulls in `<packing>`, and `THREE.Clock` logs a
+  deprecation. Neither shows in `check` or `verify`, which only see the CSS
+  rest; open the demo without `?reduced=1` and read the console.
+- A `<pre>` used as a grid container splits its inline `<b>`/`<i>` runs into
+  separate grid items. Wrap the art in its own element.

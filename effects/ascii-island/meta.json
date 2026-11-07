@@ -1,0 +1,100 @@
+{
+  "name": "ascii-island",
+  "version": "1.0.0",
+  "category": "3d-hero",
+  "tags": [
+    "ascii",
+    "glyphs",
+    "character-grid",
+    "three",
+    "3d",
+    "island",
+    "lighthouse",
+    "low-poly",
+    "edge-detection",
+    "tilt-shift",
+    "bloom",
+    "hero",
+    "css-only-rest"
+  ],
+  "summary": "Full-bleed hero with a low-poly island diorama rendered in three.js and redrawn every frame as coloured characters. Water, foliage, wood, stone and sky each draw from their own glyph ramp, silhouettes and creases are found per pixel and drawn as line glyphs (- / | \\), and the frame gets upstream's tilt-shift, bloom, vignette and grain. A lighthouse sweeps its beam, a sailboat rounds the island on the swell and clouds drift past while the camera circles slowly. The resting state is the same island typed out in CSS.",
+  "needs": [
+    "three"
+  ],
+  "options": {
+    "cellSize": {
+      "type": "number",
+      "default": 8,
+      "min": 3,
+      "max": 32,
+      "description": "Character cell width in CSS pixels; the height is cellSize * 1.7. Smaller cells draw more detail with more, finer glyphs. Upstream's cell size slider (3 to 32)."
+    },
+    "rotateSpeed": {
+      "type": "number",
+      "default": 0.6,
+      "min": -3,
+      "max": 3,
+      "description": "How fast the camera circles the island, in OrbitControls autoRotateSpeed units (2 = one turn a minute at 60 fps). Negative turns the other way, 0 holds the framed shot. Upstream's camera speed slider."
+    }
+  },
+  "license": "MIT",
+  "origin": {
+    "repo": "danieljan-design/noxe-ascii-engine",
+    "commit": "16e6bb9482ee41a722be0f0f51d9182a4d733eda",
+    "path": [
+      "engine/ascii-engine.js",
+      "engine/atlas.js",
+      "engine/shaders.js",
+      "scenes/kit.js",
+      "scenes/island.js",
+      "app.js"
+    ]
+  },
+  "deviations": [
+    {
+      "what": "Five upstream ES modules (engine/shaders.js, engine/atlas.js, engine/ascii-engine.js, scenes/kit.js, scenes/island.js) are inlined into index.js in that order with their import lines and export keywords removed; island.js's default export becomes const Island. 'three' is imported from ../../vendor/three.module.js instead of the jsDelivr import map.",
+      "why": "Seam. An effect is one index.js with vendor imports only; a sibling module or a bare specifier does not resolve on a generated site.",
+      "kind": "seam"
+    },
+    {
+      "what": "mergeGeometries, which island.js imports from three/addons/utils/BufferGeometryUtils.js, is a local stand-in that de-indexes the geometries and concatenates their attributes.",
+      "why": "Seam. The vendored three build ships no addons, and the addon file carries its own bare 'three' import. The one call site merges two indexed cones with the same attributes, which the stand-in covers.",
+      "kind": "seam"
+    },
+    {
+      "what": "app.js is cut down to the renderer setup, frameCamera(), resize() and the step/draw loop. Its lil-gui panel, scene switcher (Winter, Reef, Farm, Primitives, Stage), PNG/MP4 exports, localStorage, keyboard shortcuts, HUD and pointer handlers are not carried. Island's look is {}, so applyLook() would leave every look key at defaultParams() and is not called.",
+      "why": "Seam. Upstream is a full-window tool; the section is one scene with no chrome. Island defines no onMove or onClick and runs with weather 'none', so the pointer handlers had nothing to drive.",
+      "kind": "seam"
+    },
+    {
+      "what": "OrbitControls is dropped. Its autoRotate, the only camera motion the Island scene gets, is reproduced directly: each step the camera turns about the frame target by (2 * PI / 60) * rotateSpeed * dt, OrbitControls' own auto-rotation angle, and looks at the target. Drag-to-orbit, wheel zoom and damping are gone.",
+      "why": "Ours. OrbitControls is an addon the vendor does not ship, and a hero that takes the wheel or a vertical drag traps the visitor on the page.",
+      "kind": "ours"
+    },
+    {
+      "what": "The canvas and its renderer size come from the section (el.clientWidth / clientHeight through a ResizeObserver) instead of window.innerWidth / innerHeight and a window resize listener. frameCamera() re-fits the distance on every resize and resets the angle on the first frame and when the section flips between wide and tall, as upstream's resize() does.",
+      "why": "Seam. Upstream owns the window; a section does not.",
+      "kind": "seam"
+    },
+    {
+      "what": "The aux pass's MeshNormalMaterial patch writes normalize( normal ) * 0.5 + 0.5 where upstream calls packNormalToRGB( normal ). That is the function's own body in three's packing chunk.",
+      "why": "api-migration. In the vendored three 0.185.1 the normal material's fragment shader no longer includes <packing>, so the call fails to compile ('no matching overloaded function') and the aux pass draws nothing; upstream pins 0.170.0, where it was included.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The loop's dt comes from performance.now() instead of THREE.Clock, still capped at 0.1 s.",
+      "why": "api-migration. The vendored three 0.185.1 deprecates Clock and logs a warning on construction; upstream pins 0.170.0.",
+      "kind": "api-migration"
+    },
+    {
+      "what": "The glyph atlas asks for 'IBM Plex Mono' exactly as upstream does, but the section does not load it from Google Fonts, so unless the page already has it the atlas uses buildAtlas()'s own fallback stack (ui-monospace, Menlo, monospace).",
+      "why": "Ours. An effect fetches nothing off-site. A site that already loads IBM Plex Mono gets upstream's exact glyphs.",
+      "kind": "ours"
+    },
+    {
+      "what": "The renderer is requested with failIfMajorPerformanceCaveat: true, and any failure (no context, a throw during setup, a rejected atlas, webglcontextlost) tears down to the CSS rest. Under prefers-reduced-motion mount() returns at once. The loop skips work while an IntersectionObserver reports the section off screen, and sets data-fx-live after the first drawn frame.",
+      "why": "The repo contract. Upstream has no reduced-motion path and no fallback, and a multi-pass render every frame is worth stopping when nobody can see it.",
+      "kind": "seam"
+    }
+  ]
+}

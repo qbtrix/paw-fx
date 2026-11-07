@@ -1,0 +1,157 @@
+/* ascii-island: the CSS half of the effect. With JavaScript off, under
+   reduced motion (where index.js never starts), or after a refused WebGL
+   context sends mount() back to rest, this is the whole hero.
+
+   The resting layer is a small island typed out in upstream's own glyph
+   ramps (water ~-=, foliage ,;%&, wood |#, stone .:o0@) on the engine's
+   background colour, defaultParams().bg #07080c, under a soft sky glow.
+
+   Stacking:
+     -2  .fx-ascii-island__rest   the resting picture, covered once a frame draws
+     -1  <canvas>                 inserted by index.js
+      1  .fx-ascii-island__inner  the copy, bottom left, on a smoked panel */
+.fx-ascii-island {
+  --fx-bg: #07080c;
+  --fx-ink: #f2f4f8;
+  --fx-muted: #c9d0dc;
+  --fx-sea: #4f86c6;
+  --fx-leaf: #5b9a45;
+  --fx-sand: #d8c48c;
+  --fx-light: #ffe1b8;
+  --fx-panel: 0.7;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  justify-items: start;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 6vw, 5rem);
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", sans-serif;
+}
+
+.fx-ascii-island__rest {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: grid;
+  place-items: center end;
+  margin: 0;
+  padding: clamp(1rem, 6vh, 4rem) clamp(1rem, 6vw, 5rem);
+  background:
+    radial-gradient(70% 55% at 55% 35%, #1a243380, transparent 70%),
+    var(--fx-bg);
+  transition: opacity 600ms ease;
+}
+
+.fx-ascii-island__art {
+  margin: 0;
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 600;
+  font-size: clamp(6px, 1.25vw, 16px);
+  line-height: 1.7;
+  white-space: pre;
+  color: var(--fx-sea);
+}
+
+.fx-ascii-island__art b { font-weight: inherit; color: var(--fx-leaf); }
+.fx-ascii-island__art i { font-style: normal; color: var(--fx-sand); }
+.fx-ascii-island__art u { text-decoration: none; color: var(--fx-light); }
+
+/* index.js sets data-fx-live once a frame has drawn; every failure path and
+   destroy() clear it, so this rule is also the proof teardown worked. */
+.fx-ascii-island[data-fx-live] .fx-ascii-island__rest {
+  opacity: 0;
+}
+
+.fx-ascii-island__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The ASCII frame is busy everywhere, so the copy carries its own smoked
+   panel: --fx-panel of the background over a 10 px blur. */
+.fx-ascii-island__inner {
+  position: relative;
+  z-index: 1;
+  max-width: min(30rem, 58%);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in oklab, var(--fx-ink) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--fx-bg) calc(var(--fx-panel) * 100%), transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.fx-ascii-island__eyebrow {
+  margin: 0 0 1rem;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fx-muted);
+}
+
+.fx-ascii-island__title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.fx-ascii-island__lede {
+  margin: 1.1rem 0 0;
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
+  line-height: 1.55;
+  color: var(--fx-muted);
+  text-wrap: pretty;
+}
+
+.fx-ascii-island__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+.fx-ascii-island__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.fx-ascii-island__cta--primary {
+  background: var(--fx-ink);
+  color: var(--fx-bg);
+}
+
+.fx-ascii-island__cta--ghost {
+  border-color: color-mix(in oklab, var(--fx-ink) 28%, transparent);
+  color: var(--fx-ink);
+}
+
+.fx-ascii-island__cta:hover {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ascii-island__rest,
+  .fx-ascii-island__cta {
+    transition: none;
+  }
+}
