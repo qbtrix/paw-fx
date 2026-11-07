@@ -219,6 +219,7 @@ power1=Quad, power2=Cubic, power3=Quart, power4=Quint, and a bare `power3` or
 | morph-nav | MIT | [juliangarnier/anime](https://github.com/juliangarnier/anime) `01b81be`, `examples/auto-layout/nav/index.js` + `examples/auto-layout/nav/index.html` |
 | dock-magnify | MIT | [magicuidesign/magicui](https://github.com/magicuidesign/magicui) `1246d6d`, `apps/www/registry/magicui/dock.tsx` |
 | paw-avatar | MIT | [jeremy-prt/bloub](https://github.com/jeremy-prt/bloub) `b4bb3c1`, `src/bot/math.ts` + `src/bot/shape.ts` + `src/bot/face.ts` + `src/bot/engine.ts` |
+| ascii-island | MIT | [danieljan-design/noxe-ascii-engine](https://github.com/danieljan-design/noxe-ascii-engine) `16e6bb9`, `engine/ascii-engine.js` + `engine/atlas.js` + `engine/shaders.js` + `scenes/kit.js` + `scenes/island.js` + `app.js` |
 
 ## The two shader families carry their licences differently
 
